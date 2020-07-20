@@ -1,0 +1,6959 @@
+Imports System.IO
+Imports System.Windows.Markup
+Imports Microsoft.Win32
+Imports WinFormsTxt = System.Windows.Forms.RichTextBox
+Imports WinDrawing = System.Drawing
+Imports System.ComponentModel
+Imports System.Windows.Threading
+Imports System.Drawing.Printing
+Imports System.Timers
+Imports System.Runtime.InteropServices
+Imports Newtonsoft.Json
+Imports System.Windows.Forms
+
+Class MainWindow
+
+    ' TYPE EXPRESS v4.2
+    ' Part of Express Apps by John D
+    ' ------------------------------
+
+    Public ThisFile As String = ""
+    ReadOnly PrintDoc As New PrintDocument
+
+    ReadOnly TemplateWorker As New BackgroundWorker With {.WorkerSupportsCancellation = True}
+    ReadOnly NotificationCheckerWorker As New BackgroundWorker With {.WorkerSupportsCancellation = True}
+    ReadOnly DefineWorker As New BackgroundWorker With {.WorkerSupportsCancellation = True}
+
+    ReadOnly TempLblTimer As New Timers.Timer With {.Interval = 4000}
+    ReadOnly EditingTimer As New DispatcherTimer With {.Interval = New TimeSpan(0, 1, 0)}
+    ReadOnly ScrollTimer As New DispatcherTimer With {.Interval = New TimeSpan(0, 0, 0, 0, 10)}
+
+    ReadOnly urc As New UndoRedoClass(Of String)()
+    Private NoAdd As Boolean = False
+    Private EnableFontChange As Boolean = True
+    Private SpellOverride As Boolean = False
+
+
+    ' DIALOG BOXES
+    ' --
+
+    ReadOnly openDialog As New Microsoft.Win32.OpenFileDialog With {
+        .Title = "Type Express",
+        .Filter = "Supported files (.rtf, .txt)|*.txt;*.rtf|Text files (.txt)|*.txt|RTF files (.rtf)|*.rtf",
+        .FilterIndex = 0,
+        .Multiselect = True
+    }
+
+    ReadOnly allfileDialog As New Microsoft.Win32.OpenFileDialog With {
+        .Title = "Choose a file - Type Express",
+        .Filter = "",
+        .Multiselect = False
+    }
+
+    ReadOnly saveDialog As New Microsoft.Win32.SaveFileDialog With {
+        .Title = "Type Express",
+        .Filter = "RTF files (.rtf)|*.rtf|Text files (.txt)|*.txt"
+    }
+
+    ReadOnly folderBrowser As New Forms.FolderBrowserDialog With {
+        .Description = "Choose a folder below...",
+        .ShowNewFolderButton = True
+    }
+
+    ReadOnly PrintPreviewDialog1 As New Forms.PrintPreviewDialog With {
+        .Document = PrintDoc,
+        .Text = "Type Express"
+    }
+
+    ReadOnly PageSetupDialog1 As New Forms.PageSetupDialog With {
+        .Document = PrintDoc
+    }
+
+    ReadOnly PrintDialog1 As New Forms.PrintDialog With {
+        .AllowCurrentPage = True,
+        .AllowSelection = True,
+        .AllowSomePages = True,
+        .Document = PrintDoc,
+        .UseEXDialog = True
+    }
+
+    ReadOnly pictureDialog As New Forms.OpenFileDialog With {
+        .Title = "Choose a picture - Type Express",
+        .Filter = "Pictures|*.jpg;*.png;*.bmp;*.gif|JPEG files|*.jpg|PNG files|*.png|BMP files|*.bmp|GIF files|*.gif",
+        .FilterIndex = 0,
+        .Multiselect = False
+    }
+
+
+    ' SYMBOL & DATE LISTS
+    ' --
+
+    ' Be wary of forbidden XML characters when adding to these symbol lists
+    Private Lettering As New List(Of String) From
+        {"À*A GRAVE UPPER", "Á*A ACUTE UPPER", "Â*A CIRCUMFLEX UPPER", "Ã*A TILDE UPPER", "Ä*A DIAERESIS UPPER", "Æ*AE UPPER",
+            "Ć*C ACUTE UPPER", "Č*C CARON UPPER", "Ç*C CEDILLA UPPER", "È*E GRAVE UPPER", "É*E ACUTE UPPER", "Ê*E CIRCUMFLEX UPPER", "Ë*E DIAERESIS UPPER", "Ì*I GRAVE UPPER",
+            "Í*I ACUTE UPPER", "Î*I CIRCUMFLEX UPPER", "Ï*I DIAERESIS UPPER", "Ñ*N TILDE UPPER", "Ò*O GRAVE UPPER", "Ó*O ACUTE UPPER", "Ô*O CIRCUMFLEX UPPER", "Õ*O TILDE UPPER",
+            "Ö*O DIAERESIS UPPER", "Ø*O STROKE UPPER", "Œ*OE UPPER", "Ś*S ACUTE UPPER", "Š*S CARON UPPER", "Ù*U GRAVE UPPER", "Ú*U ACUTE UPPER", "Û*U CIRCUMFLEX UPPER",
+            "Ü*U DIAERESIS UPPER", "Ŵ*W CIRCUMFLEX UPPER", "Ý*Y ACUTE UPPER", "à*A GRAVE LOWER", "á*A ACUTE LOWER", "â*A CIRCUMFLEX LOWER", "ã*A TILDE LOWER",
+            "ä*A DIAERESIS LOWER", "æ*AE LOWER", "ć*C ACUTE LOWER", "č*C CARON LOWER", "ç*C CEDILLA LOWER", "è*E GRAVE LOWER", "é*E ACUTE LOWER", "ê*E CIRCUMFLEX LOWER",
+            "ë*E DIAERESIS LOWER", "ì*I GRAVE LOWER", "í*I ACUTE LOWER", "î*I CIRCUMFLEX LOWER", "ï*I DIAERESIS LOWER", "ñ*N TILDE LOWER", "ò*O GRAVE LOWER", "ó*O ACUTE LOWER",
+            "ô*O CIRCUMFLEX LOWER", "õ*O TILDE LOWER", "ö*O DIAERESIS LOWER", "ø*O STROKE LOWER", "œ*OE LOWER", "ś*S ACUTE LOWER", "š*S CARON LOWER", "ù*U GRAVE LOWER",
+            "ú*U ACUTE LOWER", "û*U CIRCUMFLEX LOWER", "ü*U DIAERESIS LOWER", "ŵ*W CIRCUMFLEX LOWER", "ý*Y ACUTE LOWER"}
+
+    Private Arrows As New List(Of String) From
+        {"˄*UP ARROWHEAD", "˅*DOWN ARROWHEAD", "←*LEFT ARROW", "↑*UP ARROW", "→*RIGHT ARROW", "↓*DOWN ARROW", "↔*LEFT RIGHT ARROW",
+            "↕*UP DOWN ARROW", "ꜛ*RAISED UP ARROW", "ꜜ*RAISED DOWN ARROW"}
+
+    Private Standard As New List(Of String) From
+        {"$*DOLLAR SIGN", "¢*CENT SIGN", "£*POUND SIGN", "¥*YEN SIGN", "¶*PILCROW SIGN", "€*EURO SIGN", "%*PERCENT SIGN", "@*AT SIGN",
+            "°*DEGREE SIGN", "|*VERTICAL LINE", "¦*BROKEN VERTICAL LINE", "©*COPYRIGHT", "®*REGISTERED TRADEMARK", "℗*SOUND RECORDING COPYRIGHT", "™*TRADEMARK", "№*NUMERO SIGN",
+            "♠*SPADE SUIT", "♣*CLUB SUIT", "♥*HEART SUIT", "♦*DIAMOND SUIT", "■*LARGE SQUARE BULLET", "▪*SMALL SQUARE BULLET", "▬*RECTANGLE", "▲*UP-POINTING TRIANGLE",
+            "►*RIGHT-POINTING TRIANGLE", "▼*DOWN-POINTING TRIANGLE", "◄*LEFT-POINTING TRIANGLE"}
+
+    Private Greek As New List(Of String) From
+        {"Α*ALPHA UPPER", "α*ALPHA LOWER", "Β*BETA UPPER", "β*BETA LOWER", "Γ*GAMMA UPPER", "γ*GAMMA LOWER", "Δ*DELTA UPPER",
+            "δ*DELTA LOWER", "Ε*EPSILON UPPER", "ε*EPSILON LOWER", "Ζ*ZETA UPPER", "ζ*ZETA LOWER", "Η*ETA UPPER", "η*ETA LOWER", "Θ*THETA UPPER", "θ*THETA LOWER",
+            "Ι*IOTA UPPER", "ι*IOTA LOWER", "Κ*KAPPA UPPER", "κ*KAPPA LOWER", "Λ*LAMBDA UPPER", "λ*LAMBDA LOWER", "Μ*MU UPPER", "μ*MU LOWER", "Ν*NU UPPER", "ν*NU LOWER",
+            "Ξ*XI UPPER", "ξ*XI LOWER", "Ο*OMICRON UPPER", "ο*OMICRON LOWER", "Π*PI UPPER", "π*PI LOWER", "Ρ*RHO UPPER", "ρ*RHO LOWER", "Σ*SIGMA UPPER", "σ*SIGMA LOWER",
+            "ς*SIGMA LOWER WORD-FINAL", "Τ*TAU UPPER", "τ*TAU LOWER", "Υ*UPSILON UPPER", "υ*UPSILON LOWER", "Φ*PHI UPPER", "φ*PHI LOWER", "Χ*CHI UPPER", "χ*CHI LOWER",
+            "Ψ*PSI UPPER", "ψ*PSI LOWER", "Ω*OMEGA UPPER", "ω*OMEGA LOWER"}
+
+    Private Punctuation As New List(Of String) From
+        {"-*HYPHEN", "–*EN DASH", "—*EM DASH", "…*ELLIPSIS", "¿*INVERTED QUESTION MARK", "¡*INVERTED EXCLAMATION MARK",
+            "«*LEFT GUILLEMET", "»*RIGHT GUILLEMET", "[*LEFT SQUARE BRACKET", "]*RIGHT SQUARE BRACKET", "(*LEFT CURVED BRACKET", ")*RIGHT CURVED BRACKET",
+            "{*LEFT CURLY BRACKET", "}*RIGHT CURLY BRACKET"}
+
+    Private Maths As New List(Of String) From
+        {"±*PLUS-MINUS", "∞*INFINITY", "=*EQUAL", "≠*NOT EQUAL", "≈*APPROXIMATELY EQUAL", "≡*EQUIVALENT", "×*MULTIPLY",
+            "÷*DIVIDE", "∝*PROPORTIONAL TO", "≤*LESS THAN OR EQUAL", "≥*GREATER THAN OR EQUAL", "√*SQUARE ROOT", "∛*CUBE ROOT", "∪*UNION", "∩*INTERSECTION",
+            "∈*ELEMENT OF", "∋*CONTAINS AS MEMBER", "∴*THEREFORE", "¬*NEGATION", "ℵ*ALEPH", "∑*SUMMATION SIGN", "∫*INTEGRAL SIGN"}
+
+    Private ReadOnly Emoji As New List(Of String) From
+        {"😀*GRINNING FACE", "😁*GRINNING FACE WITH SMILING EYES", "😂*FACE WITH TEARS OF JOY", "	😃*SMILING FACE WITH OPEN MOUTH",
+            "😄*SMILING FACE WITH OPEN MOUTH AND SMILING EYES", "😅*SMILING FACE WITH OPEN MOUTH AND COLD SWEAT", "😆*SMILING FACE WITH OPEN MOUTH AND TIGHTLY-CLOSED EYES",
+            "😇*SMILING FACE WITH HALO", "😈*SMILING FACE WITH HORNS", "😉*WINKING FACE", "😊*SMILING FACE WITH SMILING EYES", "😋*FACE SAVOURING DELICIOUS FOOD",
+            "😌*RELIEVED FACE", "😍*SMILING FACE WITH HEART-SHAPED EYES", "😎*SMILING FACE WITH SUNGLASSES", "😏*SMIRKING FACE", "😐*NEUTRAL FACE", "😑*EXPRESSIONLESS FACE",
+            "😒*UNAMUSED FACE", "😓*FACE WITH COLD SWEAT", "😔*PENSIVE FACE", "😕*CONFUSED FACE", "😖*CONFOUNDED FACE", "😗*KISSING FACE", "😘*FACE THROWING A KISS",
+            "😙*KISSING FACE WITH SMILING EYES", "😚*KISSING FACE WITH CLOSED EYES", "😛*FACE WITH STUCK-OUT TONGUE", "😜*FACE WITH STUCK-OUT TONGUE AND WINKING EYE",
+            "😝*FACE WITH STUCK-OUT TONGUE AND TIGHTLY-CLOSED EYES", "😞*DISAPPOINTED FACE", "😟*WORRIED FACE", "😠*ANGRY FACE", "😡*POUTING FACE", "😢*CRYING FACE",
+            "😣*PERSEVERING FACE", "😤*FACE WITH LOOK OF TRIUMPH", "😥*DISAPPOINTED BUT RELIEVED FACE", "😦*FROWNING FACE WITH OPEN MOUTH", "😧*ANGUISHED FACE",
+            "😨*FEARFUL FACE", "😩*WEARY FACE", "😪*SLEEPY FACE", "😫*TIRED FACE", "😬*GRIMACING FACE", "😭*LOUDLY CRYING FACE", "😮*FACE WITH OPEN MOUTH", "😯*HUSHED FACE",
+            "😰*FACE WITH OPEN MOUTH AND COLD SWEAT", "😱*FACE SCREAMING IN FEAR", "😲*ASTONISHED FACE", "😳*FLUSHED FACE", "😴*SLEEPING FACE", "😵*DIZZY FACE",
+            "😶*FACE WITHOUT MOUTH", "😷*FACE WITH MEDICAL MASK", "🙁*SLIGHTLY FROWNING FACE", "🙂*SLIGHTLY SMILING FACE", "🙃*UPSIDE-DOWN FACE", "🙄*FACE WITH ROLLING EYES"}
+
+    ReadOnly DateTimeList As New List(Of String) From {"dd/MM/yyyy", "dddd dd MMMM yyyy", "dd MMMM yyyy", "dd/MM/yy", "yyyy-MM-dd", "dd-MMM-yy",
+        "dd.MM.yyyy", "MMMM yyyy", "MMM-yy", "dd/MM/yyyy HH:mm", "dd/MM/yyyy HH:mm:ss", "h:mm tt", "h:mm:ss tt", "HH:mm", "HH:mm:ss"}
+
+
+
+    ' STATUS LABELS
+    ' --
+
+    Private Sub CreateTempLabel(Lbltext As String)
+
+        StatusLbl.Text = Lbltext
+        TempLblTimer.Start()
+
+    End Sub
+
+    Private Sub TempLblTimer_Tick(sender As Object, e As EventArgs)
+
+        Dim deli As mydelegate = New mydelegate(AddressOf ResetStatusLbl)
+        StatusLbl.Dispatcher.BeginInvoke(DispatcherPriority.Normal, deli)
+        TempLblTimer.Stop()
+
+    End Sub
+
+    Private Sub ResetStatusLbl()
+        StatusLbl.Text = "Type Express"
+
+    End Sub
+
+
+    ' STARTUP
+    ' --
+
+    'Private ReadOnly optionrequest As Boolean = False
+    'Private ReadOnly helprequest As Boolean = False
+
+    ReadOnly HomeMnStoryboard As Animation.Storyboard
+    ReadOnly ToolsMnStoryboard As Animation.Storyboard
+    ReadOnly DesignMnStoryboard As Animation.Storyboard
+    ReadOnly ReviewMnStoryboard As Animation.Storyboard
+
+    ReadOnly TypeHoverIn As Animation.Storyboard
+    ReadOnly TypeHoverOut As Animation.Storyboard
+
+    Public Sub New()
+
+        ' This call is required by the designer.
+        InitializeComponent()
+
+        ' Add any initialization after the InitializeComponent() call.
+        'Dim firsttime As Boolean = False
+
+        If My.Settings.language = "" Then
+            Dim lang As New LangSelector
+            lang.ShowDialog()
+
+            My.Settings.language = lang.ChosenLang
+            My.Settings.Save()
+
+        End If
+
+
+        If My.Settings.language = "fr-FR" Then
+            Threading.Thread.CurrentThread.CurrentCulture = New Globalization.CultureInfo("fr-FR")
+            Threading.Thread.CurrentThread.CurrentUICulture = New Globalization.CultureInfo("fr-FR")
+
+            Dim resdict As New ResourceDictionary() With {.Source = New Uri("/DictionaryFR.xaml", UriKind.Relative)}
+            Windows.Application.Current.Resources.MergedDictionaries.Add(resdict)
+
+            Dim commonresdict As New ResourceDictionary() With {.Source = New Uri("/CommonDictionaryFR.xaml", UriKind.Relative)}
+            Windows.Application.Current.Resources.MergedDictionaries.Add(commonresdict)
+
+            SetLang()
+
+            My.Settings.spelllang = 1
+            My.Settings.Save()
+
+        ElseIf My.Settings.language = "en-GB" Then
+            Threading.Thread.CurrentThread.CurrentCulture = New Globalization.CultureInfo("en-GB")
+            Threading.Thread.CurrentThread.CurrentUICulture = New Globalization.CultureInfo("en-GB")
+
+        End If
+
+
+        'If firsttime Then
+        'Dim first As New Welcome
+        'first.ShowDialog()
+        'If first.HelpRequest = True Then helprequest = True
+        'Dim backchoices As New List(Of String) From {"/blocks.png", "/dots.png", "/triangles.png"}
+        'Dim rnd = New Random()
+        'Dim randomchoice As String = backchoices(rnd.Next(0, backchoices.Count))
+        'My.Settings.backimage = randomchoice
+        'My.Settings.Save()
+        'End If
+
+        AddHandler TemplateWorker.DoWork, AddressOf TemplateWorker_DoWork
+        AddHandler NotificationCheckerWorker.DoWork, AddressOf NotificationCheckerWorker_DoWork
+        AddHandler DefineWorker.DoWork, AddressOf DefineWorker_DoWork
+        AddHandler DefineWorker.RunWorkerCompleted, AddressOf DefineWorker_RunWorkerCompleted
+
+        AddHandler PrintDoc.BeginPrint, AddressOf PrintDocument1_BeginPrint
+        AddHandler PrintDoc.PrintPage, AddressOf PrintDocument1_PrintPage
+
+        AddHandler TempLblTimer.Elapsed, AddressOf TempLblTimer_Tick
+        AddHandler EditingTimer.Tick, AddressOf EditingTimer_Tick
+        AddHandler ScrollTimer.Tick, AddressOf ScrollTimer_Tick
+
+        MaxHeight = SystemParameters.WorkArea.Height + 13
+        MaxWidth = SystemParameters.WorkArea.Width + 13
+        AddHandler SystemParameters.StaticPropertyChanged, AddressOf WorkAreaChanged
+
+
+        ' Storyboards
+        HomeMnStoryboard = TryFindResource("HomeMnStoryboard")
+        ToolsMnStoryboard = TryFindResource("ToolsMnStoryboard")
+        DesignMnStoryboard = TryFindResource("DesignMnStoryboard")
+        ReviewMnStoryboard = TryFindResource("ReviewMnStoryboard")
+        TypeHoverIn = TryFindResource("TypeHoverIn")
+        TypeHoverOut = TryFindResource("TypeHoverOut")
+
+
+        SideBarGrid.Visibility = Visibility.Collapsed
+        DownloadLocationLbl.Text = My.Computer.FileSystem.SpecialDirectories.MyDocuments
+
+        If My.Settings.maximised Then
+            WindowState = WindowState.Maximized
+            MaxRestoreIcn.SetResourceReference(ContentProperty, "RestoreWhiteIcon")
+            MaxBtn.ToolTip = TryFindResource("RestoreStr")
+
+        Else
+            Height = My.Settings.height
+            Width = My.Settings.width
+
+        End If
+
+        urc.AddItem(DocTxt.Text)
+
+
+        Dim objFontCollection As WinDrawing.Text.FontCollection
+        objFontCollection = New WinDrawing.Text.InstalledFontCollection
+
+        FontsStack.Children.Clear()
+        FontsStack.Children.Add(FavouriteFontsLbl)
+        DefineStack.Children.Clear()
+
+        For Each favfont In My.Settings.favouritefonts.Cast(Of String).Distinct().ToList()
+            Dim fontname As String = Funcs.EscapeChars(favfont)
+
+            Try
+                If Not fontname = "" Then
+                    Dim testfont As New WinDrawing.FontFamily(favfont)
+                    testfont.Dispose()
+
+                    Dim copy As Controls.Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='{DynamicResource SecondaryColor}' HorizontalContentAlignment='Left' VerticalContentAlignment='Stretch' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='FontSampleBtn' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><DockPanel VerticalAlignment='Center'><TextBlock Text='" +
+                                                  fontname + "' FontFamily='" +
+                                                  fontname + "' FontSize='14' Padding='20,0,0,0' Name='HomeBtnTxt_Copy1291' Height='21.31' Margin='0,0,10,0' HorizontalAlignment='Center'/></DockPanel></Button>")
+
+                    copy.Tag = favfont
+                    copy.ToolTip = favfont
+                    FontsStack.Children.Add(copy)
+                    AddHandler copy.Click, AddressOf FontBtns_Click
+
+                End If
+
+            Catch
+            End Try
+        Next
+
+        If FontsStack.Children.Count = 1 Then
+            FontsStack.Children.Clear()
+        Else
+            FontsStack.Children.Add(AllFontsLbl)
+        End If
+
+        For Each objFontFamily As WinDrawing.FontFamily In objFontCollection.Families
+            Dim fontname As String = Funcs.EscapeChars(objFontFamily.Name)
+
+            If Not fontname = "" Then
+                Dim copy As Controls.Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='{DynamicResource SecondaryColor}' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='FontSampleBtn' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><StackPanel Orientation='Horizontal'><TextBlock Text='" +
+                                                  fontname + "' FontFamily='" +
+                                                  fontname + "' FontSize='14' Padding='20,0,0,0' Name='HomeBtnTxt_Copy1291' Height='21.31' Margin='0,7.69,10,7' HorizontalAlignment='Center' VerticalAlignment='Center' /></StackPanel></Button>")
+
+                copy.Tag = objFontFamily.Name
+                copy.ToolTip = objFontFamily.Name
+                FontsStack.Children.Add(copy)
+                AddHandler copy.Click, AddressOf FontBtns_Click
+
+            End If
+        Next
+
+
+        TextSelection()
+        MoreImg.RenderTransform = Nothing
+        MoreImg1.RenderTransform = Nothing
+
+        ColourPicker.StandardColors.Remove(New Xceed.Wpf.Toolkit.ColorItem(Color.FromArgb(0, 255, 255, 255), "Transparent"))
+        RefreshColourTooltips()
+
+
+        ' Settings
+        FontStyleTxt.Text = My.Settings.fontname
+        ChangeFont()
+
+        FontSizeTxt.Text = My.Settings.fontsize.ToString()
+        ChangeFontSize()
+
+        SetStyle(My.Settings.fontstyle)
+        DocTxt.SelectionColor = My.Settings.textcolour
+
+        If My.Settings.savelocation = "" Then
+            saveDialog.InitialDirectory = My.Computer.FileSystem.SpecialDirectories.MyDocuments
+
+        Else
+            saveDialog.InitialDirectory = My.Settings.savelocation
+
+        End If
+
+        If My.Settings.filterindex = 1 Then saveDialog.Filter = Funcs.ChooseLang("Text files (.txt)|*.txt|RTF files (.rtf)|*.rtf", "Fichiers texte (.txt)|*.txt|Fichiers RTF (.rtf)|*.rtf")
+
+        ChangeColourScheme(My.Settings.colourscheme)
+
+        If My.Settings.spelllang = 0 Then
+            SpellLang = "en"
+
+        ElseIf My.Settings.spelllang = 1 Then
+            SpellLang = "fr"
+
+        Else
+            SpellLang = "es"
+
+        End If
+
+        If My.Settings.wordstatus = True Then
+            WordCountStatusBtn.Visibility = Visibility.Visible
+            CheckWordStatus()
+
+        Else
+            WordCountStatusBtn.Visibility = Visibility.Collapsed
+
+        End If
+
+        If My.Settings.saveshortcut = True Then
+            SaveStatusBtn.Visibility = Visibility.Visible
+
+        Else
+            SaveStatusBtn.Visibility = Visibility.Collapsed
+
+        End If
+
+        If My.Settings.openmenu = False Then MainTabs.SelectedIndex = 1
+        ResetInfo()
+
+        If My.Settings.darkmode And My.Settings.autodarkmode = False Then
+            With Windows.Application.Current.Resources
+                .Item("BackColor") = New SolidColorBrush(Color.FromArgb(255, 38, 38, 38))
+                .Item("TextColor") = New SolidColorBrush(Color.FromArgb(255, 255, 255, 255))
+                .Item("SecondaryColor") = New SolidColorBrush(Color.FromArgb(255, 62, 62, 62))
+                .Item("TertiaryColor") = New SolidColorBrush(Color.FromArgb(255, 104, 104, 104))
+                .Item("AppHoverColor") = New SolidColorBrush(Color.FromArgb(255, 0, 75, 9))
+                .Item("AppPressedColor") = New SolidColorBrush(Color.FromArgb(255, 0, 118, 15))
+                .Item("AcryllicColor") = New SolidColorBrush(Color.FromArgb(255, 38, 38, 38)) With {.Opacity = 0.6}
+            End With
+        End If
+
+    End Sub
+
+    Private Sub WorkAreaChanged(sender As Object, e As EventArgs)
+        MaxHeight = SystemParameters.WorkArea.Height + 12
+        MaxWidth = SystemParameters.WorkArea.Width + 12
+
+    End Sub
+
+    Private Sub FormHeaderLbl_DoubleClick(sender As Object, e As RoutedEventArgs) Handles TitleBtn.MouseDoubleClick
+        If WindowState = WindowState.Maximized Then
+            WindowState = WindowState.Normal
+
+        Else
+            WindowState = WindowState.Maximized
+
+        End If
+    End Sub
+
+
+    'Private Const WmSyscommand As Integer = &H112
+    'Private _hwndSource As HwndSource
+
+    'Private Enum ResizeDirection
+    '    Left = 61441
+    '    Right = 61442
+    '    Top = 61443
+    '    TopLeft = 61444
+    '    TopRight = 61445
+    '    Bottom = 61446
+    '    BottomLeft = 61447
+    '    BottomRight = 61448
+    'End Enum
+
+    'Private Sub MainWindow_SourceInitialized(sender As Object, e As EventArgs) Handles Me.SourceInitialized
+    '    _hwndSource = TryCast(PresentationSource.FromVisual(CType(sender, Visual)), HwndSource)
+    'End Sub
+
+    'Private Sub ResizeWindow(ByVal direction As ResizeDirection) 
+    '    SendMessage(_hwndSource.Handle, WmSyscommand, CType(direction, IntPtr), IntPtr.Zero)
+    'End Sub
+
+    'Protected Sub ResetCursor(ByVal sender As Object, ByVal e As MouseEventArgs) Handles ResizeNW.MouseLeave, ResizeNE.MouseLeave, ResizeSW.MouseLeave,
+    '    ResizeE.MouseLeave, ResizeW.MouseLeave, ResizeSE.MouseLeave, ResizeW.MouseLeave, ResizeS.MouseLeave, ResizeN.MouseLeave
+
+    '    If Mouse.LeftButton <> MouseButtonState.Pressed Then
+    '        Cursor = Cursors.Arrow
+    '    End If
+    'End Sub
+
+    'Protected Sub Resize(ByVal sender As Object, ByVal e As MouseButtonEventArgs) Handles ResizeNW.PreviewMouseLeftButtonDown, ResizeNE.PreviewMouseLeftButtonDown,
+    '    ResizeSW.PreviewMouseLeftButtonDown, ResizeE.PreviewMouseLeftButtonDown, ResizeW.PreviewMouseLeftButtonDown, ResizeSE.PreviewMouseLeftButtonDown,
+    '    ResizeW.PreviewMouseLeftButtonDown, ResizeS.PreviewMouseLeftButtonDown, ResizeN.PreviewMouseLeftButtonDown
+
+    '    Dim clickedShape = TryCast(sender, Shape)
+    '    If clickedShape Is Nothing Then Return
+
+    '    Select Case clickedShape.Name
+    '        Case "ResizeN"
+    '            Cursor = Cursors.SizeNS
+    '            ResizeWindow(ResizeDirection.Top)
+    '        Case "ResizeE"
+    '            Cursor = Cursors.SizeWE
+    '            ResizeWindow(ResizeDirection.Right)
+    '        Case "ResizeS"
+    '            Cursor = Cursors.SizeNS
+    '            ResizeWindow(ResizeDirection.Bottom)
+    '        Case "ResizeW"
+    '            Cursor = Cursors.SizeWE
+    '            ResizeWindow(ResizeDirection.Left)
+    '        Case "ResizeNW"
+    '            Cursor = Cursors.SizeNWSE
+    '            ResizeWindow(ResizeDirection.TopLeft)
+    '        Case "ResizeNE"
+    '            Cursor = Cursors.SizeNESW
+    '            ResizeWindow(ResizeDirection.TopRight)
+    '        Case "ResizeSE"
+    '            Cursor = Cursors.SizeNWSE
+    '            ResizeWindow(ResizeDirection.BottomRight)
+    '        Case "ResizeSW"
+    '            Cursor = Cursors.SizeNESW
+    '            ResizeWindow(ResizeDirection.BottomLeft)
+    '    End Select
+    'End Sub
+
+    'Protected Sub DisplayResizeCursor(ByVal sender As Object, ByVal e As MouseEventArgs) Handles ResizeNW.MouseEnter, ResizeNE.MouseEnter, ResizeSW.MouseEnter,
+    '    ResizeE.MouseEnter, ResizeW.MouseEnter, ResizeSE.MouseEnter, ResizeW.MouseEnter, ResizeS.MouseEnter, ResizeN.MouseEnter
+
+    '    Dim clickedShape = TryCast(sender, Shape)
+    '    If clickedShape Is Nothing Then Return
+
+    '    Select Case clickedShape.Name
+    '        Case "ResizeN", "ResizeS"
+    '            Cursor = Cursors.SizeNS
+    '        Case "ResizeE", "ResizeW"
+    '            Cursor = Cursors.SizeWE
+    '        Case "ResizeNW", "ResizeSE"
+    '            Cursor = Cursors.SizeNWSE
+    '        Case "ResizeNE", "ResizeSW"
+    '            Cursor = Cursors.SizeNESW
+    '    End Select
+    'End Sub
+
+    Private Sub FormHeaderLbl_MouseDown(sender As Object, e As Input.MouseEventArgs) Handles TitleBtn.PreviewMouseLeftButtonDown
+        Funcs.MoveForm(Me)
+
+    End Sub
+
+    Private Sub MainWindow_Loaded(sender As Object, e As RoutedEventArgs) Handles Me.Loaded
+
+        For Each i In My.Settings.files
+            LoadFile(i)
+
+        Next
+
+        If My.Settings.openrecent = True And My.Settings.recents.Count > 0 Then
+            If File.Exists(My.Settings.recents.Item(0)) Then OpenRecentFavourite(My.Settings.recents.Item(0))
+
+        End If
+
+        If My.Settings.notificationcheck Then
+            NotificationCheckerWorker.RunWorkerAsync()
+
+        End If
+
+        CheckMenu()
+
+    End Sub
+
+
+    ' BACKGROUND
+    ' --
+
+    Private Delegate Sub mydelegate()
+
+    Private Sub TemplateWorker_DoWork(sender As Object, e As DoWorkEventArgs)
+
+        If TemplateWorker.CancellationPending Then
+            e.Cancel = True
+            Exit Sub
+
+        End If
+
+        Threading.Thread.Sleep(250)
+
+        Dim deli As mydelegate = New mydelegate(AddressOf GetTemplates)
+        TemplateGrid.Dispatcher.BeginInvoke(DispatcherPriority.Normal, deli)
+
+    End Sub
+
+    Private Sub NotificationCheckerWorker_DoWork(sender As Object, e As DoWorkEventArgs)
+
+        If NotificationCheckerWorker.CancellationPending Then
+            e.Cancel = True
+            Exit Sub
+
+        End If
+
+        Threading.Thread.Sleep(250)
+
+        Dim deli As mydelegate = New mydelegate(AddressOf CheckNotifications)
+        NotificationsIcn.Dispatcher.BeginInvoke(DispatcherPriority.Normal, deli)
+
+    End Sub
+
+
+
+    ' APP FUNCTIONS
+    ' --
+
+    Public Shared Function NewMessage(text As String, Optional caption As String = "Type Express", Optional buttons As MessageBoxButton = MessageBoxButton.OK, Optional icon As MessageBoxImage = MessageBoxImage.None) As MessageBoxResult
+
+        Dim NewInfoForm As New InfoBox
+
+        With NewInfoForm
+            .TextLbl.Text = text
+            .Title = caption
+
+            If buttons = MessageBoxButton.OK Then
+                .Button1.Content = "OK"
+                .Button2.Visibility = Visibility.Collapsed
+                .Button2.IsEnabled = False
+                .Button3.Visibility = Visibility.Collapsed
+                .Button3.IsEnabled = False
+
+            ElseIf buttons = MessageBoxButton.YesNo Then
+                .Button1.Content = Funcs.ChooseLang("Yes", "Oui")
+                .Button2.Visibility = Visibility.Collapsed
+                .Button2.IsEnabled = False
+                .Button3.Content = Funcs.ChooseLang("No", "Non")
+
+            ElseIf buttons = MessageBoxButton.YesNoCancel Then
+                .Button1.Content = Funcs.ChooseLang("Yes", "Oui")
+                .Button2.Content = Funcs.ChooseLang("No", "Non")
+                .Button3.Content = Funcs.ChooseLang("Cancel", "Annuler")
+
+            Else ' buttons = MessageBoxButtons.OKCancel
+                .Button1.Content = "OK"
+                .Button2.Visibility = Visibility.Collapsed
+                .Button2.IsEnabled = False
+                .Button3.Content = Funcs.ChooseLang("Cancel", "Annuler")
+
+            End If
+
+            If icon = MessageBoxImage.Exclamation Or icon = MessageBoxImage.Warning Then
+                .IconPic.SetResourceReference(ContentProperty, "ExclamationIcon")
+                .audioclip = My.Resources.exclamation
+
+            ElseIf icon = MessageBoxImage.Stop Or icon = MessageBoxImage.Hand Or icon = MessageBoxImage.Error Then
+                .IconPic.SetResourceReference(ContentProperty, "CriticalIcon")
+                .audioclip = My.Resources._error
+
+            Else ' information icon
+                .audioclip = My.Resources.information
+
+            End If
+
+        End With
+
+        NewInfoForm.ShowDialog()
+        Return NewInfoForm.Result
+
+
+    End Function
+
+    Private Sub SetLang()
+
+        If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then
+            openDialog.Filter = "Fichiers supportés (.rtf, .txt)|*.txt;*.rtf|Fichiers texte (.txt)|*.txt|Fichiers RTF (.rtf)|*.rtf"
+            allfileDialog.Title = "Choisir un fichier - Type Express"
+            saveDialog.Filter = "Fichiers RTF (.rtf)|*.rtf|Fichiers texte (.txt)|*.txt"
+            folderBrowser.Description = "Choisissez un dossier ci-dessous..."
+            pictureDialog.Title = "Choisir une image - Type Express"
+            pictureDialog.Filter = "Images|*.jpg;*.png;*.bmp;*.gif|Fichiers JPEG|*.jpg|Fichiers PNG|*.png|Fichiers BMP|*.bmp|Fichiers GIF|*.gif"
+
+            Lettering = New List(Of String) From {"À*A GRAVE MAJUSCULE", "Á*A AIGU MAJUSCULE", "Â*A CIRCONFLEXE MAJUSCULE", "Ã*A TILDE MAJUSCULE", "Ä*A TRÉMA MAJUSCULE", "Æ*AE MAJUSCULE",
+            "Ć*C AIGU MAJUSCULE", "Č*C CARON MAJUSCULE", "Ç*C CÉDILLE MAJUSCULE", "È*E GRAVE MAJUSCULE", "É*E AIGU MAJUSCULE", "Ê*E CIRCONFLEXE MAJUSCULE", "Ë*E TRÉMA MAJUSCULE", "Ì*I GRAVE MAJUSCULE",
+            "Í*I AIGU MAJUSCULE", "Î*I CIRCONFLEXE MAJUSCULE", "Ï*I TRÉMA MAJUSCULE", "Ñ*N TILDE MAJUSCULE", "Ò*O GRAVE MAJUSCULE", "Ó*O AIGU MAJUSCULE", "Ô*O CIRCONFLEXE MAJUSCULE", "Õ*O TILDE MAJUSCULE",
+            "Ö*O TRÉMA MAJUSCULE", "Ø*O BARRÉ MAJUSCULE", "Œ*OE MAJUSCULE", "Ś*S AIGU MAJUSCULE", "Š*S CARON MAJUSCULE", "Ù*U GRAVE MAJUSCULE", "Ú*U AIGU MAJUSCULE", "Û*U CIRCONFLEXE MAJUSCULE",
+            "Ü*U TRÉMA MAJUSCULE", "Ŵ*W CIRCONFLEXE MAJUSCULE", "Ý*Y AIGU MAJUSCULE", "à*A GRAVE MINUSCULE", "á*A AIGU MINUSCULE", "â*A CIRCONFLEXE MINUSCULE", "ã*A TILDE MINUSCULE",
+            "ä*A TRÉMA MINUSCULE", "æ*AE MINUSCULE", "ć*C AIGU MINUSCULE", "č*C CARON MINUSCULE", "ç*C CÉDILLE MINUSCULE", "è*E GRAVE MINUSCULE", "é*E AIGU MINUSCULE", "ê*E CIRCONFLEXE MINUSCULE",
+            "ë*E TRÉMA MINUSCULE", "ì*I GRAVE MINUSCULE", "í*I AIGU MINUSCULE", "î*I CIRCONFLEXE MINUSCULE", "ï*I TRÉMA MINUSCULE", "ñ*N TILDE MINUSCULE", "ò*O GRAVE MINUSCULE", "ó*O AIGU MINUSCULE",
+            "ô*O CIRCONFLEXE MINUSCULE", "õ*O TILDE MINUSCULE", "ö*O TRÉMA MINUSCULE", "ø*O BARRÉ MINUSCULE", "œ*OE MINUSCULE", "ś*S AIGU MINUSCULE", "š*S CARON MINUSCULE", "ù*U GRAVE MINUSCULE",
+            "ú*U AIGU MINUSCULE", "û*U CIRCONFLEXE MINUSCULE", "ü*U TRÉMA MINUSCULE", "ŵ*W CIRCONFLEXE MINUSCULE", "ý*Y AIGU MINUSCULE"}
+
+            Arrows = New List(Of String) From {"˄*POINTE DE FLÈCHE HAUT", "˅*POINTE DE FLÈCHE BAS", "←*FLÈCHE GAUCHE", "↑*FLÈCHE HAUT", "→*FLÈCHE DROITE", "↓*FLÈCHE BAS", "↔*FLÈCHE GAUCHE DROITE",
+            "↕*FLÈCHE HAUT BAS", "ꜛ*FLÈCHE SURÉLEVÉE HAUT", "ꜜ*FLÈCHE SURÉLEVÉE BAS"}
+
+            Standard = New List(Of String) From {"$*SYMBOLE DOLLAR", "¢*SYMBOLE CENT", "£*SYMBOLE LIVRE STERLING", "¥*SYMBOLE YEN", "¶*PIED-DE-MOUCHE", "€*SYMBOLE EURO", "%*SIGNE POUR CENT", "@*AROBASE",
+            "°*SYMBOLE DEGRÉ", "|*BARRE VERTICALE", "¦*BARRE VERTICALE BRISÉE", "©*COPYRIGHT", "®*MARQUE DÉPOSÉE", "℗*COPYRIGHT PHONOGRAPHIQUE", "™*MARQUE DE COMMERCE", "№*SYMBOLE NUMÉRO",
+            "♠*PIQUE", "♣*TRÈFLE", "♥*CŒUR", "♦*CARREAU", "■*GRANDE PUCE CARRÉE", "▪*PETITE PUCE CARRÉE", "▬*RECTANGLE", "▲*TRIANGLE HAUT",
+            "►*TRIANGLE DROITE", "▼*TRIANGLE BAS", "◄*TRIANGLE GAUCHE"}
+
+            Greek = New List(Of String) From {"Α*ALPHA MAJUSCULE", "α*ALPHA MINUSCULE", "Β*BÊTA MAJUSCULE", "β*BÊTA MINUSCULE", "Γ*GAMMA MAJUSCULE", "γ*GAMMA MINUSCULE", "Δ*DELTA MAJUSCULE",
+            "δ*DELTA MINUSCULE", "Ε*EPSILON MAJUSCULE", "ε*EPSILON MINUSCULE", "Ζ*ZÊTA MAJUSCULE", "ζ*ZÊTA MINUSCULE", "Η*ÊTA MAJUSCULE", "η*ÊTA MINUSCULE", "Θ*THÊTA MAJUSCULE", "θ*THÊTA MINUSCULE",
+            "Ι*IOTA MAJUSCULE", "ι*IOTA MINUSCULE", "Κ*KAPPA MAJUSCULE", "κ*KAPPA MINUSCULE", "Λ*LAMBDA MAJUSCULE", "λ*LAMBDA MINUSCULE", "Μ*MU MAJUSCULE", "μ*MU MINUSCULE", "Ν*NU MAJUSCULE", "ν*NU MINUSCULE",
+            "Ξ*KSI MAJUSCULE", "ξ*KSI MINUSCULE", "Ο*OMICRON MAJUSCULE", "ο*OMICRON MINUSCULE", "Π*PI MAJUSCULE", "π*PI MINUSCULE", "Ρ*RHÔ MAJUSCULE", "ρ*RHÔ MINUSCULE", "Σ*SIGMA MAJUSCULE", "σ*SIGMA MINUSCULE",
+            "ς*SIGMA MINUSCULE WORD-FINAL", "Τ*TAU MAJUSCULE", "τ*TAU MINUSCULE", "Υ*UPSILON MAJUSCULE", "υ*UPSILON MINUSCULE", "Φ*PHI MAJUSCULE", "φ*PHI MINUSCULE", "Χ*KHI MAJUSCULE", "χ*KHI MINUSCULE",
+            "Ψ*PSI MAJUSCULE", "ψ*PSI MINUSCULE", "Ω*OMÉGA MAJUSCULE", "ω*OMÉGA MINUSCULE"}
+
+            Punctuation = New List(Of String) From {"-*TIRET COURT", "–*TIRET MOYEN", "—*TIRET LONG", "…*POINTS DE SUSPENSION", "¿*POINT D'INTERROGATION CULBUTÉ", "¡*POINT D'EXCLAMATION CULBUTÉ",
+            "«*GUILLEMET OUVRANT", "»*GUILLEMET FERMANT", "[*CROCHET OUVRANT", "]*CROCHET FERMANT", "(*PARENTHÈSE OUVRANT", ")*PARENTHÈSE FERMANT",
+            "{*ACCOLADE OUVRANTE", "}*ACCOLADE FERMANTE"}
+
+            Maths = New List(Of String) From {"±*PLUS OU MOINS", "∞*INFINI", "=*ÉGAL", "≠*INÉGALE", "≈*APPROXIMATION", "≡*IDENTIQUE À", "×*MULTIPLICATION",
+            "÷*DIVISION", "∝*PROPORTIONNALITÉ", "<*PLUS PETIT QUE", ">*PLUS GRAND QUE", "≤*PLUS PETIT OU ÉGAL", "≥*PLUS GRAND OU ÉGAL", "√*RACINE CARRÉE", "∛*RACINE CUBIQUE",
+            "∪*UNION", "∩*INTERSECTION", "∈*APPARTIENT À", "∋*CONTIENT COMME ÉLÉMENT", "∴*PAR CONSÉQUENT", "¬*NÉGATION", "ℵ*ALEPH", "∑*SYMBOLE SOMME", "∫*SYMBOLE INTÉGRALE"}
+
+
+            BoldBtnImg.SetResourceReference(ContentProperty, "GrasIcon")
+            UnderlineBtnImg.SetResourceReference(ContentProperty, "SousligneIcon")
+
+            DateTimeLang = "fr"
+            DefineLang = "fr"
+
+        End If
+
+    End Sub
+
+
+
+    ' MAIN
+    ' --
+
+    Private Sub CloseBtn_Click(sender As Object, e As RoutedEventArgs) Handles CloseBtn.Click
+        Close()
+
+    End Sub
+
+    Private Sub MaxBtn_Click(sender As Object, e As RoutedEventArgs) Handles MaxBtn.Click
+
+        If WindowState = WindowState.Maximized Then
+            WindowState = WindowState.Normal
+
+        Else
+            WindowState = WindowState.Maximized
+
+        End If
+
+    End Sub
+
+    Private Sub MinBtn_Click(sender As Object, e As RoutedEventArgs) Handles MinBtn.Click
+        WindowState = WindowState.Minimized
+
+    End Sub
+
+    Private Sub MainWindow_StateChanged(sender As Object, e As EventArgs) Handles Me.StateChanged
+
+        If WindowState = WindowState.Maximized Then
+            MaxRestoreIcn.SetResourceReference(ContentProperty, "RestoreWhiteIcon")
+            MaxBtn.ToolTip = TryFindResource("RestoreStr")
+
+        Else
+            MaxRestoreIcn.SetResourceReference(ContentProperty, "MaxWhiteIcon")
+            MaxBtn.ToolTip = TryFindResource("MaxStr")
+
+        End If
+
+    End Sub
+
+    Private Sub MainWindow_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
+        If IsVisible Then CheckSize()
+
+        If Not (ThisFile = "" And DocTxt.Text = "") Then
+            Dim SaveChoice As MessageBoxResult = MessageBoxResult.No
+
+            If My.Settings.showprompt Then
+                SaveChoice = NewMessage(Funcs.ChooseLang("Do you want to save any changes to your document?", "Vous voulez enregistrer toutes les modifications à votre document ?"),
+                                        Funcs.ChooseLang("Before you go...", "Deux secondes..."), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation)
+
+            End If
+
+            If SaveChoice = MessageBoxResult.Yes Then
+                If ThisFile = "" Then
+
+                    If saveDialog.ShowDialog() = True Then
+                        If SaveFile(saveDialog.FileName) = False Then
+                            e.Cancel = True
+
+                        End If
+
+                    Else
+                        e.Cancel = True
+
+                    End If
+
+                Else
+                    If SaveFile(ThisFile) = False Then
+                        e.Cancel = True
+
+                    End If
+
+                End If
+
+            ElseIf Not SaveChoice = MessageBoxResult.No Then
+                e.Cancel = True
+
+            End If
+        End If
+
+    End Sub
+
+    Private Sub MainWindow_Closed(sender As Object, e As EventArgs) Handles Me.Closed
+
+        For Each win As Window In My.Application.Windows
+            If win.IsVisible Then Exit Sub
+
+        Next
+
+        Windows.Application.Current.Shutdown()
+
+    End Sub
+
+    Private Sub CheckSize()
+
+        My.Settings.height = ActualHeight
+        My.Settings.width = ActualWidth
+
+        If WindowState = WindowState.Maximized Then
+            My.Settings.maximised = True
+
+        Else
+            My.Settings.maximised = False
+
+        End If
+
+        My.Settings.Save()
+
+    End Sub
+
+    Public Sub TextFocus()
+        WinFormsHost.Dispatcher.BeginInvoke(New Action(AddressOf WinFormsHost.Child.Focus), Threading.DispatcherPriority.Background)
+
+    End Sub
+
+    Private Sub DocTxt_TextChanged(sender As Object, e As EventArgs) Handles DocTxt.TextChanged
+
+        If Not NoAdd Then
+            urc.AddItem(DocTxt.Rtf)
+            UndoBtn.IsEnabled = urc.CanUndo
+            RedoBtn.IsEnabled = urc.CanRedo
+
+        End If
+
+        If DocTxt.Text = "" Then
+            SelectAllBtn.IsEnabled = False
+            ClearBtn.IsEnabled = False
+
+        Else
+            SelectAllBtn.IsEnabled = True
+            ClearBtn.IsEnabled = True
+
+        End If
+
+        If WordCountStatusBtn.Visibility = Visibility.Visible Then CheckWordStatus()
+
+    End Sub
+
+    Public Sub CheckWordStatus()
+
+        If My.Settings.preferredcount = "char" Then
+            Dim chars As Integer = DocTxt.Text.Length
+            Dim selectchars As Integer = DocTxt.SelectedText.Length
+
+            If chars = 1 Then
+                WordCountStatusBtn.Content = Funcs.ChooseLang("1 character", "1 caractère")
+
+            Else
+                If DocTxt.SelectedText = "" Then
+                    WordCountStatusBtn.Content = $"{chars.ToString()} {Funcs.ChooseLang("characters", "caractères")}"
+                Else
+                    WordCountStatusBtn.Content = $"{selectchars.ToString()} {Funcs.ChooseLang("of", "de")} {chars.ToString()} {Funcs.ChooseLang("characters", "caractères")}"
+                End If
+
+            End If
+
+        ElseIf My.Settings.preferredcount = "line" Then
+            Dim lines As Integer = DocTxt.Lines.Length
+
+            If lines = 1 Then
+                WordCountStatusBtn.Content = Funcs.ChooseLang("1 line", "1 ligne")
+
+            Else
+                WordCountStatusBtn.Content = $"{lines.ToString()} {Funcs.ChooseLang("lines", "lignes")}"
+
+            End If
+
+        Else
+            Dim words As Integer = FilterWords().Count
+            Dim selectwords As Integer = FilterSelectWords().Count
+
+            If words = 1 Then
+                WordCountStatusBtn.Content = Funcs.ChooseLang("1 word", "1 mot")
+
+            Else
+                If DocTxt.SelectedText = "" Then
+                    WordCountStatusBtn.Content = $"{words.ToString()} {Funcs.ChooseLang("words", "mots")}"
+                Else
+                    WordCountStatusBtn.Content = $"{selectwords.ToString()} {Funcs.ChooseLang("of", "de")} {words.ToString()} {Funcs.ChooseLang("words", "mots")}"
+                End If
+
+            End If
+
+        End If
+
+    End Sub
+
+    Private Sub FocusText(sender As Object, e As EventArgs) Handles FindBtn.Click, ReplaceNextBtn.Click, ReplaceAllBtn.Click, UndoBtn.Click, RedoBtn.Click,
+        CutBtn.Click, CopyBtn.Click, PasteBtn.Click, BoldBtn.Click, ItalicBtn.Click, UnderlineBtn.Click, StrikethroughBtn.Click, LeftBtn.Click, CentreBtn.Click,
+        RightBtn.Click, NumberBtn.Click, DecIndentBtn.Click, IncIndentBtn.Click, TextColourBtn.Click, HighlightBtn.Click, SubscriptBtn.Click, SuperscriptBtn.Click,
+        BulletBtn.Click, PictureBtn.Click, ScreenshotBtn.Click, TableBtn.Click, ShapeBtn.Click, EquationBtn.Click, SymbolBtn.Click, LinkBtn.Click,
+        ChartBtn.Click, StylesBtn.Click, ColourSchemesBtn.Click, CasingBtn.Click, SelectAllBtn.Click, ClearBtn.Click, FindReplaceBtn.Click, WordCountBtn.Click,
+        ReadAloudBtn.Click, SpellcheckerBtn.Click, WrapBtn.Click, URLBtn.Click, WordCountStatusBtn.Click
+
+        TextFocus()
+
+    End Sub
+
+
+
+    Public Sub RefreshRecents()
+
+        Dim filecount As Integer = 0
+        RecentStack.Children.Clear()
+        RecentStack.Children.Add(NoRecentsLbl)
+
+        Do While My.Settings.recents.Count > My.Settings.recentcount
+            My.Settings.recents.RemoveAt(My.Settings.recents.Count - 1)
+
+        Loop
+
+        My.Settings.Save()
+
+        For Each file In My.Settings.recents
+            Try
+                Dim escaped As String = Funcs.EscapeChars(file)
+
+                Dim recent As Controls.Button = XamlReader.Parse(CreateRecentBtnXml(escaped, filecount))
+                RecentStack.Children.Add(recent)
+
+                recent.ToolTip = Path.GetFileName(file)
+                recent.ContextMenu = RecentFavouriteMenu
+                recent.Tag = file
+
+                AddHandler recent.Click, AddressOf RecentBtns_Click
+                filecount += 1
+
+            Catch
+            End Try
+
+        Next
+
+        If Not filecount = 0 Then
+            NoRecentsLbl.Visibility = Visibility.Collapsed
+            RecentStack.Children.Add(ClearRecentsBtn)
+
+        Else
+            NoRecentsLbl.Visibility = Visibility.Visible
+
+        End If
+
+        CheckButtonSizes()
+
+    End Sub
+
+    Public Sub RefreshFavourites()
+
+        Dim filecount As Integer = 0
+        FavouriteStack.Children.Clear()
+        FavouriteStack.Children.Add(NoFavouritesLbl)
+
+        For Each file In My.Settings.favourites
+            Try
+                Dim escaped As String = Funcs.EscapeChars(file)
+
+                Dim favourite As Controls.Button = XamlReader.Parse(CreateRecentBtnXml(escaped, filecount))
+                FavouriteStack.Children.Add(favourite)
+
+                favourite.ToolTip = Path.GetFileName(file)
+                favourite.ContextMenu = RecentFavouriteMenu
+                favourite.Tag = file
+
+                AddHandler favourite.Click, AddressOf FavouriteBtns_Click
+                filecount += 1
+
+            Catch
+            End Try
+
+        Next
+
+        If Not filecount = 0 Then
+            NoFavouritesLbl.Visibility = Visibility.Collapsed
+            FavouriteStack.Children.Add(AddFavouritesBtn)
+            FavouriteStack.Children.Add(ClearFavouritesBtn)
+
+        Else
+            NoFavouritesLbl.Visibility = Visibility.Visible
+            FavouriteStack.Children.Add(AddFavouritesBtn)
+
+        End If
+
+        CheckButtonSizes()
+
+    End Sub
+
+    Public Sub RefreshPinned()
+
+        Dim filecount As Integer = 0
+        PinnedStack.Children.Clear()
+        PinnedStack.Children.Add(NoPinnedLbl)
+
+        For Each folder In My.Settings.pinned
+            Try
+                Dim escaped As String = Funcs.EscapeChars(folder)
+
+                Dim pin As Controls.Button = XamlReader.Parse(CreateFolderBtnXml(escaped, filecount))
+                PinnedStack.Children.Add(pin)
+
+
+                If Path.GetFileName(folder) = "" Then
+                    pin.ToolTip = folder
+
+                Else
+                    pin.ToolTip = Path.GetFileName(folder)
+
+                End If
+
+                pin.ContextMenu = PinnedMenu
+                pin.Tag = folder
+
+                AddHandler pin.Click, AddressOf PinnedBtns_Click
+                filecount += 1
+
+            Catch
+            End Try
+
+        Next
+
+        If Not filecount = 0 Then
+            PinnedStack.Children.Add(AddPinnedBtn)
+            PinnedStack.Children.Add(ClearPinnedBtn)
+
+        Else
+            PinnedStack.Children.Add(AddPinnedBtn)
+
+        End If
+
+        CheckButtonSizes()
+
+    End Sub
+
+    Private Function CreateRecentBtnXml(filepath As String, count As String) As String
+        Dim img As String = "NewIcon"
+        Dim filename As String = Path.GetFileNameWithoutExtension(filepath)
+
+        If filename = "" Then
+            filename = filepath
+
+        End If
+
+        Select Case IO.Path.GetExtension(filepath).ToLower()
+            Case ".rtf"
+                img = "RTFIcon"
+            Case ".txt"
+                img = "TXTIcon"
+        End Select
+
+        Return "<Button BorderBrush='#FFFFFFFF' BorderThickness='0, 0, 0, 0' Background='#00FFFFFF' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Center' Padding='0, 0, 0, 0' Style='{DynamicResource AppButton}' Name='" +
+            $"RecentFile{count}Btn" + "' Height='57' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><DockPanel LastChildFill='False' Height='53'><ContentControl Content='{DynamicResource " +
+            img + "}' Name='RecentFileImg' Width='24' Margin='10,0,0,2' HorizontalAlignment='Left'/><TextBlock FontSize='14' TextTrimming='CharacterEllipsis' Name='RecentFileTxt' MaxWidth='556' Margin='15,6,0,0'><Run FontWeight='Bold'>" +
+            filename + "</Run><LineBreak/>" +
+            filepath + "</TextBlock></DockPanel></Button>"
+
+    End Function
+
+    Private Function CreateFolderBtnXml(filepath As String, count As String) As String
+        Dim folder As String = Path.GetFileName(filepath)
+
+        If folder = "" Then
+            folder = filepath
+
+        End If
+
+        Return "<Button BorderBrush='#FFFFFFFF' BorderThickness='0, 0, 0, 0' Background='#00FFFFFF' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Center' Padding='0, 0, 0, 0' Style='{DynamicResource AppButton}' Name='" +
+            $"PinnedFile{count}Btn" + "' Height='57' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><DockPanel LastChildFill='False' Height='53'><ContentControl Content='{DynamicResource " +
+            "OpenIcon" + "}' Name='RecentFileImg' Width='24' Margin='10,0,0,2' HorizontalAlignment='Left'/><TextBlock FontSize='14' TextTrimming='CharacterEllipsis' Name='RecentFileTxt' MaxWidth='556' Margin='15,6,0,0'><Run FontWeight='Bold'>" +
+            folder + "</Run><LineBreak/>" +
+            filepath + "</TextBlock></DockPanel></Button>"
+
+    End Function
+
+    Private Sub MainWindow_SizeChanged(sender As Object, e As SizeChangedEventArgs) Handles Me.SizeChanged
+        CheckButtonSizes()
+
+        'TemplateGrid.Columns = (ActualWidth - 247) \ 200
+
+        'MenuHeaderLbl.Content = TemplateGrid.Children.Count.ToString() + " > " + (((ActualHeight - 215) \ 100) * TemplateGrid.Columns).ToString()
+
+        'If TemplateGrid.Children.Count > ((ActualHeight - 215) \ 100) * TemplateGrid.Columns Then
+        '    TemplateGrid.Rows = 0
+
+        'Else
+        '    TemplateGrid.Rows = (ActualHeight - 215) \ 100
+        'End If
+
+    End Sub
+
+    Private Sub CheckButtonSizes()
+        TemplateGrid.Width = ActualWidth - 238
+
+        For Each i In RecentStack.Children
+            Dim tb As TextBlock = i.FindName("RecentFileTxt")
+            tb.MaxWidth = Math.Abs(ActualWidth - 520) ' was 504
+
+        Next
+
+        For Each i In FavouriteStack.Children
+            Dim tb As TextBlock = i.FindName("RecentFileTxt")
+            tb.MaxWidth = Math.Abs(ActualWidth - 520)
+
+        Next
+
+        For Each i In PinnedStack.Children
+            Dim tb As TextBlock = i.FindName("RecentFileTxt")
+            tb.MaxWidth = Math.Abs(ActualWidth - 316)
+
+        Next
+
+    End Sub
+
+    Private ScrollBtn As String = ""
+
+    Private Sub ScrollHome()
+
+        Select Case ScrollBtn
+            Case "HomeLeftBtn"
+                HomeScrollViewer.ScrollToHorizontalOffset(HomeScrollViewer.HorizontalOffset - 2)
+            Case "HomeRightBtn"
+                HomeScrollViewer.ScrollToHorizontalOffset(HomeScrollViewer.HorizontalOffset + 2)
+            Case "ToolsLeftBtn"
+                ToolsScrollViewer.ScrollToHorizontalOffset(ToolsScrollViewer.HorizontalOffset - 2)
+            Case "ToolsRightBtn"
+                ToolsScrollViewer.ScrollToHorizontalOffset(ToolsScrollViewer.HorizontalOffset + 2)
+            Case "DesignLeftBtn"
+                DesignScrollViewer.ScrollToHorizontalOffset(DesignScrollViewer.HorizontalOffset - 2)
+            Case "DesignRightBtn"
+                DesignScrollViewer.ScrollToHorizontalOffset(DesignScrollViewer.HorizontalOffset + 2)
+            Case "ReviewLeftBtn"
+                ReviewScrollViewer.ScrollToHorizontalOffset(ReviewScrollViewer.HorizontalOffset - 2)
+            Case "ReviewRightBtn"
+                ReviewScrollViewer.ScrollToHorizontalOffset(ReviewScrollViewer.HorizontalOffset + 2)
+        End Select
+
+    End Sub
+
+    Private Sub ScrollBtns_MouseDown(sender As Controls.Button, e As MouseButtonEventArgs) Handles HomeLeftBtn.PreviewMouseDown, HomeRightBtn.PreviewMouseDown,
+        ToolsLeftBtn.PreviewMouseDown, ToolsRightBtn.PreviewMouseDown, DesignLeftBtn.PreviewMouseDown, DesignRightBtn.PreviewMouseDown,
+        ReviewLeftBtn.PreviewMouseDown, ReviewRightBtn.PreviewMouseDown
+
+        ScrollBtn = sender.Name
+        ScrollHome()
+        ScrollTimer.Start()
+
+    End Sub
+
+    Private Sub ScrollBtns_MouseUp(sender As Controls.Button, e As MouseButtonEventArgs) Handles HomeLeftBtn.PreviewMouseUp, HomeRightBtn.PreviewMouseUp,
+        ToolsLeftBtn.PreviewMouseUp, ToolsRightBtn.PreviewMouseUp, DesignLeftBtn.PreviewMouseUp, DesignRightBtn.PreviewMouseUp,
+        ReviewLeftBtn.PreviewMouseUp, ReviewRightBtn.PreviewMouseUp
+
+        ScrollTimer.Stop()
+
+    End Sub
+
+    Private Sub ScrollTimer_Tick(sender As Object, e As EventArgs)
+        ScrollHome()
+
+    End Sub
+
+    Private Sub DocScrollPnl_SizeChanged(sender As Object, e As SizeChangedEventArgs) Handles HomeScrollViewer.SizeChanged, ToolsScrollViewer.SizeChanged,
+        DesignScrollViewer.SizeChanged, ReviewScrollViewer.SizeChanged
+
+        CheckToolbars()
+
+    End Sub
+
+    Private Sub CheckToolbars()
+
+        If HomePnl.ActualWidth + 12 > HomeScrollViewer.ActualWidth Then
+            HomeScroll.Visibility = Visibility.Visible
+            HomeScrollViewer.Margin = New Thickness(60, 0, 40, 0)
+        Else
+            HomeScroll.Visibility = Visibility.Collapsed
+            HomeScrollViewer.Margin = New Thickness(60, 0, 0, 0)
+        End If
+
+        If ToolsPnl.ActualWidth + 12 > ToolsScrollViewer.ActualWidth Then
+            ToolsScroll.Visibility = Visibility.Visible
+            HomeScrollViewer.Margin = New Thickness(60, 0, 40, 0)
+        Else
+            ToolsScroll.Visibility = Visibility.Collapsed
+            HomeScrollViewer.Margin = New Thickness(60, 0, 0, 0)
+        End If
+
+        If DesignPnl.ActualWidth + 12 > DesignScrollViewer.ActualWidth Then
+            DesignScroll.Visibility = Visibility.Visible
+            HomeScrollViewer.Margin = New Thickness(60, 0, 40, 0)
+        Else
+            DesignScroll.Visibility = Visibility.Collapsed
+            HomeScrollViewer.Margin = New Thickness(60, 0, 0, 0)
+        End If
+
+        If ReviewPnl.ActualWidth + 12 > ReviewScrollViewer.ActualWidth Then
+            ReviewScroll.Visibility = Visibility.Visible
+            HomeScrollViewer.Margin = New Thickness(60, 0, 40, 0)
+        Else
+            ReviewScroll.Visibility = Visibility.Collapsed
+            HomeScrollViewer.Margin = New Thickness(60, 0, 0, 0)
+        End If
+
+    End Sub
+
+    Private Sub HomePnl_MouseWheel(sender As Object, e As MouseWheelEventArgs) Handles HomePnl.MouseWheel
+        HomeScrollViewer.ScrollToHorizontalOffset(HomeScrollViewer.HorizontalOffset + e.Delta)
+    End Sub
+
+    Private Sub ToolsPnl_MouseWheel(sender As Object, e As MouseWheelEventArgs) Handles ToolsPnl.MouseWheel
+        ToolsScrollViewer.ScrollToHorizontalOffset(ToolsScrollViewer.HorizontalOffset + e.Delta)
+    End Sub
+
+    Private Sub DesignPnl_MouseWheel(sender As Object, e As MouseWheelEventArgs) Handles DesignPnl.MouseWheel
+        DesignScrollViewer.ScrollToHorizontalOffset(DesignScrollViewer.HorizontalOffset + e.Delta)
+    End Sub
+
+    Private Sub ReviewPnl_MouseWheel(sender As Object, e As MouseWheelEventArgs) Handles ReviewPnl.MouseWheel
+        ReviewScrollViewer.ScrollToHorizontalOffset(ReviewScrollViewer.HorizontalOffset + e.Delta)
+    End Sub
+
+    Private Sub MenuBtn_Click(sender As Object, e As RoutedEventArgs) Handles TypeBtn.Click
+
+        If MainTabs.SelectedIndex = 1 Then
+            MainTabs.SelectedIndex = 0
+            BeginStoryboard(TryFindResource("MenuStoryboard"))
+
+        Else
+            MainTabs.SelectedIndex = 1
+            BeginStoryboard(TryFindResource("DocStoryboard"))
+
+        End If
+
+    End Sub
+
+    Private Sub TypeBtn_MouseEnter(sender As Object, e As Input.MouseEventArgs) Handles TypeBtn.MouseEnter
+        TypeHoverIn.Begin()
+
+    End Sub
+
+    Private Sub TypeBtn_MouseLeave(sender As Object, e As Input.MouseEventArgs) Handles TypeBtn.MouseLeave
+        TypeHoverOut.Begin()
+
+    End Sub
+
+    Private Sub MainTabs_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles MainTabs.SelectionChanged
+        If IsLoaded Then CheckMenu()
+
+    End Sub
+
+    Private Sub CheckMenu()
+
+        If MainTabs.SelectedIndex = 1 Then
+            TypeIconBack.SetResourceReference(Shape.FillProperty, "SecondaryColor")
+            DocTabSelector.Visibility = Visibility.Visible
+            HomeBtn.Visibility = Visibility.Visible
+            ToolsBtn.Visibility = Visibility.Visible
+            DesignBtn.Visibility = Visibility.Visible
+            ReviewBtn.Visibility = Visibility.Visible
+            MenuTabs.SelectedIndex = 5
+
+        Else
+            TypeIconBack.SetResourceReference(Shape.FillProperty, "BackColor")
+            DocTabSelector.Visibility = Visibility.Collapsed
+            HomeBtn.Visibility = Visibility.Collapsed
+            ToolsBtn.Visibility = Visibility.Collapsed
+            DesignBtn.Visibility = Visibility.Collapsed
+            ReviewBtn.Visibility = Visibility.Collapsed
+
+        End If
+
+    End Sub
+
+    Private Sub MenuTabs_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles MenuTabs.SelectionChanged
+
+        NewBtnTxt.SetResourceReference(ForegroundProperty, "TextColor")
+        OpenBtnTxt.SetResourceReference(ForegroundProperty, "TextColor")
+        SaveAsBtnTxt.SetResourceReference(ForegroundProperty, "TextColor")
+        PrintBtnTxt.SetResourceReference(ForegroundProperty, "TextColor")
+        ShareBtnTxt.SetResourceReference(ForegroundProperty, "TextColor")
+        InfoBtnTxt.SetResourceReference(ForegroundProperty, "TextColor")
+
+        NewIcn.SetResourceReference(ContentProperty, "NewIcon")
+        OpenIcn.SetResourceReference(ContentProperty, "OpenIcon")
+        SaveIcn.SetResourceReference(ContentProperty, "SaveAsIcon")
+        PrintIcn.SetResourceReference(ContentProperty, "PrintIcon")
+        ShareIcn.SetResourceReference(ContentProperty, "ShareIcon")
+        InfoIcn.SetResourceReference(ContentProperty, "InfoIcon")
+
+        Select Case MenuTabs.SelectedIndex
+            Case 0
+                BeginStoryboard(TryFindResource("NewStoryboard"))
+                NewIcn.SetResourceReference(ContentProperty, "NewWhiteIcon")
+                NewBtnTxt.Foreground = New SolidColorBrush(Color.FromRgb(255, 255, 255))
+
+            Case 1
+                BeginStoryboard(TryFindResource("OpenStoryboard"))
+                OpenIcn.SetResourceReference(ContentProperty, "OpenWhiteIcon")
+                OpenBtnTxt.Foreground = New SolidColorBrush(Color.FromRgb(255, 255, 255))
+
+                If OpenTabs.SelectedIndex = 1 Then RefreshRecents() Else RefreshFavourites()
+
+            Case 2
+                BeginStoryboard(TryFindResource("SaveStoryboard"))
+                SaveIcn.SetResourceReference(ContentProperty, "SaveWhiteIcon")
+                SaveAsBtnTxt.Foreground = New SolidColorBrush(Color.FromRgb(255, 255, 255))
+
+                RefreshPinned()
+
+            Case 3
+                BeginStoryboard(TryFindResource("PrintStoryboard"))
+                PrintIcn.SetResourceReference(ContentProperty, "PrintWhiteIcon")
+                PrintBtnTxt.Foreground = New SolidColorBrush(Color.FromRgb(255, 255, 255))
+
+            Case 4
+                BeginStoryboard(TryFindResource("ShareStoryboard"))
+                ShareIcn.SetResourceReference(ContentProperty, "ShareWhiteIcon")
+                ShareBtnTxt.Foreground = New SolidColorBrush(Color.FromRgb(255, 255, 255))
+
+            Case 5
+                BeginStoryboard(TryFindResource("InfoStoryboard"))
+                InfoIcn.SetResourceReference(ContentProperty, "InfoWhiteIcon")
+                InfoBtnTxt.Foreground = New SolidColorBrush(Color.FromRgb(255, 255, 255))
+
+        End Select
+
+    End Sub
+
+    Private Sub PlaceholderTxts_GotFocus(sender As Controls.TextBox, e As RoutedEventArgs) Handles TemplateSearchTxt.GotFocus, FileDownloadTxt.GotFocus, EmailAddressTxt.GotFocus, EmailSubjectTxt.GotFocus
+        If sender.Foreground.ToString() = "#FF818181" Then
+            sender.Text = ""
+            sender.SetResourceReference(ForegroundProperty, "TextColor")
+
+        End If
+    End Sub
+
+    Private Sub PlaceholderTxts_LostFocus(sender As Controls.TextBox, e As RoutedEventArgs) Handles TemplateSearchTxt.LostFocus, FileDownloadTxt.LostFocus, EmailAddressTxt.LostFocus, EmailSubjectTxt.LostFocus
+        If sender.Text = "" Then
+            sender.Foreground = New SolidColorBrush(Color.FromArgb(255, 129, 129, 129))
+            sender.Text = sender.Tag
+
+        End If
+    End Sub
+
+
+    ' NOTIFICATIONS
+    ' --
+
+    ' Format:
+    ' [app-name]*[latest-version]*[Low/High]*[feature#feature]*[fonction#fonction]$...
+
+    Private Sub NotificationsBtn_Click(sender As Object, e As RoutedEventArgs) Handles NotificationsBtn.Click
+        NotificationsIcn.SetResourceReference(ContentProperty, "NotificationIcon")
+        NotificationsPopup.IsOpen = True
+
+        If NotificationLoading.Visibility = Visibility.Visible Then
+            NotificationCheckerWorker.RunWorkerAsync()
+        End If
+
+    End Sub
+
+    Private Sub CheckNotifications(Optional forcedialog As Boolean = False)
+
+        Try
+            Dim info As String() = Funcs.GetNotificationInfo("Type").Split("*")
+
+            If Not info(1) = My.Application.Info.Version.ToString(3) Then
+                NotificationsTxt.Content = Funcs.ChooseLang("An update is available.", "Une mise à jour est disponible.")
+                NotifyBtnStack.Visibility = Visibility.Visible
+
+                If NotificationsPopup.IsOpen = False Then
+                    NotificationsIcn.SetResourceReference(ContentProperty, "NotificationNewIcon")
+                    CreateNotifyMsg(info)
+
+                End If
+
+                If forcedialog Then CreateNotifyMsg(info)
+
+            Else
+                NotificationsTxt.Content = Funcs.ChooseLang("You're up to date!", "Vous êtes à jour !")
+
+            End If
+
+            NotificationLoading.Visibility = Visibility.Collapsed
+            NotificationsTxt.Visibility = Visibility.Visible
+
+        Catch
+            If NotificationsPopup.IsOpen Then
+                NotificationsPopup.IsOpen = False
+                NewMessage(Funcs.ChooseLang("It looks like we can't get notifications at the moment. Please check that you are connected to the Internet and try again.",
+                                            "On dirait que nous ne pouvons pas recevoir de notifications pour le moment. Vérifiez votre connexion Internet et réessayez."),
+                           Funcs.ChooseLang("No Internet", "Pas d'Internet"), MessageBoxButton.OK, MessageBoxImage.Error)
+            End If
+        End Try
+
+    End Sub
+
+    Private Sub CreateNotifyMsg(info As String())
+
+        Try
+            Dim version As String = info(1)
+            Dim featurelist As String() = info(Convert.ToInt32(Funcs.ChooseLang("3", "4"))).Split("#")
+            Dim features As String = ""
+
+            If featurelist.Length <> 0 Then
+                features = Chr(10) + Chr(10) + Funcs.ChooseLang("What's new in this release?", "Quoi de neuf dans cette version ?") + Chr(10)
+
+                For Each i In featurelist
+                    features += "— " + i + Chr(10)
+                Next
+            End If
+
+            Dim start As String = Funcs.ChooseLang("An update is available.", "Une mise à jour est disponible.")
+            Dim icon As MessageBoxImage = MessageBoxImage.Information
+
+            If info(2) = "High" Then
+                start = Funcs.ChooseLang("An important update is available!", "Une mise à jour importante est disponible !")
+                icon = MessageBoxImage.Exclamation
+            End If
+
+            If NewMessage(start + Chr(10) + "Version " + version + features + Chr(10) + Chr(10) +
+                          Funcs.ChooseLang("Would you like to visit the download page?", "Vous souhaitez visiter la page de téléchargement ?"),
+                          Funcs.ChooseLang("Type Express Updates", "Mises à Jour Type Express"), MessageBoxButton.YesNoCancel, icon) = MessageBoxResult.Yes Then
+
+                Process.Start("https://jwebsites404.wixsite.com/expressapps/update?app=type")
+
+            End If
+
+        Catch
+            NewMessage(Funcs.ChooseLang("We can't get update information at the moment. Please check that you are connected to the Internet and try again.",
+                                        "Nous ne pouvons pas obtenir les informations de mise à jour pour le moment. Vérifiez votre connexion Internet et réessayez."),
+                       Funcs.ChooseLang("No Internet", "Pas d'Internet"), MessageBoxButton.OK, MessageBoxImage.Error)
+        End Try
+
+    End Sub
+
+    Private Sub UpdateInfoBtn_Click(sender As Object, e As RoutedEventArgs) Handles UpdateInfoBtn.Click
+        CheckNotifications(True)
+        NotificationsPopup.IsOpen = False
+
+    End Sub
+
+    Private Sub UpdateBtn_Click(sender As Object, e As RoutedEventArgs) Handles UpdateBtn.Click
+        NotificationsPopup.IsOpen = False
+        Process.Start("https://jwebsites404.wixsite.com/expressapps/update?app=type")
+
+    End Sub
+
+
+    ' MENU
+    ' --
+
+    Private Sub MenuBtns_MouseEnter(sender As Controls.Button, e As RoutedEventArgs) Handles NewBtn.MouseEnter, OpenBtn.MouseEnter, SaveBtn.MouseEnter,
+        SaveAsBtn.MouseEnter, PrintBtn.MouseEnter, ShareBtn.MouseEnter, OptionsBtn.MouseEnter, InfoBtn.MouseEnter
+
+        Select Case sender.Name
+            Case "NewBtn"
+                NewHover.Visibility = Visibility.Visible
+            Case "OpenBtn"
+                OpenHover.Visibility = Visibility.Visible
+            Case "SaveBtn"
+                SaveHover.Visibility = Visibility.Visible
+            Case "SaveAsBtn"
+                SaveAsHover.Visibility = Visibility.Visible
+            Case "PrintBtn"
+                PrintHover.Visibility = Visibility.Visible
+            Case "ShareBtn"
+                ShareHover.Visibility = Visibility.Visible
+            Case "OptionsBtn"
+                OptionsHover.Visibility = Visibility.Visible
+            Case "InfoBtn"
+                InfoHover.Visibility = Visibility.Visible
+        End Select
+
+    End Sub
+
+    Private Sub MenuBtns_MouseLeave(sender As Controls.Button, e As RoutedEventArgs) Handles NewBtn.MouseLeave, OpenBtn.MouseLeave, SaveBtn.MouseLeave,
+        SaveAsBtn.MouseLeave, PrintBtn.MouseLeave, ShareBtn.MouseLeave, OptionsBtn.MouseLeave, InfoBtn.MouseLeave
+
+        Select Case sender.Name
+            Case "NewBtn"
+                NewHover.Visibility = Visibility.Hidden
+            Case "OpenBtn"
+                OpenHover.Visibility = Visibility.Hidden
+            Case "SaveBtn"
+                SaveHover.Visibility = Visibility.Hidden
+            Case "SaveAsBtn"
+                SaveAsHover.Visibility = Visibility.Hidden
+            Case "PrintBtn"
+                PrintHover.Visibility = Visibility.Hidden
+            Case "ShareBtn"
+                ShareHover.Visibility = Visibility.Hidden
+            Case "OptionsBtn"
+                OptionsHover.Visibility = Visibility.Hidden
+            Case "InfoBtn"
+                InfoHover.Visibility = Visibility.Hidden
+        End Select
+
+    End Sub
+
+
+
+    ' NEW
+    ' --
+
+    Private Sub NewBtn_Click(sender As Object, e As RoutedEventArgs) Handles NewBtn.Click
+        MainTabs.SelectedIndex = 0
+        MenuTabs.SelectedIndex = 0
+
+    End Sub
+
+    Private Sub BlankBtn_Click(sender As Object, e As RoutedEventArgs) Handles BlankBtn.Click
+
+        If ThisFile = "" And DocTxt.Text = "" Then
+            MainTabs.SelectedIndex = 1
+            BeginStoryboard(TryFindResource("DocStoryboard"))
+            TextFocus()
+
+        Else
+            Dim NewForm1 As New MainWindow
+            NewForm1.Show()
+            NewForm1.MainTabs.SelectedIndex = 1
+            NewForm1.TextFocus()
+
+        End If
+
+    End Sub
+
+    Private Sub TemplateBtns_Click(sender As Controls.Button, e As RoutedEventArgs) Handles ModernBtn.Click, CasualBtn.Click, FormalBtn.Click, ClassicBtn.Click
+
+        ResetTemplateGrid()
+        TemplateSearchTxt.Text = ""
+        TemplateSearchTxt.Focus()
+
+        If ThisFile = "" And DocTxt.Text = "" Then
+            SetTemplate(sender.Tag.ToString().Split(","))
+            MainTabs.SelectedIndex = 1
+            BeginStoryboard(TryFindResource("DocStoryboard"))
+            TextFocus()
+
+        Else
+            Dim NewForm1 As New MainWindow
+            NewForm1.Show()
+            NewForm1.SetTemplate(sender.Tag.ToString().Split(","))
+            NewForm1.MainTabs.SelectedIndex = 1
+            NewForm1.TextFocus()
+
+        End If
+
+    End Sub
+
+    Private Sub RTFTemplateBtns_Click(sender As Controls.Button, e As RoutedEventArgs)
+
+        ResetTemplateGrid()
+        TemplateSearchTxt.Text = ""
+        TemplateSearchTxt.Focus()
+
+        If ThisFile = "" And DocTxt.Text = "" Then
+            SetRTFTemplate(sender.Tag.ToString())
+            MainTabs.SelectedIndex = 1
+            BeginStoryboard(TryFindResource("DocStoryboard"))
+            TextFocus()
+
+        Else
+            Dim NewForm1 As New MainWindow
+            NewForm1.Show()
+            NewForm1.SetRTFTemplate(sender.Tag.ToString())
+            NewForm1.MainTabs.SelectedIndex = 1
+            NewForm1.TextFocus()
+
+        End If
+
+    End Sub
+
+    Private Sub TemplateSearchTxt_KeyDown(sender As Object, e As Input.KeyEventArgs) Handles TemplateSearchTxt.KeyDown
+        If e.Key = Key.Enter Then
+            If Not (TemplateSearchTxt.Foreground.ToString() = "#FF818181" Or TemplateSearchTxt.Text = "") Then
+                TemplateGrid.Children.Clear()
+                TemplateLoadingGrid.Visibility = Visibility.Visible
+                AllTemplates = False
+                TemplateWorker.RunWorkerAsync()
+
+            End If
+        End If
+    End Sub
+
+    Private Sub TemplateSearchBtn_Click(sender As Object, e As RoutedEventArgs) Handles TemplateSearchBtn.Click
+
+        If Not (TemplateSearchTxt.Foreground.ToString() = "#FF818181" Or TemplateSearchTxt.Text = "") Then
+            TemplateGrid.Children.Clear()
+            TemplateLoadingGrid.Visibility = Visibility.Visible
+            AllTemplates = False
+            TemplateWorker.RunWorkerAsync()
+
+        End If
+
+    End Sub
+
+    Private Sub OnlineTempBtn_Click(sender As Object, e As RoutedEventArgs) Handles OnlineTempBtn.Click
+        TemplateGrid.Children.Clear()
+        TemplateLoadingGrid.Visibility = Visibility.Visible
+        AllTemplates = True
+        TemplateWorker.RunWorkerAsync()
+
+    End Sub
+
+    Private AllTemplates As Boolean = False
+
+    Private Sub GetTemplates()
+
+        ' BASIC TEMPLATE TAG FORMAT (SEE templatesv3.txt FILE)
+        ' --
+        ' NAME        | BUTTON DISPLAY                            | DOCUMENT TITLE                                                                       | DOCUMENT BODY
+        ' templateName,topPadding,titleDisplaySize,bodyDisplaySize,titleFont,titleSize,titleWeight,titleStyle,titleDecorations,titleColour,titleAlignment,bodyFont,bodySize,bodyWeight,bodyStyle,bodyDecorations,bodyColour,bodyAlignment
+        ' 0            1          2                3               4         5         6           7          8                9           10             11       12       13         14        15              16         17
+
+        ' FULL RTF TEMPLATE TAG FORMAT
+        ' --
+        ' RTF  | NAME       | URLs
+        ' /rtf/,templateName,imageURL,templateURL
+        ' 0     1            2        3
+
+        ' OFFLINE TEMPLATES
+        ' --
+        ' Blank
+        ' Modern,15,20,14,Calibri,20,Bold,Normal,Underline,#000000,Left,Calibri,14,Normal,Normal,None,#000000,Left
+        ' Casual,18,15,13,Lucida Handwriting,18,Normal,Normal,None,#000000,Left,Segoe Script,12,Normal,Normal,None,#000000,Left
+        ' Formal,18,18,15,Arial,20,Bold,Normal,None,#FF777777,Left,Arial,12,Normal,Italic,None,#000000,Left
+        ' Classic,20,17,16,Georgia,20,Bold,Normal,None,#FF777777,Centre,Baskerville Old Face,12,Normal,Normal,None,#000000,Left
+
+        Dim search As String = TemplateSearchTxt.Text
+        If AllTemplates = True Then search = ""
+
+        Try
+            Dim client As Net.WebClient = New Net.WebClient()
+            Dim reader As StreamReader = New StreamReader(client.OpenRead(Funcs.ChooseLang("https://dl.dropboxusercontent.com/s/0uy5woni5j57c1j/templatesv3.txt", "https://dl.dropboxusercontent.com/s/gt7fpojawit7qyc/templatesv3fr.txt")))
+            Dim info As String = reader.ReadToEnd()
+
+            TemplateGrid.Children.Clear()
+            BackTemplateBtn.Visibility = Visibility.Visible
+
+            Dim count As Integer = 0
+            For Each i In info.Split("*")
+                If i.Split(",")(0).ToLower().Contains(search.ToLower()) And Not i.Split(",")(0) = "/rtf/" Then ' (future proofed)
+
+                    Dim TempInfo As String() = i.Split(",")
+                    'rtb1.Document.Blocks.Add(New Paragraph(New Run(XamlWriter.Save(BlankBtn))))
+
+                    Dim copy As Controls.Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0, 0, 0, 0' Background='#00FFFFFF' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='" +
+                                            $"NewTemplate{count}Btn" +
+                                            "' Width='170' Height='130' Margin='0,0,0,0' HorizontalAlignment='Center' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><StackPanel Width='170' Height='130'><Border BorderThickness='1,1,1,1' BorderBrush='#FFABADB3' Background='#FFFFFFFF' Height='85' Margin='10, 10, 10, 0'><TextBlock FontSize='14' Padding='12, " +
+                                            TempInfo(1) +
+                                            ", 0, 0' Name='DisplayTxt' Margin='0, 0, 0, 0'><Run Foreground='" +
+                                            TempInfo(9) +
+                                            "' FontFamily='" + TempInfo(4) +
+                                            "' FontWeight='" + TempInfo(6) +
+                                            "' FontSize='" + TempInfo(2) +
+                                            "' FontStyle='" + TempInfo(7) +
+                                            "' TextDecorations='" + TempInfo(8) +
+                                            "'>Lorem Ipsum</Run><LineBreak /><Run Foreground='" +
+                                            TempInfo(16) +
+                                            "' FontFamily='" + TempInfo(11) +
+                                            "' FontWeight='" + TempInfo(13) +
+                                            "' FontSize='" + TempInfo(3) +
+                                            "' FontStyle='" + TempInfo(14) +
+                                            "' TextDecorations='" + TempInfo(15) +
+                                            "'>dolor sit amet</Run></TextBlock></Border><TextBlock Text='" +
+                                            Funcs.EscapeChars(TempInfo(0)) +
+                                            "' FontSize='14' Padding='0, 6, 0, 0' TextTrimming='CharacterEllipsis' Name='OnlineTempBtnTxt' Height='33.62' Margin='15, 0, 10, 0' VerticalAlignment='Center' /></StackPanel></Button>")
+
+                    copy.Tag = i
+                    copy.ToolTip = TempInfo(0)
+                    TemplateGrid.Children.Add(copy)
+                    AddHandler copy.Click, AddressOf TemplateBtns_Click
+
+                    count += 1
+
+
+                ElseIf i.Split(",")(1).ToLower().Contains(search.ToLower()) And i.Split(",")(0) = "/rtf/" Then
+
+                    Dim TempInfo As String() = i.Split(",")
+                    'rtb1.Document.Blocks.Add(New Paragraph(New Run(XamlWriter.Save(BlankBtn))))
+
+                    Dim copy As Controls.Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0, 0, 0, 0' Background='#00FFFFFF' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='" +
+                                            $"NewTemplate{count}Btn" +
+                                            "' Width='170' Height='130' Margin='0,0,0,0' HorizontalAlignment='Center' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><StackPanel Width='170' Height='130'><Border BorderThickness='1,1,1,1' BorderBrush='#FFABADB3' Background='#FFFFFFFF' Height='85' Margin='10, 10, 10, 0'><Image Name='DisplayImg' Margin='0' Source='" +
+                                            TempInfo(2) +
+                                            "'/></Border><TextBlock Text='" +
+                                            Funcs.EscapeChars(TempInfo(1)) +
+                                            "' FontSize='14' Padding='0, 6, 0, 0' TextTrimming='CharacterEllipsis' Name='OnlineTempBtnTxt' Height='33.62' Margin='15, 0, 10, 0' VerticalAlignment='Center' /></StackPanel></Button>")
+
+                    copy.Tag = TempInfo(3)
+                    copy.ToolTip = TempInfo(1)
+                    TemplateGrid.Children.Add(copy)
+                    AddHandler copy.Click, AddressOf RTFTemplateBtns_Click
+
+                    count += 1
+
+                End If
+            Next
+
+            If TemplateGrid.Children.Count = 0 Then
+                NewMessage(Funcs.ChooseLang($"We couldn't find any templates that match your search criteria.{Chr(10)}Try something like 'CV' or 'blue'",
+                                        $"Nous n'avons pas trouvé aucun modèle correspondant à vos critères de recherche.{Chr(10)}Essayez quelque chose comme « CV » ou « bleu »"),
+                            Funcs.ChooseLang("No Templates Found", "Aucun modèle trouvé"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+
+                ResetTemplateGrid()
+
+            End If
+
+            TemplateSearchTxt.Focus()
+            TemplateSearchTxt.SelectAll()
+
+            client.Dispose()
+            reader.Dispose()
+
+        Catch ex As Exception
+            NewMessage(Funcs.ChooseLang("It looks like we can't get templates at the moment. Please check that you are connected to the Internet and try again.",
+                                    "On dirait que nous ne pouvons pas recevoir de modèles pour le moment. Vérifiez votre connexion Internet et réessayez."),
+                        Funcs.ChooseLang("No Internet", "Pas d'Internet"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+            ResetTemplateGrid()
+
+            TemplateSearchTxt.Focus()
+            TemplateSearchTxt.SelectAll()
+
+        End Try
+
+        TemplateLoadingGrid.Visibility = Visibility.Collapsed
+
+    End Sub
+
+    Private Sub BackTemplateBtn_Click(sender As Object, e As RoutedEventArgs) Handles BackTemplateBtn.Click
+        ResetTemplateGrid()
+        TemplateSearchTxt.Text = ""
+        TemplateSearchTxt.Focus()
+        TemplateLoadingGrid.Visibility = Visibility.Collapsed
+
+    End Sub
+
+    Private Sub ResetTemplateGrid()
+        TemplateGrid.Children.Clear()
+
+        TemplateGrid.Children.Add(BlankBtn)
+        TemplateGrid.Children.Add(ModernBtn)
+        TemplateGrid.Children.Add(CasualBtn)
+        TemplateGrid.Children.Add(FormalBtn)
+        TemplateGrid.Children.Add(ClassicBtn)
+        TemplateGrid.Children.Add(OnlineTempBtn)
+
+        BackTemplateBtn.Visibility = Visibility.Collapsed
+
+    End Sub
+
+    Public Sub SetTemplate(TempInfo As String())
+
+        Dim TitleText As String = Funcs.ChooseLang("Enter your title here", "Tapez votre titre ici")
+        Dim BodyText As String = Funcs.ChooseLang("Document content goes here.", "Le contenu du document ici.")
+
+        Dim TitleFont As String = TempInfo(4)
+        Dim TitleFontSize As Integer = Convert.ToInt32(TempInfo(5))
+        Dim TitleFontStyle As WinDrawing.FontStyle
+        Dim TitleFontColour As WinDrawing.Color = WinDrawing.ColorTranslator.FromHtml(TempInfo(9))
+        Dim TitleAlignment As Forms.HorizontalAlignment
+
+        Dim BodyFont As String = TempInfo(11)
+        Dim BodyFontSize As Integer = Convert.ToInt32(TempInfo(12))
+        Dim BodyFontStyle As WinDrawing.FontStyle
+        Dim BodyFontColour As WinDrawing.Color = WinDrawing.ColorTranslator.FromHtml(TempInfo(16))
+        Dim BodyAlignment As Forms.HorizontalAlignment
+
+
+        If TempInfo(6) = "Bold" Then
+            TitleFontStyle = TitleFontStyle Or WinDrawing.FontStyle.Bold
+
+        End If
+
+        If TempInfo(7) = "Italic" Then
+            TitleFontStyle = TitleFontStyle Or WinDrawing.FontStyle.Italic
+
+        End If
+
+        If TempInfo(8) = "Underline" Then
+            TitleFontStyle = TitleFontStyle Or WinDrawing.FontStyle.Underline
+
+        ElseIf TempInfo(8) = "Strikethrough" Then
+            TitleFontStyle = TitleFontStyle Or WinDrawing.FontStyle.Strikeout
+
+        End If
+
+        If TitleFontStyle = Nothing Then
+            TitleFontStyle = WinDrawing.FontStyle.Regular
+
+        End If
+
+
+        If TempInfo(13) = "Bold" Then
+            BodyFontStyle = BodyFontStyle Or WinDrawing.FontStyle.Bold
+
+        End If
+
+        If TempInfo(14) = "Italic" Then
+            BodyFontStyle = BodyFontStyle Or WinDrawing.FontStyle.Italic
+
+        End If
+
+        If TempInfo(15) = "Underline" Then
+            BodyFontStyle = BodyFontStyle Or WinDrawing.FontStyle.Underline
+
+        ElseIf TempInfo(15) = "Strikethrough" Then
+            BodyFontStyle = BodyFontStyle Or WinDrawing.FontStyle.Strikeout
+
+        End If
+
+        If BodyFontStyle = Nothing Then
+            BodyFontStyle = WinDrawing.FontStyle.Regular
+
+        End If
+
+
+        If TempInfo(10) = "Centre" Then
+            TitleAlignment = Forms.HorizontalAlignment.Center
+
+        ElseIf TempInfo(10) = "Right" Then
+            TitleAlignment = Forms.HorizontalAlignment.Right
+
+        Else
+            TitleAlignment = Forms.HorizontalAlignment.Left
+
+        End If
+
+        If TempInfo(17) = "Centre" Then
+            BodyAlignment = Forms.HorizontalAlignment.Center
+
+        ElseIf TempInfo(17) = "Right" Then
+            BodyAlignment = Forms.HorizontalAlignment.Right
+
+        Else
+            BodyAlignment = Forms.HorizontalAlignment.Left
+
+        End If
+
+        NoAdd = True
+
+        With DocTxt
+            .Text = TitleText & Chr(10) & Chr(10) & BodyText
+            .Select(0, 21)
+            .SelectionFont = New WinDrawing.Font(TitleFont, TitleFontSize, TitleFontStyle)
+            .SelectionColor = TitleFontColour
+            .SelectionAlignment = TitleAlignment
+            .Select(23, 41)
+            .SelectionFont = New WinDrawing.Font(BodyFont, BodyFontSize, BodyFontStyle)
+            .SelectionColor = BodyFontColour
+            NoAdd = False
+            .SelectionAlignment = BodyAlignment
+            .Select(DocTxt.TextLength, 0)
+            .Focus()
+
+        End With
+
+    End Sub
+
+    Public Sub SetRTFTemplate(link As String)
+        Dim client As Net.WebClient = New Net.WebClient()
+        Dim reader As StreamReader = New StreamReader(client.OpenRead(link))
+        Dim info As String = reader.ReadToEnd()
+
+        DocTxt.Rtf = info
+
+        DocTxt.Focus()
+        client.Dispose()
+        reader.Dispose()
+
+    End Sub
+
+
+
+    ' OPEN
+    ' --
+
+    Private Sub OpenBtn_Click(sender As Object, e As RoutedEventArgs) Handles OpenBtn.Click
+        MainTabs.SelectedIndex = 0
+        MenuTabs.SelectedIndex = 1
+
+        If OpenTabs.SelectedIndex = 0 Then
+            RefreshRecents()
+
+        ElseIf OpenTabs.SelectedIndex = 1 Then
+            RefreshFavourites()
+
+        End If
+
+    End Sub
+
+    Public Function DetectEncodingFromBom(data() As Byte) As Text.Encoding
+        Return Text.Encoding.GetEncodings().Select(Function(info) info.GetEncoding()).FirstOrDefault(Function(enc) DataStartsWithBom(data, enc))
+
+    End Function
+
+    Private Function DataStartsWithBom(data() As Byte, enc As Text.Encoding) As Boolean
+        Dim bom() As Byte = enc.GetPreamble()
+
+        If bom.Length <> 0 Then
+            Return data.Zip(bom, Function(x, y) x = y).All(Function(x) x)
+        Else
+            Return False
+        End If
+
+    End Function
+
+    Public Function LoadFile(filename As String) As Boolean
+
+        For Each win As MainWindow In Windows.Application.Current.Windows.OfType(Of MainWindow)
+            If win.ThisFile = filename Then
+                win.Focus()
+                win.MainTabs.SelectedIndex = 1
+                Return True
+
+            End If
+        Next
+
+        Dim TextTarget As WinFormsTxt = DocTxt
+        Dim NewForm1 As New MainWindow
+
+        If Not (ThisFile = "" And DocTxt.Text = "") Then
+            NewForm1.Show()
+            TextTarget = NewForm1.DocTxt
+
+        End If
+
+        If ThisFile = "" And DocTxt.Text = "" Then
+            Title = Path.GetFileName(filename) & " - Type Express"
+            TitleTxt.Text = Path.GetFileName(filename) & " - Type Express"
+            MainTabs.SelectedIndex = 1
+            ThisFile = filename
+
+        Else
+            NewForm1.Title = Path.GetFileName(filename) & " - Type Express"
+            NewForm1.TitleTxt.Text = Path.GetFileName(filename) & " - Type Express"
+            NewForm1.MainTabs.SelectedIndex = 1
+            NewForm1.ThisFile = filename
+
+        End If
+
+        Try
+            If String.Compare(Path.GetExtension(filename), ".rtf", True) = 0 Then
+                TextTarget.LoadFile(filename, Forms.RichTextBoxStreamType.RichText)
+
+            Else
+                Dim data() As Byte = File.ReadAllBytes(filename)
+                Dim detectedEncoding As Text.Encoding = DetectEncodingFromBom(data)
+
+                If detectedEncoding Is Nothing Or detectedEncoding Is Text.Encoding.ASCII Then
+                    TextTarget.LoadFile(filename, Forms.RichTextBoxStreamType.PlainText)
+
+                Else
+                    TextTarget.LoadFile(filename, Forms.RichTextBoxStreamType.UnicodePlainText)
+
+                End If
+
+            End If
+
+            If TextTarget.Equals(NewForm1.DocTxt) Then
+                SetRecentFile(filename)
+
+                NewForm1.urc.Clear()
+                NewForm1.urc.AddItem(DocTxt.Rtf)
+
+                NewForm1.UndoBtn.IsEnabled = urc.CanUndo
+                NewForm1.RedoBtn.IsEnabled = urc.CanRedo
+
+                NewForm1.SetUpInfo()
+
+            Else
+                SetRecentFile(filename)
+
+                urc.Clear()
+                urc.AddItem(DocTxt.Rtf)
+
+                UndoBtn.IsEnabled = urc.CanUndo
+                RedoBtn.IsEnabled = urc.CanRedo
+
+                SetUpInfo()
+
+            End If
+            Return True
+
+        Catch
+            NewMessage($"{Funcs.ChooseLang("We ran into a problem while opening this file:", "Nous avons rencontré une erreur lors de l'ouverture de ce fichier :")}{Chr(10)}{filename}{Chr(10)}{Chr(10)}{Funcs.ChooseLang("Please try again.", "Veuillez réessayer.")}",
+                        Funcs.ChooseLang("Error opening file", "Erreur d'ouverture du fichier"), MessageBoxButton.OK, MessageBoxImage.Error)
+            Return False
+
+        End Try
+
+
+        ' FOR WPF RICHTEXTBOX
+        'Dim documentTextRange As New TextRange(DocTxt.Document.ContentStart, DocTxt.Document.ContentEnd)
+
+        'Using stream As FileStream = File.OpenRead(filename)
+        '    Dim dataFormat As String = DataFormats.Text
+        '    Dim ext As String = Path.GetExtension(filename)
+
+        '    If String.Compare(ext, ".xaml", True) = 0 Then
+        '        dataFormat = DataFormats.Xaml
+
+        '    ElseIf String.Compare(ext, ".rtf", True) = 0 Then
+        '        dataFormat = DataFormats.Rtf
+
+        '    End If
+
+        '    documentTextRange.Load(stream, dataFormat)
+        '    ThisFile = filename
+
+        'End Using
+    End Function
+
+    Private Sub ResetOpenTabItemBorders()
+        RecentBtn.SetResourceReference(BorderBrushProperty, "BackColor")
+        FavouritesBtn.SetResourceReference(BorderBrushProperty, "BackColor")
+        OnlineOpenBtn.SetResourceReference(BorderBrushProperty, "BackColor")
+
+    End Sub
+
+    Private Sub OpenTabs_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles OpenTabs.SelectionChanged
+        ResetOpenTabItemBorders()
+
+        If OpenTabs.SelectedIndex = 0 Then
+            RecentBtn.BorderBrush = New SolidColorBrush(Color.FromArgb(255, 171, 173, 179))
+            RefreshRecents()
+
+        ElseIf OpenTabs.SelectedIndex = 1 Then
+            FavouritesBtn.BorderBrush = New SolidColorBrush(Color.FromArgb(255, 171, 173, 179))
+            RefreshFavourites()
+
+        Else
+            OnlineOpenBtn.BorderBrush = New SolidColorBrush(Color.FromArgb(255, 171, 173, 179))
+
+        End If
+
+    End Sub
+
+
+    ' OPEN > RECENT
+    ' --
+
+    Private Sub RecentBtn_Click(sender As Object, e As RoutedEventArgs) Handles RecentBtn.Click
+        OpenTabs.SelectedIndex = 0
+
+    End Sub
+
+    Private Sub RecentBtns_Click(sender As Controls.Button, e As RoutedEventArgs)
+        OpenRecentFavourite(sender.Tag.ToString())
+
+    End Sub
+
+    Private Function GetButtonFilename(parent As Controls.ContextMenu) As String
+        Dim bt As Controls.Button = parent.PlacementTarget
+        Return bt.Tag.ToString()
+
+    End Function
+
+    Private Sub OpenFileBtn_Click(sender As Controls.MenuItem, e As RoutedEventArgs) Handles OpenFileBtn.Click
+        OpenRecentFavourite(GetButtonFilename(sender.Parent))
+
+    End Sub
+
+    Private Sub OpenRecentFavourite(filename As String)
+        If File.Exists(filename) Then
+            LoadFile(filename)
+
+        Else
+            If NewMessage(Funcs.ChooseLang("The file you are trying to open no longer exists. Would you like to remove it from the list?",
+                                        "Le fichier que vous essayez d'ouvrir n'existe plus. Vous souhaitez le supprimer de la liste ?"),
+                            Funcs.ChooseLang("File not found", "Fichier non trouvé"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+
+                If OpenTabs.SelectedIndex = 0 Then
+                    RemoveRecent(filename)
+
+                ElseIf OpenTabs.SelectedIndex = 1 Then
+                    RemoveFavourite(filename)
+
+                End If
+
+            End If
+        End If
+
+    End Sub
+
+    Private Sub RemoveRecent(filename As String)
+        My.Settings.recents.Remove(filename)
+        My.Settings.Save()
+        RefreshRecents()
+
+    End Sub
+
+    Private Sub OpenFileLocationBtn_Click(sender As Object, e As RoutedEventArgs) Handles OpenFileLocationBtn.Click
+        Dim ChosenFilename As String = GetButtonFilename(sender.Parent)
+
+        Try
+            Process.Start(Path.GetDirectoryName(ChosenFilename))
+
+        Catch
+            If NewMessage(Funcs.ChooseLang("The file location you are trying to open no longer exists. Would you like to remove it from the list?",
+                                        "L'emplacement du fichier que vous essayez d'ouvrir n'existe plus. Vous souhaitez le supprimer de la liste ?"),
+                            Funcs.ChooseLang("Directory not found", "Répertoire non trouvé"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+
+                If OpenTabs.SelectedIndex = 0 Then
+                    RemoveRecent(ChosenFilename)
+
+                ElseIf OpenTabs.SelectedIndex = 1 Then
+                    RemoveFavourite(ChosenFilename)
+
+                End If
+
+            End If
+
+        End Try
+
+    End Sub
+
+    Private Sub CopyFilePathBtn_Click(sender As Object, e As RoutedEventArgs) Handles CopyFilePathBtn.Click
+        Windows.Clipboard.SetText(GetButtonFilename(sender.Parent))
+
+    End Sub
+
+    Private Sub RemoveFileBtn_Click(sender As Object, e As RoutedEventArgs) Handles RemoveFileBtn.Click
+        If OpenTabs.SelectedIndex = 0 Then
+            RemoveRecent(GetButtonFilename(sender.Parent))
+
+        ElseIf OpenTabs.SelectedIndex = 1 Then
+            RemoveFavourite(GetButtonFilename(sender.Parent))
+
+        End If
+
+    End Sub
+
+    Private Sub ClearRecentsBtn_Click(sender As Object, e As RoutedEventArgs) Handles ClearRecentsBtn.Click
+
+        If NewMessage(Funcs.ChooseLang("Are you sure you want to delete all the files in your recents list? This can't be undone.",
+                                    "Vous êtes sûr(e) de vouloir supprimer tous les fichiers de votre liste récente ? Cela ne peut pas être annulé."),
+                        Funcs.ChooseLang("Are you sure?", "Vous êtes sûr(e) ?"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+
+            My.Settings.recents.Clear()
+            My.Settings.Save()
+            RefreshRecents()
+
+        End If
+
+    End Sub
+
+    Public Sub SetRecentFile(filename As String)
+
+        If Not My.Settings.recents.Contains(filename) Then
+            My.Settings.recents.Insert(0, filename)
+
+        End If
+
+        Do While My.Settings.recents.Count > My.Settings.recentcount
+            My.Settings.recents.RemoveAt(My.Settings.recents.Count - 1)
+
+        Loop
+
+        My.Settings.Save()
+
+    End Sub
+
+
+    ' OPEN > FAVOURITES
+    ' --
+
+    Private Sub FavouritesBtn_Click(sender As Object, e As RoutedEventArgs) Handles FavouritesBtn.Click
+        OpenTabs.SelectedIndex = 1
+
+    End Sub
+
+    Private Sub FavouriteBtns_Click(sender As Controls.Button, e As RoutedEventArgs)
+        OpenRecentFavourite(sender.Tag.ToString())
+
+    End Sub
+
+    Private Sub RemoveFavourite(filename As String)
+        My.Settings.favourites.Remove(filename)
+        My.Settings.Save()
+        RefreshFavourites()
+
+    End Sub
+
+    Private Sub AddFavouritesBtn_Click(sender As Object, e As RoutedEventArgs) Handles AddFavouritesBtn.Click
+
+        If openDialog.ShowDialog() = True Then
+            SetFavouriteFiles(openDialog.FileNames)
+            RefreshFavourites()
+
+        End If
+
+    End Sub
+
+    Private Sub ClearFavouritesBtn_Click(sender As Object, e As RoutedEventArgs) Handles ClearFavouritesBtn.Click
+
+        If NewMessage(Funcs.ChooseLang("Are you sure you want to delete all the files in your favourites list? This can't be undone.",
+                                    "Vous êtes sûr(e) de vouloir supprimer tous les fichiers de votre liste de favoris ? Cela ne peut pas être annulé."),
+                        Funcs.ChooseLang("Are you sure?", "Vous êtes sûr(e) ?"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+
+            My.Settings.favourites.Clear()
+            My.Settings.Save()
+            RefreshFavourites()
+
+        End If
+
+    End Sub
+
+    Public Sub SetFavouriteFiles(filenames As String())
+
+        For Each filename In filenames
+            If Not My.Settings.favourites.Contains(filename) Then
+                My.Settings.favourites.Insert(0, filename)
+
+            End If
+        Next
+
+        My.Settings.Save()
+
+    End Sub
+
+
+    ' OPEN > ONLINE
+    ' --
+
+    Private Sub OnlineOpenBtn_Click(sender As Object, e As RoutedEventArgs) Handles OnlineOpenBtn.Click
+        OpenTabs.SelectedIndex = 2
+
+    End Sub
+
+    Private Sub OnlineBrowseBtn_Click(sender As Object, e As RoutedEventArgs) Handles OnlineBrowseBtn.Click
+        If folderBrowser.ShowDialog() = Forms.DialogResult.OK Then
+            DownloadLocationLbl.Text = folderBrowser.SelectedPath
+
+        End If
+
+    End Sub
+
+    Private Sub DownloadFileBtn_Click(sender As Object, e As RoutedEventArgs) Handles DownloadFileBtn.Click
+
+        Try
+            If FileDownloadTxt.Text.EndsWith(".txt") Or FileDownloadTxt.Text.EndsWith(".rtf") Then
+                Dim SaveLocation As String = DownloadLocationLbl.Text + "\" + Path.GetFileName(FileDownloadTxt.Text)
+                Dim AmmendedName As String = ""
+
+                If My.Computer.FileSystem.FileExists(SaveLocation) Then
+                    Dim counter As Integer = 1
+
+                    Do
+                        AmmendedName = DownloadLocationLbl.Text + "\" + Path.GetFileNameWithoutExtension(FileDownloadTxt.Text) +
+                            $" ({counter.ToString()})" + Path.GetExtension(FileDownloadTxt.Text)
+
+                        counter += 1
+
+                    Loop While My.Computer.FileSystem.FileExists(AmmendedName)
+                End If
+
+
+                If Not AmmendedName = "" Then
+                    SaveLocation = AmmendedName
+
+                End If
+
+                My.Computer.Network.DownloadFile(FileDownloadTxt.Text, SaveLocation, "", "", True, 100000, False)
+
+                FileDownloadTxt.Focus()
+                FileDownloadTxt.Text = ""
+
+                LoadFile(SaveLocation)
+
+
+            Else
+                NewMessage(Funcs.ChooseLang("Web address must end with either .txt or .rtf. Please try again.",
+                                        "L'adresse Web doit se terminer par .txt ou .rtf. Veuillez réessayer."),
+                            Funcs.ChooseLang("Download error", "Erreur de téléchargement"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+                FileDownloadTxt.Focus()
+                FileDownloadTxt.SelectAll()
+
+            End If
+
+        Catch
+            NewMessage(Funcs.ChooseLang($"We couldn't download that file. Maybe try:{Chr(10)}  - checking the web address is correct{Chr(10)}  - checking your Internet connection{Chr(10)}  - ensuring the file is publicly available",
+                                    $"Nous n'arrivions pas à télécharger ce fichier. Essayez de :{Chr(10)}  - vérifier que l'adresse Web est correcte{Chr(10)}  - vérifier votre connexion Internet{Chr(10)}  - s'assurer que le fichier est accessible au public"),
+                        Funcs.ChooseLang("Download error", "Erreur de téléchargement"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+            FileDownloadTxt.Focus()
+            FileDownloadTxt.SelectAll()
+
+        End Try
+
+    End Sub
+
+    Private Sub FileDownloadTxt_TextChanged(sender As Object, e As TextChangedEventArgs) Handles FileDownloadTxt.TextChanged
+
+        Try
+            If FileDownloadTxt.Text = "" Or FileDownloadTxt.Foreground.ToString() = "#FF818181" Then
+                DownloadFileBtn.IsEnabled = False
+
+            Else
+                DownloadFileBtn.IsEnabled = True
+
+            End If
+        Catch
+        End Try
+
+    End Sub
+
+
+    ' OPEN > BROWSE
+    ' --
+
+    Private Sub BrowseOpenBtn_Click(sender As Object, e As RoutedEventArgs) Handles BrowseOpenBtn.Click
+
+        If openDialog.ShowDialog() = True Then
+            For Each ChosenFile In openDialog.FileNames
+                LoadFile(ChosenFile)
+
+            Next
+        End If
+
+    End Sub
+
+
+    ' SAVE
+    ' --
+
+    Private Sub SaveBtn_Click(sender As Object, e As RoutedEventArgs) Handles SaveBtn.Click
+
+        If ThisFile = "" Then
+            MainTabs.SelectedIndex = 0
+            MenuTabs.SelectedIndex = 2
+            RefreshPinned()
+
+        Else
+            SaveFile(ThisFile)
+            MainTabs.SelectedIndex = 1
+
+        End If
+
+    End Sub
+
+    Private Sub SaveAsBtn_Click(sender As Object, e As RoutedEventArgs) Handles SaveAsBtn.Click
+        MenuTabs.SelectedIndex = 2
+        RefreshPinned()
+
+    End Sub
+
+    Public Function SaveFile(filename As String) As Boolean
+
+        Try
+            If String.Compare(Path.GetExtension(filename), ".rtf", True) = 0 Then
+                DocTxt.SaveFile(filename, Forms.RichTextBoxStreamType.RichText)
+
+            Else
+                File.WriteAllLines(filename, DocTxt.Lines, Text.Encoding.Unicode)
+                'DocTxt.SaveFile(filename, Forms.RichTextBoxStreamType.PlainText)
+
+            End If
+
+            If Not ThisFile = filename Then
+                SetRecentFile(filename)
+                ThisFile = filename
+
+                Title = Path.GetFileName(filename) & " - Type Express"
+                TitleTxt.Text = Path.GetFileName(filename) & " - Type Express"
+                SetUpInfo()
+
+            End If
+
+            CreateTempLabel(Funcs.ChooseLang("Saving complete", "Enregistré"))
+            Return True
+
+        Catch
+            NewMessage(Funcs.ChooseLang($"We couldn't save your document:{Chr(10)}{filename}{Chr(10)}{Chr(10)}Check that you have permission to make changes to this file.",
+                                        $"Nous n'arrivions pas à enregistrer votre document :{Chr(10)}{filename}{Chr(10)}{Chr(10)}Vérifiez que vous avez la permission de modifier ce fichier."),
+                       Funcs.ChooseLang("Error saving file", "Erreur d'enregistrement du fichier"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+            Return False
+
+        End Try
+
+
+        'Dim documentTextRange As New TextRange(DocTxt.Document.ContentStart, DocTxt.Document.ContentEnd)
+
+        'Using stream As FileStream = File.OpenWrite(filename)
+        '    Dim dataFormat As String = DataFormats.Text
+        '    Dim ext As String = Path.GetExtension(filename)
+
+        '    If String.Compare(ext, ".xaml", True) = 0 Then
+        '        dataFormat = DataFormats.Xaml
+
+        '    ElseIf String.Compare(ext, ".rtf", True) = 0 Then
+        '        dataFormat = DataFormats.Rtf
+
+        '    End If
+
+        '    documentTextRange.Save(stream, dataFormat)
+
+        'End Using
+
+    End Function
+
+    Private Sub PinnedBtns_Click(sender As Controls.Button, e As RoutedEventArgs)
+        SavePinned(sender.Tag.ToString())
+
+    End Sub
+
+    Private Sub SaveFileBtn_Click(sender As Controls.MenuItem, e As RoutedEventArgs) Handles SaveFileBtn.Click
+        SavePinned(GetButtonFilename(sender.Parent))
+
+    End Sub
+
+    Private Sub SavePinned(folder As String)
+        saveDialog.InitialDirectory = folder
+
+        If saveDialog.ShowDialog() = True Then
+            SaveFile(saveDialog.FileName)
+            MainTabs.SelectedIndex = 1
+
+        End If
+
+    End Sub
+
+    Private Sub CopyPathBtn_Click(sender As Object, e As RoutedEventArgs) Handles CopyPathBtn.Click
+        Windows.Clipboard.SetText(GetButtonFilename(sender.Parent))
+
+    End Sub
+
+    Private Sub RemovePinBtn_Click(sender As Controls.MenuItem, e As RoutedEventArgs) Handles RemovePinBtn.Click
+        My.Settings.pinned.Remove(GetButtonFilename(sender.Parent))
+        My.Settings.Save()
+        RefreshPinned()
+
+    End Sub
+
+    Private Sub AddPinnedBtn_Click(sender As Object, e As RoutedEventArgs) Handles AddPinnedBtn.Click
+
+        If folderBrowser.ShowDialog() = Forms.DialogResult.OK Then
+            My.Settings.pinned.Add(folderBrowser.SelectedPath)
+            My.Settings.Save()
+            RefreshPinned()
+
+        End If
+
+    End Sub
+
+    Private Sub ClearPinnedBtn_Click(sender As Object, e As RoutedEventArgs) Handles ClearPinnedBtn.Click
+
+        If NewMessage(Funcs.ChooseLang("Are you sure you want to delete all the folders in your pinned list? This can't be undone.",
+                                    "Vous êtes sûr(e) de vouloir supprimer tous les dossiers de votre liste épinglée ? Cela ne peut pas être annulé."),
+                        Funcs.ChooseLang("Are you sure?", "Vous êtes sûr(e) ?"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+
+            My.Settings.pinned.Clear()
+            My.Settings.Save()
+            RefreshPinned()
+
+        End If
+
+    End Sub
+
+    Private Sub BrowseSaveBtn_Click(sender As Object, e As RoutedEventArgs) Handles BrowseSaveBtn.Click
+
+        If saveDialog.ShowDialog() = True Then
+            SaveFile(saveDialog.FileName)
+            MainTabs.SelectedIndex = 1
+
+        End If
+
+    End Sub
+
+    Private Sub SaveStatusBtn_Click(sender As Object, e As RoutedEventArgs) Handles SaveStatusBtn.Click
+
+        If ThisFile = "" Then
+            MainTabs.SelectedIndex = 0
+            MenuTabs.SelectedIndex = 2
+            BeginStoryboard(TryFindResource("MenuStoryboard"))
+
+        Else
+            SaveFile(ThisFile)
+
+        End If
+
+    End Sub
+
+
+    ' PRINT
+    ' --
+
+    Private Sub PrintBtn_Click(sender As Object, e As RoutedEventArgs) Handles PrintBtn.Click
+        MainTabs.SelectedIndex = 0
+        MenuTabs.SelectedIndex = 3
+
+    End Sub
+
+    Private Sub PageSetupBtn_Click(sender As Object, e As RoutedEventArgs) Handles PageSetupBtn.Click
+        PageSetupDialog1.ShowDialog()
+
+    End Sub
+
+    Private Sub PrintPreviewBtn_Click(sender As Object, e As RoutedEventArgs) Handles PrintPreviewBtn.Click
+        PrintPreviewDialog1.ShowDialog()
+
+    End Sub
+
+    Private Sub PrintDialogBtn_Click(sender As Object, e As RoutedEventArgs) Handles PrintDialogBtn.Click
+        PrintDoc.DocumentName = Title
+
+        If PrintDialog1.ShowDialog() = Forms.DialogResult.OK Then
+            PrintDoc.Print()
+            MainTabs.SelectedIndex = 1
+
+            CreateTempLabel(Funcs.ChooseLang("Sent to printer", "Envoyé à l'imprimante"))
+
+        End If
+
+    End Sub
+
+    Private checkPrint As Integer
+
+    Private Sub PrintDocument1_BeginPrint(ByVal sender As Object, ByVal e As PrintEventArgs)
+        checkPrint = 0
+
+    End Sub
+
+    Private Sub PrintDocument1_PrintPage(ByVal sender As Object, ByVal e As PrintPageEventArgs)
+
+        Dim RichTextBoxPrintCtrl1 As New RichTextBoxPrintCtrl.RichTextBoxPrintCtrl With {
+            .Rtf = DocTxt.Rtf
+        }
+
+        ' Print the content of the RichTextBox. Store the last character printed.
+        checkPrint = RichTextBoxPrintCtrl1.Print(checkPrint, RichTextBoxPrintCtrl1.TextLength, e)
+
+        ' Look for more pages
+        If checkPrint < RichTextBoxPrintCtrl1.TextLength Then
+            e.HasMorePages = True
+
+        Else
+            e.HasMorePages = False
+
+        End If
+
+        RichTextBoxPrintCtrl1.Dispose()
+
+    End Sub
+
+
+    ' SHARE
+    ' --
+
+    Private Sub ShareBtn_Click(sender As Object, e As RoutedEventArgs) Handles ShareBtn.Click
+        MainTabs.SelectedIndex = 0
+        MenuTabs.SelectedIndex = 4
+
+    End Sub
+
+    Private Sub ResetShareTabItemBorders()
+        EmailBtn.SetResourceReference(BorderBrushProperty, "BackColor")
+        LockBtn.SetResourceReference(BorderBrushProperty, "BackColor")
+
+    End Sub
+
+    Private Sub ShareTabs_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles ShareTabs.SelectionChanged
+        ResetShareTabItemBorders()
+
+        If ShareTabs.SelectedIndex = 0 Then
+            EmailBtn.BorderBrush = New SolidColorBrush(Color.FromArgb(255, 171, 173, 179))
+
+        Else
+            LockBtn.BorderBrush = New SolidColorBrush(Color.FromArgb(255, 171, 173, 179))
+
+        End If
+
+    End Sub
+
+
+    ' SHARE > EMAIL
+    ' --
+
+    Private Sub EmailBtn_Click(sender As Object, e As RoutedEventArgs) Handles EmailBtn.Click
+        ShareTabs.SelectedIndex = 0
+
+    End Sub
+
+    Private Sub EmailAddressTxt_TextChanged(sender As Object, e As TextChangedEventArgs) Handles EmailAddressTxt.TextChanged
+
+        Try
+            If EmailAddressTxt.Text = "" Or EmailAddressTxt.Foreground.ToString() = "#FF818181" Then
+                EmailDocBtn.IsEnabled = False
+
+            Else
+                EmailDocBtn.IsEnabled = True
+
+            End If
+        Catch
+        End Try
+
+    End Sub
+
+    Private Sub EmailDocBtn_Click(sender As Object, e As RoutedEventArgs) Handles EmailDocBtn.Click
+
+        Try
+            Dim proc As New Process()
+            Dim mail As New Net.Mail.MailAddress(EmailAddressTxt.Text)
+
+            Dim subject As String = EmailSubjectTxt.Text
+            If EmailAddressTxt.Foreground.ToString() = "#FF818181" Then
+                subject = ""
+
+            End If
+
+            proc.StartInfo.FileName = "mailto:" & EmailAddressTxt.Text & "?subject=" & subject & "&body=" & DocTxt.Text
+            proc.Start()
+
+
+            EmailAddressTxt.Focus()
+            EmailAddressTxt.Text = ""
+
+            EmailSubjectTxt.Focus()
+            EmailSubjectTxt.Text = ""
+
+            MainTabs.SelectedIndex = 1
+            proc.Dispose()
+
+        Catch
+            NewMessage(Funcs.ChooseLang("Please make sure you have entered a valid email address.",
+                                    "Veuillez mettre une adresse mail valide."),
+                        Funcs.ChooseLang("Invalid email", ""), MessageBoxButton.OK, MessageBoxImage.Error)
+
+            EmailAddressTxt.Focus()
+            EmailAddressTxt.SelectAll()
+
+        End Try
+
+    End Sub
+
+
+    ' SHARE > LOCK
+    ' --
+
+    Private Sub LockBtn_Click(sender As Object, e As RoutedEventArgs) Handles LockBtn.Click
+        ShareTabs.SelectedIndex = 1
+
+    End Sub
+
+    Private Sub LockDocBtn_Click(sender As Object, e As RoutedEventArgs) Handles LockDocBtn.Click
+
+        If LockPasswordTxt.Password.Length < 4 Then
+            NewMessage(Funcs.ChooseLang("Your password is too short. Please try again.", "Votre mot de passe est trop court. Veuillez réessayer."),
+                        Funcs.ChooseLang("Invalid password", "Mot de passe incorrect"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+        Else
+            For Each i As Window In My.Application.Windows
+                i.Hide()
+
+            Next
+
+            Dim UnlockWindow As New Unlock With {.LockPass = LockPasswordTxt.Password}
+            UnlockWindow.Show()
+
+            LockPasswordTxt.Clear()
+
+        End If
+
+    End Sub
+
+    Private Sub QuickLock()
+
+        If My.Settings.lockshortcut Then
+            If Not My.Settings.lockpass = "" Then
+                For Each i As Window In My.Application.Windows
+                    i.Hide()
+
+                Next
+
+                Dim UnlockWindow As New Unlock With {.LockPass = My.Settings.lockpass}
+                UnlockWindow.Show()
+
+            Else
+                MainTabs.SelectedIndex = 0
+                MenuTabs.SelectedIndex = 4
+                ShareTabs.SelectedIndex = 1
+
+            End If
+        End If
+
+    End Sub
+
+
+    ' SHARE > HTML
+    ' --
+
+    Private Sub HTMLBtn_Click(sender As Object, e As RoutedEventArgs) Handles HTMLBtn.Click
+        If DocTxt.Text = "" Then
+            NewMessage(Funcs.ChooseLang("Please enter some text into your document first.", "Veuillez d'abord entrer du texte dans votre document."),
+                        Funcs.ChooseLang("No text in document", "Pas de texte dans le document"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+        Else
+            Dim htmlwin As New HTML With {.HTMLCode = DocTxt.Text}
+            If htmlwin.ShowDialog() = True Then
+                ExportFile(htmlwin.HTMLCode, htmlwin.Filename)
+                MainTabs.SelectedIndex = 1
+
+            End If
+
+        End If
+
+    End Sub
+
+    Public Function ExportFile(text As String, filename As String) As Boolean
+
+        Try
+            My.Computer.FileSystem.WriteAllText(filename, text, False)
+
+            CreateTempLabel(Funcs.ChooseLang("Exported to HTML", "Exporté au format HTML"))
+            Return True
+
+        Catch
+            NewMessage(Funcs.ChooseLang($"We couldn't export your document:{Chr(10)}{filename}{Chr(10)}{Chr(10)}Please try again.{Chr(10)}If this problem persists, contact us for assistance.",
+                                    $"Nous n'arrivions pas à exporter votre document :{Chr(10)}{filename}{Chr(10)}{Chr(10)}Veuillez réessayer.{Chr(10)}Si cette erreur persiste, contactez-nous pour obtenir de l'aide."),
+                        Funcs.ChooseLang("Error exporting file", "Erreur d'exportation du fichier"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+            Return False
+
+        End Try
+
+    End Function
+
+
+    ' OPTIONS
+    ' --
+
+    Private Sub OptionsBtn_Click(sender As Object, e As RoutedEventArgs) Handles OptionsBtn.Click
+        Dim op As New Options
+        op.ShowDialog()
+
+    End Sub
+
+
+    ' INFO
+    ' --
+
+    Private Sub InfoBtn_Click(sender As Object, e As RoutedEventArgs) Handles InfoBtn.Click
+        MenuTabs.SelectedIndex = 5
+
+    End Sub
+
+    Private Sub SetUpInfo()
+        FileInfoStack.Visibility = Visibility.Visible
+        FilenameTxt.Text = Path.GetFileName(ThisFile)
+
+        Dim paths As List(Of String) = ThisFile.Split("\").Reverse().ToList()
+        Dim count As Integer = 0
+
+        For Each root In paths
+            Select Case count
+                Case 0
+                Case 1
+                    Root1Txt.Text = root
+                Case 2
+                    Root2Txt.Text = root
+                    Root2Btn.Tag = 1
+                Case 3
+                    Root3Txt.Text = root
+                    Root3Btn.Tag = 1
+                Case 4
+                    Root4Txt.Text = root
+                    Root4Btn.Tag = 1
+                Case Else
+                    MoreRootBtn.Tag = 1
+                    Exit For
+            End Select
+
+            count += 1
+        Next
+
+        If Root2Btn.Tag = 1 Then
+            BeginStoryboard(TryFindResource("MoreDownInfoStoryboard"))
+            MoreRootTxt.Text = Funcs.ChooseLang("Show more", "Afficher plus")
+            ShowMoreBtn.Visibility = Visibility.Visible
+
+        Else
+            ShowMoreBtn.Visibility = Visibility.Collapsed
+
+        End If
+
+        FileSizeTxt.Text = FormatBytes(DirSize())
+
+        Dim dates As List(Of String) = GetFileDates()
+        CreatedTxt.Text = dates(0)
+        ModifiedTxt.Text = dates(1)
+        AccessedTxt.Text = dates(2)
+
+        EditingTimeTxt.Tag = 0
+        EditingTimeTxt.Text = "<1 minute"
+        EditingTimer.Start()
+
+    End Sub
+
+    Private Sub ResetInfo()
+        FileInfoStack.Visibility = Visibility.Collapsed
+        FilenameTxt.Text = Funcs.ChooseLang("Choose an option from the left.", "Choisissez une option à gauche.")
+
+        Root1Txt.Text = ""
+        Root2Btn.Tag = 0
+        Root3Btn.Tag = 0
+        Root4Btn.Tag = 0
+        MoreRootBtn.Tag = 0
+
+        Root2Btn.Visibility = Visibility.Collapsed
+        Root3Btn.Visibility = Visibility.Collapsed
+        Root4Btn.Visibility = Visibility.Collapsed
+        MoreRootBtn.Visibility = Visibility.Collapsed
+
+    End Sub
+
+    Public Function FormatBytes(BytesCaller As Long) As String
+        Dim DoubleBytes As Double
+
+        Try
+            Select Case BytesCaller
+                Case Is >= 1125899906842625
+                    Return Funcs.ChooseLang("1000+ TB", "1000+ To")
+                Case 1099511627776 To 1125899906842624
+                    DoubleBytes = BytesCaller / 1099511627776 'TB
+                    Return Math.Round(DoubleBytes, 2).ToString() & Funcs.ChooseLang(" TB", " To")
+                Case 1073741824 To 1099511627775
+                    DoubleBytes = BytesCaller / 1073741824 'GB
+                    Return Math.Round(DoubleBytes, 2).ToString() & Funcs.ChooseLang(" GB", " Go")
+                Case 1048576 To 1073741823
+                    DoubleBytes = BytesCaller / 1048576 'MB
+                    Return Math.Round(DoubleBytes, 2).ToString() & Funcs.ChooseLang(" MB", " Mo")
+                Case 1024 To 1048575
+                    DoubleBytes = BytesCaller / 1024 'KB
+                    Return Math.Round(DoubleBytes, 2).ToString() & Funcs.ChooseLang(" KB", " Ko")
+                Case 1 To 1023
+                    DoubleBytes = BytesCaller ' bytes
+                    Return Math.Round(DoubleBytes, 2).ToString() & Funcs.ChooseLang(" b", " o")
+                Case Else
+                    Return "—"
+            End Select
+
+        Catch
+            Return "—"
+        End Try
+
+    End Function
+
+    Private Function DirSize() As Long
+        Dim size As Long = 0L
+
+        Try
+            Dim fis As New FileInfo(ThisFile)
+            size = fis.Length
+
+        Catch
+        End Try
+
+        Return size
+
+    End Function
+
+    Private Function GetFileDates() As List(Of String)
+        Dim dates As New List(Of String) From {}
+
+        Try
+            dates.Add(File.GetCreationTime(ThisFile).ToShortDateString())
+        Catch
+            dates.Add("—")
+        End Try
+
+        Try
+            dates.Add(File.GetLastWriteTime(ThisFile).ToShortDateString())
+        Catch
+            dates.Add("—")
+        End Try
+
+        Try
+            dates.Add(File.GetLastAccessTime(ThisFile).ToShortDateString())
+        Catch
+            dates.Add("—")
+        End Try
+
+        Return dates
+
+    End Function
+
+    Private Sub EditingTimer_Tick(sender As Object, e As EventArgs)
+        EditingTimeTxt.Tag += 1
+
+        Dim hours As Integer = EditingTimeTxt.Tag \ 60
+        Dim minutes As Integer = EditingTimeTxt.Tag Mod 60
+
+        If hours = 0 Then
+            If minutes = 1 Then
+                EditingTimeTxt.Text = "1 minute"
+            Else
+                EditingTimeTxt.Text = minutes.ToString() + " minutes"
+            End If
+
+        ElseIf hours >= 100 Then
+            EditingTimeTxt.Text = Funcs.ChooseLang("100+ hours", "100+ heures")
+            EditingTimer.Stop()
+
+        Else
+            If hours = 1 Then
+                If minutes = 0 Then
+                    EditingTimeTxt.Text = Funcs.ChooseLang("1 hour", "1 heure")
+                ElseIf minutes = 1 Then
+                    EditingTimeTxt.Text = Funcs.ChooseLang("1 hour, 1 minute", "1 heure, 1 minute")
+                Else
+                    EditingTimeTxt.Text = Funcs.ChooseLang("1 hour, ", "1 heure, ") + minutes.ToString() + " minutes"
+                End If
+
+            Else
+                If minutes = 0 Then
+                    EditingTimeTxt.Text = hours.ToString() + Funcs.ChooseLang(" hours", " heures")
+                ElseIf minutes = 1 Then
+                    EditingTimeTxt.Text = hours.ToString() + Funcs.ChooseLang(" hours, 1 minute", " heures, 1 minute")
+                Else
+                    EditingTimeTxt.Text = hours.ToString() + Funcs.ChooseLang(" hours, ", " heures, ") + minutes.ToString() + " minutes"
+                End If
+
+            End If
+        End If
+
+    End Sub
+
+    Private Sub AboutBtn_Click(sender As Object, e As RoutedEventArgs) Handles AboutBtn.Click
+        Dim abt As New About
+        abt.ShowDialog()
+
+    End Sub
+
+    Private Sub CopyPathInfoBtn_Click(sender As Object, e As RoutedEventArgs) Handles CopyPathInfoBtn.Click
+        Windows.Clipboard.SetText(ThisFile)
+
+    End Sub
+
+    Private Sub OpenLocationBtn_Click(sender As Object, e As RoutedEventArgs) Handles OpenLocationBtn.Click
+        Try
+            Process.Start(Path.GetDirectoryName(ThisFile))
+
+        Catch
+            NewMessage(Funcs.ChooseLang("Can't open file location. Check that you have permission to access it.",
+                                    "Impossible d'ouvrir l'emplacement du fichier. Vérifiez que vous avez la permission d'y accéder."),
+                        Funcs.ChooseLang("Access denied", "Accès refusé"), MessageBoxButton.OK, MessageBoxImage.Error)
+        End Try
+
+    End Sub
+
+    Private Sub Root1Btn_Click(sender As Object, e As RoutedEventArgs) Handles Root1Btn.Click
+        InfoPopup.PlacementTarget = Root1Btn
+        SetUpInfoDropdown(Path.GetDirectoryName(ThisFile), Root1Img.Margin.Left + 34)
+
+    End Sub
+
+    Private Sub Root2Btn_Click(sender As Object, e As RoutedEventArgs) Handles Root2Btn.Click
+        InfoPopup.PlacementTarget = Root2Btn
+        SetUpInfoDropdown(Path.GetDirectoryName(Path.GetDirectoryName(ThisFile)), Root2Img.Margin.Left + 34)
+
+    End Sub
+
+    Private Sub Root3Btn_Click(sender As Object, e As RoutedEventArgs) Handles Root3Btn.Click
+        InfoPopup.PlacementTarget = Root3Btn
+        SetUpInfoDropdown(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(ThisFile))), Root3Img.Margin.Left + 34)
+
+    End Sub
+
+    Private Sub Root4Btn_Click(sender As Object, e As RoutedEventArgs) Handles Root4Btn.Click
+        InfoPopup.PlacementTarget = Root4Btn
+        SetUpInfoDropdown(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(ThisFile)))), Root4Img.Margin.Left + 34)
+
+    End Sub
+
+    Private Sub SetUpInfoDropdown(folder As String, margin As Integer)
+        InfoStack.Children.Clear()
+
+        Try
+            Dim files As List(Of String) = My.Computer.FileSystem.GetFiles(folder).ToList()
+
+            For Each i In files
+                If i.ToLower().EndsWith(".txt") Or i.ToLower().EndsWith(".rtf") Then
+                    If Not ThisFile = i Then
+
+                        Dim filebtn As Controls.Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='#00FFFFFF' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='InfoBtn' Height='26' VerticalAlignment='Top' ToolTip='" +
+                                                                    Funcs.EscapeChars(i) + "' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><DockPanel LastChildFill='False' Height='26' Margin='0'><TextBlock Text='" +
+                                                                    Funcs.EscapeChars(Path.GetFileName(i)) + "' Padding='" +
+                                                                    margin.ToString() + ",0,0,0' TextTrimming='CharacterEllipsis' Name='HomeBtnTxt_Copy22' Margin='0,0,15,0' HorizontalAlignment='Center' VerticalAlignment='Center' /></DockPanel></Button>")
+
+                        InfoStack.Children.Add(filebtn)
+                        AddHandler filebtn.Click, AddressOf FileBtn_Click
+
+                    End If
+                End If
+            Next
+
+            If InfoStack.Children.Count = 0 Then
+                Dim filebtn As Controls.Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='#00FFFFFF' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='InfoBtn' Height='26' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><DockPanel LastChildFill='False' Height='26' Margin='0'><TextBlock Text='" +
+                                                            Funcs.ChooseLang("No files to open in this folder.", "Aucun fichier à ouvrir dans ce dossier.") + "' Padding='" +
+                                                            margin.ToString() + ",0,0,0' TextTrimming='CharacterEllipsis' Name='HomeBtnTxt_Copy22' Margin='0,0,15,0' HorizontalAlignment='Center' VerticalAlignment='Center' /></DockPanel></Button>")
+
+                filebtn.IsEnabled = False
+                InfoStack.Children.Add(filebtn)
+
+            End If
+
+        Catch
+            InfoStack.Children.Clear()
+            Dim filebtn As Controls.Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='#00FFFFFF' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='InfoBtn' Height='26' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><DockPanel LastChildFill='False' Height='26' Margin='0'><TextBlock Text='" +
+                                                        Funcs.ChooseLang("No files to open in this folder.", "Aucun fichier à ouvrir dans ce dossier.") + "' Padding='" +
+                                                        margin.ToString() + ",0,0,0' TextTrimming='CharacterEllipsis' Name='HomeBtnTxt_Copy22' Margin='0,0,15,0' HorizontalAlignment='Center' VerticalAlignment='Center' /></DockPanel></Button>")
+
+            filebtn.IsEnabled = False
+            InfoStack.Children.Add(filebtn)
+
+        End Try
+
+        InfoPopup.IsOpen = True
+
+    End Sub
+
+    Private Sub FileBtn_Click(sender As Controls.Button, e As RoutedEventArgs)
+        InfoPopup.IsOpen = False
+        LoadFile(sender.ToolTip)
+
+    End Sub
+
+    Private Sub ShowMoreBtn_Click(sender As Object, e As RoutedEventArgs) Handles ShowMoreBtn.Click
+
+        If MoreRootTxt.Text = Funcs.ChooseLang("Show more", "Afficher plus") Then
+            If Root2Btn.Tag = 1 Then Root2Btn.Visibility = Visibility.Visible
+            If Root3Btn.Tag = 1 Then Root3Btn.Visibility = Visibility.Visible
+            If Root4Btn.Tag = 1 Then Root4Btn.Visibility = Visibility.Visible
+            If MoreRootBtn.Tag = 1 Then MoreRootBtn.Visibility = Visibility.Visible
+
+            If Root4Btn.Visibility = Visibility.Visible Then
+                Root1Img.Margin = New Thickness(66, 0, 0, 0)
+                Root2Img.Margin = New Thickness(45, 0, 0, 0)
+                Root3Img.Margin = New Thickness(24, 0, 0, 0)
+                Root4Img.Margin = New Thickness(3, 0, 0, 0)
+
+            ElseIf Root3Btn.Visibility = Visibility.Visible Then
+                Root1Img.Margin = New Thickness(45, 0, 0, 0)
+                Root2Img.Margin = New Thickness(24, 0, 0, 0)
+                Root3Img.Margin = New Thickness(3, 0, 0, 0)
+
+            Else
+                Root1Img.Margin = New Thickness(24, 0, 0, 0)
+                Root2Img.Margin = New Thickness(3, 0, 0, 0)
+
+            End If
+
+            BeginStoryboard(TryFindResource("MoreUpInfoStoryboard"))
+            MoreRootTxt.Text = Funcs.ChooseLang("Show less", "Afficher moins")
+
+        Else
+            Root2Btn.Visibility = Visibility.Collapsed
+            Root3Btn.Visibility = Visibility.Collapsed
+            Root4Btn.Visibility = Visibility.Collapsed
+            MoreRootBtn.Visibility = Visibility.Collapsed
+
+            Root1Img.Margin = New Thickness(3, 0, 0, 0)
+            BeginStoryboard(TryFindResource("MoreDownInfoStoryboard"))
+            MoreRootTxt.Text = Funcs.ChooseLang("Show more", "Afficher plus")
+
+        End If
+
+    End Sub
+
+    Private Sub CloseDocBtn_Click(sender As Object, e As RoutedEventArgs) Handles CloseDocBtn.Click
+
+        Dim SaveChoice As MessageBoxResult = MessageBoxResult.No
+
+        If My.Settings.showprompt Then
+            SaveChoice = NewMessage(Funcs.ChooseLang("Do you want to save any changes to your document?", "Vous voulez enregistrer toutes les modifications à votre document ?"),
+                                    Funcs.ChooseLang("Before you go...", "Deux secondes..."), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation)
+
+        End If
+
+        If SaveChoice = MessageBoxResult.Yes Then
+            If SaveFile(ThisFile) = False Then
+                Exit Sub
+
+            End If
+
+        ElseIf Not SaveChoice = MessageBoxResult.No Then
+            Exit Sub
+
+        End If
+
+        EditingTimer.Stop()
+        ResetInfo()
+
+        ThisFile = ""
+        DocTxt.Clear()
+
+        urc.Clear()
+        UndoBtn.IsEnabled = False
+        RedoBtn.IsEnabled = False
+        urc.AddItem(DocTxt.Text)
+
+        Title = Funcs.ChooseLang("Untitled - Type Express", "Sans titre - Type Express")
+        TitleTxt.Text = Funcs.ChooseLang("Untitled - Type Express", "Sans titre - Type Express")
+        MainTabs.SelectedIndex = 1
+
+    End Sub
+
+    Private Sub StorageBtn_Click(sender As Object, e As RoutedEventArgs) Handles StorageBtn.Click
+        Process.Start("https://jwebsites404.wixsite.com/expressapps")
+
+    End Sub
+
+
+
+    ' DOCTABS
+    ' --
+
+    Private Sub HomeBtn_Click(sender As Object, e As RoutedEventArgs) Handles HomeBtn.Click
+
+        If Not DocTabs.SelectedIndex = 0 Then
+            DocTabs.SelectedIndex = 0
+            BeginStoryboard(TryFindResource("HomeStoryboard"))
+
+        End If
+
+    End Sub
+
+    Private Sub ToolsBtn_Click(sender As Object, e As RoutedEventArgs) Handles ToolsBtn.Click
+
+        If Not DocTabs.SelectedIndex = 1 Then
+            DocTabs.SelectedIndex = 1
+            BeginStoryboard(TryFindResource("ToolsStoryboard"))
+
+        End If
+
+    End Sub
+
+    Private Sub DesignBtn_Click(sender As Object, e As RoutedEventArgs) Handles DesignBtn.Click
+
+        If Not DocTabs.SelectedIndex = 2 Then
+            DocTabs.SelectedIndex = 2
+            BeginStoryboard(TryFindResource("DesignStoryboard"))
+
+        End If
+
+    End Sub
+
+    Private Sub ReviewBtn_Click(sender As Object, e As RoutedEventArgs) Handles ReviewBtn.Click
+
+        If Not DocTabs.SelectedIndex = 3 Then
+            DocTabs.SelectedIndex = 3
+            BeginStoryboard(TryFindResource("ReviewStoryboard"))
+
+        End If
+
+    End Sub
+
+    Private Sub ResetDocTabsFont()
+        HomeBtnTxt.Foreground = New SolidColorBrush(Color.FromRgb(255, 255, 255))
+        ToolsBtnTxt.Foreground = New SolidColorBrush(Color.FromRgb(255, 255, 255))
+        DesignBtnTxt.Foreground = New SolidColorBrush(Color.FromRgb(255, 255, 255))
+        ReviewBtnTxt.Foreground = New SolidColorBrush(Color.FromRgb(255, 255, 255))
+
+    End Sub
+
+    Private Sub DocTabs_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles DocTabs.SelectionChanged
+        ResetDocTabsFont()
+
+        If DocTabs.SelectedIndex = 3 Then
+            ReviewMnStoryboard.Begin()
+            ReviewBtnTxt.SetResourceReference(ForegroundProperty, "TextColor")
+
+        ElseIf DocTabs.SelectedIndex = 1 Then
+            ToolsMnStoryboard.Begin()
+            ToolsBtnTxt.SetResourceReference(ForegroundProperty, "TextColor")
+
+        ElseIf DocTabs.SelectedIndex = 2 Then
+            DesignMnStoryboard.Begin()
+            DesignBtnTxt.SetResourceReference(ForegroundProperty, "TextColor")
+
+        Else
+            HomeMnStoryboard.Begin()
+            HomeBtnTxt.SetResourceReference(ForegroundProperty, "TextColor")
+
+        End If
+
+    End Sub
+
+    Private Sub DocBtns_MouseEnter(sender As Controls.Button, e As Input.MouseEventArgs) Handles HomeBtn.MouseEnter, ToolsBtn.MouseEnter, DesignBtn.MouseEnter, ReviewBtn.MouseEnter
+
+        If sender.Equals(HomeBtn) Then
+            HomeBtnTxt.FontWeight = FontWeights.Bold
+
+        ElseIf sender.Equals(ToolsBtn) Then
+            ToolsBtnTxt.FontWeight = FontWeights.Bold
+
+        ElseIf sender.Equals(DesignBtn) Then
+            DesignBtnTxt.FontWeight = FontWeights.Bold
+
+        ElseIf sender.Equals(ReviewBtn) Then
+            ReviewBtnTxt.FontWeight = FontWeights.Bold
+
+        End If
+
+    End Sub
+
+    Private Sub DocBtns_MouseLeave(sender As Controls.Button, e As Input.MouseEventArgs) Handles HomeBtn.MouseLeave, ToolsBtn.MouseLeave, DesignBtn.MouseLeave, ReviewBtn.MouseLeave
+
+        If sender.Equals(HomeBtn) Then
+            HomeBtnTxt.FontWeight = FontWeights.Normal
+
+        ElseIf sender.Equals(ToolsBtn) Then
+            ToolsBtnTxt.FontWeight = FontWeights.Normal
+
+        ElseIf sender.Equals(DesignBtn) Then
+            DesignBtnTxt.FontWeight = FontWeights.Normal
+
+        ElseIf sender.Equals(ReviewBtn) Then
+            ReviewBtnTxt.FontWeight = FontWeights.Normal
+
+        End If
+
+    End Sub
+
+    Private Sub OpenSidePane(tab As Integer)
+        MainTabs.SelectedIndex = 1
+        SideTabs.SelectedIndex = tab
+
+        If Not SideBarGrid.Visibility = Visibility.Visible Then
+            SideBarGrid.Visibility = Visibility.Visible
+            BeginStoryboard(TryFindResource("SideStoryboard"))
+
+        End If
+
+    End Sub
+
+    Private Sub SideTabs_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles SideTabs.SelectionChanged
+
+        Select Case SideTabs.SelectedIndex
+            Case 0
+                SideHeaderLbl.Text = Funcs.ChooseLang("Table", "Tableau")
+            Case 1
+                SideHeaderLbl.Text = Funcs.ChooseLang("Dictionary", "Dictionnaire")
+            Case 2
+                SideHeaderLbl.Text = Funcs.ChooseLang("Symbol", "Symbole")
+            Case 3
+                SideHeaderLbl.Text = Funcs.ChooseLang("Equation", "Équation")
+            Case 4
+                SideHeaderLbl.Text = Funcs.ChooseLang("Date & Time", "Date et Heure")
+            Case 5
+                SideHeaderLbl.Text = Funcs.ChooseLang("Font Styles", "Styles de Police")
+            Case 6
+                SideHeaderLbl.Text = Funcs.ChooseLang("Colour Schemes", "Palettes de Couleurs")
+            Case 7
+                SideHeaderLbl.Text = Funcs.ChooseLang("Find & Replace", "Rechercher et Remplacer")
+            Case 8
+                SideHeaderLbl.Text = Funcs.ChooseLang("Spellchecker", "Orthographe")
+            Case 9
+                SideHeaderLbl.Text = Funcs.ChooseLang("Text Property", "Propriété de Texte")
+        End Select
+
+    End Sub
+
+    Private Sub HideSideBarBtn_Click(sender As Object, e As RoutedEventArgs) Handles HideSideBarBtn.Click
+        SideBarGrid.Visibility = Visibility.Collapsed
+
+    End Sub
+
+
+    ' HOME > UNDO & REDO
+    ' --
+
+    Private Sub UndoBtn_Click(sender As Object, e As RoutedEventArgs) Handles UndoBtn.Click
+        If UndoBtn.IsEnabled Then
+            NoAdd = True
+            urc.Undo()
+
+            DocTxt.Rtf = urc.CurrentItem
+            UndoBtn.IsEnabled = urc.CanUndo
+            RedoBtn.IsEnabled = urc.CanRedo
+            NoAdd = False
+
+        End If
+
+    End Sub
+
+    Private Sub RedoBtn_Click(sender As Object, e As RoutedEventArgs) Handles RedoBtn.Click
+        If RedoBtn.IsEnabled Then
+            NoAdd = True
+            urc.Redo()
+
+            DocTxt.Rtf = urc.CurrentItem
+            UndoBtn.IsEnabled = urc.CanUndo
+            RedoBtn.IsEnabled = urc.CanRedo
+            NoAdd = False
+
+        End If
+
+    End Sub
+
+    Private Sub UndoBtn_IsEnabledChanged(sender As Object, e As DependencyPropertyChangedEventArgs) Handles UndoBtn.IsEnabledChanged
+        Try
+            If UndoBtn.IsEnabled Then
+                UndoBtnImg.SetResourceReference(ContentProperty, "UndoIcon")
+
+            Else
+                UndoBtnImg.SetResourceReference(ContentProperty, "NoUndoIcon")
+
+            End If
+
+        Catch
+        End Try
+
+    End Sub
+
+    Private Sub RedoBtn_IsEnabledChanged(sender As Object, e As DependencyPropertyChangedEventArgs) Handles RedoBtn.IsEnabledChanged
+        Try
+            If RedoBtn.IsEnabled Then
+                RedoBtnImg.SetResourceReference(ContentProperty, "RedoIcon")
+
+            Else
+                RedoBtnImg.SetResourceReference(ContentProperty, "NoRedoIcon")
+
+            End If
+
+        Catch
+        End Try
+
+    End Sub
+
+
+    ' HOME > CLIPBOARD
+    ' --
+
+    Private Sub CutBtn_Click(sender As Object, e As RoutedEventArgs) Handles CutBtn.Click, CutMenuBtn.Click
+        DocTxt.Cut()
+
+    End Sub
+
+    Private Sub CopyBtn_Click(sender As Object, e As RoutedEventArgs) Handles CopyBtn.Click, CopyMenuBtn.Click
+        DocTxt.Copy()
+        CreateTempLabel(Funcs.ChooseLang("Copied to clipboard", "Copié vers le presse-papiers"))
+
+    End Sub
+
+    Private Sub PasteBtn_Click(sender As Object, e As RoutedEventArgs) Handles PasteBtn.Click, PasteMenuBtn.Click
+        DocTxt.Paste()
+
+    End Sub
+
+    Public clipobject As Object = Nothing
+    Public objecttype As String = ""
+
+    Public Sub TakeFromClip()
+
+        Try
+            If Windows.Clipboard.ContainsData(Windows.DataFormats.Rtf) Then
+                clipobject = Windows.Clipboard.GetData(Windows.DataFormats.Rtf)
+                objecttype = "rtf"
+
+            ElseIf Windows.Clipboard.ContainsText Then
+                clipobject = Windows.Clipboard.GetText()
+                objecttype = "txt"
+
+            ElseIf Windows.Clipboard.ContainsImage Then
+                clipobject = Windows.Clipboard.GetImage()
+                objecttype = "img"
+
+            ElseIf Windows.Clipboard.ContainsAudio Then
+                clipobject = Windows.Clipboard.GetAudioStream()
+                objecttype = "aud"
+
+            ElseIf Windows.Clipboard.ContainsFileDropList Then
+                clipobject = Windows.Clipboard.GetFileDropList()
+                objecttype = "fdl"
+
+            Else
+                clipobject = Nothing
+                objecttype = ""
+
+            End If
+
+        Catch
+        End Try
+
+    End Sub
+
+    Public Sub PutBacktoClip()
+
+        Try
+            If objecttype = "rtf" Then
+                Windows.Clipboard.SetData(Windows.DataFormats.Rtf, clipobject)
+
+            ElseIf objecttype = "txt" Then
+                Windows.Clipboard.SetText(clipobject)
+
+            ElseIf objecttype = "img" Then
+                Windows.Clipboard.SetImage(clipobject)
+
+            ElseIf objecttype = "aud" Then
+                Windows.Clipboard.SetAudio(clipobject)
+
+            ElseIf objecttype = "fdl" Then
+                Windows.Clipboard.SetFileDropList(clipobject)
+
+            End If
+
+        Catch
+        End Try
+
+    End Sub
+
+
+    ' HOME > FONTS
+    ' --
+
+    Private Sub MoreFontsBtn_Click(sender As Object, e As RoutedEventArgs) Handles MoreFontsBtn.Click
+        FontPopup.IsOpen = True
+
+    End Sub
+
+    Private Sub FontBtns_Click(sender As Controls.Button, e As RoutedEventArgs)
+        FontStyleTxt.Text = sender.Tag.ToString()
+        FontPopup.IsOpen = False
+        ChangeFont()
+
+    End Sub
+
+    Private Sub FontBtn_Click(sender As Object, e As RoutedEventArgs) Handles FontPickerBtn.Click
+
+        Dim fnt As New FontPicker
+        If fnt.ShowDialog() = True Then
+            Try
+                FontStyleTxt.Text = fnt.ChosenFont
+                ChangeFont()
+
+            Catch
+            End Try
+        End If
+
+    End Sub
+
+    Private Sub FontPopup_KeyDown(sender As Object, e As Input.KeyEventArgs) Handles Me.KeyDown
+        Dim alphabet As String = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+        If FontPopup.IsOpen Then
+            If alphabet.Contains(e.Key.ToString().ToUpper()) Then
+                Dim offset = ReturnFontPos(e.Key.ToString().ToUpper())
+                If Not offset = Nothing Then FontScroll.ScrollToVerticalOffset(offset)
+
+            End If
+        End If
+
+    End Sub
+
+    Private Function ReturnFontPos(letter As String) As Integer
+
+        For Each i As Controls.Button In FontsStack.Children.OfType(Of Controls.Button).ToList()
+            If i.Tag.ToString().ToUpper()(0) = letter Then
+                Return FontsStack.Children.IndexOf(i) * 30 + 10
+            End If
+
+        Next
+        Return Nothing
+
+    End Function
+
+    Private Overloads Sub ChangeFont()
+
+        If EnableFontChange = True Then
+            If Not FontStyleTxt.Text = "" Then
+
+                EnableFontChange = False
+
+                Dim SelectStart As Integer = DocTxt.SelectionStart
+                Dim SelectLength As Integer = DocTxt.SelectionLength
+                Dim FontChosen As String = FontStyleTxt.Text
+
+
+                If SelectLength = 0 Then
+                    DocTxt.SelectionFont = New WinDrawing.Font(FontChosen, DocTxt.SelectionFont.Size, DocTxt.SelectionFont.Style)
+
+                Else
+                    TakeFromClip()
+
+                    Dim bufferrtf As New WinFormsTxt
+                    DocTxt.Copy()
+                    bufferrtf.Paste()
+                    bufferrtf.SelectAll()
+
+
+                    Dim FormatSelection As Integer = bufferrtf.SelectionLength
+
+                    For i = 0 To FormatSelection - 1
+                        Try
+                            bufferrtf.Select(i, 1)
+                            bufferrtf.SelectionFont = New WinDrawing.Font(FontChosen, bufferrtf.SelectionFont.Size, bufferrtf.SelectionFont.Style)
+                        Catch
+                        End Try
+                    Next
+
+
+                    bufferrtf.SelectAll()
+                    bufferrtf.Copy()
+                    DocTxt.Paste()
+                    PutBacktoClip()
+
+                    bufferrtf.Dispose()
+
+                End If
+
+
+                TextFocus()
+                DocTxt.Select(SelectStart, SelectLength)
+
+                EnableFontChange = True
+
+            End If
+        End If
+
+    End Sub
+
+    Private Sub FontStyleTxt_KeyDown(sender As Object, e As Input.KeyEventArgs) Handles FontStyleTxt.KeyDown
+
+        If e.Key = Key.Enter Then
+            'Dim FontFound As Boolean = False
+            'Dim LookupCount As Integer = 0
+
+            Try
+                Dim testfont As New WinDrawing.FontFamily(FontStyleTxt.Text)
+                testfont.Dispose()
+                ChangeFont()
+
+            Catch
+                NewMessage(Funcs.ChooseLang("The font you entered could not be found.", "La police que vous avez entrée est introuvable."),
+                            Funcs.ChooseLang("Invalid font", "Police invalide"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+                FontStyleTxt.Text = ""
+
+            End Try
+
+            'For Each i As String In FontStyleCombo.Items
+
+            '    If i.ToLower() = FontStyleTxt.Text.ToLower() Then
+            '        FontStyleTxt.Text = FontStyleCombo.Items.Item(LookupCount).ToString()
+            '        FontFound = True
+            '        ChangeFont()
+            '        Exit For
+
+            '    Else
+            '        LookupCount += 1
+
+            '    End If
+
+            'Next
+
+        End If
+
+    End Sub
+
+    Private Sub DocTxt_SelectionChanged(sender As Object, e As EventArgs) Handles DocTxt.SelectionChanged
+        TextSelection()
+        If WordCountStatusBtn.Visibility = Visibility.Visible Then CheckWordStatus()
+
+    End Sub
+
+    Private Sub TextSelection()
+        If EnableFontChange = True Then
+            EnableFontChange = False
+
+            Try
+                FontStyleTxt.Text = DocTxt.SelectionFont.FontFamily.Name.ToString()
+                FontSizeTxt.Text = DocTxt.SelectionFont.Size.ToString()
+
+            Catch
+                FontStyleTxt.Text = ""
+                FontSizeTxt.Text = ""
+
+            End Try
+
+            Try
+                If DocTxt.SelectionFont.Style.HasFlag(WinDrawing.FontStyle.Bold) Then
+                    BoldSelector.Visibility = Visibility.Visible
+                Else
+                    BoldSelector.Visibility = Visibility.Hidden
+                End If
+
+                If DocTxt.SelectionFont.Style.HasFlag(WinDrawing.FontStyle.Italic) Then
+                    ItalicSelector.Visibility = Visibility.Visible
+                Else
+                    ItalicSelector.Visibility = Visibility.Hidden
+                End If
+
+                If DocTxt.SelectionFont.Style.HasFlag(WinDrawing.FontStyle.Underline) Then
+                    UnderlineSelector.Visibility = Visibility.Visible
+                Else
+                    UnderlineSelector.Visibility = Visibility.Hidden
+                End If
+
+                If DocTxt.SelectionFont.Style.HasFlag(WinDrawing.FontStyle.Strikeout) Then
+                    StrikeoutSelector.Visibility = Visibility.Visible
+                Else
+                    StrikeoutSelector.Visibility = Visibility.Hidden
+                End If
+            Catch
+            End Try
+
+            EnableFontChange = True
+
+        End If
+
+        If SpellOverride = True Then
+            ResetSpellchecker()
+
+        End If
+
+    End Sub
+
+    Private Sub FontSizesBtn_Click(sender As Object, e As RoutedEventArgs) Handles FontSizesBtn.Click
+        FontSizePopup.IsOpen = True
+
+    End Sub
+
+    Private Sub Font8Btn_Click(sender As Controls.Button, e As RoutedEventArgs) Handles Font8Btn.Click, Font9Btn.Click, Font10Btn.Click, Font11Btn.Click, Font12Btn.Click,
+        Font14Btn.Click, Font16Btn.Click, Font18Btn.Click, Font20Btn.Click, Font22Btn.Click, Font24Btn.Click, Font26Btn.Click, Font28Btn.Click, Font36Btn.Click,
+        Font48Btn.Click, Font72Btn.Click
+
+        FontSizeTxt.Text = sender.Tag
+        FontSizePopup.IsOpen = False
+        ChangeFontSize()
+
+    End Sub
+
+    Private Sub FontSizeTxt_KeyDown(sender As Object, e As Input.KeyEventArgs) Handles FontSizeTxt.KeyDown
+
+        If e.Key = Key.Enter Then
+            ChangeFontSize()
+
+        End If
+
+    End Sub
+
+    Private Sub ChangeFontSize()
+
+        If EnableFontChange = True Then
+            Try
+                If Not FontSizeTxt.Text = "" Then
+
+                    EnableFontChange = False
+
+                    Dim SelectStart As Integer = DocTxt.SelectionStart
+                    Dim SelectLength As Integer = DocTxt.SelectionLength
+                    Dim SizeChosen As Single = Convert.ToSingle(FontSizeTxt.Text)
+
+
+                    If SelectLength = 0 Then
+                        DocTxt.SelectionFont = New WinDrawing.Font(DocTxt.SelectionFont.FontFamily, SizeChosen, DocTxt.SelectionFont.Style)
+
+                    Else
+                        TakeFromClip()
+
+                        Dim bufferrtf As New WinFormsTxt
+                        DocTxt.Copy()
+                        bufferrtf.Paste()
+                        bufferrtf.SelectAll()
+
+
+                        Dim FormatSelection As Integer = bufferrtf.SelectionLength
+
+
+                        For i = 0 To FormatSelection - 1
+                            Try
+                                bufferrtf.Select(i, 1)
+                                bufferrtf.SelectionFont = New WinDrawing.Font(bufferrtf.SelectionFont.FontFamily, SizeChosen, bufferrtf.SelectionFont.Style)
+                            Catch
+                            End Try
+                        Next
+
+
+                        bufferrtf.SelectAll()
+                        bufferrtf.Copy()
+                        DocTxt.Paste()
+                        PutBacktoClip()
+
+                        bufferrtf.Dispose()
+
+                    End If
+
+
+                    TextFocus()
+                    DocTxt.Select(SelectStart, SelectLength)
+
+                    EnableFontChange = True
+
+                End If
+
+            Catch ex As Exception
+                NewMessage(Funcs.ChooseLang("The font size you entered is invalid.", "La taille de police que vous avez entrée est invalide."),
+                            Funcs.ChooseLang("Invalid font size", "Taille de police invalide"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+                EnableFontChange = True
+                FontSizeTxt.Text = ""
+
+            End Try
+        End If
+
+    End Sub
+
+
+    ' HOME > STYLES
+    ' --
+
+    Private Sub BoldBtn_Click(sender As Object, e As EventArgs) Handles BoldBtn.Click
+        SetStyle(WinDrawing.FontStyle.Bold)
+
+    End Sub
+
+    Private Sub ItalicBtn_Click(sender As Object, e As EventArgs) Handles ItalicBtn.Click
+        SetStyle(WinDrawing.FontStyle.Italic)
+
+    End Sub
+
+    Private Sub UnderlineBtn_Click(sender As Object, e As EventArgs) Handles UnderlineBtn.Click
+        SetStyle(WinDrawing.FontStyle.Underline)
+
+    End Sub
+
+    Private Sub StrikethroughBtn_Click(sender As Object, e As EventArgs) Handles StrikethroughBtn.Click
+        SetStyle(WinDrawing.FontStyle.Strikeout)
+
+    End Sub
+
+    Private Overloads Sub SetStyle(ChosenStyle As WinDrawing.FontStyle)
+
+        EnableFontChange = False
+
+        Dim SelectStart As Integer = DocTxt.SelectionStart
+        Dim SelectLength As Integer = DocTxt.SelectionLength
+
+
+        If SelectLength = 0 Then
+
+            If DocTxt.SelectionFont.Style = ChosenStyle Then
+                DocTxt.SelectionFont = New WinDrawing.Font(DocTxt.SelectionFont.FontFamily, DocTxt.SelectionFont.Size, DocTxt.SelectionFont.Style And Not ChosenStyle)
+
+            Else
+                DocTxt.SelectionFont = New WinDrawing.Font(DocTxt.SelectionFont.FontFamily, DocTxt.SelectionFont.Size, ChosenStyle Or DocTxt.SelectionFont.Style)
+
+            End If
+
+        Else
+            TakeFromClip()
+            Dim InvertFound As Boolean = False
+
+            Dim bufferrtf As New WinFormsTxt
+            DocTxt.Copy()
+            bufferrtf.Paste()
+            bufferrtf.SelectAll()
+
+
+            Dim FormatSelection As Integer = bufferrtf.SelectionLength
+
+            For i = 0 To FormatSelection - 1
+                bufferrtf.Select(i, 1)
+
+                If Not bufferrtf.SelectionFont.Style.ToString().Contains(ChosenStyle.ToString()) Then
+                    InvertFound = True
+                    Exit For
+
+                End If
+
+            Next
+
+            For i = 0 To FormatSelection - 1
+                bufferrtf.Select(i, 1)
+
+                If InvertFound = False Then
+                    bufferrtf.SelectionFont = New WinDrawing.Font(bufferrtf.SelectionFont.FontFamily, bufferrtf.SelectionFont.Size, bufferrtf.SelectionFont.Style And Not ChosenStyle)
+
+                Else
+                    bufferrtf.SelectionFont = New WinDrawing.Font(bufferrtf.SelectionFont.FontFamily, bufferrtf.SelectionFont.Size, ChosenStyle Or bufferrtf.SelectionFont.Style)
+
+                End If
+
+            Next
+
+
+            bufferrtf.SelectAll()
+            bufferrtf.Copy()
+            DocTxt.Paste()
+            PutBacktoClip()
+
+            bufferrtf.Dispose()
+
+        End If
+
+
+        TextFocus()
+        DocTxt.Select(SelectStart, SelectLength)
+
+        EnableFontChange = True
+        TextSelection()
+
+    End Sub
+
+
+    ' HOME > INC/DEC SIZE
+    ' --
+
+    Private Sub IncSizeBtn_Click(sender As Object, e As RoutedEventArgs) Handles IncSizeBtn.Click
+        IncDecSize(1)
+
+    End Sub
+
+    Private Sub DecSizeBtn_Click(sender As Object, e As RoutedEventArgs) Handles DecSizeBtn.Click
+        IncDecSize(-1)
+
+    End Sub
+
+    Private Overloads Sub IncDecSize(incdec As Integer)
+
+        If EnableFontChange = True Then
+            Try
+                EnableFontChange = False
+
+                Dim SelectStart As Integer = DocTxt.SelectionStart
+                Dim SelectLength As Integer = DocTxt.SelectionLength
+
+
+                If SelectLength = 0 Then
+                    DocTxt.SelectionFont = New WinDrawing.Font(DocTxt.SelectionFont.FontFamily, DocTxt.SelectionFont.Size + incdec, DocTxt.SelectionFont.Style)
+
+                Else
+                    TakeFromClip()
+
+                    Dim bufferrtf As New WinFormsTxt
+                    DocTxt.Copy()
+                    bufferrtf.Paste()
+                    bufferrtf.SelectAll()
+
+
+                    Dim FormatSelection As Integer = bufferrtf.SelectionLength
+
+
+                    For i = 0 To FormatSelection - 1
+                        Try
+                            bufferrtf.Select(i, 1)
+                            bufferrtf.SelectionFont = New WinDrawing.Font(bufferrtf.SelectionFont.FontFamily, DocTxt.SelectionFont.Size + incdec, bufferrtf.SelectionFont.Style)
+                        Catch
+                        End Try
+                    Next
+
+
+                    bufferrtf.SelectAll()
+                    bufferrtf.Copy()
+                    DocTxt.Paste()
+                    PutBacktoClip()
+
+                    bufferrtf.Dispose()
+
+                End If
+
+
+                TextFocus()
+                DocTxt.Select(SelectStart, SelectLength)
+
+                EnableFontChange = True
+
+            Catch
+            End Try
+        End If
+
+    End Sub
+
+
+    ' HOME > ALIGNMENT
+    ' --
+
+    Private Sub LeftAlignBtn_Click(sender As Object, e As EventArgs) Handles LeftBtn.Click
+        DocTxt.SelectionAlignment = Forms.HorizontalAlignment.Left
+
+    End Sub
+
+    Private Sub CentreAlignBtn_Click(sender As Object, e As EventArgs) Handles CentreBtn.Click
+        DocTxt.SelectionAlignment = Forms.HorizontalAlignment.Center
+
+    End Sub
+
+    Private Sub RightAlignBtn_Click(sender As Object, e As EventArgs) Handles RightBtn.Click
+        DocTxt.SelectionAlignment = Forms.HorizontalAlignment.Right
+
+    End Sub
+
+
+    ' HOME > INDENT
+    ' --
+
+    Private Sub DecIndentBtn_Click(sender As Object, e As EventArgs) Handles DecIndentBtn.Click
+        DocTxt.SelectionIndent -= 8
+
+    End Sub
+
+    Private Sub IncIndentBtn_Click(sender As Object, e As EventArgs) Handles IncIndentBtn.Click
+        DocTxt.SelectionIndent += 8
+
+    End Sub
+
+
+    ' HOME > SUB/SUPERSCRIPT
+    ' --
+
+    Private Sub SuperscriptBtn_Click(sender As Object, e As EventArgs) Handles SuperscriptBtn.Click
+
+        EnableFontChange = False
+
+        Dim SelectStart As Integer = DocTxt.SelectionStart
+        Dim SelectLength As Integer = DocTxt.SelectionLength
+
+
+        If SelectLength = 0 Then
+
+            If DocTxt.SelectionCharOffset = 10 Then
+                DocTxt.SelectionCharOffset = 0
+
+            Else
+                DocTxt.SelectionCharOffset = 10
+
+            End If
+
+        Else
+            TakeFromClip()
+            Dim InvertFound As Boolean = False
+
+            Dim bufferrtf As New WinFormsTxt
+            DocTxt.Copy()
+            bufferrtf.Paste()
+            bufferrtf.SelectAll()
+
+
+            Dim FormatSelection As Integer = bufferrtf.SelectionLength
+
+            For i = 0 To FormatSelection - 1
+                bufferrtf.Select(i, 1)
+
+                If Not bufferrtf.SelectionCharOffset = 10 Then
+                    InvertFound = True
+                    Exit For
+
+                End If
+
+            Next
+
+            For i = 0 To FormatSelection - 1
+                bufferrtf.Select(i, 1)
+
+                If InvertFound = False Then
+                    bufferrtf.SelectionCharOffset = 0
+
+                Else
+                    bufferrtf.SelectionCharOffset = 10
+
+                End If
+
+            Next
+
+
+            bufferrtf.SelectAll()
+            bufferrtf.Copy()
+            DocTxt.Paste()
+            PutBacktoClip()
+
+            bufferrtf.Dispose()
+
+        End If
+
+
+        TextFocus()
+        DocTxt.Select(SelectStart, SelectLength)
+
+        EnableFontChange = True
+
+    End Sub
+
+    Private Sub SubscriptBtn_Click(sender As Object, e As EventArgs) Handles SubscriptBtn.Click
+
+        EnableFontChange = False
+
+        Dim SelectStart As Integer = DocTxt.SelectionStart
+        Dim SelectLength As Integer = DocTxt.SelectionLength
+
+
+        If SelectLength = 0 Then
+
+            If DocTxt.SelectionCharOffset = -10 Then
+                DocTxt.SelectionCharOffset = 0
+
+            Else
+                DocTxt.SelectionCharOffset = -10
+
+            End If
+
+        Else
+            TakeFromClip()
+            Dim InvertFound As Boolean = False
+
+            Dim bufferrtf As New WinFormsTxt
+            DocTxt.Copy()
+            bufferrtf.Paste()
+            bufferrtf.SelectAll()
+
+
+            Dim FormatSelection As Integer = bufferrtf.SelectionLength
+
+            For i = 0 To FormatSelection - 1
+                bufferrtf.Select(i, 1)
+
+                If Not bufferrtf.SelectionCharOffset = -10 Then
+                    InvertFound = True
+                    Exit For
+
+                End If
+
+            Next
+
+            For i = 0 To FormatSelection - 1
+                bufferrtf.Select(i, 1)
+
+                If InvertFound = False Then
+                    bufferrtf.SelectionCharOffset = 0
+
+                Else
+                    bufferrtf.SelectionCharOffset = -10
+
+                End If
+
+            Next
+
+
+            bufferrtf.SelectAll()
+            bufferrtf.Copy()
+            DocTxt.Paste()
+            PutBacktoClip()
+
+            bufferrtf.Dispose()
+
+        End If
+
+
+        TextFocus()
+        DocTxt.Select(SelectStart, SelectLength)
+
+        EnableFontChange = True
+
+    End Sub
+
+
+    ' HOME > TEXT COLOUR
+    ' --
+
+    Private Sub RefreshColourTooltips()
+        Dim c1, c2, c3, c4, c5, c6, c7, c8, c9, c10 As SolidColorBrush
+
+        c1 = Colour1.Fill
+        Colour1Btn.ToolTip = c1.Color.ToString()
+
+        c2 = Colour2.Fill
+        Colour2Btn.ToolTip = c2.Color.ToString()
+
+        c3 = Colour3.Fill
+        Colour3Btn.ToolTip = c3.Color.ToString()
+
+        c4 = Colour4.Fill
+        Colour4Btn.ToolTip = c4.Color.ToString()
+
+        c5 = Colour5.Fill
+        Colour5Btn.ToolTip = c5.Color.ToString()
+
+        c6 = Colour6.Fill
+        Colour6Btn.ToolTip = c6.Color.ToString()
+
+        c7 = Colour7.Fill
+        Colour7Btn.ToolTip = c7.Color.ToString()
+
+        c8 = Colour8.Fill
+        Colour8Btn.ToolTip = c8.Color.ToString()
+
+        c9 = Colour9.Fill
+        Colour9Btn.ToolTip = c9.Color.ToString()
+
+        c10 = Colour10.Fill
+        Colour10Btn.ToolTip = c10.Color.ToString()
+
+    End Sub
+
+    Private Sub TextColourBtn_Click(sender As Object, e As RoutedEventArgs) Handles TextColourBtn.Click
+        SetTextColour(TextColourBox.Fill)
+
+    End Sub
+
+    Private Sub MoreTextColourBtn_Click(sender As Object, e As RoutedEventArgs) Handles MoreTextColourBtn.Click
+        FontColourPopup.IsOpen = True
+
+    End Sub
+
+    Private Sub Colour1Btn_Click(sender As Object, e As RoutedEventArgs) Handles Colour1Btn.Click
+        SetTextColour(Colour1.Fill)
+
+    End Sub
+
+    Private Sub Colour2Btn_Click(sender As Object, e As RoutedEventArgs) Handles Colour2Btn.Click
+        SetTextColour(Colour2.Fill)
+
+    End Sub
+
+    Private Sub Colour3Btn_Click(sender As Object, e As RoutedEventArgs) Handles Colour3Btn.Click
+        SetTextColour(Colour3.Fill)
+
+    End Sub
+
+    Private Sub Colour4Btn_Click(sender As Object, e As RoutedEventArgs) Handles Colour4Btn.Click
+        SetTextColour(Colour4.Fill)
+
+    End Sub
+
+    Private Sub Colour5Btn_Click(sender As Object, e As RoutedEventArgs) Handles Colour5Btn.Click
+        SetTextColour(Colour5.Fill)
+
+    End Sub
+
+    Private Sub Colour6Btn_Click(sender As Object, e As RoutedEventArgs) Handles Colour6Btn.Click
+        SetTextColour(Colour6.Fill)
+
+    End Sub
+
+    Private Sub Colour7Btn_Click(sender As Object, e As RoutedEventArgs) Handles Colour7Btn.Click
+        SetTextColour(Colour7.Fill)
+
+    End Sub
+
+    Private Sub Colour8Btn_Click(sender As Object, e As RoutedEventArgs) Handles Colour8Btn.Click
+        SetTextColour(Colour8.Fill)
+
+    End Sub
+
+    Private Sub Colour9Btn_Click(sender As Object, e As RoutedEventArgs) Handles Colour9Btn.Click
+        SetTextColour(Colour9.Fill)
+
+    End Sub
+
+    Private Sub Colour10Btn_Click(sender As Object, e As RoutedEventArgs) Handles Colour10Btn.Click
+        SetTextColour(Colour10.Fill)
+
+    End Sub
+
+    Private Sub ApplyColourBtn_Click(sender As Object, e As RoutedEventArgs) Handles ApplyColourBtn.Click
+        Try
+            SetTextColour(New SolidColorBrush(ColourPicker.SelectedColor))
+
+        Catch
+            NewMessage(Funcs.ChooseLang("Please choose a custom colour first.", "Choisissez d'abord une couleur personnalisée."),
+                        Funcs.ChooseLang("No colour selected", "Aucune couleur sélectionnée"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+        End Try
+
+    End Sub
+
+    Private Sub SetTextColour(ChosenColour As SolidColorBrush)
+        Dim r As Byte = ChosenColour.GetValue(SolidColorBrush.ColorProperty).R
+        Dim g As Byte = ChosenColour.GetValue(SolidColorBrush.ColorProperty).G
+        Dim b As Byte = ChosenColour.GetValue(SolidColorBrush.ColorProperty).B
+
+        Try
+            DocTxt.SelectionColor = WinDrawing.Color.FromArgb(Convert.ToInt32(r), Convert.ToInt32(g), Convert.ToInt32(b))
+            TextColourBox.Fill = ChosenColour
+
+        Catch
+            NewMessage(Funcs.ChooseLang("We couldn't change the text colour. Please try again.",
+                                    "Nous n'arrivions pas à changer la couleur du texte. Veuillez réessayer."),
+                        Funcs.ChooseLang("Invalid colour", "Couleur invalide"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+        End Try
+
+        FontColourPopup.IsOpen = False
+        TextFocus()
+
+    End Sub
+
+
+    ' HOME > HIGHLIGHT
+    ' --
+
+    Private Sub MoreHighlightBtn_Click(sender As Object, e As RoutedEventArgs) Handles MoreHighlightBtn.Click
+        HighlightPopup.IsOpen = True
+
+    End Sub
+
+    Private Sub HighlightBtn_Click(sender As Object, e As RoutedEventArgs) Handles HighlightBtn.Click
+        SetHighlightColour(HighlightColourBox.Fill)
+
+    End Sub
+
+    Private Sub Colour11Btn_Click(sender As Object, e As RoutedEventArgs) Handles Colour11Btn.Click
+        SetHighlightColour(Colour11.Fill)
+
+    End Sub
+
+    Private Sub Colour12Btn_Click(sender As Object, e As RoutedEventArgs) Handles Colour12Btn.Click
+        SetHighlightColour(Colour12.Fill)
+
+    End Sub
+
+    Private Sub Colour13Btn_Click(sender As Object, e As RoutedEventArgs) Handles Colour13Btn.Click
+        SetHighlightColour(Colour13.Fill)
+
+    End Sub
+
+    Private Sub Colour14Btn_Click(sender As Object, e As RoutedEventArgs) Handles Colour14Btn.Click
+        SetHighlightColour(Colour14.Fill)
+
+    End Sub
+
+    Private Sub Colour15Btn_Click(sender As Object, e As RoutedEventArgs) Handles Colour15Btn.Click
+        SetHighlightColour(Colour15.Fill)
+
+    End Sub
+
+    Private Sub Colour16Btn_Click(sender As Object, e As RoutedEventArgs) Handles Colour16Btn.Click
+        SetHighlightColour(Colour16.Fill)
+
+    End Sub
+
+    Private Sub Colour17Btn_Click(sender As Object, e As RoutedEventArgs) Handles Colour17Btn.Click
+        SetHighlightColour(Colour17.Fill)
+
+    End Sub
+
+    Private Sub Colour18Btn_Click(sender As Object, e As RoutedEventArgs) Handles Colour18Btn.Click
+        SetHighlightColour(Colour18.Fill)
+
+    End Sub
+
+    Private Sub Colour19Btn_Click(sender As Object, e As RoutedEventArgs) Handles Colour19Btn.Click
+        SetHighlightColour(Colour19.Fill)
+
+    End Sub
+
+    Private Sub Colour20Btn_Click(sender As Object, e As RoutedEventArgs) Handles Colour20Btn.Click
+        SetHighlightColour(Colour20.Fill)
+
+    End Sub
+
+    Private Sub SetHighlightColour(ChosenColour As SolidColorBrush)
+        Dim r As Byte = ChosenColour.GetValue(SolidColorBrush.ColorProperty).R
+        Dim g As Byte = ChosenColour.GetValue(SolidColorBrush.ColorProperty).G
+        Dim b As Byte = ChosenColour.GetValue(SolidColorBrush.ColorProperty).B
+
+        Try
+            DocTxt.SelectionBackColor = WinDrawing.Color.FromArgb(Convert.ToInt32(r), Convert.ToInt32(g), Convert.ToInt32(b))
+            HighlightColourBox.Fill = ChosenColour
+
+        Catch
+        End Try
+
+        HighlightPopup.IsOpen = False
+        TextFocus()
+
+    End Sub
+
+
+
+    ' TOOLS > BULLETS
+    ' --
+
+    Private Sub BulletBtn_Click(sender As Object, e As EventArgs) Handles BulletBtn.Click
+        If DocTxt.SelectionBullet = True Then
+            DocTxt.SelectionBullet = False
+
+        Else
+            DocTxt.SelectionBullet = True
+
+        End If
+
+    End Sub
+
+
+    ' TOOLS > NUMBERED LIST
+    ' --
+
+    Private Sub NumberBtn_Click(sender As Object, e As RoutedEventArgs) Handles NumberBtn.Click
+        Dim temptext As String = DocTxt.SelectedText
+        Dim SelectionStart As Integer = DocTxt.SelectionStart
+        Dim SelectionLength As Integer = DocTxt.SelectionLength
+
+        DocTxt.SelectionStart = DocTxt.GetFirstCharIndexOfCurrentLine()
+        DocTxt.SelectionLength = 0
+        DocTxt.SelectedText = "1. "
+        Dim j As Integer = 2
+
+        For i As Integer = SelectionStart To SelectionStart + SelectionLength - 1
+
+            If DocTxt.Text(i) = vbLf Then
+                DocTxt.SelectionStart = i + 1
+                DocTxt.SelectionLength = 0
+                DocTxt.SelectedText = j.ToString() & ". "
+                j += 1
+                SelectionLength += 3
+            End If
+        Next
+
+    End Sub
+
+    Private Sub DocTxt_KeyDown(sender As Object, e As Forms.KeyEventArgs) Handles DocTxt.KeyDown
+        Dim tempNum As Integer
+
+        If e.KeyCode = Forms.Keys.Enter Then
+            Try
+                If Char.IsDigit(DocTxt.Text(DocTxt.GetFirstCharIndexOfCurrentLine())) Then
+
+                    If Char.IsDigit(DocTxt.Text(DocTxt.GetFirstCharIndexOfCurrentLine() + 1)) AndAlso DocTxt.Text(DocTxt.GetFirstCharIndexOfCurrentLine() + 2) = "."c Then
+                        tempNum = Integer.Parse(DocTxt.Text.Substring(DocTxt.GetFirstCharIndexOfCurrentLine(), 2))
+                    Else
+                        tempNum = Integer.Parse(DocTxt.Text(DocTxt.GetFirstCharIndexOfCurrentLine()).ToString())
+                    End If
+
+                    If DocTxt.Text(DocTxt.GetFirstCharIndexOfCurrentLine() + 1) = "."c OrElse (Char.IsDigit(DocTxt.Text(DocTxt.GetFirstCharIndexOfCurrentLine() + 1)) AndAlso DocTxt.Text(DocTxt.GetFirstCharIndexOfCurrentLine() + 2) = "."c) Then
+                        tempNum += 1
+                        DocTxt.SelectedText = vbCrLf & tempNum.ToString() & ". "
+                        e.Handled = True
+                    End If
+                End If
+
+            Catch
+            End Try
+
+        ElseIf e.Control Then
+            Select Case e.KeyCode
+                Case Forms.Keys.A
+                    SelectAllBtn_Click(SelectAllBtn, New RoutedEventArgs())
+                Case Forms.Keys.B
+                    BoldBtn_Click(BoldBtn, New RoutedEventArgs())
+                Case Forms.Keys.C
+                    CopyBtn_Click(CopyBtn, New RoutedEventArgs())
+                Case Forms.Keys.D
+                    StylesBtn_Click(StylesBtn, New RoutedEventArgs())
+                Case Forms.Keys.E
+                    CentreAlignBtn_Click(CentreBtn, New RoutedEventArgs())
+                Case Forms.Keys.F
+                    FindReplaceBtn_Click(FindReplaceBtn, New RoutedEventArgs())
+                Case Forms.Keys.G
+                    SymbolBtn_Click(SymbolBtn, New RoutedEventArgs())
+                Case Forms.Keys.H
+                    EquationBtn_Click(EquationBtn, New RoutedEventArgs())
+                Case Forms.Keys.I
+                    ItalicBtn_Click(ItalicBtn, New RoutedEventArgs())
+                Case Forms.Keys.J
+                    ShareBtn_Click(ShareBtn, New RoutedEventArgs())
+                Case Forms.Keys.K
+                    LinkBtn_Click(LinkBtn, New RoutedEventArgs())
+                Case Forms.Keys.L
+                    LeftAlignBtn_Click(LeftBtn, New RoutedEventArgs())
+                Case Forms.Keys.M
+                    OfflinePicturesBtn_Click(OfflinePicturesBtn, New RoutedEventArgs())
+                Case Forms.Keys.N
+                    NewBtn_Click(NewBtn, New RoutedEventArgs())
+                Case Forms.Keys.O
+                    OpenBtn_Click(OpenBtn, New RoutedEventArgs())
+                Case Forms.Keys.P
+                    PrintBtn_Click(PrintBtn, New RoutedEventArgs())
+                Case Forms.Keys.Q
+                    TableBtn_Click(TableBtn, New RoutedEventArgs())
+                Case Forms.Keys.R
+                    RightAlignBtn_Click(RightBtn, New RoutedEventArgs())
+                Case Forms.Keys.S
+                    SaveBtn_Click(SaveBtn, New RoutedEventArgs())
+                Case Forms.Keys.T
+                    DateTimeBtn_Click(DateTimeBtn, New RoutedEventArgs())
+                Case Forms.Keys.U
+                    UnderlineBtn_Click(UnderlineBtn, New RoutedEventArgs())
+                Case Forms.Keys.V
+                    PasteBtn_Click(PasteBtn, New RoutedEventArgs())
+                Case Forms.Keys.W
+                    StrikethroughBtn_Click(StrikethroughBtn, New RoutedEventArgs())
+                Case Forms.Keys.X
+                    CutBtn_Click(CutBtn, New RoutedEventArgs())
+                Case Forms.Keys.Y
+                    RedoBtn_Click(RedoBtn, New RoutedEventArgs())
+                Case Forms.Keys.Z
+                    UndoBtn_Click(UndoBtn, New RoutedEventArgs())
+                Case Forms.Keys.Oemplus
+                    SuperscriptBtn_Click(SuperscriptBtn, New RoutedEventArgs())
+                Case Forms.Keys.OemMinus
+                    SubscriptBtn_Click(SubscriptBtn, New RoutedEventArgs())
+
+                    ' CTRL+>/< already built in
+                Case Else
+                    e.SuppressKeyPress = False
+                    Exit Sub
+            End Select
+
+            e.SuppressKeyPress = True
+
+        ElseIf e.Alt Then
+            If e.KeyCode = Forms.Keys.L Then
+                QuickLock()
+                e.SuppressKeyPress = True
+
+            End If
+
+        ElseIf e.KeyCode = Forms.Keys.F1 Then
+            GetHelp()
+            e.SuppressKeyPress = True
+
+        ElseIf e.KeyCode = Forms.Keys.F7 Then
+            SpellcheckerBtn_Click(SpellcheckerBtn, New RoutedEventArgs())
+            e.SuppressKeyPress = True
+
+        End If
+
+    End Sub
+
+
+    ' TOOLS > TABLE
+    ' --
+
+    Private Sub TableBtn_Click(sender As Object, e As RoutedEventArgs) Handles TableBtn.Click
+        OpenSidePane(0)
+
+    End Sub
+
+    Private Sub InsertTableBtnBtn_Click(sender As Object, e As EventArgs) Handles InsertTableBtn.Click
+
+        Dim TableRtf As New Text.StringBuilder
+        Dim CurrentWidth As Integer = CellWidthUpDown.Value
+
+        With TableRtf
+            .Append("{\rtf1")
+
+            ' Iterate through each number of rows
+            For rows As Integer = 1 To RowUpDown.Value
+                .Append("\trowd")
+
+                ' Iterate through number of columns
+                For columns As Integer = 1 To ColumnUpDown.Value
+
+                    ' Add on another starting width to the variable (e.g. 1000+1000 = 2000)
+                    .Append($"\cellx{CurrentWidth.ToString()}")
+                    CurrentWidth += CellWidthUpDown.Value
+
+                Next
+
+                ' Append ending string
+                .Append("\intbl \cell \row")
+                CurrentWidth = CellWidthUpDown.Value
+
+            Next
+
+            ' Append final strings
+            .Append("\pard")
+            .Append("}")
+
+            ' Add to document and hide panel
+            DocTxt.SelectedRtf = .ToString()
+            SideBarGrid.Visibility = Visibility.Collapsed
+
+        End With
+
+    End Sub
+
+
+    ' TOOLS > PICTURES
+    ' --
+
+    Private Sub InsertPicture(Picture As WinDrawing.Bitmap)
+
+        Windows.Clipboard.SetData(Forms.DataFormats.Bitmap, Picture)
+        Dim PictureFormat As Forms.DataFormats.Format = Forms.DataFormats.GetFormat(Forms.DataFormats.Bitmap)
+
+        If DocTxt.CanPaste(PictureFormat) Then
+            DocTxt.Paste(PictureFormat)
+
+        End If
+
+        Windows.Clipboard.Clear()
+
+    End Sub
+
+    Private Sub PictureBtn_Click(sender As Object, e As EventArgs) Handles PictureBtn.Click
+        PicturePopup.IsOpen = True
+
+    End Sub
+
+    Private Sub OfflinePicturesBtn_Click(sender As Object, e As RoutedEventArgs) Handles OfflinePicturesBtn.Click
+
+        If pictureDialog.ShowDialog() = Forms.DialogResult.OK Then
+            Try
+                TakeFromClip()
+                InsertPicture(New WinDrawing.Bitmap(pictureDialog.FileName))
+                PutBacktoClip()
+
+            Catch ex As Exception
+                NewMessage(Funcs.ChooseLang($"An error occurred when inserting your image.{Chr(10)}Please try again.",
+                                        $"Une erreur s'est produite lors de l'insertion de votre image.{Chr(10)}Veuillez réessayer."),
+                            Funcs.ChooseLang("Image error", "Erreur d'image"), MessageBoxButton.OK, MessageBoxImage.Error)
+            End Try
+
+        End If
+
+    End Sub
+
+    Private Sub OnlinePicturesBtn_Click(sender As Object, e As RoutedEventArgs) Handles OnlinePicturesBtn.Click
+
+        Try
+            Dim pct As New Pictures
+            If pct.ShowDialog() = True Then
+                TakeFromClip()
+                InsertPicture(RemoveTransparency(pct.Picture))
+                PutBacktoClip()
+
+                If Not pct.Credit = "" Then DocTxt.SelectedText += Chr(10) + pct.Credit + Chr(10)
+
+            End If
+
+        Catch ex As Exception
+            NewMessage(Funcs.ChooseLang($"An error occurred when inserting your image.{Chr(10)}Please try again.",
+                                    $"Une erreur s'est produite lors de l'insertion de votre image.{Chr(10)}Veuillez réessayer."),
+                        Funcs.ChooseLang("Image error", "Erreur d'image"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+        End Try
+
+    End Sub
+
+    Private Sub IconsBtn_Click(sender As Object, e As RoutedEventArgs) Handles IconsBtn.Click
+
+        Try
+            Dim pct As New Icons
+            If pct.ShowDialog() = True Then
+                TakeFromClip()
+                InsertPicture(RemoveTransparency(pct.Picture))
+                PutBacktoClip()
+
+            End If
+
+        Catch ex As Exception
+            NewMessage(Funcs.ChooseLang($"An error occurred when inserting your icon.{Chr(10)}Please try again.",
+                                        $"Une erreur s'est produite lors de l'insertion de votre icône.{Chr(10)}Veuillez réessayer."),
+                       Funcs.ChooseLang("Icon error", "Erreur d'icône"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+        End Try
+
+    End Sub
+
+    Public Shared Function RemoveTransparency(bmp As WinDrawing.Bitmap) As WinDrawing.Bitmap
+        Dim x As Integer
+        Dim y As Integer
+        Dim a As Byte
+
+        For x = 0 To bmp.Width - 1
+            For y = 0 To bmp.Height - 1
+                a = bmp.GetPixel(x, y).A
+
+                If a = 0 Then
+                    bmp.SetPixel(x, y, WinDrawing.Color.White)
+
+                End If
+            Next
+        Next
+
+        Return bmp
+
+    End Function
+
+
+    ' TOOLS > SCREENSHOT
+    ' --
+
+    Private Sub ScreenshotBtn_Click(sender As Object, e As EventArgs) Handles ScreenshotBtn.Click
+
+        Dim scr As New Screenshot
+        If scr.ShowDialog() = True Then
+            Try
+                TakeFromClip()
+                InsertPicture(RemoveTransparency(scr.CaptureToAdd))
+                PutBacktoClip()
+
+            Catch ex As Exception
+                NewMessage(Funcs.ChooseLang($"An error occurred when inserting your screenshot.{Chr(10)}Please try again.",
+                                        $"Une erreur s'est produite lors de l'insertion de votre capture d'écran.{Chr(10)}Veuillez réessayer."),
+                            Funcs.ChooseLang("Screenshot error", "Erreur de capture"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+            End Try
+        End If
+
+    End Sub
+
+
+    ' TOOLS > SHAPES
+    ' --
+
+    Private Sub ShapeBtn_Click(sender As Object, e As RoutedEventArgs) Handles ShapeBtn.Click
+        ShapePopup.IsOpen = True
+
+    End Sub
+
+    Private Function GetColourScheme() As List(Of Color)
+
+        Dim ColourList As New List(Of Color)
+        For Each clr In New List(Of Ellipse) From {Colour3, Colour4, Colour5, Colour6, Colour7, Colour8, Colour9, Colour10}
+            ColourList.Add(clr.Fill.GetValue(SolidColorBrush.ColorProperty))
+
+        Next
+        Return ColourList
+
+    End Function
+
+    Private Sub RectangleBtn_Click(sender As Object, e As RoutedEventArgs) Handles RectangleBtn.Click
+
+        Dim shp As New Shapes("Rectangle", GetColourScheme())
+        If shp.ShowDialog() = True Then
+            Try
+                TakeFromClip()
+                InsertPicture(RemoveTransparency(shp.ShapeToAdd))
+                PutBacktoClip()
+
+            Catch ex As Exception
+                NewMessage(Funcs.ChooseLang($"An error occurred when inserting your shape.{Chr(10)}Please try again.",
+                                        $"Une erreur s'est produite lors de l'insertion de cette forme.{Chr(10)}Veuillez réessayer."),
+                            Funcs.ChooseLang("Shape error", "Erreur de forme"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+            End Try
+        End If
+
+    End Sub
+
+    Private Sub EllipseBtn_Click(sender As Object, e As RoutedEventArgs) Handles EllipseBtn.Click
+
+        Dim shp As New Shapes("Ellipse", GetColourScheme())
+        If shp.ShowDialog() = True Then
+            Try
+                TakeFromClip()
+                InsertPicture(RemoveTransparency(shp.ShapeToAdd))
+                PutBacktoClip()
+
+            Catch ex As Exception
+                NewMessage(Funcs.ChooseLang($"An error occurred when inserting your shape.{Chr(10)}Please try again.",
+                                                        $"Une erreur s'est produite lors de l'insertion de cette forme.{Chr(10)}Veuillez réessayer."),
+                                            Funcs.ChooseLang("Shape error", "Erreur de forme"), MessageBoxButton.OK, MessageBoxImage.Error)
+            End Try
+        End If
+
+    End Sub
+
+    Private Sub LineBtn_Click(sender As Object, e As RoutedEventArgs) Handles LineBtn.Click
+
+        Dim shp As New Shapes("Line", GetColourScheme())
+        If shp.ShowDialog() = True Then
+            Try
+                TakeFromClip()
+                InsertPicture(RemoveTransparency(shp.ShapeToAdd))
+                PutBacktoClip()
+
+            Catch ex As Exception
+                NewMessage(Funcs.ChooseLang($"An error occurred when inserting your shape.{Chr(10)}Please try again.",
+                                                        $"Une erreur s'est produite lors de l'insertion de cette forme.{Chr(10)}Veuillez réessayer."),
+                                            Funcs.ChooseLang("Shape error", "Erreur de forme"), MessageBoxButton.OK, MessageBoxImage.Error)
+            End Try
+        End If
+
+    End Sub
+
+    Private Sub TriangleBtn_Click(sender As Object, e As RoutedEventArgs) Handles TriangleBtn.Click
+
+        Dim shp As New Shapes("Triangle", GetColourScheme())
+        If shp.ShowDialog() = True Then
+            Try
+                TakeFromClip()
+                InsertPicture(RemoveTransparency(shp.ShapeToAdd))
+                PutBacktoClip()
+
+            Catch ex As Exception
+                NewMessage(Funcs.ChooseLang($"An error occurred when inserting your shape.{Chr(10)}Please try again.",
+                                                        $"Une erreur s'est produite lors de l'insertion de cette forme.{Chr(10)}Veuillez réessayer."),
+                                            Funcs.ChooseLang("Shape error", "Erreur de forme"), MessageBoxButton.OK, MessageBoxImage.Error)
+            End Try
+        End If
+
+    End Sub
+
+
+    ' TOOLS > DRAWINGS
+    ' --
+
+    Private Sub DrawingsBtn_Click(sender As Object, e As RoutedEventArgs) Handles DrawingsBtn.Click
+
+        Dim drw As New Drawing(GetColourScheme())
+        If drw.ShowDialog() = True Then
+            Try
+                TakeFromClip()
+                Windows.Clipboard.SetImage(drw.DrawingToAdd)
+                DocTxt.Paste()
+                PutBacktoClip()
+
+            Catch ex As Exception
+                NewMessage(Funcs.ChooseLang($"An error occurred when inserting your drawing.{Chr(10)}Please try again.",
+                                                        $"Une erreur s'est produite lors de l'insertion de votre dessin.{Chr(10)}Veuillez réessayer."),
+                                            Funcs.ChooseLang("Drawing error", "Erreur de dessin"), MessageBoxButton.OK, MessageBoxImage.Error)
+            End Try
+        End If
+
+    End Sub
+
+
+    ' TOOLS > SYMBOLS
+    ' --
+
+    Private Sub SymbolBtn_Click(sender As Object, e As RoutedEventArgs) Handles SymbolBtn.Click
+        HideSymbolDisplay()
+        OpenSidePane(2)
+
+    End Sub
+
+    Private Sub HideSymbolDisplay()
+        SymbolPanel.Visibility = Visibility.Collapsed
+        SymbolBackBtn.Visibility = Visibility.Collapsed
+        SymbolLbl.Visibility = Visibility.Visible
+
+        LetteringBtn.Visibility = Visibility.Visible
+        ArrowsBtn.Visibility = Visibility.Visible
+        StandardBtn.Visibility = Visibility.Visible
+        GreekBtn.Visibility = Visibility.Visible
+        PunctuationBtn.Visibility = Visibility.Visible
+        MathematicsBtn.Visibility = Visibility.Visible
+        EmojiBtn.Visibility = Visibility.Visible
+
+    End Sub
+
+    Private Sub ShowSymbolDisplay()
+        SymbolPanel.Children.Clear()
+
+        SymbolPanel.Visibility = Visibility.Visible
+        SymbolBackBtn.Visibility = Visibility.Visible
+        SymbolLbl.Visibility = Visibility.Collapsed
+
+        LetteringBtn.Visibility = Visibility.Collapsed
+        ArrowsBtn.Visibility = Visibility.Collapsed
+        StandardBtn.Visibility = Visibility.Collapsed
+        GreekBtn.Visibility = Visibility.Collapsed
+        PunctuationBtn.Visibility = Visibility.Collapsed
+        MathematicsBtn.Visibility = Visibility.Collapsed
+        EmojiBtn.Visibility = Visibility.Collapsed
+
+    End Sub
+
+
+    ' TOOLS > SYMBOL > DISPLAYS
+    ' --
+
+    Private IsEmoji As Boolean = False
+
+    Private Sub DisplaySymbols(symbols As List(Of String))
+        ShowSymbolDisplay()
+
+        Dim count As Integer = 0
+        For Each symbol In symbols
+            Dim copy As Controls.Button = XamlReader.Parse("<Button BorderThickness='0,0,0,0' Background='{DynamicResource BackColor}' FontSize='14' Style='{DynamicResource AppButton}' Name='" +
+                                                    $"Symbol{count.ToString()}Btn" + "' Width='38' Height='32' Margin='0,0,0,0' HorizontalAlignment='Left' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
+                                                    symbol.Split("*")(0) + "</Button>")
+
+            copy.Tag = symbol.Split("*")(0)
+            copy.ToolTip = symbol.Split("*")(1)
+            SymbolPanel.Children.Add(copy)
+
+            AddHandler copy.Click, AddressOf SymbolBtns_Click
+            count += 1
+
+        Next
+
+    End Sub
+
+    Private Sub LetteringBtn_Click(sender As Object, e As RoutedEventArgs) Handles LetteringBtn.Click
+        DisplaySymbols(Lettering)
+        IsEmoji = False
+
+    End Sub
+
+    Private Sub ArrowsBtn_Click(sender As Object, e As RoutedEventArgs) Handles ArrowsBtn.Click
+        DisplaySymbols(Arrows)
+        IsEmoji = False
+
+    End Sub
+
+    Private Sub StandardBtn_Click(sender As Object, e As RoutedEventArgs) Handles StandardBtn.Click
+        DisplaySymbols(Standard)
+        IsEmoji = False
+
+    End Sub
+
+    Private Sub GreekBtn_Click(sender As Object, e As RoutedEventArgs) Handles GreekBtn.Click
+        DisplaySymbols(Greek)
+        IsEmoji = False
+
+    End Sub
+
+    Private Sub PunctuationBtn_Click(sender As Object, e As RoutedEventArgs) Handles PunctuationBtn.Click
+        DisplaySymbols(Punctuation)
+        IsEmoji = False
+
+    End Sub
+
+    Private Sub MathematicsBtn_Click(sender As Object, e As RoutedEventArgs) Handles MathematicsBtn.Click
+        DisplaySymbols(Maths)
+        IsEmoji = False
+
+    End Sub
+
+    Private Sub EmojiBtn_Click(sender As Object, e As RoutedEventArgs) Handles EmojiBtn.Click
+        DisplaySymbols(Emoji)
+        IsEmoji = True
+
+    End Sub
+
+    Private Sub SymbolBtns_Click(sender As Controls.Button, e As RoutedEventArgs)
+        DocTxt.SelectedRtf = ""
+
+        If IsEmoji = True Then
+            DocTxt.SelectionFont = New WinDrawing.Font("Segoe UI Symbol", DocTxt.SelectionFont.Size, WinDrawing.FontStyle.Regular)
+
+        End If
+
+        DocTxt.SelectedText = sender.Tag
+
+    End Sub
+
+    Private Sub SymbolBackBtn_Click(sender As Object, e As RoutedEventArgs) Handles SymbolBackBtn.Click
+        HideSymbolDisplay()
+
+    End Sub
+
+
+    ' TOOLS > EQUATIONS
+    ' --
+
+    Private Sub EquationBtn_Click(sender As Object, e As RoutedEventArgs) Handles EquationBtn.Click
+        OpenSidePane(3)
+
+    End Sub
+
+    Private Sub EqBtns_Click(sender As Controls.Button, e As RoutedEventArgs) Handles Eq8Btn.Click, Eq7Btn.Click, Eq6Btn.Click, Eq5Btn.Click, Eq4Btn.Click, Eq3Btn.Click, Eq2Btn.Click, Eq1Btn.Click
+        DocTxt.SelectedRtf = ""
+        DocTxt.SelectionFont = New WinDrawing.Font("Cambria", DocTxt.SelectionFont.Size)
+
+        DocTxt.SelectedText = sender.Tag
+
+    End Sub
+
+
+    ' TOOLS > TEXT BLOCK
+    ' --
+
+    Private Sub TextBlockBtn_Click(sender As Object, e As RoutedEventArgs) Handles TextBlockBtn.Click
+        TextBlockPopup.IsOpen = True
+
+    End Sub
+
+
+    ' TOOLS > TEXT BLOCK > DATE & TIME
+    ' --
+
+    Private DateTimeLang As String = "en"
+
+    Private Sub DateTimeBtn_Click(sender As Object, e As RoutedEventArgs) Handles DateTimeBtn.Click
+        OpenSidePane(4)
+        ShowDateTimeList()
+
+        TextBlockPopup.IsOpen = False
+        TextFocus()
+
+    End Sub
+
+    Private Sub ShowDateTimeList()
+        DateTimeStack.Children.Clear()
+        Dim ChosenCulture As New Globalization.CultureInfo("en-GB")
+        DateTimeLangLbl.Text = Funcs.ChooseLang("Language: English", "Langue : anglais")
+
+        Select Case DateTimeLang
+            Case "fr"
+                ChosenCulture = New Globalization.CultureInfo("fr-FR")
+                DateTimeLangLbl.Text = Funcs.ChooseLang("Language: French", "Langue : français")
+            Case "es"
+                ChosenCulture = New Globalization.CultureInfo("es-ES")
+                DateTimeLangLbl.Text = Funcs.ChooseLang("Language: Spanish", "Langue : espagnol")
+            Case "it"
+                ChosenCulture = New Globalization.CultureInfo("it-IT")
+                DateTimeLangLbl.Text = Funcs.ChooseLang("Language: Italian", "Langue : italien")
+        End Select
+
+        For Each DateStr In DateTimeList
+            Dim copy As Controls.Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='{DynamicResource BackColor}' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='DateTimeSampleBtn' Height='24' Margin='0,0,0,0' VerticalAlignment='Top' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><DockPanel><TextBlock Text='" +
+                                                  Funcs.EscapeChars(Now.ToString(DateStr, ChosenCulture)) + "' Padding='10,0,0,0' TextTrimming='CharacterEllipsis' Name='HomeBtnTxt_Copy12913' Height='21.31' Margin='0,3,10,0' HorizontalAlignment='Left' VerticalAlignment='Center' /></DockPanel></Button>")
+
+            copy.Tag = Now.ToString(DateStr, ChosenCulture)
+            AddHandler copy.Click, AddressOf DateTimeBtns_Click
+            DateTimeStack.Children.Add(copy)
+
+        Next
+
+    End Sub
+
+    Private Sub DateLangBtn_Click(sender As Object, e As RoutedEventArgs) Handles DateLangBtn.Click
+        SetLangPopupChecks(DateTimeLang)
+        'LanguagePopup.HorizontalOffset = 0
+        'LanguagePopup.VerticalOffset = 26
+        LanguagePopup.PlacementTarget = DateLangBtn
+        Lang4Btn.Visibility = Visibility.Visible
+        LanguagePopup.IsOpen = True
+
+    End Sub
+
+    Private Sub DateTimeBtns_Click(sender As Controls.Button, e As RoutedEventArgs)
+        DocTxt.SelectedRtf = ""
+        DocTxt.SelectedText = sender.Tag.ToString()
+
+    End Sub
+
+
+    ' TOOLS > TEXT BLOCK > FROM FILE
+    ' --
+
+    Private Sub FromFileBtn_Click(sender As Object, e As RoutedEventArgs) Handles FromFileBtn.Click
+        TextBlockPopup.IsOpen = False
+
+        Try
+            If openDialog.ShowDialog() = True Then
+                For Each filename In openDialog.FileNames
+                    Dim bufferrtf As New WinFormsTxt
+
+                    If String.Compare(Path.GetExtension(filename), ".rtf", True) = 0 Then
+                        bufferrtf.LoadFile(filename, Forms.RichTextBoxStreamType.RichText)
+
+                    Else
+                        bufferrtf.LoadFile(filename, Forms.RichTextBoxStreamType.UnicodePlainText)
+
+                    End If
+
+                    bufferrtf.SelectAll()
+                    TakeFromClip()
+                    bufferrtf.Copy()
+                    DocTxt.Paste()
+                    PutBacktoClip()
+
+                    bufferrtf.Dispose()
+
+                Next
+            End If
+
+        Catch
+            NewMessage(Funcs.ChooseLang("We ran into a problem while importing text from a file. Please try again.", "Nous avons rencontré une erreur lors de l'importation de texte à partir d'un fichier. Veuillez réessayer."),
+                        Funcs.ChooseLang("Error importing file", "Erreur d'importation du fichier"), MessageBoxButton.OK, MessageBoxImage.Error)
+        End Try
+
+    End Sub
+
+
+    ' TOOLS > TEXT BLOCK > PROPERTY
+    ' --
+
+    Private Sub PropertyBtn_Click(sender As Object, e As RoutedEventArgs) Handles PropertyBtn.Click
+        OpenSidePane(9)
+
+        TextBlockPopup.IsOpen = False
+        TextFocus()
+
+    End Sub
+
+    Private Sub PropertyList_Click(sender As Controls.Button, e As RoutedEventArgs) Handles NumWordsBtn.Click, NumCharsBtn.Click, NumLinesBtn.Click,
+        FilenameBtn.Click, FilepathBtn.Click, AppNameBtn.Click
+
+        DocTxt.SelectedRtf = ""
+        Select Case sender.Name
+            Case "NumWordsBtn"
+                DocTxt.SelectedText = FilterWords().Count.ToString()
+            Case "NumCharsBtn"
+                DocTxt.SelectedText = DocTxt.Text.Replace(" ", "").Length.ToString()
+            Case "NumLinesBtn"
+                DocTxt.SelectedText = DocTxt.Lines.Length.ToString()
+            Case "FilenameBtn"
+                If ThisFile = "" Then
+                    NewMessage(Funcs.ChooseLang("Please save your document first.", "Enregistrez d'abord votre document."),
+                                Funcs.ChooseLang("No file name", "Pas de nom de fichier"), MessageBoxButton.OK, MessageBoxImage.Error)
+                Else
+                    DocTxt.SelectedText = Path.GetFileName(ThisFile)
+                End If
+            Case "FilepathBtn"
+                If ThisFile = "" Then
+                    NewMessage(Funcs.ChooseLang("Please save your document first.", "Enregistrez d'abord votre document."),
+                                Funcs.ChooseLang("No file path", "Pas de chemin de fichier"), MessageBoxButton.OK, MessageBoxImage.Error)
+                Else
+                    DocTxt.SelectedText = ThisFile
+                End If
+            Case "AppNameBtn"
+                DocTxt.SelectedText = "Type Express"
+        End Select
+
+    End Sub
+
+
+    ' TOOLS > LINK
+    ' --
+
+    Private Sub LinkBtn_Click(sender As Object, e As RoutedEventArgs) Handles LinkBtn.Click
+
+        If allfileDialog.ShowDialog() = True Then
+            TakeFromClip()
+            Windows.Clipboard.SetFileDropList(New Specialized.StringCollection() From {allfileDialog.FileName})
+            DocTxt.Paste()
+            PutBacktoClip()
+
+        End If
+
+    End Sub
+
+    Private IsCtrlKeyPressed As Boolean
+
+    Private Sub DocTxt_Click(sender As Object, e As Forms.LinkClickedEventArgs) Handles DocTxt.LinkClicked
+        If IsCtrlKeyPressed = True Then Process.Start(e.LinkText)
+
+    End Sub
+
+    Private Sub DocTxt_CTRLKeyDown(sender As Object, e As Forms.KeyEventArgs) Handles DocTxt.KeyDown
+        If e.KeyCode = Forms.Keys.ControlKey Then IsCtrlKeyPressed = True
+
+    End Sub
+
+    Private Sub DocTxt_KeyUp(sender As Object, e As Forms.KeyEventArgs) Handles DocTxt.KeyUp
+        IsCtrlKeyPressed = False
+
+    End Sub
+
+
+    ' TOOLS > CHART
+    ' --
+
+    Private Sub ChartBtn_Click(sender As Object, e As RoutedEventArgs) Handles ChartBtn.Click
+
+        Dim crt As New Chart
+        If crt.ShowDialog() = True Then
+            Try
+                TakeFromClip()
+                InsertPicture(crt.ChartToAdd)
+                PutBacktoClip()
+
+            Catch ex As Exception
+                NewMessage(Funcs.ChooseLang($"An error occurred when inserting your chart.{Chr(10)}Please try again.",
+                                        $"Une erreur s'est produite lors de l'insertion de votre graphique.{Chr(10)}Veuillez réessayer."),
+                            Funcs.ChooseLang("Chart error", "Erreur de graphique"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+            End Try
+        End If
+
+    End Sub
+
+
+
+    ' DESIGN > FONT STYLES
+    ' --
+
+    Private Sub StylesBtn_Click(sender As Object, e As RoutedEventArgs) Handles StylesBtn.Click
+        OpenSidePane(5)
+
+    End Sub
+
+    Private Sub SetFontStyle(family As String, size As Integer, weight As String, style As String, deco As TextDecorationCollection, colour As String)
+
+        Dim FontStyle As WinDrawing.FontStyle
+        Dim FontColour As WinDrawing.Color = WinDrawing.ColorTranslator.FromHtml(colour)
+
+        If weight = "Bold" Then
+            FontStyle = FontStyle Or WinDrawing.FontStyle.Bold
+
+        End If
+
+        If style = "Italic" Then
+            FontStyle = FontStyle Or WinDrawing.FontStyle.Italic
+
+        End If
+
+        For Each i In deco
+            If i.Location = TextDecorationLocation.Underline Then
+                FontStyle = FontStyle Or WinDrawing.FontStyle.Underline
+
+            ElseIf i.Location = TextDecorationLocation.Strikethrough Then
+                FontStyle = FontStyle Or WinDrawing.FontStyle.Strikeout
+
+            End If
+        Next
+
+        If FontStyle = Nothing Then
+            FontStyle = WinDrawing.FontStyle.Regular
+
+        End If
+
+
+        NoAdd = True
+        DocTxt.SelectionFont = New WinDrawing.Font(family, size, FontStyle)
+        NoAdd = False
+        DocTxt.SelectionColor = FontColour
+
+        DocTxt.Focus()
+
+    End Sub
+
+    Private Sub ApplyFontStyle(font As WinDrawing.Font, colour As WinDrawing.Color, txt As TextBlock)
+
+        txt.FontFamily = New FontFamily(font.FontFamily.Name.ToString())
+        txt.FontSize = Convert.ToDouble(font.Size)
+
+        If font.Bold Then txt.FontWeight = FontWeights.Bold Else txt.FontWeight = FontWeights.Regular
+        If font.Italic Then txt.FontStyle = FontStyles.Italic Else txt.FontStyle = FontStyles.Normal
+
+        txt.TextDecorations.Clear()
+        If font.Underline Then txt.TextDecorations.Add(TextDecorations.Underline)
+        If font.Strikeout Then txt.TextDecorations.Add(TextDecorations.Strikethrough)
+
+        txt.Foreground = New SolidColorBrush(Color.FromRgb(colour.R, colour.G, colour.B))
+        DocTxt.Focus()
+
+    End Sub
+
+    Private Sub H1Btn_Click(sender As Object, e As RoutedEventArgs) Handles H1Btn.Click
+        SetFontStyle(H1Txt.FontFamily.ToString(), Convert.ToInt32(H1Txt.FontSize), H1Txt.FontWeight.ToString(),
+                        H1Txt.FontStyle.ToString(), H1Txt.TextDecorations, H1Txt.Foreground.ToString())
+
+    End Sub
+
+    Private Sub H1ApplyBtn_Click(sender As Object, e As RoutedEventArgs) Handles H1ApplyBtn.Click
+        Try
+            ApplyFontStyle(DocTxt.SelectionFont, DocTxt.SelectionColor, H1Txt)
+            CreateTempLabel(Funcs.ChooseLang("Font style applied to Heading 1", "Style de police appliqué à Titre 1"))
+
+        Catch
+            NewMessage(Funcs.ChooseLang("Please select text that contains only one font, then try again.",
+                                    "Veuillez sélectionner du texte ne contenant qu'une police, et réessayez."),
+                        Funcs.ChooseLang("Too many fonts selected", "Trop de polices sélectionnées"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+        End Try
+
+    End Sub
+
+    Private Sub H2Btn_Click(sender As Object, e As RoutedEventArgs) Handles H2Btn.Click
+        SetFontStyle(H2Txt.FontFamily.ToString(), Convert.ToInt32(H2Txt.FontSize), H2Txt.FontWeight.ToString(),
+                        H2Txt.FontStyle.ToString(), H2Txt.TextDecorations, H2Txt.Foreground.ToString())
+
+    End Sub
+
+    Private Sub H2ApplyBtn_Click(sender As Object, e As RoutedEventArgs) Handles H2ApplyBtn.Click
+        Try
+            ApplyFontStyle(DocTxt.SelectionFont, DocTxt.SelectionColor, H2Txt)
+            CreateTempLabel(Funcs.ChooseLang("Font style applied to Heading 2", "Style de police appliqué à Titre 2"))
+
+        Catch
+            NewMessage(Funcs.ChooseLang("Please select text that contains only one font, then try again.",
+                                    "Veuillez sélectionner du texte ne contenant qu'une police, et réessayez."),
+                        Funcs.ChooseLang("Too many fonts selected", "Trop de polices sélectionnées"), MessageBoxButton.OK, MessageBoxImage.Error)
+        End Try
+
+    End Sub
+
+    Private Sub H3Btn_Click(sender As Object, e As RoutedEventArgs) Handles H3Btn.Click
+        SetFontStyle(H3Txt.FontFamily.ToString(), Convert.ToInt32(H3Txt.FontSize), H3Txt.FontWeight.ToString(),
+                        H3Txt.FontStyle.ToString(), H3Txt.TextDecorations, H3Txt.Foreground.ToString())
+
+    End Sub
+
+    Private Sub H3ApplyBtn_Click(sender As Object, e As RoutedEventArgs) Handles H3ApplyBtn.Click
+        Try
+            ApplyFontStyle(DocTxt.SelectionFont, DocTxt.SelectionColor, H3Txt)
+            CreateTempLabel(Funcs.ChooseLang("Font style applied to Heading 3", "Style de police appliqué à Titre 3"))
+
+        Catch
+            NewMessage(Funcs.ChooseLang("Please select text that contains only one font, then try again.",
+                                                "Veuillez sélectionner du texte ne contenant qu'une police, et réessayez."),
+                        Funcs.ChooseLang("Too many fonts selected", "Trop de polices sélectionnées"), MessageBoxButton.OK, MessageBoxImage.Error)
+        End Try
+
+    End Sub
+
+    Private Sub B1Btn_Click(sender As Object, e As RoutedEventArgs) Handles B1Btn.Click
+        SetFontStyle(B1Txt.FontFamily.ToString(), Convert.ToInt32(B1Txt.FontSize), B1Txt.FontWeight.ToString(),
+                        B1Txt.FontStyle.ToString(), B1Txt.TextDecorations, B1Txt.Foreground.ToString())
+
+    End Sub
+
+    Private Sub B1ApplyBtn_Click(sender As Object, e As RoutedEventArgs) Handles B1ApplyBtn.Click
+        Try
+            ApplyFontStyle(DocTxt.SelectionFont, DocTxt.SelectionColor, B1Txt)
+            CreateTempLabel(Funcs.ChooseLang("Font style applied to Body 1", "Style de police appliqué à Corps 1"))
+
+        Catch
+            NewMessage(Funcs.ChooseLang("Please select text that contains only one font, then try again.",
+                                    "Veuillez sélectionner du texte ne contenant qu'une police, et réessayez."),
+                        Funcs.ChooseLang("Too many fonts selected", "Trop de polices sélectionnées"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+        End Try
+
+    End Sub
+
+    Private Sub B2Btn_Click(sender As Object, e As RoutedEventArgs) Handles B2Btn.Click
+        SetFontStyle(B2Txt.FontFamily.ToString(), Convert.ToInt32(B2Txt.FontSize), B2Txt.FontWeight.ToString(),
+                        B2Txt.FontStyle.ToString(), B2Txt.TextDecorations, B2Txt.Foreground.ToString())
+
+    End Sub
+
+    Private Sub B2ApplyBtn_Click(sender As Object, e As RoutedEventArgs) Handles B2ApplyBtn.Click
+        Try
+            ApplyFontStyle(DocTxt.SelectionFont, DocTxt.SelectionColor, B2Txt)
+            CreateTempLabel(Funcs.ChooseLang("Font style applied to Body 2", "Style de police appliqué à Corps 2"))
+
+        Catch
+            NewMessage(Funcs.ChooseLang("Please select text that contains only one font, then try again.",
+                                    "Veuillez sélectionner du texte ne contenant qu'une police, et réessayez."),
+                        Funcs.ChooseLang("Too many fonts selected", "Trop de polices sélectionnées"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+        End Try
+
+    End Sub
+
+    Private Sub B3Btn_Click(sender As Object, e As RoutedEventArgs) Handles B3Btn.Click
+        SetFontStyle(B3Txt.FontFamily.ToString(), Convert.ToInt32(B3Txt.FontSize), B3Txt.FontWeight.ToString(),
+                        B3Txt.FontStyle.ToString(), B3Txt.TextDecorations, B3Txt.Foreground.ToString())
+
+    End Sub
+
+    Private Sub B3ApplyBtn_Click(sender As Object, e As RoutedEventArgs) Handles B3ApplyBtn.Click
+        Try
+            ApplyFontStyle(DocTxt.SelectionFont, DocTxt.SelectionColor, B3Txt)
+            CreateTempLabel(Funcs.ChooseLang("Font style applied to Quote", "Style de police appliqué à Citation"))
+
+        Catch
+            NewMessage(Funcs.ChooseLang("Please select text that contains only one font, then try again.",
+                                    "Veuillez sélectionner du texte ne contenant qu'une police, et réessayez."),
+                        Funcs.ChooseLang("Too many fonts selected", "Trop de polices sélectionnées"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+        End Try
+
+    End Sub
+
+
+    ' DESIGN > FONT STYLES > BUTTON EFFECTS
+    ' --
+
+    Private Sub H1Btn_MouseEnter(sender As Object, e As Input.MouseEventArgs) Handles H1Btn.MouseEnter, H1ApplyBtn.MouseEnter
+        H1Img.Visibility = Visibility.Visible
+
+    End Sub
+
+    Private Sub H1Btn_MouseLeave(sender As Object, e As Input.MouseEventArgs) Handles H1Btn.MouseLeave, H1ApplyBtn.MouseLeave
+        H1Img.Visibility = Visibility.Collapsed
+
+    End Sub
+
+    Private Sub H2Btn_MouseEnter(sender As Object, e As Input.MouseEventArgs) Handles H2Btn.MouseEnter, H2ApplyBtn.MouseEnter
+        H2Img.Visibility = Visibility.Visible
+
+    End Sub
+
+    Private Sub H2Btn_MouseLeave(sender As Object, e As Input.MouseEventArgs) Handles H2Btn.MouseLeave, H2ApplyBtn.MouseLeave
+        H2Img.Visibility = Visibility.Collapsed
+
+    End Sub
+
+    Private Sub H3Btn_MouseEnter(sender As Object, e As Input.MouseEventArgs) Handles H3Btn.MouseEnter, H3ApplyBtn.MouseEnter
+        H3Img.Visibility = Visibility.Visible
+
+    End Sub
+
+    Private Sub H3Btn_MouseLeave(sender As Object, e As Input.MouseEventArgs) Handles H3Btn.MouseLeave, H3ApplyBtn.MouseLeave
+        H3Img.Visibility = Visibility.Collapsed
+
+    End Sub
+
+    Private Sub B1Btn_MouseEnter(sender As Object, e As Input.MouseEventArgs) Handles B1Btn.MouseEnter, B1ApplyBtn.MouseEnter
+        B1Img.Visibility = Visibility.Visible
+
+    End Sub
+
+    Private Sub B1Btn_MouseLeave(sender As Object, e As Input.MouseEventArgs) Handles B1Btn.MouseLeave, B1ApplyBtn.MouseLeave
+        B1Img.Visibility = Visibility.Collapsed
+
+    End Sub
+
+    Private Sub B2Btn_MouseEnter(sender As Object, e As Input.MouseEventArgs) Handles B2Btn.MouseEnter, B2ApplyBtn.MouseEnter
+        B2Img.Visibility = Visibility.Visible
+
+    End Sub
+
+    Private Sub B2Btn_MouseLeave(sender As Object, e As Input.MouseEventArgs) Handles B2Btn.MouseLeave, B2ApplyBtn.MouseLeave
+        B2Img.Visibility = Visibility.Collapsed
+
+    End Sub
+
+    Private Sub B3Btn_MouseEnter(sender As Object, e As Input.MouseEventArgs) Handles B3Btn.MouseEnter, B3ApplyBtn.MouseEnter
+        B3Img.Visibility = Visibility.Visible
+
+    End Sub
+
+    Private Sub B3Btn_MouseLeave(sender As Object, e As Input.MouseEventArgs) Handles B3Btn.MouseLeave, B3ApplyBtn.MouseLeave
+        B3Img.Visibility = Visibility.Collapsed
+
+    End Sub
+
+
+    ' DESIGN > COLOUR SCHEMES
+    ' --
+
+    Private Sub ColourSchemesBtn_Click(sender As Object, e As RoutedEventArgs) Handles ColourSchemesBtn.Click
+        OpenSidePane(6)
+
+    End Sub
+
+    Private Sub ResetColourSchemeLabels()
+        BasicTxt.Text = Funcs.ChooseLang("Basic", "Basique")
+        BlueTxt.Text = Funcs.ChooseLang("Blue", "Bleu")
+        GreenTxt.Text = Funcs.ChooseLang("Green", "Vert")
+        RedOrangeTxt.Text = Funcs.ChooseLang("Red Orange", "Rouge Orange")
+        VioletTxt.Text = "Violet"
+        OfficeTxt.Text = "Office"
+        GreyscaleTxt.Text = Funcs.ChooseLang("Greyscale", "Échelle de Gris")
+
+        RefreshColourTooltips()
+
+    End Sub
+
+    Private Sub ChangeColourScheme(scheme As Integer)
+
+        Select Case scheme
+            Case 0
+                Colour3.Fill = Basic1.Fill
+                Colour4.Fill = Basic2.Fill
+                Colour5.Fill = Basic3.Fill
+                Colour6.Fill = Basic4.Fill
+                Colour7.Fill = Basic5.Fill
+                Colour8.Fill = Basic6.Fill
+                Colour9.Fill = Basic7.Fill
+                Colour10.Fill = Basic8.Fill
+
+                ResetColourSchemeLabels()
+                BasicTxt.Text += Funcs.ChooseLang(" (current)", " (actuel)")
+
+            Case 1
+                Colour3.Fill = Blue1.Fill
+                Colour4.Fill = Blue2.Fill
+                Colour5.Fill = Blue3.Fill
+                Colour6.Fill = Blue4.Fill
+                Colour7.Fill = Blue5.Fill
+                Colour8.Fill = Blue6.Fill
+                Colour9.Fill = Blue7.Fill
+                Colour10.Fill = Blue8.Fill
+
+                ResetColourSchemeLabels()
+                BlueTxt.Text += Funcs.ChooseLang(" (current)", " (actuel)")
+
+            Case 2
+                Colour3.Fill = Green1.Fill
+                Colour4.Fill = Green2.Fill
+                Colour5.Fill = Green3.Fill
+                Colour6.Fill = Green4.Fill
+                Colour7.Fill = Green5.Fill
+                Colour8.Fill = Green6.Fill
+                Colour9.Fill = Green7.Fill
+                Colour10.Fill = Green8.Fill
+
+                ResetColourSchemeLabels()
+                GreenTxt.Text += Funcs.ChooseLang(" (current)", " (actuel)")
+
+            Case 3
+                Colour3.Fill = Red1.Fill
+                Colour4.Fill = Red2.Fill
+                Colour5.Fill = Red3.Fill
+                Colour6.Fill = Red4.Fill
+                Colour7.Fill = Red5.Fill
+                Colour8.Fill = Red6.Fill
+                Colour9.Fill = Red7.Fill
+                Colour10.Fill = Red8.Fill
+
+                ResetColourSchemeLabels()
+                RedOrangeTxt.Text += Funcs.ChooseLang(" (current)", " (actuel)")
+
+            Case 4
+                Colour3.Fill = Violet1.Fill
+                Colour4.Fill = Violet2.Fill
+                Colour5.Fill = Violet3.Fill
+                Colour6.Fill = Violet4.Fill
+                Colour7.Fill = Violet5.Fill
+                Colour8.Fill = Violet6.Fill
+                Colour9.Fill = Violet7.Fill
+                Colour10.Fill = Violet8.Fill
+
+                ResetColourSchemeLabels()
+                VioletTxt.Text += Funcs.ChooseLang(" (current)", " (actuel)")
+
+            Case 5
+                Colour3.Fill = Office1.Fill
+                Colour4.Fill = Office2.Fill
+                Colour5.Fill = Office3.Fill
+                Colour6.Fill = Office4.Fill
+                Colour7.Fill = Office5.Fill
+                Colour8.Fill = Office6.Fill
+                Colour9.Fill = Office7.Fill
+                Colour10.Fill = Office8.Fill
+
+                ResetColourSchemeLabels()
+                OfficeTxt.Text += Funcs.ChooseLang(" (current)", " (actuel)")
+
+            Case 6
+                Colour3.Fill = Greyscale1.Fill
+                Colour4.Fill = Greyscale2.Fill
+                Colour5.Fill = Greyscale3.Fill
+                Colour6.Fill = Greyscale4.Fill
+                Colour7.Fill = Greyscale5.Fill
+                Colour8.Fill = Greyscale6.Fill
+                Colour9.Fill = Greyscale7.Fill
+                Colour10.Fill = Greyscale8.Fill
+
+                ResetColourSchemeLabels()
+                GreyscaleTxt.Text += Funcs.ChooseLang(" (current)", " (actuel)")
+
+        End Select
+
+    End Sub
+
+    Private Sub BasicBtn_Click(sender As Object, e As RoutedEventArgs) Handles BasicBtn.Click
+        ChangeColourScheme(0)
+        CreateTempLabel(Funcs.ChooseLang("Basic colour scheme applied", "Palette de couleurs Basique appliquée"))
+
+    End Sub
+
+    Private Sub BlueBtn_Click(sender As Object, e As RoutedEventArgs) Handles BlueBtn.Click
+        ChangeColourScheme(1)
+        CreateTempLabel(Funcs.ChooseLang("Blue colour scheme applied", "Palette de couleurs Bleu appliquée"))
+
+    End Sub
+
+    Private Sub GreenBtn_Click(sender As Object, e As RoutedEventArgs) Handles GreenBtn.Click
+        ChangeColourScheme(2)
+        CreateTempLabel(Funcs.ChooseLang("Green colour scheme applied", "Palette de couleurs Vert appliquée"))
+
+    End Sub
+
+    Private Sub RedBtn_Click(sender As Object, e As RoutedEventArgs) Handles RedBtn.Click
+        ChangeColourScheme(3)
+        CreateTempLabel(Funcs.ChooseLang("Red Orange colour scheme applied", "Palette de couleurs Rouge Orange appliquée"))
+
+    End Sub
+
+    Private Sub VioletBtn_Click(sender As Object, e As RoutedEventArgs) Handles VioletBtn.Click
+        ChangeColourScheme(4)
+        CreateTempLabel(Funcs.ChooseLang("Violet colour scheme applied", "Palette de couleurs Violet appliquée"))
+
+    End Sub
+
+    Private Sub OfficeBtn_Click(sender As Object, e As RoutedEventArgs) Handles OfficeBtn.Click
+        ChangeColourScheme(5)
+        CreateTempLabel(Funcs.ChooseLang("Office colour scheme applied", "Palette de couleurs Office appliquée"))
+
+    End Sub
+
+    Private Sub GreyscaleBtn_Click(sender As Object, e As RoutedEventArgs) Handles GreyscaleBtn.Click
+        ChangeColourScheme(6)
+        CreateTempLabel(Funcs.ChooseLang("Greyscale colour scheme applied", "Palette de couleurs Échelle de Gris appliquée"))
+
+    End Sub
+
+    Private Sub CustomColoursBtn_Click(sender As Object, e As RoutedEventArgs) Handles CustomColoursBtn.Click
+
+        Dim ccl As New CustomColours(GetColourScheme())
+        If ccl.ShowDialog() = True Then
+
+            Colour3.Fill = ccl.Colours.Item(0)
+            Colour4.Fill = ccl.Colours.Item(1)
+            Colour5.Fill = ccl.Colours.Item(2)
+            Colour6.Fill = ccl.Colours.Item(3)
+            Colour7.Fill = ccl.Colours.Item(4)
+            Colour8.Fill = ccl.Colours.Item(5)
+            Colour9.Fill = ccl.Colours.Item(6)
+            Colour10.Fill = ccl.Colours.Item(7)
+
+            ResetColourSchemeLabels()
+            CreateTempLabel(Funcs.ChooseLang("Custom colour scheme applied", "Palette de couleurs personnalisée appliquée"))
+
+        End If
+
+    End Sub
+
+
+    ' DESIGN > CASING
+
+    Private Sub CasingBtn_Click(sender As Object, e As RoutedEventArgs) Handles CasingBtn.Click
+        CasePopup.IsOpen = True
+
+    End Sub
+
+    Private Sub LowercaseBtn_Click(sender As Object, e As RoutedEventArgs) Handles LowercaseBtn.Click
+        ChangeCase("Lower")
+
+    End Sub
+
+    Private Sub UppercaseBtn_Click(sender As Object, e As RoutedEventArgs) Handles UppercaseBtn.Click
+        ChangeCase("Upper")
+
+    End Sub
+
+    Private Sub TitleCaseBtn_Click(sender As Object, e As RoutedEventArgs) Handles TitleCaseBtn.Click
+        ChangeCase("Title")
+
+    End Sub
+
+    Private Sub ChangeCase(setting As String)
+        Dim SelectStart As Integer = DocTxt.SelectionStart
+        Dim SelectLength As Integer = DocTxt.SelectionLength
+
+        If Not SelectLength = 0 Then
+            EnableFontChange = False
+            TakeFromClip()
+
+            Dim bufferrtf As New WinFormsTxt
+            DocTxt.Copy()
+            bufferrtf.Paste()
+            bufferrtf.SelectAll()
+
+            Dim FormatSelection As Integer = bufferrtf.SelectionLength
+            Dim newtxt As String = ""
+
+
+            If setting = "Title" Then
+                newtxt = StrConv(bufferrtf.SelectedText, VbStrConv.ProperCase)
+
+            End If
+
+            For i = 0 To FormatSelection - 1
+                bufferrtf.Select(i, 1)
+
+                If bufferrtf.SelectionType.HasFlag(Forms.RichTextBoxSelectionTypes.Text) Then
+
+                    If setting = "Lower" Then
+                        bufferrtf.SelectedText = bufferrtf.SelectedText.ToLower()
+
+                    ElseIf setting = "Upper" Then
+                        bufferrtf.SelectedText = bufferrtf.SelectedText.ToUpper()
+
+                    ElseIf setting = "Title" Then
+                        bufferrtf.SelectedText = newtxt.Substring(i, 1)
+
+                    End If
+
+                End If
+            Next
+
+
+            bufferrtf.SelectAll()
+            bufferrtf.Copy()
+            DocTxt.Paste()
+            PutBacktoClip()
+
+            bufferrtf.Dispose()
+
+        End If
+
+        DocTxt.Select(SelectStart, SelectLength)
+        EnableFontChange = True
+
+        CasePopup.IsOpen = False
+        TextFocus()
+
+    End Sub
+
+
+    ' DESIGN > OPTIONS
+    ' --
+
+    Private Sub URLBtn_Click(sender As Object, e As RoutedEventArgs) Handles URLBtn.Click
+
+        If URLImg.Tag = 1 Then
+            URLImg.SetResourceReference(ContentProperty, "UntickIcon")
+            URLImg.Tag = 0
+
+            DocTxt.DetectUrls = False
+
+        Else
+            URLImg.SetResourceReference(ContentProperty, "TickIcon")
+            URLImg.Tag = 1
+
+            DocTxt.DetectUrls = True
+
+        End If
+
+    End Sub
+
+    Private Sub WrapBtn_Click(sender As Object, e As RoutedEventArgs) Handles WrapBtn.Click
+
+        If WrapImg.Tag = 1 Then
+            WrapImg.SetResourceReference(ContentProperty, "UntickIcon")
+            WrapImg.Tag = 0
+
+            DocTxt.WordWrap = False
+            DocTxtGrid.Margin = New Thickness(0)
+            DocScroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Visible
+
+        Else
+            WrapImg.SetResourceReference(ContentProperty, "TickIcon")
+            WrapImg.Tag = 1
+
+            DocTxt.WordWrap = True
+            DocTxtGrid.Margin = New Thickness(50, 20, 50, 0)
+            DocScroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled
+
+            WinFormsHost.Width = Double.NaN
+            DocTxt.Width = WinFormsHost.ActualWidth
+
+            If DocHeight > (DocScroller.ActualHeight - 60) Then
+                DocTxt.Height = DocHeight
+                WinFormsHost.Height = DocTxt.Height
+            Else
+                DocTxt.Height = DocScroller.ActualHeight - 60
+                WinFormsHost.Height = DocTxt.Height
+            End If
+
+        End If
+
+    End Sub
+
+
+
+    ' REVIEW > SELECT & ERASE
+    ' --
+
+    Private Sub SelectAllBtn_Click(sender As Object, e As RoutedEventArgs) Handles SelectAllBtn.Click, SelectMenuBtn.Click
+        DocTxt.SelectAll()
+
+    End Sub
+
+    Private Sub ClearBtn_Click(sender As Object, e As RoutedEventArgs) Handles ClearBtn.Click
+        DocTxt.Clear()
+
+    End Sub
+
+
+    ' REVIEW > FIND & REPLACE
+    ' --
+
+    Private MatchCase As Boolean = False
+    Private MatchWord As Boolean = False
+    Private AfterCursor As Boolean = True
+
+    Private Sub FindReplaceBtn_Click(sender As Object, e As RoutedEventArgs) Handles FindReplaceBtn.Click
+        OpenSidePane(7)
+
+    End Sub
+
+    Private Sub FindCaseCheck_Click(sender As Object, e As RoutedEventArgs) Handles FindCaseCheck.Click
+
+        If FindCaseImg.Tag = 1 Then
+            FindCaseImg.SetResourceReference(ContentProperty, "UntickIcon")
+            FindCaseImg.Tag = 0
+            MatchCase = False
+
+        Else
+            FindCaseImg.SetResourceReference(ContentProperty, "TickIcon")
+            FindCaseImg.Tag = 1
+            MatchCase = True
+
+        End If
+
+    End Sub
+
+    Private Sub FindWordCheck_Click(sender As Object, e As RoutedEventArgs) Handles FindWordCheck.Click
+
+        If FindWordImg.Tag = 1 Then
+            FindWordImg.SetResourceReference(ContentProperty, "UntickIcon")
+            FindWordImg.Tag = 0
+            MatchWord = False
+
+        Else
+            FindWordImg.SetResourceReference(ContentProperty, "TickIcon")
+            FindWordImg.Tag = 1
+            MatchWord = True
+
+        End If
+
+    End Sub
+
+    Private Sub BeforeCursorRadio_Click(sender As Object, e As RoutedEventArgs) Handles BeforeCursorRadio.Click
+        BeforeCursorImg.Visibility = Visibility.Visible
+        AfterCursorImg.Visibility = Visibility.Hidden
+        AfterCursor = False
+
+    End Sub
+
+    Private Sub AfterCursorRadio_Click(sender As Object, e As RoutedEventArgs) Handles AfterCursorRadio.Click
+        BeforeCursorImg.Visibility = Visibility.Hidden
+        AfterCursorImg.Visibility = Visibility.Visible
+        AfterCursor = True
+
+    End Sub
+
+    Private Sub FindReplaceTxt_TextChanged(sender As Controls.TextBox, e As TextChangedEventArgs) Handles FindTxt.TextChanged, ReplaceTxt.TextChanged
+
+        If FindTxt.Text = "" Then
+            FindBtn.IsEnabled = False
+            ReplaceNextBtn.IsEnabled = False
+            ReplaceAllBtn.IsEnabled = False
+
+        ElseIf ReplaceTxt.Text = "" Then
+            FindBtn.IsEnabled = True
+            ReplaceNextBtn.IsEnabled = False
+            ReplaceAllBtn.IsEnabled = False
+
+        Else
+            FindBtn.IsEnabled = True
+            ReplaceNextBtn.IsEnabled = True
+            ReplaceAllBtn.IsEnabled = True
+
+        End If
+
+    End Sub
+
+    Private Sub FindOptionsBtn_Click(sender As Object, e As RoutedEventArgs) Handles FindOptionsBtn.Click
+
+        If FindOptionsPnl.Visibility = Visibility.Collapsed Then
+            FindOptionsPnl.Visibility = Visibility.Visible
+            MoreImg.RenderTransform = MoreBtnTransform
+
+        Else
+            FindOptionsPnl.Visibility = Visibility.Collapsed
+            MoreImg.RenderTransform = Nothing
+
+        End If
+
+    End Sub
+
+    Private Sub FindBtn_Click(sender As Object, e As RoutedEventArgs) Handles FindBtn.Click
+        FindText()
+
+    End Sub
+
+    Private Function FindText(Optional startpoint As Integer = -1) As Boolean
+        Dim start As Integer = DocTxt.SelectionStart + DocTxt.SelectionLength
+        Dim finish As Integer = DocTxt.TextLength
+
+        If Not startpoint = -1 Then start = DocTxt.SelectionStart
+
+        If AfterCursor = False Then
+            finish = DocTxt.SelectionStart
+            start = 0
+
+        End If
+
+
+        If DocTxt.Find(FindTxt.Text, start, finish, GetFindOptions()) = -1 Then
+            NewMessage(Funcs.ChooseLang("Finished searching the document.", "Terminé la recherche dans le document."),
+                        Funcs.ChooseLang("Search finished", "Recherche terminée"), MessageBoxButton.OK, MessageBoxImage.Information)
+
+            Return False
+
+        Else
+            CreateTempLabel(Funcs.ChooseLang("Occurrence found", "Résultat trouvé"))
+            Return True
+
+        End If
+
+    End Function
+
+    Private Function GetFindOptions() As Forms.RichTextBoxFinds
+        Dim FindOptions As Forms.RichTextBoxFinds
+
+        If MatchCase Then
+            FindOptions += Forms.RichTextBoxFinds.MatchCase
+
+        End If
+
+        If MatchWord Then
+            FindOptions += Forms.RichTextBoxFinds.WholeWord
+
+        End If
+
+        If AfterCursor = False Then
+            FindOptions += Forms.RichTextBoxFinds.Reverse
+
+        End If
+
+        If FindOptions = Nothing Then
+            FindOptions = Forms.RichTextBoxFinds.None
+
+        End If
+
+        Return FindOptions
+
+    End Function
+
+    Private Sub ReplaceNextBtn_Click(sender As Object, e As RoutedEventArgs) Handles ReplaceNextBtn.Click
+        ReplaceText()
+
+    End Sub
+
+    Private Sub ReplaceText()
+        Dim start As Integer = DocTxt.SelectionStart
+        Dim finish As Integer = DocTxt.TextLength
+
+        If AfterCursor = False Then
+            finish = DocTxt.SelectionStart + DocTxt.SelectionLength
+            start = 0
+
+        End If
+
+        If DocTxt.SelectionStart = DocTxt.Find(FindTxt.Text, start, finish, GetFindOptions() Or Forms.RichTextBoxFinds.NoHighlight) And DocTxt.SelectionLength = FindTxt.Text.Length Then
+            DocTxt.SelectedText = ReplaceTxt.Text
+            CreateTempLabel(Funcs.ChooseLang("Replaced text", "Texte remplacé"))
+
+        Else
+            FindText(0)
+
+        End If
+
+    End Sub
+
+    Private Sub ReplaceAllBtn_Click(sender As Object, e As RoutedEventArgs) Handles ReplaceAllBtn.Click
+
+        Do Until FindText() = False
+            ReplaceText()
+
+        Loop
+
+    End Sub
+
+
+    ' REVIEW > WORD COUNT
+    ' --
+
+    Private Sub WordCountBtn_Click(sender As Object, e As RoutedEventArgs) Handles WordCountBtn.Click, WordCountStatusBtn.Click
+        Dim texttocount As String = DocTxt.Text
+        If Not DocTxt.SelectedText = "" Then texttocount = DocTxt.SelectedText
+
+        Dim wrd As New WordCount(New List(Of Integer) From {FilterSelectWords().Count, texttocount.Replace(" ", "").Length, texttocount.Length, DocTxt.Lines.Length})
+        wrd.ShowDialog()
+
+    End Sub
+
+    Private Function FilterSelectWords() As List(Of String)
+        Dim texttocount As String = DocTxt.Text
+        If Not DocTxt.SelectedText = "" Then texttocount = DocTxt.SelectedText
+
+        Dim wordstr As String = texttocount + " "
+        wordstr = wordstr.Replace(Chr(10), " ")
+        wordstr = wordstr.Replace(Chr(13), " ")
+        wordstr = wordstr.Replace("/", " ")
+
+        Dim wordlist As List(Of String) = wordstr.Split(" ").ToList()
+        wordlist.RemoveAll(Function(str) String.IsNullOrWhiteSpace(str))
+
+        Return wordlist
+
+    End Function
+
+    Private Function FilterWords() As List(Of String)
+        Dim wordstr As String = DocTxt.Text + " "
+        wordstr = wordstr.Replace(Chr(10), " ")
+        wordstr = wordstr.Replace(Chr(13), " ")
+        wordstr = wordstr.Replace("/", " ")
+
+        Dim wordlist As List(Of String) = wordstr.Split(" ").ToList()
+        wordlist.RemoveAll(Function(str) String.IsNullOrWhiteSpace(str))
+
+        Return wordlist
+
+    End Function
+
+
+    ' REVIEW > READ ALOUD
+    ' --
+
+    Private Sub ReadAloudBtn_Click(sender As Object, e As RoutedEventArgs) Handles ReadAloudBtn.Click
+
+        If DocTxt.Text = "" Then
+            NewMessage(Funcs.ChooseLang("Please add some text to your document first.", "Veuillez d'abord ajouter du texte à votre document."),
+                        Funcs.ChooseLang("No text", "Pas de texte"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+        Else
+            Dim ts As New TTS(DocTxt.Text)
+            ts.ShowDialog()
+
+        End If
+
+    End Sub
+
+
+    ' REVIEW > SPELLCHECKER
+    ' --
+
+    Private SpellLang As String = "en"
+
+    Private Sub SpellcheckerBtn_Click(sender As Object, e As RoutedEventArgs) Handles SpellcheckerBtn.Click
+        OpenSidePane(8)
+
+    End Sub
+
+    Private Sub ResetSpellchecker()
+        SpellInfoPnl.Visibility = Visibility.Collapsed
+        CheckSpellBtn.Content = Funcs.ChooseLang("Start checking", "Démarrer")
+        SpellOverride = False
+
+    End Sub
+
+    Private Sub SpellOptionsBtn_Click(sender As Object, e As RoutedEventArgs) Handles SpellOptionsBtn.Click
+        SetLangPopupChecks(SpellLang)
+        'LanguagePopup.HorizontalOffset = -118
+        'LanguagePopup.VerticalOffset = 30
+        LanguagePopup.PlacementTarget = SpellOptionsBtn
+        Lang4Btn.Visibility = Visibility.Collapsed
+        LanguagePopup.IsOpen = True
+
+    End Sub
+
+    Private Sub CheckSpellBtn_Click(sender As Object, e As RoutedEventArgs) Handles CheckSpellBtn.Click
+        StartChecking()
+
+    End Sub
+
+    Private incorrect As SpellingError
+
+    Private Sub StartChecking()
+        SpellTxt.Document.Blocks.Clear()
+
+        If SpellLang = "fr" Then
+            SpellTxt.Document.Blocks.Add(New Paragraph(FrenchRun))
+            FrenchRun.Text = DocTxt.Text
+
+        ElseIf SpellLang = "es" Then
+            SpellTxt.Document.Blocks.Add(New Paragraph(SpanishRun))
+            SpanishRun.Text = DocTxt.Text
+
+        Else
+            SpellTxt.Document.Blocks.Add(New Paragraph(EnglishRun))
+            EnglishRun.Text = DocTxt.Text
+
+        End If
+
+        Dim originalstart As Integer = DocTxt.SelectionStart
+        Dim originallength As Integer = DocTxt.SelectionLength
+
+        If CheckSpellBtn.Content = Funcs.ChooseLang("Start checking", "Démarrer") Then
+            DocTxt.Select(0, 0)
+
+        Else
+            DocTxt.Select(originalstart + originallength, 0)
+
+        End If
+
+
+        Try
+            SpellTxt.Selection.Select(SpellTxt.CaretPosition.DocumentStart, SpellTxt.CaretPosition.DocumentStart)
+            SpellTxt.CaretPosition = SpellTxt.CaretPosition.GetPositionAtOffset(DocTxt.SelectionStart + DocTxt.SelectionLength)
+
+            Dim start As Integer = SpellTxt.GetNextSpellingErrorPosition(SpellTxt.CaretPosition, LogicalDirection.Forward).GetTextRunLength(LogicalDirection.Backward)
+            Dim finish As Integer = SpellTxt.GetSpellingErrorRange(SpellTxt.GetNextSpellingErrorPosition(SpellTxt.CaretPosition, LogicalDirection.Forward)).End.GetTextRunLength(LogicalDirection.Backward)
+
+            DocTxt.Select(start, finish - start)
+            CheckSpellBtn.Content = Funcs.ChooseLang("Continue", "Continuer")
+
+
+            If SpellLang = "fr" Then
+                If My.Settings.customfr.Contains(DocTxt.SelectedText) Then
+                    StartChecking()
+                    Exit Sub
+
+                End If
+
+            ElseIf SpellLang = "es" Then
+                If My.Settings.customes.Contains(DocTxt.SelectedText) Then
+                    StartChecking()
+                    Exit Sub
+
+                End If
+
+            Else
+                If My.Settings.customen.Contains(DocTxt.SelectedText) Then
+                    StartChecking()
+                    Exit Sub
+
+                End If
+
+            End If
+
+
+            incorrect = SpellTxt.GetSpellingError(SpellTxt.GetNextSpellingErrorPosition(SpellTxt.CaretPosition, LogicalDirection.Forward))
+            SuggestionPnl.Children.Clear()
+
+            Dim count As Integer = 0
+            For Each suggestion As String In incorrect.Suggestions
+
+                Dim copy As Controls.Button = XamlReader.Parse("<Button BorderThickness='0,0,0,0' Background='{DynamicResource BackColor}' FontSize='14' FontStyle='Italic' HorizontalContentAlignment='Left' Padding='10,1,10,1' Style='{DynamicResource AppButton}' Name='" +
+                                                        $"SpellError{count}Btn" + "' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
+                                                        suggestion + "</Button>")
+
+                copy.ContextMenu = SpellTTSMenu
+                SuggestionPnl.Children.Add(copy)
+                AddHandler copy.Click, AddressOf CorrectionBtns_Click
+
+                count += 1
+
+            Next
+
+
+            If count = 0 Then
+                SuggestionPnl.Visibility = Visibility.Collapsed
+                InfoSpellLbl.Text = Funcs.ChooseLang("No suggestions", "Pas de suggestions")
+
+            Else
+                SuggestionPnl.Visibility = Visibility.Visible
+                InfoSpellLbl.Text = Funcs.ChooseLang("Did you mean..?", "Vouliez-vous dire..?")
+
+            End If
+
+
+            SpellInfoPnl.Visibility = Visibility.Visible
+            SpellOverride = True
+
+
+        Catch ex As Exception
+            DocTxt.Select(originalstart, originallength)
+            NewMessage(Funcs.ChooseLang("Finished searching for errors.", "Terminé la recherche des fautes."),
+                        Funcs.ChooseLang("Spellcheck complete", "Vérification orthographique terminée"), MessageBoxButton.OK, MessageBoxImage.Information)
+
+            ResetSpellchecker()
+
+        Finally
+            DocTxt.Focus()
+
+        End Try
+
+    End Sub
+
+    Private Sub CorrectionBtns_Click(sender As Controls.Button, e As RoutedEventArgs)
+        SpellOverride = False
+        DocTxt.SelectedText = sender.Content.ToString()
+        StartChecking()
+
+    End Sub
+
+    Private Sub IgnoreOnceBtn_Click(sender As Object, e As RoutedEventArgs) Handles IgnoreOnceBtn.Click
+        StartChecking()
+
+    End Sub
+
+    Private Sub IgnoreAllBtn_Click(sender As Object, e As RoutedEventArgs) Handles IgnoreAllBtn.Click
+        incorrect.IgnoreAll()
+        StartChecking()
+
+    End Sub
+
+    Private Sub AddDictBtn_Click(sender As Object, e As RoutedEventArgs) Handles AddDictBtn.Click
+
+        If SpellLang = "fr" Then
+            If Not My.Settings.customfr.Contains(DocTxt.SelectedText) Then
+                My.Settings.customfr.Add(DocTxt.SelectedText)
+
+            End If
+
+        ElseIf SpellLang = "es" Then
+            If Not My.Settings.customes.Contains(DocTxt.SelectedText) Then
+                My.Settings.customes.Add(DocTxt.SelectedText)
+
+            End If
+
+        Else
+            If Not My.Settings.customen.Contains(DocTxt.SelectedText) Then
+                My.Settings.customen.Add(DocTxt.SelectedText)
+
+            End If
+
+        End If
+
+        My.Settings.Save()
+        StartChecking()
+
+    End Sub
+
+    ReadOnly SpeechTTS As New Speech.Synthesis.SpeechSynthesizer
+
+    Private Sub ReadWordBtn_Click(sender As Controls.MenuItem, e As RoutedEventArgs) Handles ReadWordBtn.Click
+        Dim ct As Controls.ContextMenu = sender.Parent
+        Dim btn As Controls.Button = ct.PlacementTarget
+
+        Dim SpellLang As String = "en-GB"
+        If SpellLang = "fr" Then
+            SpellLang = "fr-FR"
+        ElseIf SpellLang = "es" Then
+            SpellLang = "es-ES"
+        End If
+
+        If SpeechTTS.GetInstalledVoices(New Globalization.CultureInfo(SpellLang)).Count = 0 Then
+            If NewMessage(Funcs.ChooseLang("You don't have any text-to-speech voices installed in this language. Would you like to open Settings to get some?",
+                                        "Vous n'avez pas de voix de synthèse vocale installées dans cette langue. Voulez-vous ouvrir Paramètres pour en obtenir ?"),
+                            Funcs.ChooseLang("No voices installed", "Aucune voix installée"), MessageBoxButton.YesNo, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+
+                OpenSettings()
+
+            End If
+
+        Else
+            SpeechTTS.Rate = 0
+            SpeechTTS.SelectVoice(SpeechTTS.GetInstalledVoices(New Globalization.CultureInfo(SpellLang))(0).VoiceInfo.Name)
+            SpeechTTS.SpeakAsync(btn.Content.ToString())
+
+        End If
+
+    End Sub
+
+    Private Sub SpellWordBtn_Click(sender As Object, e As RoutedEventArgs) Handles SpellWordBtn.Click
+        Dim ct As Controls.ContextMenu = sender.Parent
+        Dim btn As Controls.Button = ct.PlacementTarget
+
+        Dim SpellLang As String = "en-GB"
+        If SpellLang = "fr" Then
+            SpellLang = "fr-FR"
+        ElseIf SpellLang = "es" Then
+            SpellLang = "es-ES"
+        End If
+
+        If SpeechTTS.GetInstalledVoices(New Globalization.CultureInfo(SpellLang)).Count = 0 Then
+            If NewMessage(Funcs.ChooseLang("You don't have any text-to-speech voices installed in this language. Would you like to open Settings to get some?",
+                                        "Vous n'avez pas de voix de synthèse vocale installées dans cette langue. Voulez-vous ouvrir Paramètres pour en obtenir ?"),
+                            Funcs.ChooseLang("No voices installed", "Aucune voix installée"), MessageBoxButton.YesNo, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+
+                OpenSettings()
+
+            End If
+
+        Else
+            Dim prompt As New Speech.Synthesis.PromptBuilder
+            prompt.StartVoice(New Globalization.CultureInfo(SpellLang))
+            prompt.AppendTextWithHint(btn.Content.ToString(), Speech.Synthesis.SayAs.SpellOut)
+            prompt.EndVoice()
+
+            SpeechTTS.Rate = -5
+            SpeechTTS.SpeakAsync(prompt)
+
+        End If
+
+    End Sub
+
+    Private Sub OpenSettings()
+
+        Try
+            Process.Start("ms-settings:speech")
+        Catch
+            NewMessage(Funcs.ChooseLang("To install more voices, open Control Panel and search for 'speech.'",
+                                    "Pour installer plus de voix, ouvrez le Panneau de Configuration et recherchez 'fonctions vocales.'"),
+                        Funcs.ChooseLang("Unable to open Settings", "Impossible d'ouvrir Paramètres"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+        End Try
+
+    End Sub
+
+
+    ' REVIEW > DICTIONARY
+    ' --
+
+    Private DefineLang As String = "en"
+    Private SearchTerm As String = ""
+
+    Private Sub DictionaryBtn_Click(sender As Object, e As RoutedEventArgs) Handles DictionaryBtn.Click
+        OpenSidePane(1)
+
+    End Sub
+
+    Private Sub DefineSearchTxt_KeyDown(sender As Object, e As Input.KeyEventArgs) Handles DefineSearchTxt.KeyDown
+        If e.Key = Key.Enter Then StartDefineSearch()
+    End Sub
+
+    Private Sub DefineSearchBtn_Click(sender As Object, e As RoutedEventArgs) Handles DefineSearchBtn.Click
+        StartDefineSearch()
+
+    End Sub
+
+    Private Sub StartDefineSearch()
+        DefineSearchTxt.Text = DefineSearchTxt.Text.TrimStart(" ")
+
+        If DefineSearchTxt.Text.Contains("&") Or DefineSearchTxt.Text.Contains("?") Then
+            NewMessage(Funcs.ChooseLang($"We couldn't get definitions for that word. Please check your spelling and try again.{Chr(10)}{Chr(10)}If this problem persists, we may be experiencing issues. Please try again later and check for app updates.", $"Nous n'arrivions pas à obtenir les définitions pour ce mot. Veuillez vérifier l'orthographe et réessayer.{Chr(10)}{Chr(10)}Si ce problème persiste, il est possible que nous rencontrons des problèmes de réseau. Veuillez réessayer plus tard et vérifier les mises à jour de l'application."),
+                       Funcs.ChooseLang("Dictionary Error", "Erreur de Dictionnaire"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+
+        ElseIf Not DefineSearchTxt.Text = "" Then
+            DefineStack.Children.Clear()
+            DefineStack.Children.Add(DefineLoadingTxt)
+            DefineStack.Children.Add(CancelDefineBtn)
+            DefineSearchBtn.IsEnabled = False
+
+            SearchTerm = DefineSearchTxt.Text
+            DefineScroll.ScrollToTop()
+            DefineWorker.RunWorkerAsync()
+
+        End If
+
+    End Sub
+
+    Private dict As New Dictionary(Of String, Dictionary(Of String, Dictionary(Of String, List(Of String))))
+    '                                 word  :{              type  :{              def.   {List(Of synonyms)
+    '                                                       type  :{              def.   {List(Of synonyms)
+    '                                                              {              def.   {List(Of synonyms)
+    '                                 word  :{              type  :{              def.   {List(Of synonyms)
+    '                                                       ........                      .................
+
+    Private Function GetDefs(query As String, lang As String) As Boolean
+        Dim client As Net.WebClient = New Net.WebClient()
+
+        Try
+            dict = New Dictionary(Of String, Dictionary(Of String, Dictionary(Of String, List(Of String))))
+            query = query(0).ToString().ToUpper() + query.Substring(1).Replace(" ", "_")
+
+            Using reader As StreamReader = New StreamReader(client.OpenRead("https://api.dictionaryapi.dev/api/v2/entries/" + lang + "/" + query), Text.Encoding.UTF8)
+                If DefineWorker.CancellationPending Then Return False
+
+                Dim info As String = reader.ReadToEnd()
+                Dim xmldoc = JsonConvert.DeserializeXmlNode("{""info"": " + info + "}", "root")
+
+                For Each i As Xml.XmlNode In xmldoc.ChildNodes.Item(0)
+                    Try
+                        Dim currentkey = i.FirstChild.InnerText
+                        dict.Add(i.FirstChild.InnerText, New Dictionary(Of String, Dictionary(Of String, List(Of String))))
+
+                        For Each j As Xml.XmlNode In i.ChildNodes
+                            If j.OuterXml.StartsWith("<meanings>") Then
+
+                                Dim wordtype As String = ""
+                                For Each k As Xml.XmlNode In j.ChildNodes
+                                    If k.OuterXml.StartsWith("<partOfSpeech>") Then
+                                        wordtype = k.InnerText
+                                        dict.Item(currentkey).Add(wordtype, New Dictionary(Of String, List(Of String)))
+
+                                    ElseIf k.OuterXml.StartsWith("<definitions>") Then
+                                        Dim lastdef As String = ""
+                                        For Each l As Xml.XmlNode In k.ChildNodes
+                                            If l.OuterXml.StartsWith("<definition>") Then
+                                                lastdef = l.InnerText
+                                                If Not lastdef = "" Then dict.Item(currentkey)(wordtype).Add(lastdef, New List(Of String))
+
+                                            ElseIf l.OuterXml.StartsWith("<synonyms>") Then
+                                                If Not lastdef = "" And Not l.InnerText = "" Then
+                                                    dict.Item(currentkey)(wordtype)(lastdef).Add(l.InnerText)
+                                                End If
+
+                                            End If
+                                        Next
+                                    End If
+                                Next
+                            End If
+                        Next
+                    Catch
+                    End Try
+                Next
+
+            End Using
+            Return True
+
+        Catch ex As Exception
+            DefineError = True
+            Return False
+
+        Finally
+            client.Dispose()
+
+        End Try
+
+    End Function
+
+    Private Function CreateWordLbl(text As String) As TextBlock
+        Dim word As TextBlock = XamlReader.Parse("<TextBlock Text='" +
+                                                 Funcs.EscapeChars(text) + "' FontWeight='Bold' FontSize='15' Padding='0,10,0,0' TextTrimming='CharacterEllipsis' Name='WordTxt' Margin='0,0,0,0' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'/>")
+        Return word
+
+    End Function
+
+    Private Function CreateWordTypeLbl(text As String) As TextBlock
+        Dim wordtype As TextBlock = XamlReader.Parse("<TextBlock Text='" +
+                                                     Funcs.EscapeChars(text) + "' FontStyle='Italic' FontSize='14' Padding='0,5,0,0' TextWrapping='Wrap' Name='WordTypeTxt' Margin='0,0,0,0' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'/>")
+        Return wordtype
+
+    End Function
+
+    Private Function CreateDefPnl(text As String, synonyms As List(Of String), number As Integer) As DockPanel
+        Dim definition As DockPanel = XamlReader.Parse("<DockPanel Name='DefinitionPnl' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><Button BorderBrush='#FFFFFFFF' BorderThickness='0,0,0,0' Background='#00FFFFFF' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='SynonymsBtn' Height='30' Margin='34,5,0,0' VerticalAlignment='Top' DockPanel.Dock='Bottom'><DockPanel><TextBlock Text='—  Synonyms' FontSize='14' TextAlignment='Right' Margin='0,0,5,5' HorizontalAlignment='Left' VerticalAlignment='Center' /><ContentControl Width='12' Margin='6,0,0,2' HorizontalAlignment='Left' Content='{StaticResource DownIcon}'/></DockPanel></Button><TextBlock Text='" +
+                                                       number.ToString() + ".' FontSize='14' Padding='0,5,0,0' TextAlignment='Right' TextTrimming='CharacterEllipsis' Name='DefNumTxt' Width='24' Margin='0,0,0,0' /><TextBlock Text='" +
+                                                       Funcs.EscapeChars(text) + "' FontSize='14' Padding='10,5,0,0' TextWrapping='Wrap' Name='DefinitionTxt' Margin='0,0,0,0' /></DockPanel>")
+
+        Dim syn As Controls.Button = definition.FindName("SynonymsBtn")
+        If synonyms.Count = 0 Then
+            syn.Visibility = Visibility.Collapsed
+        Else
+            syn.Tag = synonyms
+            AddHandler syn.Click, AddressOf SynsBtns_Click
+        End If
+
+        Return definition
+
+    End Function
+
+    Private Sub SynsBtns_Click(sender As Controls.Button, e As RoutedEventArgs)
+        SynStack.Children.Clear()
+
+        For Each i In sender.Tag
+            Dim synbtn As Controls.Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='{DynamicResource BackColor}' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='SynSampleBtn' Tag='8' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' ToolTip='" +
+                                                    Funcs.EscapeChars(i.ToString()) + "' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><DockPanel><TextBlock Text='" +
+                                                    Funcs.EscapeChars(i.ToString()) + "' FontSize='14' Padding='10,0,5,0' TextTrimming='CharacterEllipsis' Name='HomeBtnTxt_Copy25' Height='21.31' Margin='0,0,0,0' HorizontalAlignment='Center' VerticalAlignment='Center' /></DockPanel></Button>")
+            synbtn.Tag = i.ToString()
+            AddHandler synbtn.Click, AddressOf SynBtns_Click
+            SynStack.Children.Add(synbtn)
+        Next
+
+        SynonymPopup.PlacementTarget = sender
+        SynScroll.ScrollToTop()
+        SynonymPopup.IsOpen = True
+
+    End Sub
+
+    Private Sub SynBtns_Click(sender As Controls.Button, e As RoutedEventArgs)
+        DocTxt.SelectedRtf = ""
+        DocTxt.SelectedText = sender.Tag
+
+    End Sub
+
+    Private Sub CancelDefineBtn_Click(sender As Object, e As RoutedEventArgs) Handles CancelDefineBtn.Click
+        DefineWorker.CancelAsync()
+
+    End Sub
+
+    Private DefineError As Boolean = False
+
+    Private Sub DefineWorker_DoWork(sender As BackgroundWorker, e As DoWorkEventArgs)
+
+        If DefineWorker.CancellationPending Then
+            e.Cancel = True
+            Exit Sub
+
+        End If
+
+        DefineError = False
+        If DefineWorker.CancellationPending Or GetDefs(SearchTerm, DefineLang) = False Then e.Cancel = True
+
+    End Sub
+
+    Private Sub DefineWorker_RunWorkerCompleted(sender As Object, e As RunWorkerCompletedEventArgs)
+        DefineSearchBtn.IsEnabled = True
+        DefineStack.Children.Clear()
+
+        If e.Cancelled Then
+            If DefineError Then NewMessage(Funcs.ChooseLang($"We couldn't get definitions for that word. Please check your spelling and try again.{Chr(10)}{Chr(10)}If this problem persists, we may be experiencing issues. Please try again later and check for app updates.",
+                                                      $"Nous n'arrivions pas à obtenir les définitions pour ce mot. Veuillez vérifier l'orthographe et réessayer.{Chr(10)}{Chr(10)}Si ce problème persiste, il est possible que nous rencontrons des problèmes de réseau. Veuillez réessayer plus tard et vérifier les mises à jour de l'application."),
+                                           Funcs.ChooseLang("Dictionary Error", "Erreur de Dictionnaire"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+
+        Else
+            For Each word In dict.Keys
+                DefineStack.Children.Add(CreateWordLbl(word))
+
+                For Each wordtype In dict(word).Keys
+                    DefineStack.Children.Add(CreateWordTypeLbl(wordtype))
+
+                    Dim defcount As Integer = 1
+                    For Each defin In dict(word)(wordtype).Keys
+                        Dim synonyms As New List(Of String) From {}
+                        synonyms.AddRange(dict(word)(wordtype)(defin))
+
+                        DefineStack.Children.Add(CreateDefPnl(defin, synonyms, defcount))
+                        defcount += 1
+                    Next
+                Next
+            Next
+
+        End If
+
+    End Sub
+
+    Private Sub ClearLangPopupChecks()
+        Lang1Img.Visibility = Visibility.Hidden
+        Lang2Img.Visibility = Visibility.Hidden
+        Lang3Img.Visibility = Visibility.Hidden
+        Lang4Img.Visibility = Visibility.Hidden
+
+    End Sub
+
+    Private Sub DefineLangBtn_Click(sender As Object, e As RoutedEventArgs) Handles DefineLangBtn.Click
+        SetLangPopupChecks(DefineLang)
+        'LanguagePopup.HorizontalOffset = -138
+        'LanguagePopup.VerticalOffset = 26
+        LanguagePopup.PlacementTarget = DefineLangBtn
+        Lang4Btn.Visibility = Visibility.Visible
+        LanguagePopup.IsOpen = True
+
+    End Sub
+
+    Private Sub SetLangPopupChecks(lang As String)
+        ClearLangPopupChecks()
+
+        Select Case lang
+            Case "fr"
+                Lang2Img.Visibility = Visibility.Visible
+            Case "es"
+                Lang3Img.Visibility = Visibility.Visible
+            Case "it"
+                Lang4Img.Visibility = Visibility.Visible
+            Case Else
+                Lang1Img.Visibility = Visibility.Visible
+        End Select
+
+    End Sub
+
+    Private Sub LangBtns_Click(sender As Controls.Button, e As RoutedEventArgs) Handles Lang1Btn.Click, Lang2Btn.Click, Lang3Btn.Click, Lang4Btn.Click
+
+        If LanguagePopup.PlacementTarget.Equals(DefineLangBtn) Then
+            DefineLang = sender.Tag.ToString()
+            SetLangPopupChecks(DefineLang)
+
+        ElseIf LanguagePopup.PlacementTarget.Equals(DateLangBtn) Then
+            DateTimeLang = sender.Tag.ToString()
+            SetLangPopupChecks(DateTimeLang)
+            ShowDateTimeList()
+
+        ElseIf LanguagePopup.PlacementTarget.Equals(SpellOptionsBtn) Then
+            SpellLang = sender.Tag.ToString()
+            SetLangPopupChecks(SpellLang)
+            ResetSpellchecker()
+
+        End If
+
+        LanguagePopup.IsOpen = False
+
+    End Sub
+
+    Private Sub DefineMenuBtn_Click(sender As Object, e As RoutedEventArgs) Handles DefineMenuBtn.Click
+        Try
+            If Not DocTxt.TextLength = 0 Then
+                If Not DocTxt.SelectionStart = DocTxt.TextLength Then
+                    Dim I As Integer
+                    Dim RightLength As Integer = 0
+                    Dim LeftLength As Integer = 0
+                    Dim NewStart As Integer
+                    For I = DocTxt.SelectionStart + 1 To DocTxt.TextLength
+                        If Not (Mid(DocTxt.Text, I, 1) = " " Or Mid(DocTxt.Text, I, 1) = Chr(10)) Then
+                            RightLength += 1
+                        Else
+                            Exit For
+                        End If
+                    Next
+                    I = DocTxt.SelectionStart
+                    Do Until I = 0
+                        If Not (Mid(DocTxt.Text, I, 1) = " " Or Mid(DocTxt.Text, I, 1) = Chr(10)) Then
+                            LeftLength += 1
+                            I -= 1
+                        Else
+                            Exit Do
+                        End If
+                    Loop
+                    NewStart = DocTxt.SelectionStart - LeftLength
+                    DocTxt.SelectionStart = NewStart
+                    DocTxt.SelectionLength = LeftLength + RightLength
+                End If
+            End If
+        Catch
+        End Try
+
+        OpenSidePane(1)
+        DefineSearchTxt.Text = DocTxt.SelectedText
+        StartDefineSearch()
+
+    End Sub
+
+
+
+    ' ZOOM
+    ' --
+
+    Private Sub ZoomSlider_ValueChanged(sender As Object, e As RoutedPropertyChangedEventArgs(Of Double)) Handles ZoomSlider.ValueChanged
+        Try
+            DocTxt.ZoomFactor = ZoomSlider.Value / 10
+            ZoomLbl.Content = (ZoomSlider.Value * 10).ToString() + " %"
+        Catch
+        End Try
+
+    End Sub
+
+    Private Sub ZoomInBtn_Click(sender As Object, e As RoutedEventArgs) Handles ZoomInBtn.Click
+
+        If Not ZoomSlider.Value = ZoomSlider.Maximum Then
+            ZoomSlider.Value += 1
+
+        End If
+
+    End Sub
+
+    Private Sub ZoomOutBtn_Click(sender As Object, e As RoutedEventArgs) Handles ZoomOutBtn.Click
+
+        If Not ZoomSlider.Value = ZoomSlider.Minimum Then
+            ZoomSlider.Value -= 1
+
+        End If
+
+    End Sub
+
+
+    ' CONTEXT MENU
+    ' --
+
+    Private Sub DocTxt_MouseClick(sender As Object, e As Forms.MouseEventArgs) Handles DocTxt.MouseDown
+
+        If e.Button = Forms.MouseButtons.Right Then
+            DocTxtMenu.IsOpen = True
+
+        End If
+
+    End Sub
+
+
+    ' HELP
+    ' --
+
+    Public Shared Sub GetHelp()
+        Process.Start("https://express.johnjds.co.uk/type/help")
+
+    End Sub
+
+    Private Sub HelpBtn_Click(sender As Object, e As RoutedEventArgs) Handles HelpBtn.Click
+        HelpSearchTxt.Text = ""
+        ResetHelpResults()
+
+        HelpPopup.IsOpen = True
+        HelpSearchTxt.Focus()
+
+    End Sub
+
+    Private Sub HelpLinkBtn_Click(sender As Object, e As RoutedEventArgs) Handles HelpLinkBtn.Click
+        GetHelp()
+        HelpPopup.IsOpen = False
+
+    End Sub
+
+    Private Sub ResetHelpResults()
+        Help1Btn.Visibility = Visibility.Visible
+        Help2Btn.Visibility = Visibility.Visible
+        Help3Btn.Visibility = Visibility.Visible
+
+        Help1Img.SetResourceReference(ContentProperty, "NewIcon")
+        Help1Txt.Text = Funcs.ChooseLang("Getting started", "Prise en main")
+        Help1Btn.Tag = 1
+
+        Help2Img.SetResourceReference(ContentProperty, "TypeExpressVariantIcon")
+        Help2Txt.Text = Funcs.ChooseLang("What's new and still to come", "Nouvelles fonctions et autres à venir")
+        Help2Btn.Tag = 37
+
+        Help3Img.SetResourceReference(ContentProperty, "FeedbackIcon")
+        Help3Txt.Text = Funcs.ChooseLang("Troubleshooting and feedback", "Dépannage et commentaires")
+        Help3Btn.Tag = 38
+
+    End Sub
+
+    Private Sub PopulateHelpResults(query As String)
+        Dim results As New List(Of Integer) From {}
+
+        ' Sorted by priority...
+        ' 1  Creating a document with templates
+        ' 4  Browsing your PC for files
+        ' 2  Recent files and favourites
+        ' 3  Opening files from the Web
+        ' 5  Saving files
+        ' 6  Pinned folders
+        ' 7  Printing and page setup
+        ' 8  Emailing documents
+        ' 9  Locking documents
+        ' 10 Converting your document to HTML
+        ' 15 The Info tab
+        ' 17 Fonts and formatting
+        ' 27 Font styles and colour schemes
+        ' 19 Text colour and highlighting
+        ' 18 Aligning and indenting text
+        ' 21 Pictures and screenshots
+        ' 22 Shapes
+        ' 23 Drawings
+        ' 25 Charts and graphs
+        ' 24 Symbols and equations
+        ' 20 Lists and tables
+        ' 26 Text blocks and hyperlinks
+        ' 28 Design options
+        ' 29 Reading aloud
+        ' 16 Undo, redo and the clipboard
+        ' 30 Word count and selecting and clearing text
+        ' 31 Find and replace
+        ' 33 Dictionary
+        ' 32 Spellchecker
+        ' 14 Other options
+        ' 11 Default options
+        ' 12 General options
+        ' 13 Appearance options
+        ' 34 Notifications
+        ' 35 Using the side pane and status bar
+        ' 36 Keyboard shortcuts
+        ' 37 What's new and still to come
+        ' 38 Troubleshooting and feedback
+
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("start new creat template", "prise démar nouveau cré modèle")) Then
+            results.Add(1)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("open brows", "ouvrir ouverture parcourir")) Then
+            results.Add(4)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("recent favourite", "récent favori")) Then
+            results.Add(2)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("open web download internet online", "ouvrir ligne internet télécharge")) Then
+            results.Add(3)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("sav brows", "enregistre parcourir")) Then
+            results.Add(5)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("sav pin", "enregistre épingl")) Then
+            results.Add(6)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("print page", "imprim impression page")) Then
+            results.Add(7)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("mail send", "mail mél envo")) Then
+            results.Add(8)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("lock hid protect", "vérrouill cache protége")) Then
+            results.Add(9)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("html code", "html cod")) Then
+            results.Add(10)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("info analys propert clos", "info analyse propriété ferme")) Then
+            results.Add(15)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("font format bold italic underlin strike cross", "police format fonte gras italique souslign barr rayer")) Then
+            results.Add(17)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("font style colour palette", "police style couleur palette")) Then
+            results.Add(27)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("colour highlight", "couleur surlign")) Then
+            results.Add(19)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("align indent script", "aligne retrait indice exposant")) Then
+            results.Add(18)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("picture photo image screen", "image photo écran")) Then
+            results.Add(21)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("shape rectangle square line circle ellipse triangle", "forme rectangle carré ligne cercle ellipse triangle")) Then
+            results.Add(22)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("draw canvas", "dessin toile")) Then
+            results.Add(23)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("chart graph", "graphique diagramme histogramme courbe")) Then
+            results.Add(25)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("symbol equation math char emoji", "symbole équation emoji math émoticon caractère")) Then
+            results.Add(24)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("list bullet number table grid", "liste puce nombre tableau")) Then
+            results.Add(20)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("text block link embed import date time propert", "texte bloc lien intégre import propriété date heure")) Then
+            results.Add(26)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("design cas url link wrap", "design conception casse majuscule minuscule url lien retour")) Then
+            results.Add(28)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("read speech listen dictate", "lire voix dicter entend synthèse")) Then
+            results.Add(29)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("undo redo clipboard copy past cut", "annule rétabli coupe copi colle presse clipboard")) Then
+            results.Add(16)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("word stat line char select clear delet", "stat mot ligne caractère sélect efface supprim")) Then
+            results.Add(30)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("find replac search", "recherche remplace trouve")) Then
+            results.Add(31)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("dictionar thesaurus synonym defin mean", "dictionnaire synonyme défini dire")) Then
+            results.Add(33)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("spell error dictionar", "orthograph correcteur vérificateur dictionnaire")) Then
+            results.Add(32)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("font start import export", "police allumage démarr import export")) Then
+            results.Add(14)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("default setting option", "paramètre option défaut")) Then
+            results.Add(11)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("general language sound prompt change lock dictionary setting option", "paramètre langue généra option son invite modifi vérrouill dictionnaire")) Then
+            results.Add(12)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("appearance recent word sav setting option dark", "paramètre option apparence enregistre stat récent noir sombre")) Then
+            results.Add(13)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("notification updat", "notification jour")) Then
+            results.Add(34)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("pane bar zoom", "panneau barre zoom")) Then
+            results.Add(35)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("keyboard shortcut", "raccourci clavier")) Then
+            results.Add(36)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("new coming feature tip", "nouvelle nouveau bientôt prochainement fonction conseil")) Then
+            results.Add(37)
+        End If
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("help feedback comment trouble problem error suggest mail contact", "aide remarque réaction impression comment mail contact erreur")) Then
+            results.Add(38)
+        End If
+
+
+        If results.Count >= 1 Then
+            ' Add 1
+            AddHelpButton(results(0), 1)
+            Help1Btn.Visibility = Visibility.Visible
+
+            If results.Count >= 2 Then
+                ' Add 2
+                AddHelpButton(results(1), 2)
+                Help2Btn.Visibility = Visibility.Visible
+
+                If results.Count >= 3 Then
+                    ' Add 3
+                    AddHelpButton(results(2), 3)
+                    Help3Btn.Visibility = Visibility.Visible
+
+                Else
+                    ' Remove 3
+                    Help3Btn.Visibility = Visibility.Collapsed
+
+                End If
+            Else
+                ' Remove 2,3
+                Help2Btn.Visibility = Visibility.Collapsed
+                Help3Btn.Visibility = Visibility.Collapsed
+
+            End If
+        Else
+            ' Remove all (0)
+            Help1Btn.Visibility = Visibility.Collapsed
+            Help2Btn.Visibility = Visibility.Collapsed
+            Help3Btn.Visibility = Visibility.Collapsed
+        End If
+
+    End Sub
+
+    Private Sub AddHelpButton(topic As Integer, btn As Integer)
+        Dim icon As String = "HelpIcon"
+        Dim title As String = ""
+
+        Select Case topic
+            Case 1
+                icon = "NewIcon"
+                title = Funcs.ChooseLang("Creating a document with templates", "Créer un document avec des modèles")
+            Case 2
+                icon = "FavouriteIcon"
+                title = Funcs.ChooseLang("Recent files and favourites", "Fichiers récents et favoris")
+            Case 3
+                icon = "DownloadIcon"
+                title = Funcs.ChooseLang("Opening files from the Web", "Ouvrir des fichiers à partir du Web")
+            Case 4
+                icon = "OpenIcon"
+                title = Funcs.ChooseLang("Browsing your PC for files", "Parcourir votre PC pour les fichiers")
+            Case 5
+                icon = "SaveIcon"
+                title = Funcs.ChooseLang("Saving files", "Enregistrer les fichiers")
+            Case 6
+                icon = "FolderIcon"
+                title = Funcs.ChooseLang("Pinned folders", "Dossiers épinglés")
+            Case 7
+                icon = "PrintIcon"
+                title = Funcs.ChooseLang("Printing and page setup", "Impression et mise en page")
+            Case 8
+                icon = "EmailIcon"
+                title = Funcs.ChooseLang("Emailing documents", "Envoyer les documents par mail")
+            Case 9
+                icon = "LockIcon"
+                title = Funcs.ChooseLang("Locking documents", "Verrouiller les documents")
+            Case 10
+                icon = "HTMLIcon"
+                title = Funcs.ChooseLang("Converting your document to HTML", "Convertir votre document en HTML")
+            Case 11
+                icon = "DefaultsIcon"
+                title = Funcs.ChooseLang("Default options", "Paramètres par défaut")
+            Case 12
+                icon = "OptionsIcon"
+                title = Funcs.ChooseLang("General options", "Paramètres généraux")
+            Case 13
+                icon = "ColoursIcon"
+                title = Funcs.ChooseLang("Appearance options", "Paramètres d'apparence")
+            Case 14
+                icon = "StartupIcon"
+                title = Funcs.ChooseLang("Other options", "Autres paramètres")
+            Case 15
+                icon = "InfoIcon"
+                title = Funcs.ChooseLang("The Info tab", "L'onglet Info")
+            Case 16
+                icon = "PasteIcon"
+                title = Funcs.ChooseLang("Undo, redo and the clipboard", "Annuler, rétablir et le presse-papiers")
+            Case 17
+                icon = "TextBlockIcon"
+                title = Funcs.ChooseLang("Fonts and formatting", "Polices et mise en forme")
+            Case 18
+                icon = "LeftAlignIcon"
+                title = Funcs.ChooseLang("Aligning and indenting text", "Aligner et mettre en retrait le texte")
+            Case 19
+                icon = "HighlighterIcon"
+                title = Funcs.ChooseLang("Text colour and highlighting", "Couleur du texte et surlignage")
+            Case 20
+                icon = "BulletIcon"
+                title = Funcs.ChooseLang("Lists and tables", "Listes et tableaux")
+            Case 21
+                icon = "PictureIcon"
+                title = Funcs.ChooseLang("Pictures and screenshots", "Images et captures d'écran")
+            Case 22
+                icon = "ShapesIcon"
+                title = Funcs.ChooseLang("Shapes", "Formes")
+            Case 23
+                icon = "DrawingIcon"
+                title = Funcs.ChooseLang("Drawings", "Dessins")
+            Case 24
+                icon = "SymbolIcon"
+                title = Funcs.ChooseLang("Symbols and equations", "Symboles et équations")
+            Case 25
+                icon = "ColumnChartIcon"
+                title = Funcs.ChooseLang("Charts and graphs", "Graphiques")
+            Case 26
+                icon = "LinkIcon"
+                title = Funcs.ChooseLang("Text blocks and hyperlinks", "Blocs de texte et hyperliens")
+            Case 27
+                icon = "StylesIcon"
+                title = Funcs.ChooseLang("Font styles and colour schemes", "Styles de police et palettes de couleurs")
+            Case 28
+                icon = "CaseIcon"
+                title = Funcs.ChooseLang("Design options", "Paramètres de design")
+            Case 29
+                icon = "SpeakerIcon"
+                title = Funcs.ChooseLang("Reading aloud", "Lecture à haute voix")
+            Case 30
+                icon = "WordCountIcon"
+                title = Funcs.ChooseLang("Word count and selecting and clearing text", "Statistiques et sélection et effacement du texte")
+            Case 31
+                icon = "FindReplaceIcon"
+                title = Funcs.ChooseLang("Find and replace", "Rechercher et remplacer")
+            Case 32
+                icon = "SpellcheckerIcon"
+                title = Funcs.ChooseLang("Spellchecker", "Correcteur orthographique")
+            Case 33
+                icon = "DictionaryIcon"
+                title = Funcs.ChooseLang("Dictionary", "Dictionnaire")
+            Case 34
+                icon = "NotificationIcon"
+                title = "Notifications"
+            Case 35
+                icon = "AppearanceIcon"
+                title = Funcs.ChooseLang("Using the side pane and status bar", "Utiliser le panneau à côté et la barre d'état")
+            Case 36
+                icon = "KeyboardIcon"
+                title = Funcs.ChooseLang("Keyboard shortcuts", "Raccourcis clavier")
+            Case 37
+                icon = "TypeExpressVariantIcon"
+                title = Funcs.ChooseLang("What's new and still to come", "Nouvelles fonctions et autres à venir")
+            Case 38
+                icon = "FeedbackIcon"
+                title = Funcs.ChooseLang("Troubleshooting and feedback", "Dépannage et commentaires")
+        End Select
+
+        Select Case btn
+            Case 1
+                Help1Btn.Tag = topic
+                Help1Img.SetResourceReference(ContentProperty, icon)
+                Help1Txt.Text = title
+            Case 2
+                Help2Btn.Tag = topic
+                Help2Img.SetResourceReference(ContentProperty, icon)
+                Help2Txt.Text = title
+            Case 3
+                Help3Btn.Tag = topic
+                Help3Img.SetResourceReference(ContentProperty, icon)
+                Help3Txt.Text = title
+        End Select
+
+    End Sub
+
+    Private Function HelpCheck(query As String, search As String) As Boolean
+        For Each i In search.Split(" ")
+            If query.Contains(i) Then Return True
+        Next
+        Return False
+
+    End Function
+
+    Private Sub Help1Btn_Click(sender As Controls.Button, e As RoutedEventArgs) Handles Help1Btn.Click, Help2Btn.Click, Help3Btn.Click
+        Process.Start("https://express.johnjds.co.uk/type/help?topic=" + sender.Tag.ToString())
+        HelpPopup.IsOpen = False
+
+    End Sub
+
+    Private Sub HelpSearchTxt_TextChanged(sender As Object, e As TextChangedEventArgs) Handles HelpSearchTxt.TextChanged
+        If IsLoaded Then
+            If HelpSearchTxt.Text = "" Then
+                ResetHelpResults()
+            Else
+                PopulateHelpResults(HelpSearchTxt.Text)
+            End If
+        End If
+
+    End Sub
+
+    Public DocHeight As Integer = 0
+    Public DocWidth As Integer = 0
+
+    Private Sub DocTxt_ContentsResized(sender As Object, e As ContentsResizedEventArgs) Handles DocTxt.ContentsResized
+        DocHeight = e.NewRectangle.Height
+        DocWidth = e.NewRectangle.Width
+
+        If DocHeight > (DocScroller.ActualHeight - 60) Then
+            DocTxt.Height = DocHeight
+            WinFormsHost.Height = DocTxt.Height
+        Else
+            DocTxt.Height = DocScroller.ActualHeight - 60
+            WinFormsHost.Height = DocTxt.Height
+        End If
+
+        If DocTxt.WordWrap = False Then
+            If DocWidth > (DocScroller.ActualWidth - 60) Then
+                DocTxt.Width = DocWidth
+                WinFormsHost.Width = DocTxt.Width
+            Else
+                DocTxt.Width = DocScroller.ActualWidth - 60
+                WinFormsHost.Width = DocTxt.Width
+            End If
+        End If
+
+    End Sub
+
+    Private Sub DocScroller_SizeChanged(sender As Object, e As SizeChangedEventArgs) Handles DocScroller.SizeChanged
+
+        If DocHeight > (DocScroller.ActualHeight - 60) Then
+            DocTxt.Height = DocHeight
+            WinFormsHost.Height = DocTxt.Height
+        Else
+            DocTxt.Height = DocScroller.ActualHeight - 60
+            WinFormsHost.Height = DocTxt.Height
+        End If
+
+        If DocTxt.WordWrap = False Then
+            If DocWidth > (DocScroller.ActualWidth - 60) Then
+                DocTxt.Width = DocWidth
+                WinFormsHost.Width = DocTxt.Width
+            Else
+                DocTxt.Width = DocScroller.ActualWidth - 60
+                WinFormsHost.Width = DocTxt.Width
+            End If
+        End If
+
+
+    End Sub
+
+    Private Sub DocTxt_MouseWheel(sender As Object, e As MouseEventArgs) Handles DocTxt.MouseWheel
+        DocScroller.ScrollToVerticalOffset(DocScroller.VerticalOffset - e.Delta)
+
+    End Sub
+
+End Class

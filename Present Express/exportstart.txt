@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <title>Present Express Slides</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+      <link rel="stylesheet" href="bootstrap/bootstrap.min.css">
+      <script src="bootstrap/bootstrap.min.js"></script>
+      <style>
+        #carousel-generic {
+          height: 562.5px;
+        }
+        .item {
+          height: 562.5px;
+          background-size: contain;
+          background-repeat: no-repeat;
+          background-position: center;
+        }
+        body {
+          width: 1000px;
+          margin: auto;
+        }
+      </style>
+    </head>
+    <body>
+      <div id="carousel-generic" class="carousel slide" data-ride="carousel">
+
+
+        

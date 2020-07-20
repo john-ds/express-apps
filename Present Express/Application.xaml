@@ -1,0 +1,25 @@
+﻿<Application x:Class="Application"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:Present_Express"
+    StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Simple Styles.xaml"/>
+                <ResourceDictionary Source="ExpressIcons.xaml"/>
+                <ResourceDictionary Source="ExpressStyles.xaml"/>
+                <ResourceDictionary Source="CommonDictionaryEN.xaml"/>
+                <ResourceDictionary Source="DictionaryEN.xaml"/>
+                <ResourceDictionary Source="ColorIcons.xaml"/>
+
+            </ResourceDictionary.MergedDictionaries>
+
+            <SolidColorBrush x:Key="AppColor" Color="#FFFF8D2A"/>
+            <SolidColorBrush x:Key="AppHoverColor" Color="#FFFFDCA9"/>
+            <SolidColorBrush x:Key="AppPressedColor" Color="#FFFFB449"/>
+            <SolidColorBrush x:Key="AppLightColor" Color="#FFFFC184"/>
+
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

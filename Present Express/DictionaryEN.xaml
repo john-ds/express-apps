@@ -1,0 +1,321 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:System="clr-namespace:System;assembly=mscorlib">
+
+    <System:String x:Key="NotificationStr">Notifications</System:String>
+    <System:String x:Key="SearchHelpStr">Search for help topics</System:String>
+    <System:String x:Key="OnlineHelpStr">View online help guide</System:String>
+
+    <System:String x:Key="FindOutMoreStr">Find out more</System:String>
+    <System:String x:Key="UpdateStr">Update</System:String>
+    <System:String x:Key="PleaseWaitStr">Please wait...</System:String>
+    <System:String x:Key="HelpStr" xml:space="preserve">Help
+F1</System:String>
+
+    <System:String x:Key="NewMStr">New</System:String>
+    <System:String x:Key="OpenMStr">Open</System:String>
+    <System:String x:Key="SaveMStr">Save</System:String>
+    <System:String x:Key="SaveAsMStr">Save as</System:String>
+    <System:String x:Key="PrintMStr">Print</System:String>
+    <System:String x:Key="ExportMStr">Export</System:String>
+    <System:String x:Key="OptionStr">Options</System:String>
+    <System:String x:Key="InfoStr">Info</System:String>
+    
+    <!-- MAIN -->
+    <System:String x:Key="NewStr">New</System:String>
+    <System:String x:Key="TemplateLoadingStr">Searching for templates</System:String>
+    <System:String x:Key="TitleStr">Present Express</System:String>
+    <System:String x:Key="OpenStr">Open</System:String>
+    <System:String x:Key="RecentFilesStr">Recent Files</System:String>
+    <System:String x:Key="NoRecentStr">No recent files yet.</System:String>
+    <System:String x:Key="ClearListStr" xml:space="preserve">  Clear this list</System:String>
+    <System:String x:Key="FavouriteStr">Favourites</System:String>
+    <System:String x:Key="NoFavouriteStr" xml:space="preserve">You haven't added any 
+favourite files yet.</System:String>
+    <System:String x:Key="AddFavouriteStr" xml:space="preserve">  Add favourites</System:String>
+    <System:String x:Key="RecentStr" xml:space="preserve">    Recent</System:String>
+    <System:String x:Key="FavouritesStr" xml:space="preserve">    Favourites</System:String>
+    <System:String x:Key="BrowsePCStr" xml:space="preserve">    Browse this PC</System:String>
+    <System:String x:Key="OpenCmStr">Open file</System:String>
+    <System:String x:Key="OpenLocationCmStr">Open file location</System:String>
+    <System:String x:Key="CopyPathCmStr">Copy path to clipboard</System:String>
+    <System:String x:Key="RemoveFileCmStr">Remove file from list</System:String>
+    <System:String x:Key="SaveAsStr">Save As</System:String>
+    <System:String x:Key="NoPinnedStr">Your pinned folders...</System:String>
+    <System:String x:Key="PinStr" xml:space="preserve">  Pin a folder</System:String>
+    <System:String x:Key="SaveCmStr">Save file to this folder</System:String>
+    <System:String x:Key="RemoveFolderCmStr">Remove folder from list</System:String>
+    <System:String x:Key="PrintStr">Print</System:String>
+    <System:String x:Key="PrintInfoStr">Firstly, set up the size and orientation of the page...</System:String>
+    <System:String x:Key="PageSetupStr" xml:space="preserve">    Page setup</System:String>
+    <System:String x:Key="PrintInfo2Str">You can preview your slideshow before printing it...</System:String>
+    <System:String x:Key="PrintPreviewStr" xml:space="preserve">    Print preview</System:String>
+    <System:String x:Key="PrintInfo3Str">Click Print to open the print dialog box.</System:String>
+    <System:String x:Key="ExportStr">Export</System:String>
+    <System:String x:Key="InfoTitleStr">Choose an option on the left.</System:String>
+    <System:String x:Key="CopyInfoPathStr">Copy file path</System:String>
+    <System:String x:Key="OpenInfoLocationStr">Open file location</System:String>
+    <System:String x:Key="FileLocationStr">File location</System:String>
+    <System:String x:Key="ShowMoreStr">Show more</System:String>
+    <System:String x:Key="PropertiesStr">Properties</System:String>
+    <System:String x:Key="SizeStr">Size</System:String>
+    <System:String x:Key="CreatedStr">Created</System:String>
+    <System:String x:Key="ModifiedStr">Last modified</System:String>
+    <System:String x:Key="AccessedStr">Last accessed</System:String>
+    <System:String x:Key="EditingStr">Editing time</System:String>
+    <System:String x:Key="CloseDocStr">Close document</System:String>
+    <System:String x:Key="AboutTypeStr">About Present Express</System:String>
+    <System:String x:Key="ExpressAppsAdStr">Present Express is part of Express Apps. Why not explore the full collection on our website?</System:String>
+
+    <System:String x:Key="ClosePaneStr">Close pane</System:String>
+    <System:String x:Key="BrowsePCImagesStr">Browse this PC</System:String>
+    <System:String x:Key="OnlinePicturesStr">Online pictures</System:String>
+    <System:String x:Key="BrowsePCImagesToolStr">Browse your device for images</System:String>
+    <System:String x:Key="OnlinePicturesToolStr">Browse thousands of royalty-free images</System:String>
+
+    <!-- ONLINE PICTURES -->
+    <System:String x:Key="PcHeaderStr">Online Pictures - Present Express</System:String>
+    <System:String x:Key="PcSearchStr">Search Unsplash for royalty-free photos:</System:String>
+    <System:String x:Key="PcOfflineStr">Browse offline</System:String>
+    <System:String x:Key="OrStr">or</System:String>
+    <System:String x:Key="PcMoreStr">Load more</System:String>
+    <System:String x:Key="PcPreviewStr">Preview photo</System:String>
+    <System:String x:Key="PcPhotoStr" xml:space="preserve">Photo by </System:String>
+    <System:String x:Key="OnStr" xml:space="preserve"> on </System:String>
+    <System:String x:Key="PcLoadingStr">Searching for photos...</System:String>
+    <System:String x:Key="PcLoadImageStr">Loading image...</System:String>
+    <System:String x:Key="PcSizeStr">Image size</System:String>
+    <System:String x:Key="PcLargeStr">Large</System:String>
+    <System:String x:Key="PcRegStr">Regular</System:String>
+    <System:String x:Key="PcSmallStr">Small</System:String>
+    <System:String x:Key="PcCustomStr">Custom width</System:String>
+    <System:String x:Key="PcAttrStr">Attribution</System:String>
+    <System:String x:Key="AddDocStr">Add to slideshow</System:String>
+    <System:String x:Key="IconsStartSearchStr">Use the search bar above to get started</System:String>
+    <System:String x:Key="PictureStartStr">Browse thousands of high-quality images</System:String>
+    <System:String x:Key="SearchStr">Search</System:String>
+    <System:String x:Key="CancelStr">Cancel</System:String>
+    <System:String x:Key="BackStr">Go back</System:String>
+    
+    <!-- TEXT -->
+    <System:String x:Key="StandardColourStr">Standard Colours</System:String>
+    <System:String x:Key="AdvancedStr">Advanced</System:String>
+    <System:String x:Key="ShSmallStr">Small</System:String>
+    <System:String x:Key="ShLargeStr">Large</System:String>
+    <System:String x:Key="FnItalicStr">Italic</System:String>
+    <System:String x:Key="FnUnderlineStr">Underline</System:String>
+    <System:String x:Key="FnBoldStr">Bold</System:String>
+
+    <!-- REGION -->
+    <System:String x:Key="CaptureStr">Capture</System:String>
+    <System:String x:Key="RegionInfoStr">Resize and drag me over your desired screenshot region.</System:String>
+    <System:String x:Key="RegionTitleStr">Region Selector - Present Express</System:String>
+
+    <!-- SCREENSHOT -->
+    <System:String x:Key="ScTitleStr">Screenshot - Present Express</System:String>
+    <System:String x:Key="ScDelayStr">Delay:</System:String>
+    <System:String x:Key="ScSelectStr">select one</System:String>
+    <System:String x:Key="ScFullStr">Full screen</System:String>
+
+    <!-- CHART -->
+    <System:String x:Key="ChartTitleStr">Chart - Present Express</System:String>
+    <System:String x:Key="ChartInfoStr">Customise your chart below, then click 'Add to slideshow.'</System:String>
+    <System:String x:Key="ChTypeStr">Chart type</System:String>
+    <System:String x:Key="ChColumnStr">Column</System:String>
+    <System:String x:Key="ChBarStr">Bar</System:String>
+    <System:String x:Key="ChLineStr">Line</System:String>
+    <System:String x:Key="ChPieStr">Pie</System:String>
+    <System:String x:Key="ChDataStr">Data</System:String>
+    <System:String x:Key="ChEditDataStr">Edit chart data</System:String>
+    <System:String x:Key="ChLabelsStr">Show value labels</System:String>
+    <System:String x:Key="ChTitleStr">Chart title</System:String>
+    <System:String x:Key="ChAxisTitleStr">Axis titles</System:String>
+    <System:String x:Key="ChDoughnutStr">Doughnut shape</System:String>
+    <System:String x:Key="ChColourStr">Colour theme</System:String>
+    <System:String x:Key="ChBasicStr">Basic</System:String>
+    <System:String x:Key="ChGreenStr">Green</System:String>
+    <System:String x:Key="ChChocolateStr">Chocolate</System:String>
+    <System:String x:Key="ChBerryStr">Berry</System:String>
+    <System:String x:Key="ChTransStr">Semi-transparent</System:String>
+    <System:String x:Key="ChEarthStr">Earth</System:String>
+    <System:String x:Key="ChLightStr">Light</System:String>
+    <System:String x:Key="ChGreyStr">Greyscale</System:String>
+    <System:String x:Key="ChSizeStr">Size in document</System:String>
+    <System:String x:Key="ChSmallStr">Small</System:String>
+    <System:String x:Key="ChLargeStr">Large</System:String>
+    <System:String x:Key="ChPastelStr">Pastel</System:String>
+    <System:String x:Key="ChFireStr">Fire</System:String>
+
+    <!-- CHART DATA -->
+    <System:String x:Key="ChartDataStr">Chart Data - Present Express</System:String>
+    <System:String x:Key="ChDataInfoStr">Enter data points below and click OK...</System:String>
+    <System:String x:Key="ChDataInfo2Str" xml:space="preserve">Label                                         Value</System:String>
+    <System:String x:Key="DtRowBelowStr">Add row below</System:String>
+    <System:String x:Key="DtRowAboveStr">Add row above</System:String>
+    <System:String x:Key="DtClearStr">Clear row</System:String>
+    <System:String x:Key="DtRemoveStr">Remove row</System:String>
+
+    <!-- DRAWING -->
+    <System:String x:Key="DrawingTitleStr">Custom Drawing - Present Express</System:String>
+    <System:String x:Key="DrawingInfoStr">Draw on the canvas to the left, then click 'Add to slideshow.'</System:String>
+    <System:String x:Key="DrEditingStr">Editing mode</System:String>
+    <System:String x:Key="DrSelectStr">Select</System:String>
+    <System:String x:Key="DrPenStr">Pen</System:String>
+    <System:String x:Key="DrHighlightStr">Highlighter</System:String>
+    <System:String x:Key="DrEraserStr">Eraser</System:String>
+    <System:String x:Key="DrPenClrStr">Pen colour</System:String>
+    <System:String x:Key="ThemeColourStr">Theme Colours</System:String>
+    <System:String x:Key="DrChoosePenStr">Choose pen colour</System:String>
+    <System:String x:Key="DrThicknessStr">Pen thickness</System:String>
+    <System:String x:Key="ThinStr">Thin</System:String>
+    <System:String x:Key="ThickStr">Thick</System:String>
+
+    <!-- ABOUT -->
+    <System:String x:Key="WebsiteStr">Visit our website</System:String>
+    <System:String x:Key="AboutStr">About - Present Express</System:String>
+
+    <!-- OPTIONS -->
+    <System:String x:Key="OptionsStr">Options - Present Express</System:String>
+    <System:String x:Key="DefaultStr">Defaults</System:String>
+    <System:String x:Key="DefFontStr">Set default font</System:String>
+    <System:String x:Key="OpBoldStr">Bold</System:String>
+    <System:String x:Key="OpItalicStr">Italic</System:String>
+    <System:String x:Key="OpUnderlineStr">Underline</System:String>
+    <System:String x:Key="DefTextClrStr">Set default text colour</System:String>
+    <System:String x:Key="SetClrStr">Set colour</System:String>
+    <System:String x:Key="DefSaveLocationStr">Set default save location</System:String>
+    <System:String x:Key="ChooseStr">Choose</System:String>
+    <System:String x:Key="GeneralStr">General</System:String>
+    <System:String x:Key="GnLangStr">Change interface language</System:String>
+    <System:String x:Key="EnglishUKStr">English (United Kingdom)</System:String>
+    <System:String x:Key="FrenchFRStr">French (France)</System:String>
+    <System:String x:Key="GnRecentStr">Recent files</System:String>
+    <System:String x:Key="GnRecentInfoStr">Show up to</System:String>
+    <System:String x:Key="GnRecentInfo2Str">recent files</System:String>
+    <System:String x:Key="GnSoundsStr">Sounds</System:String>
+    <System:String x:Key="GnSoundsCkStr">Play a sound when a messagebox appears</System:String>
+    <System:String x:Key="GnCloseStr">On close</System:String>
+    <System:String x:Key="GnCloseCkStr">Show prompt to save document changes</System:String>
+    <System:String x:Key="AppearanceStr">Appearance</System:String>
+    <System:String x:Key="ApSaveStr">Save shortcut</System:String>
+    <System:String x:Key="ApSaveCkStr">Show save shortcut in status bar</System:String>
+    <System:String x:Key="StartupStr">Startup</System:String>
+    <System:String x:Key="StartupInfoStr">On startup...</System:String>
+    <System:String x:Key="StMenuStr">Open the Present Menu</System:String>
+    <System:String x:Key="StNotificationStr">Check for notifications</System:String>
+    <System:String x:Key="StRecentStr">Open the most recent file</System:String>
+    <System:String x:Key="OpDefaultsStr" xml:space="preserve">Defaults    </System:String>
+    <System:String x:Key="OpGeneralStr" xml:space="preserve">General    </System:String>
+    <System:String x:Key="OpAppearanceStr" xml:space="preserve">Appearance    </System:String>
+    <System:String x:Key="OpStartupStr" xml:space="preserve">Startup    </System:String>
+    <System:String x:Key="SavedStr" xml:space="preserve">Saved    </System:String>
+    <System:String x:Key="AppThemeStr">Application theme</System:String>
+    <System:String x:Key="DarkModeStr">Dark mode</System:String>
+    <System:String x:Key="AutoDarkModeStr">Turn on dark mode at night</System:String>
+    <System:String x:Key="FromStr">From</System:String>
+    <System:String x:Key="UntilStr">until</System:String>
+    <System:String x:Key="OpImportStr">Import</System:String>
+    <System:String x:Key="OpExportStr">Export</System:String>
+    <System:String x:Key="TextColourStr">Change the text colour</System:String>
+    <System:String x:Key="FontFaceStr">Select a font face</System:String>
+    <System:String x:Key="FontSizeStr">Set font size</System:String>
+
+    <System:String x:Key="OpSlideshowStr">Slideshow</System:String>
+    <System:String x:Key="OpSlideshowInfoStr">Hide slideshow controls automatically</System:String>
+    <System:String x:Key="OpTimingsStr">Set default slide timings</System:String>
+    <System:String x:Key="OpTimingsInfoStr">Advance to next slide after</System:String>
+    <System:String x:Key="OpSecondsStr">seconds</System:String>
+    <System:String x:Key="OpSizeStr">Set default slide size</System:String>
+    <System:String x:Key="BlankStr">Blank slideshow</System:String>
+    <System:String x:Key="PhotoTemplateStr">Photo templates</System:String>
+    <System:String x:Key="ChartTemplateStr">Chart templates</System:String>
+    <System:String x:Key="PhotoMoreStr">Find more photos</System:String>
+    <System:String x:Key="ExportVideoInfoStr">Export your slideshow as a video. Start by choosing a resolution below.</System:String>
+    <System:String x:Key="ExportVideoStr">Video</System:String>
+    <System:String x:Key="VideoLoadingStr">We're exporting your video.</System:String>
+    <System:String x:Key="ExportImagesInfoStr">Export your slideshow as a set of images. Start by choosing a file format below.</System:String>
+    <System:String x:Key="DefStr">Default</System:String>
+    <System:String x:Key="ExportImagesStr">Images</System:String>
+    <System:String x:Key="VideoStr" xml:space="preserve">    Video</System:String>
+    <System:String x:Key="ImagesStr" xml:space="preserve">    Images</System:String>
+    <System:String x:Key="HTMLStr" xml:space="preserve">    Create HTML</System:String>
+    <System:String x:Key="SlidesStr">Slides</System:String>
+    <System:String x:Key="SlidesToolStr">Open the side pane</System:String>
+    <System:String x:Key="NewSlideStr">New slide:</System:String>
+    <System:String x:Key="PictureStr">Picture</System:String>
+    <System:String x:Key="PictureToolStr" xml:space="preserve">Add an online or offline picture to your slideshow.
+CTRL+M</System:String>
+    <System:String x:Key="TextStr">Text</System:String>
+    <System:String x:Key="TextToolStr" xml:space="preserve">Add some text to your slideshow.
+CTRL+T</System:String>
+    <System:String x:Key="ScreenshotStr">Screenshot</System:String>
+    <System:String x:Key="ScreenshotToolStr" xml:space="preserve">Add a screenshot to your slideshow.
+CTRL+B</System:String>
+    <System:String x:Key="ChartStr">Chart</System:String>
+    <System:String x:Key="ChartToolStr" xml:space="preserve">Add a chart to your slideshow.
+CTRL+R</System:String>
+    <System:String x:Key="DrawingStr">Drawing</System:String>
+    <System:String x:Key="DrawingToolStr" xml:space="preserve">Add a drawing to your slideshow.
+CTRL+D</System:String>
+    <System:String x:Key="BackColorStr">Background colour</System:String>
+    <System:String x:Key="BackColorToolStr">Change the background colour for all slides.</System:String>
+    <System:String x:Key="SlideSizeStr">Slide size</System:String>
+    <System:String x:Key="FitSlideStr">Fit to slide</System:String>
+    <System:String x:Key="FitSlideToolStr">Turn this off to stretch the image instead.</System:String>
+    <System:String x:Key="TimingsStr">Timing (secs):</System:String>
+    <System:String x:Key="ApplyAllTimingsStr">Apply to all</System:String>
+    <System:String x:Key="RunStr">Run slideshow</System:String>
+    <System:String x:Key="RunToolStr" xml:space="preserve">Run the slideshow from the first slide.
+F5</System:String>
+    <System:String x:Key="ApplyTimingsToolStr">Apply timings to all slides.</System:String>
+    <System:String x:Key="LoopStr">Loop</System:String>
+    <System:String x:Key="LoopToolStr">Continuously play slideshow until ESC is pressed.</System:String>
+    <System:String x:Key="ChooseMonitorStr">Choose monitor</System:String>
+    <System:String x:Key="ChooseMonitorToolStr">Choose the monitor to display the slideshow on.</System:String>
+    <System:String x:Key="SlideTimingsStr">Use slide timings</System:String>
+    <System:String x:Key="SlideTimingsToolStr">If this is off, you'll be able to advance to the next slide by clicking.</System:String>
+    <System:String x:Key="SaveToolStr" xml:space="preserve">Save
+CTRL+S</System:String>
+    <System:String x:Key="SlideCountStr">Slide 0 of 0</System:String>
+    <System:String x:Key="EditStr">Edit</System:String>
+    <System:String x:Key="DuplicateStr">Duplicate</System:String>
+    <System:String x:Key="MoveUpStr">Move up</System:String>
+    <System:String x:Key="MoveDownStr">Move down</System:String>
+    <System:String x:Key="DeleteStr">Delete</System:String>
+    <System:String x:Key="StartStr">Let's get started</System:String>
+    <System:String x:Key="StartInfoStr">Choose an option from the Home tab above</System:String>
+    <System:String x:Key="HomeMStr">Home</System:String>
+    <System:String x:Key="DesignMStr">Design</System:String>
+    <System:String x:Key="ShowMStr">Show</System:String>
+    <System:String x:Key="ProgressStr">Slideshow in progress</System:String>
+    <System:String x:Key="ProgressInfoStr">Press ESC on the slideshow window to end</System:String>
+    <System:String x:Key="ChooseColorStr">Choose a colour</System:String>
+    <System:String x:Key="WhiteStr">White</System:String>
+    <System:String x:Key="BlackStr">Black</System:String>
+    <System:String x:Key="LightGreyStr">Light Grey</System:String>
+    <System:String x:Key="DarkGreyStr">Dark Grey</System:String>
+    <System:String x:Key="BlueStr">Blue</System:String>
+    <System:String x:Key="YellowStr">Yellow</System:String>
+    <System:String x:Key="PurpleStr">Purple</System:String>
+    <System:String x:Key="GreenStr">Green</System:String>
+    <System:String x:Key="WidescreenStr">Widescreen</System:String>
+    <System:String x:Key="StandardScreenStr">Standard screens</System:String>
+    
+    <!-- TEXT -->
+    <System:String x:Key="TextTitleStr">Text - Present Express</System:String>
+    <System:String x:Key="TextInfoStr">Enter your text below.</System:String>
+    <System:String x:Key="FontStr">Font</System:String>
+    <System:String x:Key="TextColorStr">Text colour</System:String>
+    <System:String x:Key="RecentColourStr">Recent Colours</System:String>
+    <System:String x:Key="TextFontSizeStr">Font size</System:String>
+    
+    <!-- SLIDESHOW -->
+    <System:String x:Key="SlideshowTitleStr">Slideshow - Present Express</System:String>
+    <System:String x:Key="SlideshowEndStr">End of slideshow</System:String>
+    <System:String x:Key="SlideshowESCStr">Press ESC to quit</System:String>
+    <System:String x:Key="PreviousStr">Previous slide</System:String>
+    <System:String x:Key="NextStr">Next slide</System:String>
+    <System:String x:Key="HomeStr">Back to the start</System:String>
+    <System:String x:Key="EndStr">End slideshow</System:String>
+
+</ResourceDictionary>

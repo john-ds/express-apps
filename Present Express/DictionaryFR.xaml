@@ -1,0 +1,321 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:System="clr-namespace:System;assembly=mscorlib">
+
+    <System:String x:Key="NotificationStr">Notifications</System:String>
+    <System:String x:Key="SearchHelpStr">Rechercher des rubriques d'aide</System:String>
+    <System:String x:Key="OnlineHelpStr">Voir le guide d'aide en ligne</System:String>
+
+    <System:String x:Key="FindOutMoreStr">En savoir plus</System:String>
+    <System:String x:Key="UpdateStr">Mettre à jour</System:String>
+    <System:String x:Key="PleaseWaitStr">Merci de patienter...</System:String>
+    <System:String x:Key="HelpStr" xml:space="preserve">Aide
+F1</System:String>
+
+    <System:String x:Key="NewMStr">Nouveau</System:String>
+    <System:String x:Key="OpenMStr">Ouvrir</System:String>
+    <System:String x:Key="SaveMStr">Enregistrer</System:String>
+    <System:String x:Key="SaveAsMStr">Enregistrer sous</System:String>
+    <System:String x:Key="PrintMStr">Imprimer</System:String>
+    <System:String x:Key="ExportMStr">Exporter</System:String>
+    <System:String x:Key="OptionStr">Paramètres</System:String>
+    <System:String x:Key="InfoStr">Info</System:String>
+    
+    <!-- MAIN -->
+    <System:String x:Key="NewStr">Nouveau</System:String>
+    <System:String x:Key="TemplateLoadingStr">Recherche des modèles</System:String>
+    <System:String x:Key="TitleStr">Present Express</System:String>
+    <System:String x:Key="OpenStr">Ouvrir</System:String>
+    <System:String x:Key="RecentFilesStr">Fichiers Récents</System:String>
+    <System:String x:Key="NoRecentStr">Aucun fichier récent.</System:String>
+    <System:String x:Key="ClearListStr" xml:space="preserve">  Effacer la liste</System:String>
+    <System:String x:Key="FavouriteStr">Favoris</System:String>
+    <System:String x:Key="NoFavouriteStr" xml:space="preserve">Vous n'avez pas ajouté 
+aucun fichier favori.</System:String>
+    <System:String x:Key="AddFavouriteStr" xml:space="preserve">  Ajouter</System:String>
+    <System:String x:Key="RecentStr" xml:space="preserve">    Récents</System:String>
+    <System:String x:Key="FavouritesStr" xml:space="preserve">    Favoris</System:String>
+    <System:String x:Key="BrowsePCStr" xml:space="preserve">    Parcourir ce PC</System:String>
+    <System:String x:Key="OpenCmStr">Ouvrir le fichier</System:String>
+    <System:String x:Key="OpenLocationCmStr">Ouvrir l'emplacement du fichier</System:String>
+    <System:String x:Key="CopyPathCmStr">Copier le chemin dans le presse-papiers</System:String>
+    <System:String x:Key="RemoveFileCmStr">Supprimer le fichier de la liste</System:String>
+    <System:String x:Key="SaveAsStr">Enregistrer Sous</System:String>
+    <System:String x:Key="NoPinnedStr">Vos dossiers épinglés...</System:String>
+    <System:String x:Key="PinStr" xml:space="preserve">  Épingler</System:String>
+    <System:String x:Key="SaveCmStr">Enregistrer le fichier dans ce dossier</System:String>
+    <System:String x:Key="RemoveFolderCmStr">Supprimer le dossier de la liste</System:String>
+    <System:String x:Key="PrintStr">Imprimer</System:String>
+    <System:String x:Key="PrintInfoStr">Configurez d'abord la taille et l'orientation de la page...</System:String>
+    <System:String x:Key="PageSetupStr" xml:space="preserve">    Mise en page</System:String>
+    <System:String x:Key="PrintInfo2Str">Vous pouvez prévisualiser votre diaporama...</System:String>
+    <System:String x:Key="PrintPreviewStr" xml:space="preserve">    Aperçu avant impression</System:String>
+    <System:String x:Key="PrintInfo3Str">Cliquez sur Imprimer pour ouvrir la fenêtre d'impression.</System:String>
+    <System:String x:Key="ExportStr">Exporter</System:String>
+    <System:String x:Key="InfoTitleStr">Choisissez une option à gauche.</System:String>
+    <System:String x:Key="CopyInfoPathStr">Copier le chemin</System:String>
+    <System:String x:Key="OpenInfoLocationStr">Ouvrir l'emplacement</System:String>
+    <System:String x:Key="FileLocationStr">Emplacement du fichier</System:String>
+    <System:String x:Key="ShowMoreStr">Afficher plus</System:String>
+    <System:String x:Key="PropertiesStr">Propriétés</System:String>
+    <System:String x:Key="SizeStr">Taille</System:String>
+    <System:String x:Key="CreatedStr">Création</System:String>
+    <System:String x:Key="ModifiedStr">Dernière modification</System:String>
+    <System:String x:Key="AccessedStr">Dernier accès</System:String>
+    <System:String x:Key="EditingStr">Temps d'édition</System:String>
+    <System:String x:Key="CloseDocStr">Fermer le document</System:String>
+    <System:String x:Key="AboutTypeStr">À propos de Present Express</System:String>
+    <System:String x:Key="ExpressAppsAdStr">Present Express fait partie d'Express Apps. Pourquoi ne pas explorer la collection complète sur notre site Web ?</System:String>
+
+    <System:String x:Key="ClosePaneStr">Fermer le panneau</System:String>
+    <System:String x:Key="BrowsePCImagesStr">Parcourir ce PC</System:String>
+    <System:String x:Key="OnlinePicturesStr">Images en ligne</System:String>
+    <System:String x:Key="BrowsePCImagesToolStr">Parcourir votre appareil pour les images</System:String>
+    <System:String x:Key="OnlinePicturesToolStr">Parcourir des milliers d'images libres de droits</System:String>
+
+    <!-- ONLINE PICTURES -->
+    <System:String x:Key="PcHeaderStr">Images en Ligne - Present Express</System:String>
+    <System:String x:Key="PcSearchStr">Recherchez Unsplash pour des photos libres de droits :</System:String>
+    <System:String x:Key="PcOfflineStr">Parcourir hors ligne</System:String>
+    <System:String x:Key="OrStr">ou</System:String>
+    <System:String x:Key="PcMoreStr">Charger plus</System:String>
+    <System:String x:Key="PcPreviewStr">Aperçu de l'image</System:String>
+    <System:String x:Key="PcPhotoStr" xml:space="preserve">Image par </System:String>
+    <System:String x:Key="OnStr" xml:space="preserve"> sur </System:String>
+    <System:String x:Key="PcLoadingStr">Recherche de photos...</System:String>
+    <System:String x:Key="PcLoadImageStr">Chargement de l'image...</System:String>
+    <System:String x:Key="PcSizeStr">Taille de l'image</System:String>
+    <System:String x:Key="PcLargeStr">Grande</System:String>
+    <System:String x:Key="PcRegStr">Moyenne</System:String>
+    <System:String x:Key="PcSmallStr">Petite</System:String>
+    <System:String x:Key="PcCustomStr">Largeur spécifique</System:String>
+    <System:String x:Key="PcAttrStr">Attribution</System:String>
+    <System:String x:Key="AddDocStr">Ajouter au diaporama</System:String>
+    <System:String x:Key="IconsStartSearchStr">Utilisez la barre de recherche ci-dessus pour commencer</System:String>
+    <System:String x:Key="PictureStartStr">Parcourez des milliers d'images de haute qualité</System:String>
+    <System:String x:Key="SearchStr">Rechercher</System:String>
+    <System:String x:Key="CancelStr">Annuler</System:String>
+    <System:String x:Key="BackStr">Retour</System:String>
+
+    <!-- TEXT -->
+    <System:String x:Key="StandardColourStr">Couleurs Standard</System:String>
+    <System:String x:Key="AdvancedStr">Avancé</System:String>
+    <System:String x:Key="ShSmallStr">Petite</System:String>
+    <System:String x:Key="ShLargeStr">Grande</System:String>
+    <System:String x:Key="FnItalicStr">Italique</System:String>
+    <System:String x:Key="FnUnderlineStr">Sousligné</System:String>
+    <System:String x:Key="FnBoldStr">Gras</System:String>
+
+    <!-- REGION -->
+    <System:String x:Key="CaptureStr">Capturer</System:String>
+    <System:String x:Key="RegionInfoStr">Redimensionnez-moi et faites-moi glisser sur votre région de capture.</System:String>
+    <System:String x:Key="RegionTitleStr">Sélecteur de Région - Present Express</System:String>
+
+    <!-- SCREENSHOT -->
+    <System:String x:Key="ScTitleStr">Capture d'Écran - Present Express</System:String>
+    <System:String x:Key="ScDelayStr">Retard :</System:String>
+    <System:String x:Key="ScSelectStr">sélectionner</System:String>
+    <System:String x:Key="ScFullStr">Plein écran</System:String>
+
+    <!-- CHART -->
+    <System:String x:Key="ChartTitleStr">Graphique - Present Express</System:String>
+    <System:String x:Key="ChartInfoStr">Personnalisez votre graphique ci-dessous, puis cliquez sur «&#160;Ajouter au diaporama&#160;».</System:String>
+    <System:String x:Key="ChTypeStr">Type de graphique</System:String>
+    <System:String x:Key="ChColumnStr">Histogramme</System:String>
+    <System:String x:Key="ChBarStr">Barres</System:String>
+    <System:String x:Key="ChLineStr">Courbe</System:String>
+    <System:String x:Key="ChPieStr">Secteurs</System:String>
+    <System:String x:Key="ChDataStr">Données</System:String>
+    <System:String x:Key="ChEditDataStr">Modifier les données</System:String>
+    <System:String x:Key="ChLabelsStr">Étiquettes de données</System:String>
+    <System:String x:Key="ChTitleStr">Titre du graphique</System:String>
+    <System:String x:Key="ChAxisTitleStr">Titres d'axes</System:String>
+    <System:String x:Key="ChDoughnutStr">En anneau</System:String>
+    <System:String x:Key="ChColourStr">Palette de couleurs</System:String>
+    <System:String x:Key="ChBasicStr">Basique</System:String>
+    <System:String x:Key="ChGreenStr">Vert</System:String>
+    <System:String x:Key="ChChocolateStr">Chocolat</System:String>
+    <System:String x:Key="ChBerryStr">Baie</System:String>
+    <System:String x:Key="ChTransStr">Semi-transparent</System:String>
+    <System:String x:Key="ChEarthStr">Terre</System:String>
+    <System:String x:Key="ChLightStr">Clair</System:String>
+    <System:String x:Key="ChGreyStr">Échelle de Gris</System:String>
+    <System:String x:Key="ChSizeStr">Taille dans le document</System:String>
+    <System:String x:Key="ChSmallStr">Petite</System:String>
+    <System:String x:Key="ChLargeStr">Grande</System:String>
+    <System:String x:Key="ChPastelStr">Pastels</System:String>
+    <System:String x:Key="ChFireStr">Feu</System:String>
+
+    <!-- CHART DATA -->
+    <System:String x:Key="ChartDataStr">Données du Graphique - Present Express</System:String>
+    <System:String x:Key="ChDataInfoStr">Entrez les points de données et cliquez sur OK...</System:String>
+    <System:String x:Key="ChDataInfo2Str" xml:space="preserve">Étiquette                                    Valeur</System:String>
+    <System:String x:Key="DtRowBelowStr">Insérer en dessous</System:String>
+    <System:String x:Key="DtRowAboveStr">Insérer au-dessus</System:String>
+    <System:String x:Key="DtClearStr">Effacer la ligne</System:String>
+    <System:String x:Key="DtRemoveStr">Supprimer la ligne</System:String>
+
+    <!-- DRAWING -->
+    <System:String x:Key="DrawingTitleStr">Dessin - Present Express</System:String>
+    <System:String x:Key="DrawingInfoStr">Dessinez sur la toile à gauche, puis cliquez sur «&#160;Ajouter au diaporama&#160;».</System:String>
+    <System:String x:Key="DrEditingStr">Mode d'édition</System:String>
+    <System:String x:Key="DrSelectStr">Sélectionner</System:String>
+    <System:String x:Key="DrPenStr">Stylo</System:String>
+    <System:String x:Key="DrHighlightStr">Surligneur</System:String>
+    <System:String x:Key="DrEraserStr">Gomme</System:String>
+    <System:String x:Key="DrPenClrStr">Couleur du stylo</System:String>
+    <System:String x:Key="ThemeColourStr">Couleurs du Thème</System:String>
+    <System:String x:Key="DrChoosePenStr">Choisissez la couleur du stylo</System:String>
+    <System:String x:Key="DrThicknessStr">Épaisseur du stylo</System:String>
+    <System:String x:Key="ThinStr">Fine</System:String>
+    <System:String x:Key="ThickStr">Épaisse</System:String>
+
+    <!-- ABOUT -->
+    <System:String x:Key="WebsiteStr">Visitez notre site Web</System:String>
+    <System:String x:Key="AboutStr">À Propos - Present Express</System:String>
+
+    <!-- OPTIONS -->
+    <System:String x:Key="OptionsStr">Paramètres - Present Express</System:String>
+    <System:String x:Key="DefaultStr">Par défaut</System:String>
+    <System:String x:Key="DefFontStr">Police par défaut</System:String>
+    <System:String x:Key="OpBoldStr">Gras</System:String>
+    <System:String x:Key="OpItalicStr">Italique</System:String>
+    <System:String x:Key="OpUnderlineStr">Sousligné</System:String>
+    <System:String x:Key="DefTextClrStr">Couleur du texte par défaut</System:String>
+    <System:String x:Key="SetClrStr">Mettre la couleur</System:String>
+    <System:String x:Key="DefSaveLocationStr">Emplacement d'enregistrement par défaut</System:String>
+    <System:String x:Key="ChooseStr">Choisir</System:String>
+    <System:String x:Key="GeneralStr">Général</System:String>
+    <System:String x:Key="GnLangStr">Changer la langue de l'interface</System:String>
+    <System:String x:Key="EnglishUKStr">Anglais (Royaume-Uni)</System:String>
+    <System:String x:Key="FrenchFRStr">Français (France)</System:String>
+    <System:String x:Key="GnRecentStr">Fichiers récents</System:String>
+    <System:String x:Key="GnRecentInfoStr">Montrer jusqu'à</System:String>
+    <System:String x:Key="GnRecentInfo2Str">fichiers récents</System:String>
+    <System:String x:Key="GnSoundsStr">Sons</System:String>
+    <System:String x:Key="GnSoundsCkStr">Émettre un son quand un message apparaît</System:String>
+    <System:String x:Key="GnCloseStr">À la fermeture</System:String>
+    <System:String x:Key="GnCloseCkStr">Afficher l'invite pour enregistrer le document</System:String>
+    <System:String x:Key="AppearanceStr">Apparence</System:String>
+    <System:String x:Key="ApSaveStr">Raccourci d'enregistrement</System:String>
+    <System:String x:Key="ApSaveCkStr">Afficher le raccourci dans la barre d'état</System:String>
+    <System:String x:Key="StartupStr">Démarrage</System:String>
+    <System:String x:Key="StartupInfoStr">Au démarrage...</System:String>
+    <System:String x:Key="StMenuStr">Ouvrir le Present Menu</System:String>
+    <System:String x:Key="StNotificationStr">Vérifier les notifications</System:String>
+    <System:String x:Key="StRecentStr">Ouvrir le fichier le plus récent</System:String>
+    <System:String x:Key="OpDefaultsStr" xml:space="preserve">Par défaut    </System:String>
+    <System:String x:Key="OpGeneralStr" xml:space="preserve">Général    </System:String>
+    <System:String x:Key="OpAppearanceStr" xml:space="preserve">Apparence    </System:String>
+    <System:String x:Key="OpStartupStr" xml:space="preserve">Démarrage    </System:String>
+    <System:String x:Key="SavedStr" xml:space="preserve">Enregistré    </System:String>
+    <System:String x:Key="AppThemeStr">Thème d'application</System:String>
+    <System:String x:Key="DarkModeStr">Mode sombre</System:String>
+    <System:String x:Key="AutoDarkModeStr">Activer le mode sombre la nuit</System:String>
+    <System:String x:Key="FromStr">À partir de</System:String>
+    <System:String x:Key="UntilStr">jusqu'à</System:String>
+    <System:String x:Key="OpImportStr">Importer</System:String>
+    <System:String x:Key="OpExportStr">Exporter</System:String>
+    <System:String x:Key="TextColourStr">Modifier la couleur du texte</System:String>
+    <System:String x:Key="FontFaceStr">Sélectionner un nom de police</System:String>
+    <System:String x:Key="FontSizeStr">Taille de police</System:String>
+
+    <System:String x:Key="OpSlideshowStr">Diaporama</System:String>
+    <System:String x:Key="OpSlideshowInfoStr">Masquer automatiquement les commandes du diaporama</System:String>
+    <System:String x:Key="OpTimingsStr">Minutages des diapositives par défaut</System:String>
+    <System:String x:Key="OpTimingsInfoStr">Passer à la diapositive suivante après</System:String>
+    <System:String x:Key="OpSecondsStr">secondes</System:String>
+    <System:String x:Key="OpSizeStr">Taille de diapositive par défaut</System:String>
+    <System:String x:Key="BlankStr">Diaporama vierge</System:String>
+    <System:String x:Key="PhotoTemplateStr">Modèles de photos</System:String>
+    <System:String x:Key="ChartTemplateStr">Modèles de graphiques</System:String>
+    <System:String x:Key="PhotoMoreStr">Trouver plus de photos</System:String>
+    <System:String x:Key="ExportVideoInfoStr">Exportez votre diaporama sous forme de vidéo. Commencez par choisir une résolution ci-dessous.</System:String>
+    <System:String x:Key="ExportVideoStr">Vidéo</System:String>
+    <System:String x:Key="VideoLoadingStr">Nous exportons votre vidéo.</System:String>
+    <System:String x:Key="ExportImagesInfoStr">Exportez votre diaporama sous forme d'ensemble d'images. Commencez par choisir un format de fichier ci-dessous.</System:String>
+    <System:String x:Key="DefStr">Défaut</System:String>
+    <System:String x:Key="ExportImagesStr">Images</System:String>
+    <System:String x:Key="VideoStr" xml:space="preserve">    Vidéo</System:String>
+    <System:String x:Key="ImagesStr" xml:space="preserve">    Images</System:String>
+    <System:String x:Key="HTMLStr" xml:space="preserve">    Créer HTML</System:String>
+    <System:String x:Key="SlidesStr">Diapositives</System:String>
+    <System:String x:Key="SlidesToolStr">Ouvrir le panneau à côté</System:String>
+    <System:String x:Key="NewSlideStr">Nouvelle diapositive :</System:String>
+    <System:String x:Key="PictureStr">Image</System:String>
+    <System:String x:Key="PictureToolStr" xml:space="preserve">Ajoutez une image en ligne ou hors ligne à votre diaporama.
+CTRL+M</System:String>
+    <System:String x:Key="TextStr">Texte</System:String>
+    <System:String x:Key="TextToolStr" xml:space="preserve">Ajoutez du texte à votre diaporama.
+CTRL+T</System:String>
+    <System:String x:Key="ScreenshotStr">Capture d'écran</System:String>
+    <System:String x:Key="ScreenshotToolStr" xml:space="preserve">Ajoutez une capture d'écran à votre diaporama.
+CTRL+B</System:String>
+    <System:String x:Key="ChartStr">Graphique</System:String>
+    <System:String x:Key="ChartToolStr" xml:space="preserve">Ajoutez un graphique à votre diaporama.
+CTRL+R</System:String>
+    <System:String x:Key="DrawingStr">Dessin</System:String>
+    <System:String x:Key="DrawingToolStr" xml:space="preserve">Ajoutez un dessin à votre diaporama.
+CTRL+D</System:String>
+    <System:String x:Key="BackColorStr">Couleur d'arrière-plan</System:String>
+    <System:String x:Key="BackColorToolStr">Modifiez la couleur d'arrière-plan de toutes les diapositives.</System:String>
+    <System:String x:Key="SlideSizeStr">Taille</System:String>
+    <System:String x:Key="FitSlideStr">Ajuster à la diapositive</System:String>
+    <System:String x:Key="FitSlideToolStr">Désactivez ceci pour étirer l'image à la place.</System:String>
+    <System:String x:Key="TimingsStr">Minutage (sec.):</System:String>
+    <System:String x:Key="ApplyAllTimingsStr">Appliquer à tous</System:String>
+    <System:String x:Key="RunStr">Lancer le diaporama</System:String>
+    <System:String x:Key="RunToolStr" xml:space="preserve">Exécutez le diaporama à partir de la première diapositive.
+F5</System:String>
+    <System:String x:Key="ApplyTimingsToolStr">Appliquer les minutages à toutes les diapositives.</System:String>
+    <System:String x:Key="LoopStr">Boucle</System:String>
+    <System:String x:Key="LoopToolStr">Lisez le diaporama en continu jusqu'à ce que vous appuyiez sur ESC.</System:String>
+    <System:String x:Key="ChooseMonitorStr">Choisir un moniteur</System:String>
+    <System:String x:Key="ChooseMonitorToolStr">Choisissez le moniteur sur lequel afficher le diaporama.</System:String>
+    <System:String x:Key="SlideTimingsStr">Utiliser le minutage des diapositives</System:String>
+    <System:String x:Key="SlideTimingsToolStr">Si cette option est désactivée, vous serez en mesure de passer à la diapositive suivante en cliquant.</System:String>
+    <System:String x:Key="SaveToolStr" xml:space="preserve">Enregistrer
+CTRL+S</System:String>
+    <System:String x:Key="SlideCountStr">Diapositive 0 sur 0</System:String>
+    <System:String x:Key="EditStr">Modifier</System:String>
+    <System:String x:Key="DuplicateStr">Dupliquer</System:String>
+    <System:String x:Key="MoveUpStr">Déplacer vers le haut</System:String>
+    <System:String x:Key="MoveDownStr">Déplacer vers le bas</System:String>
+    <System:String x:Key="DeleteStr">Supprimer</System:String>
+    <System:String x:Key="StartStr">Commençons</System:String>
+    <System:String x:Key="StartInfoStr">Choisissez une option dans l'onglet Accueil</System:String>
+    <System:String x:Key="HomeMStr">Accueil</System:String>
+    <System:String x:Key="DesignMStr">Design</System:String>
+    <System:String x:Key="ShowMStr">Montrer</System:String>
+    <System:String x:Key="ProgressStr">Diaporama en cours</System:String>
+    <System:String x:Key="ProgressInfoStr">Appuyez sur ESC dans la fenêtre du diaporama pour terminer</System:String>
+    <System:String x:Key="ChooseColorStr">Choisir une couleur</System:String>
+    <System:String x:Key="WhiteStr">Blanc</System:String>
+    <System:String x:Key="BlackStr">Noir</System:String>
+    <System:String x:Key="LightGreyStr">Gris Clair</System:String>
+    <System:String x:Key="DarkGreyStr">Gris Foncé</System:String>
+    <System:String x:Key="BlueStr">Bleu</System:String>
+    <System:String x:Key="YellowStr">Jaune</System:String>
+    <System:String x:Key="PurpleStr">Violet</System:String>
+    <System:String x:Key="GreenStr">Vert</System:String>
+    <System:String x:Key="WidescreenStr">Écran large</System:String>
+    <System:String x:Key="StandardScreenStr">Écran standard</System:String>
+
+    <!-- TEXT -->
+    <System:String x:Key="TextTitleStr">Texte - Present Express</System:String>
+    <System:String x:Key="TextInfoStr">Entrez votre texte ci-dessous.</System:String>
+    <System:String x:Key="FontStr">Police</System:String>
+    <System:String x:Key="TextColorStr">Couleur du texte</System:String>
+    <System:String x:Key="RecentColourStr">Couleurs Récentes</System:String>
+    <System:String x:Key="TextFontSizeStr">Taille de police</System:String>
+
+    <!-- SLIDESHOW -->
+    <System:String x:Key="SlideshowTitleStr">Diaporama - Present Express</System:String>
+    <System:String x:Key="SlideshowEndStr">Fin du diaporama</System:String>
+    <System:String x:Key="SlideshowESCStr">Appuyez sur ESC pour quitter</System:String>
+    <System:String x:Key="PreviousStr">Diapositive précédente</System:String>
+    <System:String x:Key="NextStr">Diapositive suivante</System:String>
+    <System:String x:Key="HomeStr">Retour au début</System:String>
+    <System:String x:Key="EndStr">Mettre fin au diaporama</System:String>
+
+</ResourceDictionary>

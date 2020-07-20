@@ -1,0 +1,14 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:System="clr-namespace:System;assembly=mscorlib">
+
+    <System:String x:Key="CloseStr">Fermer</System:String>
+    <System:String x:Key="MaxStr">Agrandir</System:String>
+    <System:String x:Key="MinStr">Réduire</System:String>
+    <System:String x:Key="RestoreStr">Niveau inf.</System:String>
+    <System:String x:Key="ExpressAppsStr">Partie d'Express Apps par John D</System:String>
+    <System:String x:Key="LoaderSubtitleStr">Cela ne prendra pas trop de temps.</System:String>
+    <System:String x:Key="LoadMoreStr">Charger plus</System:String>
+    <System:String x:Key="CancelStr">Annuler</System:String>
+
+</ResourceDictionary>
