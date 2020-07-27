@@ -8,7 +8,7 @@ Imports System.Drawing.Printing
 
 Class MainWindow
 
-    ' PRESENT EXPRESS v1.0
+    ' PRESENT EXPRESS v1.0.1
     ' Part of Express Apps by John D
     ' ------------------------------
 
@@ -518,13 +518,8 @@ Class MainWindow
                         Dim img As WinDrawing.Bitmap = slide("img")
                         Dim p As WinDrawing.Point
                         If e.Argument("fit") Then
-                            If img.Width < img.Height Then
-                                Dim ratio = height / img.Height
-                                img = New WinDrawing.Bitmap(img, Math.Round(img.Width * ratio, 0), height)
-                            Else
-                                Dim ratio = width / img.Width
-                                img = New WinDrawing.Bitmap(img, width, Math.Round(img.Height * ratio, 0))
-                            End If
+                            Dim ratio = height / img.Height
+                            img = New WinDrawing.Bitmap(img, Math.Round(img.Width * ratio, 0), height)
 
                             p = New WinDrawing.Point(Math.Round((width - img.Width) / 2, 0), Math.Round((height - img.Height) / 2, 0))
 
@@ -2530,13 +2525,8 @@ Class MainWindow
                             Dim img As WinDrawing.Bitmap = i("img")
                             Dim p As WinDrawing.Point
                             If Funcs.GetCheckValue(FitImg) Then
-                                If img.Width < img.Height Then
-                                    Dim ratio = height / img.Height
-                                    img = New WinDrawing.Bitmap(img, Math.Round(img.Width * ratio, 0), height)
-                                Else
-                                    Dim ratio = width / img.Width
-                                    img = New WinDrawing.Bitmap(img, width, Math.Round(img.Height * ratio, 0))
-                                End If
+                                Dim ratio = height / img.Height
+                                img = New WinDrawing.Bitmap(img, Math.Round(img.Width * ratio, 0), height)
 
                                 p = New WinDrawing.Point(Math.Round((width - img.Width) / 2, 0), Math.Round((height - img.Height) / 2, 0))
 
@@ -2630,13 +2620,8 @@ Class MainWindow
                             Dim img As WinDrawing.Bitmap = i("img")
                             Dim p As WinDrawing.Point
                             If Funcs.GetCheckValue(FitImg) Then
-                                If img.Width < img.Height Then
-                                    Dim ratio = height / img.Height
-                                    img = New WinDrawing.Bitmap(img, Math.Round(img.Width * ratio, 0), height)
-                                Else
-                                    Dim ratio = width / img.Width
-                                    img = New WinDrawing.Bitmap(img, width, Math.Round(img.Height * ratio, 0))
-                                End If
+                                Dim ratio = height / img.Height
+                                img = New WinDrawing.Bitmap(img, Math.Round(img.Width * ratio, 0), height)
 
                                 p = New WinDrawing.Point(Math.Round((width - img.Width) / 2, 0), Math.Round((height - img.Height) / 2, 0))
 
@@ -3670,13 +3655,8 @@ Class MainWindow
                                 Else
                                     Dim bmp As New WinDrawing.Bitmap(i)
                                     If bmp.Width > 2560 Or bmp.Height > 1440 Then
-                                        If bmp.Width < bmp.Height Then
-                                            Dim ratio = 1440 / bmp.Height
-                                            bmp = New WinDrawing.Bitmap(bmp, Math.Round(bmp.Width * ratio, 0), 1440)
-                                        Else
-                                            Dim ratio = 2560 / bmp.Width
-                                            bmp = New WinDrawing.Bitmap(bmp, 2560, Math.Round(bmp.Height * ratio, 0))
-                                        End If
+                                        Dim ratio = Height / bmp.Height
+                                        bmp = New WinDrawing.Bitmap(bmp, Math.Round(bmp.Width * ratio, 0), 1440)
                                     End If
 
                                     AddSlide(bmp, IO.Path.GetFileName(i), CurrentSlide - 1)
@@ -3708,13 +3688,8 @@ Class MainWindow
                                 Else
                                     Dim bmp As New WinDrawing.Bitmap(i)
                                     If bmp.Width > 2560 Or bmp.Height > 1440 Then
-                                        If bmp.Width < bmp.Height Then
-                                            Dim ratio = 1440 / bmp.Height
-                                            bmp = New WinDrawing.Bitmap(bmp, Math.Round(bmp.Width * ratio, 0), 1440)
-                                        Else
-                                            Dim ratio = 2560 / bmp.Width
-                                            bmp = New WinDrawing.Bitmap(bmp, 2560, Math.Round(bmp.Height * ratio, 0))
-                                        End If
+                                        Dim ratio = Height / bmp.Height
+                                        bmp = New WinDrawing.Bitmap(bmp, Math.Round(bmp.Width * ratio, 0), 1440)
                                     End If
 
                                     AddSlide(bmp, IO.Path.GetFileName(i))
