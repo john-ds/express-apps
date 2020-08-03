@@ -13,7 +13,7 @@ Imports System.Windows.Forms
 
 Class MainWindow
 
-    ' TYPE EXPRESS v4.2
+    ' TYPE EXPRESS v4.2.1
     ' Part of Express Apps by John D
     ' ------------------------------
 
@@ -5587,27 +5587,27 @@ Class MainWindow
             WrapImg.Tag = 0
 
             DocTxt.WordWrap = False
-            DocTxtGrid.Margin = New Thickness(0)
-            DocScroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Visible
+            'DocTxtGrid.Margin = New Thickness(0)
+            'DocScroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Visible
 
         Else
             WrapImg.SetResourceReference(ContentProperty, "TickIcon")
             WrapImg.Tag = 1
 
             DocTxt.WordWrap = True
-            DocTxtGrid.Margin = New Thickness(50, 20, 50, 0)
-            DocScroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled
+            'DocTxtGrid.Margin = New Thickness(50, 20, 50, 0)
+            'DocScroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled
 
-            WinFormsHost.Width = Double.NaN
-            DocTxt.Width = WinFormsHost.ActualWidth
+            'WinFormsHost.Width = Double.NaN
+            'DocTxt.Width = WinFormsHost.ActualWidth
 
-            If DocHeight > (DocScroller.ActualHeight - 60) Then
-                DocTxt.Height = DocHeight
-                WinFormsHost.Height = DocTxt.Height
-            Else
-                DocTxt.Height = DocScroller.ActualHeight - 60
-                WinFormsHost.Height = DocTxt.Height
-            End If
+            'If DocHeight > (DocScroller.ActualHeight - 60) Then
+            '    DocTxt.Height = DocHeight
+            '    WinFormsHost.Height = DocTxt.Height
+            'Else
+            '    DocTxt.Height = DocScroller.ActualHeight - 60
+            '    WinFormsHost.Height = DocTxt.Height
+            'End If
 
         End If
 
@@ -6901,59 +6901,59 @@ Class MainWindow
 
     End Sub
 
-    Public DocHeight As Integer = 0
-    Public DocWidth As Integer = 0
+    'Public DocHeight As Integer = 0
+    'Public DocWidth As Integer = 0
 
-    Private Sub DocTxt_ContentsResized(sender As Object, e As ContentsResizedEventArgs) Handles DocTxt.ContentsResized
-        DocHeight = e.NewRectangle.Height
-        DocWidth = e.NewRectangle.Width
+    'Private Sub DocTxt_ContentsResized(sender As Object, e As ContentsResizedEventArgs) Handles DocTxt.ContentsResized
+    '    DocHeight = e.NewRectangle.Height
+    '    DocWidth = e.NewRectangle.Width
 
-        If DocHeight > (DocScroller.ActualHeight - 60) Then
-            DocTxt.Height = DocHeight
-            WinFormsHost.Height = DocTxt.Height
-        Else
-            DocTxt.Height = DocScroller.ActualHeight - 60
-            WinFormsHost.Height = DocTxt.Height
-        End If
+    '    If DocHeight > (DocScroller.ActualHeight - 60) Then
+    '        DocTxt.Height = DocHeight
+    '        WinFormsHost.Height = DocTxt.Height
+    '    Else
+    '        DocTxt.Height = DocScroller.ActualHeight - 60
+    '        WinFormsHost.Height = DocTxt.Height
+    '    End If
 
-        If DocTxt.WordWrap = False Then
-            If DocWidth > (DocScroller.ActualWidth - 60) Then
-                DocTxt.Width = DocWidth
-                WinFormsHost.Width = DocTxt.Width
-            Else
-                DocTxt.Width = DocScroller.ActualWidth - 60
-                WinFormsHost.Width = DocTxt.Width
-            End If
-        End If
+    '    If DocTxt.WordWrap = False Then
+    '        If DocWidth > (DocScroller.ActualWidth - 60) Then
+    '            DocTxt.Width = DocWidth
+    '            WinFormsHost.Width = DocTxt.Width
+    '        Else
+    '            DocTxt.Width = DocScroller.ActualWidth - 60
+    '            WinFormsHost.Width = DocTxt.Width
+    '        End If
+    '    End If
 
-    End Sub
+    'End Sub
 
-    Private Sub DocScroller_SizeChanged(sender As Object, e As SizeChangedEventArgs) Handles DocScroller.SizeChanged
+    'Private Sub DocScroller_SizeChanged(sender As Object, e As SizeChangedEventArgs) Handles DocScroller.SizeChanged
 
-        If DocHeight > (DocScroller.ActualHeight - 60) Then
-            DocTxt.Height = DocHeight
-            WinFormsHost.Height = DocTxt.Height
-        Else
-            DocTxt.Height = DocScroller.ActualHeight - 60
-            WinFormsHost.Height = DocTxt.Height
-        End If
+    '    If DocHeight > (DocScroller.ActualHeight - 60) Then
+    '        DocTxt.Height = DocHeight
+    '        WinFormsHost.Height = DocTxt.Height
+    '    Else
+    '        DocTxt.Height = DocScroller.ActualHeight - 60
+    '        WinFormsHost.Height = DocTxt.Height
+    '    End If
 
-        If DocTxt.WordWrap = False Then
-            If DocWidth > (DocScroller.ActualWidth - 60) Then
-                DocTxt.Width = DocWidth
-                WinFormsHost.Width = DocTxt.Width
-            Else
-                DocTxt.Width = DocScroller.ActualWidth - 60
-                WinFormsHost.Width = DocTxt.Width
-            End If
-        End If
+    '    If DocTxt.WordWrap = False Then
+    '        If DocWidth > (DocScroller.ActualWidth - 60) Then
+    '            DocTxt.Width = DocWidth
+    '            WinFormsHost.Width = DocTxt.Width
+    '        Else
+    '            DocTxt.Width = DocScroller.ActualWidth - 60
+    '            WinFormsHost.Width = DocTxt.Width
+    '        End If
+    '    End If
 
 
-    End Sub
+    'End Sub
 
-    Private Sub DocTxt_MouseWheel(sender As Object, e As MouseEventArgs) Handles DocTxt.MouseWheel
-        DocScroller.ScrollToVerticalOffset(DocScroller.VerticalOffset - e.Delta)
+    'Private Sub DocTxt_MouseWheel(sender As Object, e As MouseEventArgs) Handles DocTxt.MouseWheel
+    '    DocScroller.ScrollToVerticalOffset(DocScroller.VerticalOffset - e.Delta)
 
-    End Sub
+    'End Sub
 
 End Class

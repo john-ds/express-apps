@@ -308,7 +308,7 @@
                                                 <ContentControl x:Name="TemplateSearchBtnImg1" Content="{DynamicResource CrossIcon}" Margin="2,2.5,2,3.5" Height="20" Width="21" />
                                             </StackPanel>
                                         </Button>
-                                    
+
                                     </Grid>
                                 </ScrollViewer>
                                 <Grid x:Name="TemplateLoadingGrid" Background="{DynamicResource BackColor}" Margin="15,100,0,0" Visibility="Collapsed">
@@ -321,7 +321,7 @@
                                     </DockPanel>
                                 </Grid>
                             </Grid>
-                            
+
                         </TabItem>
                         <TabItem x:Name="OpenTab" Header="TabItem" Margin="0,0,-2,-4" Focusable="False">
                             <ScrollViewer Margin="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
@@ -862,7 +862,7 @@
                         <GradientStop Color="White" Offset="1"/>
                     </LinearGradientBrush>
                 </TabItem.Background>
-                <Grid x:Name="grid1" Background="{DynamicResource TertiaryColor}">
+                <Grid x:Name="grid1" Background="White">
                     <DockPanel Margin="0">
                         <TabControl x:Name="DocTabs" Margin="0,-22,0,0" DockPanel.Dock="Top" Height="68" Padding="0" BorderThickness="0">
                             <TabControl.Effect>
@@ -1427,6 +1427,9 @@
                         </DockPanel>
                         <Rectangle Fill="{DynamicResource AppColor}" Height="2" VerticalAlignment="Top" DockPanel.Dock="Bottom"/>
                         <Grid x:Name="SideBarGrid" HorizontalAlignment="Left" DockPanel.Dock="Right" Width="235">
+                            <Grid.Effect>
+                                <DropShadowEffect Direction="250" Color="Gray" Opacity="0.1" BlurRadius="10"/>
+                            </Grid.Effect>
                             <Grid x:Name="grid4" Background="{DynamicResource BackColor}">
                                 <TabControl x:Name="SideTabs" Margin="0,19,0,0" Padding="0" BorderThickness="0">
                                     <TabItem x:Name="TableTab" Header="" Focusable="False">
@@ -2055,27 +2058,19 @@
                                 </DockPanel>
                             </Grid>
                         </Grid>
-                        <ScrollViewer x:Name="DocScroller">
-                            <Grid x:Name="DocTxtGrid" Margin="50,20,50,0" Background="White">
-                                <Grid.Effect>
-                                    <DropShadowEffect Direction="90" Color="#FFC3C3C3" BlurRadius="15" Opacity="0.2"/>
-                                </Grid.Effect>
-                                <wpfrichtextbox:ScrollViewerWindowsFormsHost x:Name="WinFormsHost" Margin="20" Focusable="True" Background="White">
+                        <WindowsFormsHost x:Name="WinFormsHost" Margin="30,30,30,0" Focusable="True" Background="White">
+                            <WindowsFormsHost.ContextMenu>
+                                <ContextMenu x:Name="DocTxtMenu" FontSize="14" HasDropShadow="False" Background="{DynamicResource BackColor}" BorderThickness="1,1,1,1" BorderBrush="#FFABADB3" Style="{DynamicResource SimpleContextMenu}">
+                                    <MenuItem x:Name="CutMenuBtn" Header="{DynamicResource CutCmStr}" BorderThickness="0" Style="{DynamicResource SimpleMenuItem}" Padding="5"/>
+                                    <MenuItem x:Name="CopyMenuBtn" Header="{DynamicResource CopyCmStr}" BorderThickness="0" Style="{DynamicResource SimpleMenuItem}" Padding="5"/>
+                                    <MenuItem x:Name="PasteMenuBtn" Header="{DynamicResource PasteCmStr}" BorderThickness="0" Style="{DynamicResource SimpleMenuItem}" Padding="5"/>
+                                    <MenuItem x:Name="SelectMenuBtn" Header="{DynamicResource SelectAllCmStr}" BorderThickness="0" Style="{DynamicResource SimpleMenuItem}" Padding="5"/>
+                                    <MenuItem x:Name="DefineMenuBtn" Header="{DynamicResource LookupDictStr}" BorderThickness="0" Style="{DynamicResource SimpleMenuItem}" Padding="5"/>
+                                </ContextMenu>
+                            </WindowsFormsHost.ContextMenu>
+                            <wf:RichTextBox x:Name="DocTxt" BorderStyle="None" EnableAutoDragDrop="True" Enabled="True" Visible="True" Font="Calibri, 12pt" HideSelection="False" BackColor="White" AcceptsTab="True" AutoWordSelection="True" ShowSelectionMargin="False" ScrollBars="Both"/>
 
-                                    <wpfrichtextbox:ScrollViewerWindowsFormsHost.ContextMenu>
-                                        <ContextMenu x:Name="DocTxtMenu" FontSize="14" HasDropShadow="False" Background="{DynamicResource BackColor}" BorderThickness="1,1,1,1" BorderBrush="#FFABADB3" Style="{DynamicResource SimpleContextMenu}">
-                                            <MenuItem x:Name="CutMenuBtn" Header="{DynamicResource CutCmStr}" BorderThickness="0" Style="{DynamicResource SimpleMenuItem}" Padding="5"/>
-                                            <MenuItem x:Name="CopyMenuBtn" Header="{DynamicResource CopyCmStr}" BorderThickness="0" Style="{DynamicResource SimpleMenuItem}" Padding="5"/>
-                                            <MenuItem x:Name="PasteMenuBtn" Header="{DynamicResource PasteCmStr}" BorderThickness="0" Style="{DynamicResource SimpleMenuItem}" Padding="5"/>
-                                            <MenuItem x:Name="SelectMenuBtn" Header="{DynamicResource SelectAllCmStr}" BorderThickness="0" Style="{DynamicResource SimpleMenuItem}" Padding="5"/>
-                                            <MenuItem x:Name="DefineMenuBtn" Header="{DynamicResource LookupDictStr}" BorderThickness="0" Style="{DynamicResource SimpleMenuItem}" Padding="5"/>
-                                        </ContextMenu>
-                                    </wpfrichtextbox:ScrollViewerWindowsFormsHost.ContextMenu>
-                                    <wf:RichTextBox x:Name="DocTxt" BorderStyle="None" EnableAutoDragDrop="True" Enabled="True" Visible="True" Font="Calibri, 12pt" HideSelection="False" BackColor="White" AcceptsTab="True" AutoWordSelection="True" ShowSelectionMargin="False" ScrollBars="None"/>
-
-                                </wpfrichtextbox:ScrollViewerWindowsFormsHost>
-                            </Grid>
-                        </ScrollViewer>
+                        </WindowsFormsHost>
                         <!--<ScrollViewer Margin="0" DockPanel.Dock="Top" VerticalScrollBarVisibility="Auto">
                             <DockPanel>
                                 <Rectangle Margin="0" DockPanel.Dock="Top" Height="20"/>
