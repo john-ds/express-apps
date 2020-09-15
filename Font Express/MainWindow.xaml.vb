@@ -1,10 +1,10 @@
-Imports System.ComponentModel
+﻿Imports System.ComponentModel
 Imports System.Windows.Markup
 Imports System.Windows.Threading
 
 Class MainWindow
 
-    ' FONT EXPRESS v2.0
+    ' FONT EXPRESS v2.0.1
     ' Part of Express Apps by John D
     ' ------------------------------
 
@@ -433,6 +433,11 @@ Class MainWindow
 
     End Sub
 
+    Private Sub CategoryPnl_LayoutUpdated(sender As Object, e As EventArgs) Handles CategoryPnl.LayoutUpdated
+        CheckToolbars()
+
+    End Sub
+
     Private Sub HomePnl_MouseWheel(sender As Object, e As MouseWheelEventArgs) Handles HomePnl.MouseWheel
         HomeScrollViewer.ScrollToHorizontalOffset(HomeScrollViewer.HorizontalOffset + e.Delta)
 
@@ -766,7 +771,7 @@ Class MainWindow
     ' CATEGORIES
     ' --
 
-    Private Sub RefreshCategories()
+    Public Sub RefreshCategories()
         CategoriesPnl.Children.Clear()
         CategoryPopupPnl.Children.Clear()
         CategoryPopupPnl.Children.Add(AddFavBtn)
@@ -792,14 +797,14 @@ Class MainWindow
 
             Dim btn As Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='#00FFFFFF' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='CatSampleBtn' Height='42' Margin='0,4,0,0' HorizontalAlignment='Left' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><StackPanel Orientation='Horizontal' Height='36'><ContentControl Content='{DynamicResource " +
                                                  icon + "}' Name='CategoryBtnImg' Width='20' Height='24' Margin='5,0,5,0' HorizontalAlignment='Left' /><TextBlock Name='CategoryNameTxt' Text='" +
-                                                 info(0) + "' FontSize='14' Padding='5,0,0,0' Height='21.31' Margin='0,7.69,5,7' HorizontalAlignment='Center' VerticalAlignment='Center' /></StackPanel></Button>")
+                                                 Funcs.EscapeChars(info(0)) + "' FontSize='14' Padding='5,0,0,0' Height='21.31' Margin='0,7.69,5,7' HorizontalAlignment='Center' VerticalAlignment='Center' /></StackPanel></Button>")
 
             btn.Tag = info(0)
             btn.ContextMenu = CategoryMenu
             CategoriesPnl.Children.Add(btn)
 
             Dim btn2 As Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='{DynamicResource BackColor}' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,10,0' Style='{DynamicResource AppButton}' Name='AddFavBtn' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><StackPanel Orientation='Horizontal'><ContentControl Content='{DynamicResource UntickIcon}' Name='AddFavImg' Width='24' Margin='10,0,0,0' /><TextBlock Text='" +
-                                                  info(0) + "' FontSize='14' Padding='10,0,0,0' Name='HomeBtnTxt_Copy242' Height='21.31' Margin='0,0,0,0' HorizontalAlignment='Center' VerticalAlignment='Center' /></StackPanel></Button>")
+                                                  Funcs.EscapeChars(info(0)) + "' FontSize='14' Padding='10,0,0,0' Name='HomeBtnTxt_Copy242' Height='21.31' Margin='0,0,0,0' HorizontalAlignment='Center' VerticalAlignment='Center' /></StackPanel></Button>")
 
             btn2.Tag = info(0)
             CategoryPopupPnl.Children.Add(btn2)

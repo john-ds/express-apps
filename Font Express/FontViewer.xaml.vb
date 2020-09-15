@@ -78,7 +78,7 @@ Public Class FontViewer
         For Each i In My.Settings.categories
             Dim info = i.Split({"//"}, StringSplitOptions.RemoveEmptyEntries)
             Dim btn2 As Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='{DynamicResource BackColor}' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,10,0' Style='{DynamicResource AppButton}' Name='AddFavBtn' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><StackPanel Orientation='Horizontal'><ContentControl Content='{DynamicResource UntickIcon}' Name='AddFavImg' Width='24' Margin='10,0,0,0' /><TextBlock Text='" +
-                                                  info(0) + "' FontSize='14' Padding='10,0,0,0' Name='HomeBtnTxt_Copy242' Height='21.31' Margin='0,0,0,0' HorizontalAlignment='Center' VerticalAlignment='Center' /></StackPanel></Button>")
+                                                  Funcs.EscapeChars(info(0)) + "' FontSize='14' Padding='10,0,0,0' Name='HomeBtnTxt_Copy242' Height='21.31' Margin='0,0,0,0' HorizontalAlignment='Center' VerticalAlignment='Center' /></StackPanel></Button>")
 
             btn2.Tag = info(0)
             CategoryPopupPnl.Children.Add(btn2)
@@ -190,7 +190,9 @@ Public Class FontViewer
 
     Private Sub SizeSlider_ValueChanged(sender As Slider, e As RoutedPropertyChangedEventArgs(Of Double)) Handles SizeSlider.ValueChanged
         Try
-            DisplayTxt.FontSize = SizeSlider.Value
+            If IsLoaded Then
+                DisplayTxt.FontSize = SizeSlider.Value
+            End If
         Catch
         End Try
 

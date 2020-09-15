@@ -73,7 +73,7 @@ Public Class Options
 
         For Each i In My.Settings.categories
             Dim btn As Button = XamlReader.Parse("<Button Name='FavBtn' VerticalAlignment='Top' Padding='0' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Background='{DynamicResource BackColor}' BorderBrush='{x:Null}' BorderThickness='0' Style='{DynamicResource AppButton}' Margin='0' Height='30' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><DockPanel><TextBlock HorizontalAlignment='Center' VerticalAlignment='Center' FontSize='14' Margin='0' Height='21.31' Padding='20,0,10,0' Text='" +
-                                                 i.Split("//")(0) + "'/></DockPanel></Button>")
+                                                 Funcs.EscapeChars(i.Split("//")(0)) + "'/></DockPanel></Button>")
             btn.Tag = i.Split("//")(0)
             CategoriesPnl.Children.Add(btn)
             AddHandler btn.Click, AddressOf CategoryBtns_Click
@@ -603,6 +603,7 @@ Public Class Options
 
                 Else
                     Dim count As Integer = 0
+                    Dim catcount As Integer = 0
 
                     For Each i As Xml.XmlNode In xmldoc.ChildNodes.Item(0)
                         If i.OuterXml.StartsWith("<general>") Then
@@ -650,6 +651,7 @@ Public Class Options
                                     End If
                                 End If
                             Next
+
                         ElseIf i.OuterXml.StartsWith("<startup>") Then
                             For Each j As Xml.XmlNode In i.ChildNodes
                                 Dim val As String = j.InnerText
@@ -672,10 +674,66 @@ Public Class Options
                                     End If
                                 End If
                             Next
+
+                        ElseIf i.OuterXml.StartsWith("<categories>") Then
+                            For Each j As Xml.XmlNode In i.ChildNodes
+                                If j.OuterXml.StartsWith("<category>") And j.HasChildNodes Then
+                                    Dim catname = ""
+                                    Dim icon = 1
+                                    Dim catfonts = New List(Of String) From {}
+
+                                    For Each k As Xml.XmlNode In j.ChildNodes
+                                        Dim val As String = k.InnerText
+
+                                        If Not val = "" Then
+                                            If k.OuterXml.StartsWith("<name>") And val.Contains("//") = False Then
+                                                catname = val.Substring(0, Math.Min(val.Length, 40))
+
+                                            ElseIf k.OuterXml.StartsWith("<icon>") Then
+                                                Try
+                                                    Dim size As Integer = Convert.ToInt32(val)
+                                                    If size >= 1 And size <= 6 Then
+                                                        icon = size
+                                                    End If
+                                                Catch
+                                                End Try
+
+                                            ElseIf k.OuterXml.StartsWith("<font>") And val.Contains("//") = False Then
+                                                catfonts.Add(Funcs.EscapeChars(val, True))
+
+                                            End If
+                                        End If
+                                    Next
+
+                                    If Not catname = "" Then
+                                        If catname = "Favourites" Then
+                                            My.Settings.favouritefonts.Clear()
+                                            My.Settings.favouritefonts.AddRange(catfonts.ToArray())
+
+                                        Else
+                                            Dim existing = -1
+                                            For Each category In My.Settings.categories
+                                                If category.Split("//")(0) = catname Or catname = "Favoris" Then
+                                                    existing = My.Settings.categories.IndexOf(category)
+                                                End If
+                                            Next
+
+                                            If existing > -1 Then
+                                                My.Settings.categories.Item(existing) = catname + "//" + icon.ToString() + "//" + String.Join("//", catfonts)
+                                            Else
+                                                My.Settings.categories.Add(catname + "//" + icon.ToString() + "//" + String.Join("//", catfonts))
+                                            End If
+
+                                            catcount += 1
+                                        End If
+
+                                    End If
+                                End If
+                            Next
                         End If
                     Next
 
-                    MainWindow.NewMessage(count.ToString() + Funcs.ChooseLang(" settings imported", " paramètres importés"),
+                    MainWindow.NewMessage(count.ToString() + Funcs.ChooseLang(" settings and ", " paramètres et ") + catcount.ToString() + Funcs.ChooseLang(" categories imported", " catégories importés"),
                                           Funcs.ChooseLang("Import Settings", "Importation des Paramètres"), MessageBoxButton.OK, MessageBoxImage.Information)
 
                     My.Settings.Save()
@@ -685,6 +743,12 @@ Public Class Options
                         CompareAutoDark()
                     Else
                         SetDarkMode(My.Settings.darkmode)
+                    End If
+
+                    If catcount > 0 Then
+                        For Each win As MainWindow In My.Application.Windows.OfType(Of MainWindow)
+                            win.RefreshCategories()
+                        Next
                     End If
 
                     Close()
@@ -744,6 +808,31 @@ Public Class Options
                     xml += "<" + i + ">" + Funcs.EscapeChars(result) + "</" + i + ">"
                 Next
                 xml += "</startup>"
+
+                xml += "<categories>"
+                If My.Settings.favouritefonts.Count > 0 Then
+                    xml += "<category><name>Favourites</name>"
+
+                    For Each i In My.Settings.favouritefonts
+                        xml += "<font>" + Funcs.EscapeChars(i) + "</font>"
+                    Next
+                    xml += "</category>"
+                End If
+
+                For Each i In My.Settings.categories
+                    Dim info = i.Split({"//"}, StringSplitOptions.RemoveEmptyEntries).ToList()
+                    xml += "<category><name>" + Funcs.EscapeChars(info(0)) + "</name>"
+                    xml += "<icon>" + info(1) + "</icon>"
+                    info.RemoveRange(0, 2)
+
+                    For Each j In info
+                        xml += "<font>" + Funcs.EscapeChars(j) + "</font>"
+                    Next
+
+                    xml += "</category>"
+                Next
+
+                xml += "</categories>"
                 xml += "</settings>"
 
                 IO.File.WriteAllText(exportDialog.FileName, xml, Text.Encoding.UTF8)
