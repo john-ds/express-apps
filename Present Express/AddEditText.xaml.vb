@@ -16,8 +16,8 @@ Public Class AddEditText
         PhotoGrid.Background = br
 
         If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then
-            BoldBtnImg.SetResourceReference(ContentProperty, "GrasIcon")
-            UnderlineBtnImg.SetResourceReference(ContentProperty, "SousligneIcon")
+            BoldBtn.Icon = FindResource("GrasIcon")
+            UnderlineBtn.Icon = FindResource("SousligneIcon")
 
         End If
 
@@ -33,13 +33,13 @@ Public Class AddEditText
         PhotoGrid.Background = br
 
         If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then
-            BoldBtnImg.SetResourceReference(ContentProperty, "GrasIcon")
-            UnderlineBtnImg.SetResourceReference(ContentProperty, "SousligneIcon")
+            BoldBtn.Icon = FindResource("GrasIcon")
+            UnderlineBtn.Icon = FindResource("SousligneIcon")
 
         End If
 
         SlideTxt.Text = text
-        FontTxt.Text = fontname
+        FontBtn.Text = fontname
         ChosenStyle = fontstyle
         FontSlider.Value = fontsize
         FillColourPicker.SelectedColor = Color.FromRgb(fontcolor.Color.R, fontcolor.Color.G, fontcolor.Color.B)
@@ -49,34 +49,13 @@ Public Class AddEditText
         If ChosenStyle.HasFlag(WinDrawing.FontStyle.Italic) Then ItalicSelector.Visibility = Visibility.Visible
         If ChosenStyle.HasFlag(WinDrawing.FontStyle.Underline) Then UnderlineSelector.Visibility = Visibility.Visible
 
-        AddDocTxt.Text = Funcs.ChooseLang("Apply changes", "Appliquer les modifications")
+        AddBtn.Text = Funcs.ChooseLang("Apply changes", "Appliquer les modifications")
         DrawBitmap()
 
     End Sub
 
     Private Sub LoadFonts()
-        Dim objFontCollection As WinDrawing.Text.FontCollection
-        objFontCollection = New WinDrawing.Text.InstalledFontCollection
-
-        FontsStack.Children.Clear()
-
-        For Each objFontFamily As WinDrawing.FontFamily In objFontCollection.Families
-            Dim fontname As String = Funcs.EscapeChars(objFontFamily.Name)
-
-            If Not fontname = "" Then
-                Dim copy As Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='{DynamicResource SecondaryColor}' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='FontSampleBtn' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><StackPanel Orientation='Horizontal'><TextBlock Text='" +
-                                                  fontname + "' FontFamily='" +
-                                                  fontname + "' FontSize='14' Padding='20,0,0,0' Name='HomeBtnTxt_Copy1291' Height='21.31' Margin='0,7.69,10,7' HorizontalAlignment='Center' VerticalAlignment='Center' /></StackPanel></Button>")
-
-                copy.Tag = objFontFamily.Name
-                copy.ToolTip = objFontFamily.Name
-                FontsStack.Children.Add(copy)
-                AddHandler copy.Click, AddressOf FontBtns_Click
-
-            End If
-        Next
-
-        FontTxt.Text = My.Settings.fontname
+        FontBtn.Text = My.Settings.fontname
         ChosenStyle = My.Settings.fontstyle
 
         If My.Settings.fontstyle.HasFlag(WinDrawing.FontStyle.Bold) Then BoldSelector.Visibility = Visibility.Visible
@@ -114,7 +93,7 @@ Public Class AddEditText
             }
 
             ChosenColour = New WinDrawing.SolidBrush(WinDrawing.Color.FromArgb(FillColourPicker.SelectedColor.Value.R, FillColourPicker.SelectedColor.Value.G, FillColourPicker.SelectedColor.Value.B))
-            g.DrawString(SlideTxt.Text, New WinDrawing.Font(FontTxt.Text, Convert.ToSingle(FontSlider.Value * 0.488), ChosenStyle), ChosenColour, rect1, stringFormat)
+            g.DrawString(SlideTxt.Text, New WinDrawing.Font(FontBtn.Text, Convert.ToSingle(FontSlider.Value * 0.488), ChosenStyle), ChosenColour, rect1, stringFormat)
             g.Flush()
 
             PhotoImg.Source = MainWindow.BitmapToSource(bmp, WinDrawing.Imaging.ImageFormat.Png)
@@ -138,14 +117,16 @@ Public Class AddEditText
     End Sub
 
     Private Function ReturnFontPos(letter As String) As Integer
+        Dim count = 0
 
-        For Each i As Button In FontsStack.Children.OfType(Of Button).ToList()
-            If i.Tag.ToString().ToUpper()(0) = letter Then
-                Return FontsStack.Children.IndexOf(i) * 30
+        For Each i As String In FontsStack.Items
+            If i.ToUpper()(0) = letter Then
+                Return count * 32
             End If
 
+            count += 1
         Next
-        Return Nothing
+        Return 0
 
     End Function
 
@@ -159,8 +140,8 @@ Public Class AddEditText
 
     End Sub
 
-    Private Sub FontBtns_Click(sender As Button, e As RoutedEventArgs)
-        FontTxt.Text = sender.Tag.ToString()
+    Private Sub FontBtns_Click(sender As ExpressControls.AppButton, e As RoutedEventArgs)
+        FontBtn.Text = sender.Text
         FontPopup.IsOpen = False
         DrawBitmap()
 
@@ -209,7 +190,7 @@ Public Class AddEditText
     End Sub
 
     Private Sub FillColourPicker_SelectedColorChanged(sender As Object, e As RoutedPropertyChangedEventArgs(Of Color?)) Handles FillColourPicker.SelectedColorChanged
-        If Not FillColourPicker.SelectedColor Is Nothing And IsLoaded Then DrawBitmap()
+        If FillColourPicker.SelectedColor IsNot Nothing And IsLoaded Then DrawBitmap()
 
     End Sub
 

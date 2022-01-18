@@ -15,7 +15,7 @@ Imports System.Windows
 <Assembly: AssemblyDescription("Create stunning slideshows and videos.")>
 <Assembly: AssemblyCompany("John D")>
 <Assembly: AssemblyProduct("Present Express")>
-<Assembly: AssemblyCopyright("Copyright © 2020")>
+<Assembly: AssemblyCopyright("Copyright © 2022")>
 <Assembly: AssemblyTrademark("")>
 <Assembly: ComVisible(false)>
 
@@ -55,5 +55,5 @@ Imports System.Windows
 ' by using the '*' as shown below:
 ' <Assembly: AssemblyVersion("1.0.*")>
 
-<Assembly: AssemblyVersion("1.0.1.0")>
-<Assembly: AssemblyFileVersion("1.0.1.0")>
+<Assembly: AssemblyVersion("2.0.0.0")>
+<Assembly: AssemblyFileVersion("2.0.0.0")>

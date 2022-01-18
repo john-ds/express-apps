@@ -32,7 +32,7 @@
         CategoryTxt.Text = name
 
         CategoryIcon = CategoryInfo(1)
-        IconSelect.Margin = New Thickness((CategoryIcon - 1) * 36, 0, 0, 0)
+        IconSelect.Margin = New Thickness((CategoryIcon - 1) * 41, 5, 0, 0)
 
     End Sub
 
@@ -54,7 +54,7 @@
 
     Private Sub IconBtns_Click(sender As Button, e As RoutedEventArgs) Handles Icon1Btn.Click, Icon2Btn.Click, Icon3Btn.Click, Icon4Btn.Click, Icon5Btn.Click, Icon6Btn.Click
         CategoryIcon = IconBtns.Children.IndexOf(sender) + 1
-        IconSelect.Margin = New Thickness(IconBtns.Children.IndexOf(sender) * 36, 0, 0, 0)
+        IconSelect.Margin = New Thickness(IconBtns.Children.IndexOf(sender) * 41, 5, 0, 0)
 
     End Sub
 

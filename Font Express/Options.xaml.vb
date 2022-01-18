@@ -57,54 +57,54 @@ Public Class Options
         ' Add any initialization after the InitializeComponent() call.
         AddHandler TempLblTimer.Elapsed, AddressOf TempLblTimer_Tick
 
-        Dim objFontCollection As WinDrawing.Text.FontCollection
-        objFontCollection = New WinDrawing.Text.InstalledFontCollection
+        Dim objFontCollection As WinDrawing.Text.FontCollection = New WinDrawing.Text.InstalledFontCollection
+        Dim FavouriteSelectableList As New List(Of SelectableFontItem) From {}
 
         For Each objFontFamily As WinDrawing.FontFamily In objFontCollection.Families
             Dim fontname As String = Funcs.EscapeChars(objFontFamily.Name)
 
             If Not fontname = "" Then
-                Dim FontCk As New CheckBox() With {.Content = fontname, .IsChecked = My.Settings.favouritefonts.Contains(fontname)}
-                FavouriteList.Children.Add(FontCk)
-                AddHandler FontCk.Click, AddressOf FontCk_Click
-
+                FavouriteSelectableList.Add(New SelectableFontItem() With {
+                                             .Name = fontname,
+                                             .Selected = My.Settings.favouritefonts.Contains(fontname)
+                                            })
             End If
         Next
 
-        For Each i In My.Settings.categories
-            Dim btn As Button = XamlReader.Parse("<Button Name='FavBtn' VerticalAlignment='Top' Padding='0' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Background='{DynamicResource BackColor}' BorderBrush='{x:Null}' BorderThickness='0' Style='{DynamicResource AppButton}' Margin='0' Height='30' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><DockPanel><TextBlock HorizontalAlignment='Center' VerticalAlignment='Center' FontSize='14' Margin='0' Height='21.31' Padding='20,0,10,0' Text='" +
-                                                 Funcs.EscapeChars(i.Split("//")(0)) + "'/></DockPanel></Button>")
-            btn.Tag = i.Split("//")(0)
-            CategoriesPnl.Children.Add(btn)
-            AddHandler btn.Click, AddressOf CategoryBtns_Click
+        FavouriteList.ItemsSource = FavouriteSelectableList
+        Dim catlist As New List(Of String) From {}
 
+        For Each i In My.Settings.categories
+            catlist.Add(i.Split("//")(0))
         Next
 
+        CategoriesPnl.ItemsSource = catlist
+
         If My.Settings.language = "fr-FR" Then
-            Funcs.SetRadioBtns(FrenchRadio1Img, New List(Of ContentControl) From {EnglishRadio1Img})
+            FrenchRadio1.IsChecked = True
         Else
-            Funcs.SetRadioBtns(EnglishRadio1Img, New List(Of ContentControl) From {FrenchRadio1Img})
+            EnglishRadio1.IsChecked = True
         End If
 
-        Funcs.SetCheckButton(My.Settings.audio, SoundImg)
+        SoundBtn.IsChecked = My.Settings.audio
 
-        Funcs.SetCheckButton(My.Settings.darkmode, DarkModeImg)
-        Funcs.SetCheckButton(My.Settings.autodarkmode, AutoDarkModeImg)
+        DarkModeBtn.IsChecked = My.Settings.darkmode
+        AutoDarkModeBtn.IsChecked = My.Settings.autodarkmode
 
         If My.Settings.autodarkmode Then
             DarkModeBtn.Visibility = Visibility.Collapsed
             AutoDarkPnl.Visibility = Visibility.Visible
         End If
 
-        Dark1Lbl.Text = My.Settings.autodarkfrom
-        Dark2Lbl.Text = My.Settings.autodarkto
+        Dark1Combo.Text = My.Settings.autodarkfrom
+        Dark2Combo.Text = My.Settings.autodarkto
 
-        Funcs.SetCheckButton(My.Settings.notificationcheck, NotificationImg)
+        NotificationBtn.IsChecked = My.Settings.notificationcheck
 
         If My.Settings.viewall Then
-            Funcs.SetRadioBtns(AllRadioImg, New List(Of ContentControl) From {FavRadioImg})
+            AllRadio.IsChecked = True
         Else
-            Funcs.SetRadioBtns(FavRadioImg, New List(Of ContentControl) From {AllRadioImg})
+            FavRadio.IsChecked = True
         End If
 
         If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then
@@ -138,7 +138,7 @@ Public Class Options
 
     Private Sub TempLblTimer_Tick(sender As Object, e As EventArgs)
 
-        Dim deli As mydelegate = New mydelegate(AddressOf ResetStatusLbl)
+        Dim deli As New mydelegate(AddressOf ResetStatusLbl)
         SavedTxt.Dispatcher.BeginInvoke(Threading.DispatcherPriority.Normal, deli)
         TempLblTimer.Stop()
 
@@ -187,27 +187,30 @@ Public Class Options
     End Sub
 
     Private Sub RefreshCategory(fonts As List(Of String))
+        Dim items = FavouriteList.Items.OfType(Of SelectableFontItem).ToList()
 
-        For Each i In FavouriteList.Children.OfType(Of CheckBox)
-            If fonts.Contains(i.Content) Then
-                i.IsChecked = True
+        For Each i As SelectableFontItem In items
+            If fonts.Contains(i.Name.ToString()) Then
+                i.Selected = True
             Else
-                i.IsChecked = False
+                i.Selected = False
             End If
         Next
 
+        FavouriteList.ItemsSource = items.ToList()
+
     End Sub
 
-    Private Sub CategoryBtns_Click(sender As Button, e As RoutedEventArgs) Handles FavBtn.Click
+    Private Sub CategoryBtns_Click(sender As ExpressControls.AppButton, e As RoutedEventArgs) Handles FavBtn.Click
         CategoryPopup.IsOpen = False
         CurrentCategory = sender.Tag.ToString()
 
         If CurrentCategory = "Favourites" Then
-            CategoryLbl.Text = Funcs.ChooseLang("Favourites", "Favoris")
+            CategoryBtn.Text = Funcs.ChooseLang("Favourites", "Favoris")
             RefreshCategory(My.Settings.favouritefonts.Cast(Of String).ToList())
 
         Else
-            CategoryLbl.Text = CurrentCategory
+            CategoryBtn.Text = CurrentCategory
 
             Dim fonts = My.Settings.categories.Item(MainWindow.FindCategory(CurrentCategory)).Split({"//"}, StringSplitOptions.RemoveEmptyEntries).ToList()
             fonts.RemoveRange(0, 2)
@@ -217,7 +220,7 @@ Public Class Options
 
     End Sub
 
-    Private Sub FontCk_Click(sender As CheckBox, e As RoutedEventArgs)
+    Private Sub FontCk_Click(sender As ExpressControls.AppCheckBox, e As RoutedEventArgs)
 
         If CurrentCategory = "Favourites" Then
             If sender.IsChecked Then
@@ -228,15 +231,15 @@ Public Class Options
 
         Else
             If sender.IsChecked Then
-                My.Settings.categories.Item(MainWindow.FindCategory(sender.Tag.ToString())) += "//" + sender.Content.ToString()
+                My.Settings.categories.Item(MainWindow.FindCategory(CurrentCategory)) += "//" + sender.Content.ToString()
             Else
-                Dim catlist = My.Settings.categories.Item(MainWindow.FindCategory(sender.Tag.ToString())).Split({"//"}, StringSplitOptions.RemoveEmptyEntries).ToList()
+                Dim catlist = My.Settings.categories.Item(MainWindow.FindCategory(CurrentCategory)).Split({"//"}, StringSplitOptions.RemoveEmptyEntries).ToList()
                 Dim info = catlist.GetRange(0, 2)
                 Dim fonts = catlist.GetRange(2, catlist.Count - 2)
                 fonts.Remove(sender.Content.ToString())
 
                 Dim joined = String.Join("//", info) + "//" + String.Join("//", fonts)
-                My.Settings.categories.Item(MainWindow.FindCategory(sender.Tag.ToString())) = joined
+                My.Settings.categories.Item(MainWindow.FindCategory(CurrentCategory)) = joined
             End If
 
         End If
@@ -354,7 +357,7 @@ Public Class Options
     ' GENERAL > INTERFACE
     ' --
 
-    Private Sub InterfaceRadios_Click(sender As Button, e As RoutedEventArgs) Handles EnglishRadio1.Click, FrenchRadio1.Click
+    Private Sub InterfaceRadios_Click(sender As ExpressControls.AppRadioButton, e As RoutedEventArgs) Handles EnglishRadio1.Click, FrenchRadio1.Click
 
         If (sender.Name = "EnglishRadio1" And Not My.Settings.language = "en-GB") Or (sender.Name = "FrenchRadio1" And Not My.Settings.language = "fr-FR") Then
             If MainWindow.NewMessage(Funcs.ChooseLang("Changing the interface language requires an application restart. Do you wish to continue?",
@@ -363,13 +366,9 @@ Public Class Options
                                      MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
                 If sender.Name = "EnglishRadio1" Then
-                    Funcs.SetRadioBtns(EnglishRadio1Img, New List(Of ContentControl) From {FrenchRadio1Img})
                     My.Settings.language = "en-GB"
-
                 Else
-                    Funcs.SetRadioBtns(FrenchRadio1Img, New List(Of ContentControl) From {EnglishRadio1Img})
                     My.Settings.language = "fr-FR"
-
                 End If
 
                 SaveAll()
@@ -377,6 +376,12 @@ Public Class Options
                 Forms.Application.Restart()
                 Windows.Application.Current.Shutdown()
 
+            Else
+                If sender.Name = "EnglishRadio1" Then
+                    FrenchRadio1.IsChecked = True
+                Else
+                    EnglishRadio1.IsChecked = True
+                End If
             End If
         End If
 
@@ -387,9 +392,7 @@ Public Class Options
     ' --
 
     Private Sub SoundBtn_Click(sender As Object, e As RoutedEventArgs) Handles SoundBtn.Click
-        Funcs.ToggleCheckButton(SoundImg)
-
-        If SoundImg.Tag = 0 Then My.Settings.audio = False Else My.Settings.audio = True
+        My.Settings.audio = SoundBtn.IsChecked
         SaveAll()
 
     End Sub
@@ -399,13 +402,7 @@ Public Class Options
     ' --
 
     Private Sub DarkModeBtn_Click(sender As Object, e As RoutedEventArgs) Handles DarkModeBtn.Click
-        Funcs.ToggleCheckButton(DarkModeImg)
-
-        If DarkModeImg.Tag = 0 Then
-            My.Settings.darkmode = False
-        Else
-            My.Settings.darkmode = True
-        End If
+        My.Settings.darkmode = DarkModeBtn.IsChecked
 
         If My.Settings.autodarkmode = False Then SetDarkMode(My.Settings.darkmode)
         SaveAll()
@@ -413,9 +410,8 @@ Public Class Options
     End Sub
 
     Private Sub AutoDarkModeBtn_Click(sender As Object, e As RoutedEventArgs) Handles AutoDarkModeBtn.Click
-        Funcs.ToggleCheckButton(AutoDarkModeImg)
 
-        If AutoDarkModeImg.Tag = 0 Then
+        If AutoDarkModeBtn.IsChecked = False Then
             My.Settings.autodarkmode = False
             Application.AutoDarkTimer.Stop()
 
@@ -449,14 +445,11 @@ Public Class Options
 
     End Sub
 
-    Private Sub DarkFromBtns_Click(sender As Button, e As RoutedEventArgs) Handles Dark16Btn.Click, Dark162Btn.Click, Dark17Btn.Click, Dark172Btn.Click,
+    Private Sub DarkFromBtns_Click(sender As ExpressControls.AppButton, e As RoutedEventArgs) Handles Dark16Btn.Click, Dark162Btn.Click, Dark17Btn.Click, Dark172Btn.Click,
         Dark18Btn.Click, Dark182Btn.Click, Dark19Btn.Click, Dark192Btn.Click, Dark20Btn.Click, Dark202Btn.Click, Dark21Btn.Click, Dark212Btn.Click, Dark22Btn.Click
 
-        Dim dp As StackPanel = sender.Content
-        For Each txt As TextBlock In dp.Children.OfType(Of TextBlock)
-            My.Settings.autodarkfrom = txt.Text
-            Dark1Lbl.Text = txt.Text
-        Next
+        My.Settings.autodarkfrom = sender.Text
+        Dark1Combo.Text = sender.Text
 
         SaveAll()
         DarkFromPopup.IsOpen = False
@@ -465,14 +458,11 @@ Public Class Options
 
     End Sub
 
-    Private Sub DarkToBtns_Click(sender As Button, e As RoutedEventArgs) Handles Dark4Btn.Click, Dark42Btn.Click, Dark5Btn.Click, Dark52Btn.Click, Dark6Btn.Click,
-        Dark62Btn.Click, Dark7Btn.Click, Dark72Btn.Click, Dark8Btn.Click, Dark82Btn.Click, Dark9Btn.Click, Dark92Btn.Click, Dark10Btn.Click
+    Private Sub DarkToBtns_Click(sender As ExpressControls.AppButton, e As RoutedEventArgs) Handles Dark4Btn.Click, Dark42Btn.Click, Dark5Btn.Click, Dark52Btn.Click,
+        Dark6Btn.Click, Dark62Btn.Click, Dark7Btn.Click, Dark72Btn.Click, Dark8Btn.Click, Dark82Btn.Click, Dark9Btn.Click, Dark92Btn.Click, Dark10Btn.Click
 
-        Dim dp As StackPanel = sender.Content
-        For Each txt As TextBlock In dp.Children.OfType(Of TextBlock)
-            My.Settings.autodarkto = txt.Text
-            Dark2Lbl.Text = txt.Text
-        Next
+        My.Settings.autodarkto = sender.Text
+        Dark2Combo.Text = sender.Text
 
         SaveAll()
         DarkToPopup.IsOpen = False
@@ -533,16 +523,7 @@ Public Class Options
     ' --
 
     Private Sub NotificationBtn_Click(sender As Object, e As RoutedEventArgs) Handles NotificationBtn.Click
-        Funcs.ToggleCheckButton(NotificationImg)
-
-        If NotificationImg.Tag = 0 Then
-            My.Settings.notificationcheck = False
-
-        Else
-            My.Settings.notificationcheck = True
-
-        End If
-
+        My.Settings.notificationcheck = NotificationBtn.IsChecked
         SaveAll()
 
     End Sub
@@ -551,16 +532,12 @@ Public Class Options
     ' STARTUP > DEFAULT VIEW
     ' --
 
-    Private Sub ViewBtns_Click(sender As Button, e As RoutedEventArgs) Handles AllRadio.Click, FavRadio.Click
+    Private Sub ViewBtns_Click(sender As ExpressControls.AppRadioButton, e As RoutedEventArgs) Handles AllRadio.Click, FavRadio.Click
 
         If sender.Name = "AllRadio" Then
-            Funcs.SetRadioBtns(AllRadioImg, New List(Of ContentControl) From {FavRadioImg})
             My.Settings.viewall = True
-
         Else
-            Funcs.SetRadioBtns(FavRadioImg, New List(Of ContentControl) From {AllRadioImg})
             My.Settings.viewall = False
-
         End If
 
         SaveAll()
@@ -843,4 +820,9 @@ Public Class Options
         End If
     End Sub
 
+End Class
+
+Public Class SelectableFontItem
+    Public Property Name As String
+    Public Property Selected As Boolean
 End Class

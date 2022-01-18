@@ -160,7 +160,7 @@ Public Class Pictures
     Private PageTotal As Long = 1L
 
     Private Function GetPics(query As String) As Boolean
-        Dim client As Net.WebClient = New Net.WebClient()
+        Dim client As New Net.WebClient()
 
         ' GET 12 PHOTOS A PAGE
 
@@ -178,7 +178,7 @@ Public Class Pictures
         Try
             If CurrentPage = 1 Then dict = New Dictionary(Of String, Dictionary(Of String, String))
 
-            Using reader As StreamReader = New StreamReader(client.OpenRead("https://api.unsplash.com/search/photos?page=" + CurrentPage.ToString() +
+            Using reader As New StreamReader(client.OpenRead("https://api.unsplash.com/search/photos?page=" + CurrentPage.ToString() +
                                                                             "&per_page=20&query=" + query + "&client_id=" + ClientID), Text.Encoding.UTF8)
                 If PictureWorker.CancellationPending Then Return False
 
@@ -371,7 +371,7 @@ Public Class Pictures
         If Not SelectedPhoto = "" Then
             Try
                 Using webc = New Net.WebClient()
-                    Picture = New WinDrawing.Bitmap(New MemoryStream(webc.DownloadData(dict(SelectedPhoto)("raw") + "&h=1440")))
+                    Picture = New WinDrawing.Bitmap(New MemoryStream(webc.DownloadData(dict(SelectedPhoto)("raw") + "&h=1440&w=2560")))
                     webc.DownloadStringAsync(New Uri("https://api.unsplash.com/photos/" + SelectedPhoto + "/download?client_id=" + ClientID))
                 End Using
 

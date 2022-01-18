@@ -1,13 +1,9 @@
-Imports System.ComponentModel
+﻿Imports System.ComponentModel
 Imports System.IO
 Imports System.Windows.Markup
 Imports System.Windows.Threading
 
 Class MainWindow
-
-    ' QUOTA EXPRESS v2.0
-    ' Part of Express Apps by John D
-    ' ------------------------------
 
     ReadOnly QuotaWorker As New BackgroundWorker With {.WorkerSupportsCancellation = True}
     ReadOnly NotificationCheckerWorker As New BackgroundWorker With {.WorkerSupportsCancellation = True}
@@ -49,8 +45,6 @@ Class MainWindow
                                                               {"vid", ".avi,.3gp,.flv,.h264,.m4v,.mkv,.mov,.mp4,.mpg,.mpeg,.swf,.wmv"},
                                                               {"doc", ".txt,.rtf,.doc,.docx,.odt,.ppt,.pptx,.odp,.xls,.xlsx,.ods,.tex,.pdf,.pub"}}
 
-    ReadOnly QuotaHoverIn As Animation.Storyboard
-    ReadOnly QuotaHoverOut As Animation.Storyboard
     ReadOnly HomeMnStoryboard As Animation.Storyboard
     ReadOnly ViewMnStoryboard As Animation.Storyboard
     ReadOnly ExportMnStoryboard As Animation.Storyboard
@@ -72,7 +66,6 @@ Class MainWindow
             My.Settings.Save()
 
         End If
-
 
         If My.Settings.language = "fr-FR" Then
             Threading.Thread.CurrentThread.CurrentCulture = New Globalization.CultureInfo("fr-FR")
@@ -107,8 +100,6 @@ Class MainWindow
         AddHandler NotificationCheckerWorker.DoWork, AddressOf NotificationCheckerWorker_DoWork
         AddHandler ScrollTimer.Tick, AddressOf ScrollTimer_Tick
 
-        QuotaHoverIn = TryFindResource("QuotaHoverIn")
-        QuotaHoverOut = TryFindResource("QuotaHoverOut")
         HomeMnStoryboard = TryFindResource("HomeMnStoryboard")
         ViewMnStoryboard = TryFindResource("ViewMnStoryboard")
         ExportMnStoryboard = TryFindResource("ExportMnStoryboard")
@@ -138,25 +129,26 @@ Class MainWindow
             End With
         End If
 
-        Funcs.SetCheckButton(My.Settings.percentagebars, HighlightingImg)
+        HighlightingBtn.IsChecked = My.Settings.percentagebars
 
         Sorter = My.Settings.defaultsort
         Select Case Sorter
             Case "az"
-                SortTxt.Text = Funcs.ChooseLang("Name A-Z", "Nom A-Z")
+                SortBtn.Text = Funcs.ChooseLang("Name A-Z", "Nom A-Z")
             Case "za"
-                SortTxt.Text = Funcs.ChooseLang("Name Z-A", "Nom Z-A")
+                SortBtn.Text = Funcs.ChooseLang("Name Z-A", "Nom Z-A")
             Case "sa"
-                SortTxt.Text = Funcs.ChooseLang("Size ascending", "Taille croissante")
+                SortBtn.Text = Funcs.ChooseLang("Size ascending", "Taille croissante")
             Case "sd"
-                SortTxt.Text = Funcs.ChooseLang("Size descending", "Taille décroissante")
+                SortBtn.Text = Funcs.ChooseLang("Size descending", "Taille décroissante")
             Case "nf"
-                SortTxt.Text = Funcs.ChooseLang("Newest first", "Plus récent en premier")
+                SortBtn.Text = Funcs.ChooseLang("Newest first", "Plus récent en premier")
             Case "of"
-                SortTxt.Text = Funcs.ChooseLang("Oldest first", "Moins récent en premier")
+                SortBtn.Text = Funcs.ChooseLang("Oldest first", "Moins récent en premier")
         End Select
 
         TopMenu.PlacementTarget = CopyDetailsBtn
+        CancelBtn.IsEnabled = False
 
     End Sub
 
@@ -185,28 +177,28 @@ Class MainWindow
             .Title = caption
 
             If buttons = MessageBoxButton.OK Then
-                .Button1.Content = "OK"
+                .Button1.Text = "OK"
                 .Button2.Visibility = Visibility.Collapsed
                 .Button2.IsEnabled = False
                 .Button3.Visibility = Visibility.Collapsed
                 .Button3.IsEnabled = False
 
             ElseIf buttons = MessageBoxButton.YesNo Then
-                .Button1.Content = Funcs.ChooseLang("Yes", "Oui")
+                .Button1.Text = Funcs.ChooseLang("Yes", "Oui")
                 .Button2.Visibility = Visibility.Collapsed
                 .Button2.IsEnabled = False
                 .Button3.Content = Funcs.ChooseLang("No", "Non")
 
             ElseIf buttons = MessageBoxButton.YesNoCancel Then
-                .Button1.Content = Funcs.ChooseLang("Yes", "Oui")
-                .Button2.Content = Funcs.ChooseLang("No", "Non")
-                .Button3.Content = Funcs.ChooseLang("Cancel", "Annuler")
+                .Button1.Text = Funcs.ChooseLang("Yes", "Oui")
+                .Button2.Text = Funcs.ChooseLang("No", "Non")
+                .Button3.Text = Funcs.ChooseLang("Cancel", "Annuler")
 
             Else ' buttons = MessageBoxButtons.OKCancel
-                .Button1.Content = "OK"
+                .Button1.Text = "OK"
                 .Button2.Visibility = Visibility.Collapsed
                 .Button2.IsEnabled = False
-                .Button3.Content = Funcs.ChooseLang("Cancel", "Annuler")
+                .Button3.Text = Funcs.ChooseLang("Cancel", "Annuler")
 
             End If
 
@@ -320,7 +312,7 @@ Class MainWindow
     ' [app-name]*[latest-version]*[Low/High]*[feature#feature]*[fonction#fonction]$...
 
     Private Sub NotificationsBtn_Click(sender As Object, e As RoutedEventArgs) Handles NotificationsBtn.Click
-        NotificationsIcn.SetResourceReference(ContentProperty, "NotificationIcon")
+        NotificationsBtn.Icon = FindResource("NotificationIcon")
         NotificationsPopup.IsOpen = True
 
         If NotificationLoading.Visibility = Visibility.Visible Then
@@ -332,14 +324,14 @@ Class MainWindow
     Private Sub CheckNotifications(Optional forcedialog As Boolean = False)
 
         Try
-            Dim info As String() = Funcs.GetNotificationInfo("Quota").Split("*")
+            Dim info As String() = Funcs.GetNotificationInfo("Quota")
 
-            If Not info(1) = My.Application.Info.Version.ToString(3) Then
+            If Not info(0) = My.Application.Info.Version.ToString(3) Then
                 NotificationsTxt.Content = Funcs.ChooseLang("An update is available.", "Une mise à jour est disponible.")
                 NotifyBtnStack.Visibility = Visibility.Visible
 
                 If NotificationsPopup.IsOpen = False Then
-                    NotificationsIcn.SetResourceReference(ContentProperty, "NotificationNewIcon")
+                    NotificationsBtn.Icon = FindResource("NotificationNewIcon")
                     CreateNotifyMsg(info)
 
                 End If
@@ -368,8 +360,8 @@ Class MainWindow
     Private Sub CreateNotifyMsg(info As String())
 
         Try
-            Dim version As String = info(1)
-            Dim featurelist As String() = info(Convert.ToInt32(Funcs.ChooseLang("3", "4"))).Split("#")
+            Dim version As String = info(0)
+            Dim featurelist As String() = info.Skip(2).ToArray()
             Dim features As String = ""
 
             If featurelist.Length <> 0 Then
@@ -383,7 +375,7 @@ Class MainWindow
             Dim start As String = Funcs.ChooseLang("An update is available.", "Une mise à jour est disponible.")
             Dim icon As MessageBoxImage = MessageBoxImage.Information
 
-            If info(2) = "High" Then
+            If info(1) = "High" Then
                 start = Funcs.ChooseLang("An important update is available!", "Une mise à jour importante est disponible !")
                 icon = MessageBoxImage.Exclamation
             End If
@@ -392,7 +384,7 @@ Class MainWindow
                           Funcs.ChooseLang("Would you like to visit the download page?", "Vous souhaitez visiter la page de téléchargement ?"),
                           Funcs.ChooseLang("Quota Express Updates", "Mises à Jour Quota Express"), MessageBoxButton.YesNoCancel, icon) = MessageBoxResult.Yes Then
 
-                Process.Start("https://jwebsites404.wixsite.com/expressapps/update?app=quota")
+                Process.Start("https://express.johnjds.co.uk/update?app=quota")
 
             End If
 
@@ -412,7 +404,7 @@ Class MainWindow
 
     Private Sub UpdateBtn_Click(sender As Object, e As RoutedEventArgs) Handles UpdateBtn.Click
         NotificationsPopup.IsOpen = False
-        Process.Start("https://jwebsites404.wixsite.com/expressapps/update?app=quota")
+        Process.Start("https://express.johnjds.co.uk/update?app=quota")
 
     End Sub
 
@@ -472,28 +464,28 @@ Class MainWindow
 
     Private Sub CheckToolbars()
 
-        If HomePnl.ActualWidth + 12 > HomeScrollViewer.ActualWidth Then
+        If HomePnl.ActualWidth + 14 > HomeScrollViewer.ActualWidth Then
             HomeScroll.Visibility = Visibility.Visible
-            HomeScrollViewer.Margin = New Thickness(60, 0, 40, 0)
+            HomeScrollViewer.Margin = New Thickness(0, 0, 58, 0)
         Else
             HomeScroll.Visibility = Visibility.Collapsed
-            HomeScrollViewer.Margin = New Thickness(60, 0, 0, 0)
+            HomeScrollViewer.Margin = New Thickness(0, 0, 0, 0)
         End If
 
-        If ViewPnl.ActualWidth + 12 > ViewScrollViewer.ActualWidth Then
+        If ViewPnl.ActualWidth + 14 > ViewScrollViewer.ActualWidth Then
             ViewScroll.Visibility = Visibility.Visible
-            HomeScrollViewer.Margin = New Thickness(60, 0, 40, 0)
+            ViewScrollViewer.Margin = New Thickness(0, 0, 58, 0)
         Else
             ViewScroll.Visibility = Visibility.Collapsed
-            HomeScrollViewer.Margin = New Thickness(60, 0, 0, 0)
+            ViewScrollViewer.Margin = New Thickness(0, 0, 0, 0)
         End If
 
-        If ExportPnl.ActualWidth + 12 > ExportScrollViewer.ActualWidth Then
+        If ExportPnl.ActualWidth + 14 > ExportScrollViewer.ActualWidth Then
             ExportScroll.Visibility = Visibility.Visible
-            HomeScrollViewer.Margin = New Thickness(60, 0, 40, 0)
+            ExportScrollViewer.Margin = New Thickness(0, 0, 58, 0)
         Else
             ExportScroll.Visibility = Visibility.Collapsed
-            HomeScrollViewer.Margin = New Thickness(60, 0, 0, 0)
+            ExportScrollViewer.Margin = New Thickness(0, 0, 0, 0)
         End If
 
     End Sub
@@ -515,16 +507,6 @@ Class MainWindow
 
     Private Sub MenuBtn_Click(sender As Object, e As RoutedEventArgs) Handles QuotaBtn.Click
         MenuPopup.IsOpen = True
-
-    End Sub
-
-    Private Sub TypeBtn_MouseEnter(sender As Object, e As Input.MouseEventArgs) Handles QuotaBtn.MouseEnter
-        QuotaHoverIn.Begin()
-
-    End Sub
-
-    Private Sub TypeBtn_MouseLeave(sender As Object, e As Input.MouseEventArgs) Handles QuotaBtn.MouseLeave
-        QuotaHoverOut.Begin()
 
     End Sub
 
@@ -610,22 +592,25 @@ Class MainWindow
 
     End Sub
 
-    Private Sub DocBtns_MouseEnter(sender As Controls.Button, e As Input.MouseEventArgs) Handles HomeBtn.MouseEnter, ViewBtn.MouseEnter, ExportBtn.MouseEnter
+    Private Sub DocBtns_MouseEnter(sender As Controls.Button, e As Input.MouseEventArgs) Handles QuotaBtn.MouseEnter, HomeBtn.MouseEnter, ViewBtn.MouseEnter, ExportBtn.MouseEnter
 
         If sender.Equals(HomeBtn) Then
-            HomeBtnTxt.FontWeight = FontWeights.Bold
+            HomeBtnTxt.FontWeight = FontWeights.SemiBold
 
         ElseIf sender.Equals(ViewBtn) Then
-            ViewBtnTxt.FontWeight = FontWeights.Bold
+            ViewBtnTxt.FontWeight = FontWeights.SemiBold
 
         ElseIf sender.Equals(ExportBtn) Then
-            ExportBtnTxt.FontWeight = FontWeights.Bold
+            ExportBtnTxt.FontWeight = FontWeights.SemiBold
+
+        ElseIf sender.Equals(QuotaBtn) Then
+            QuotaBtnTxt.FontWeight = FontWeights.SemiBold
 
         End If
 
     End Sub
 
-    Private Sub DocBtns_MouseLeave(sender As Controls.Button, e As Input.MouseEventArgs) Handles HomeBtn.MouseLeave, ViewBtn.MouseLeave, ExportBtn.MouseLeave
+    Private Sub DocBtns_MouseLeave(sender As Controls.Button, e As Input.MouseEventArgs) Handles QuotaBtn.MouseLeave, HomeBtn.MouseLeave, ViewBtn.MouseLeave, ExportBtn.MouseLeave
 
         If sender.Equals(HomeBtn) Then
             HomeBtnTxt.FontWeight = FontWeights.Normal
@@ -635,6 +620,9 @@ Class MainWindow
 
         ElseIf sender.Equals(ExportBtn) Then
             ExportBtnTxt.FontWeight = FontWeights.Normal
+
+        ElseIf sender.Equals(QuotaBtn) Then
+            QuotaBtnTxt.FontWeight = FontWeights.Normal
 
         End If
 
@@ -657,8 +645,8 @@ Class MainWindow
 
         Threading.Thread.Sleep(250)
 
-        Dim deli As mydelegate = New mydelegate(AddressOf CheckNotifications)
-        NotificationsIcn.Dispatcher.BeginInvoke(DispatcherPriority.Normal, deli)
+        Dim deli As New mydelegate(AddressOf CheckNotifications)
+        NotificationsBtn.Dispatcher.BeginInvoke(DispatcherPriority.Normal, deli)
 
     End Sub
 
@@ -734,12 +722,13 @@ Class MainWindow
     End Sub
 
     Private Sub SetLoadingAttr(val As Boolean)
-        MainDock.IsEnabled = val
-        DocTabs.IsEnabled = val
-        StatusBar.IsEnabled = val
-        DocTabSelector.IsEnabled = val
-        QuotaBtn.IsEnabled = val
-
+        If IsLoaded Then
+            MainDock.IsEnabled = val
+            DocTabs.IsEnabled = val
+            StatusBar.IsEnabled = val
+            DocTabSelector.IsEnabled = val
+            QuotaBtn.IsEnabled = val
+        End If
     End Sub
 
     Public Function FormatBytes(BytesCaller As Long) As String
@@ -861,19 +850,19 @@ Class MainWindow
         fdsizes = fdsizes_buffer
         root = root_buffer
 
+        FilterBtn.Text = Funcs.ChooseLang("None", "Aucun")
         FileStack.Children.Clear()
         SelectedBtns.Clear()
-        UpdateSelection()
 
         If Path.GetFileName(root) = "" Then
             TopBtn.IsEnabled = False
             TopBtnTxt.Text = root
-            TopBtnImg.SetResourceReference(ContentProperty, "NoUndoIcon")
+            TopBtn.Icon = FindResource("NoUndoIcon")
 
         Else
             TopBtn.IsEnabled = True
             TopBtnTxt.Text = Path.GetFileName(root)
-            TopBtnImg.SetResourceReference(ContentProperty, "UndoIcon")
+            TopBtn.Icon = FindResource("UndoIcon")
 
         End If
 
@@ -943,13 +932,14 @@ Class MainWindow
 
         End If
 
-        FilterTxt.Text = Funcs.ChooseLang("None", "Aucun")
+        UpdateSelection()
         CountItems()
         HighlightItems()
         SortItems()
 
         If startup Then
             GetDriveInfo()
+            CancelBtn.IsEnabled = True
             startup = False
         End If
 
@@ -980,7 +970,7 @@ Class MainWindow
 
         Try
             If path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) Or IO.Path.GetFileName(path) = "Documents" Then
-                Return "DocFolderIcon"
+                Return "DocumentFolderIcon"
             ElseIf path = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic) Or IO.Path.GetFileName(path) = Funcs.ChooseLang("Music", "Musique") Then
                 Return "MusicFolderIcon"
             ElseIf path = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures) Or IO.Path.GetFileName(path) = Funcs.ChooseLang("Pictures", "Images") Then
@@ -997,8 +987,8 @@ Class MainWindow
 
     End Function
 
-    Private Function GetFileImg(path As String) As String
-        Dim filetype = GetFileType(path)
+    Private Function GetFileImg(path As String, Optional filetype As String = "") As String
+        If filetype = "" Then filetype = GetFileType(path)
 
         Select Case filetype
             Case "img"
@@ -1016,7 +1006,7 @@ Class MainWindow
             Case "doc"
                 Return "DocumentFileIcon"
             Case Else
-                Return "NewIcon"
+                Return "BlankIcon"
         End Select
 
     End Function
@@ -1078,8 +1068,14 @@ Class MainWindow
             SelectAllBtn.Visibility = Visibility.Visible
 
         Else
-            StatusLbl.Text = SelectedBtns.Count.ToString() + Funcs.ChooseLang(" items selected.", " élément(s) sélectionné(s).")
+            Dim count = SelectedBtns.Count
             ClearBtn.Visibility = Visibility.Visible
+
+            If count = 1 Then
+                StatusLbl.Text = count.ToString() + Funcs.ChooseLang(" item selected.", " élément sélectionné.")
+            Else
+                StatusLbl.Text = count.ToString() + Funcs.ChooseLang(" items selected.", " éléments sélectionnés.")
+            End If
 
             If SelectedBtns.Count = FileStack.Children.Count Then
                 SelectAllBtn.Visibility = Visibility.Collapsed
@@ -1094,8 +1090,13 @@ Class MainWindow
     End Sub
 
     Private Sub CountItems()
-        CountLbl.Text = FileStack.Children.OfType(Of Button).Where(Function(x) x.Visibility = Visibility.Visible).ToList().Count.ToString() +
-            Funcs.ChooseLang(" item(s)", " élément(s)")
+        Dim count = FileStack.Children.OfType(Of Button).Where(Function(x) x.Visibility = Visibility.Visible).ToList().Count
+
+        If count = 1 Then
+            RefreshBtn.Text = count.ToString() + Funcs.ChooseLang(" item", " élément")
+        Else
+            RefreshBtn.Text = count.ToString() + Funcs.ChooseLang(" items", " éléments")
+        End If
 
     End Sub
 
@@ -1121,7 +1122,7 @@ Class MainWindow
 
     Private Sub AnalysisBtn_Click(sender As Object, e As RoutedEventArgs) Handles AnalysisBtn.Click
         If AnalysisBtn.IsEnabled = False Then Exit Sub
-        GetFolderInfo(True)
+        GetFolderInfo()
         OpenSidePane()
 
     End Sub
@@ -1131,10 +1132,11 @@ Class MainWindow
 
     End Sub
 
-    Private Sub GetFolderInfo(Optional override As Boolean = False)
+    Private Sub GetFolderInfo()
         SideHeaderLbl.Text = Funcs.ChooseLang("Folder analysis", "Analyse de dossier")
         DriveStack.Visibility = Visibility.Collapsed
         FolderStack.Visibility = Visibility.Visible
+        BreakdownStack.Visibility = Visibility.Collapsed
 
         If SelectedBtns.Count = 0 Then
             SubtitleFolderTxt.Visibility = Visibility.Collapsed
@@ -1142,7 +1144,68 @@ Class MainWindow
             SelectionTxt.Visibility = Visibility.Collapsed
             CircleProgress.Visibility = Visibility.Collapsed
 
-            If override = False Then GetDriveInfo()
+            If IncludeFiles And FilterBtn.Text = Funcs.ChooseLang("None", "Aucun") Then
+                Dim extcounts As New Dictionary(Of String, Long) From
+                    {{"img", 0}, {"aud", 0}, {"arc", 0}, {"fnt", 0}, {"cde", 0}, {"vid", 0}, {"doc", 0}, {"oth", 0}}
+
+                For Each i In FileStack.Children.OfType(Of Button)
+                    If i.Tag.Split("/")(0) = "file" Then
+                        Dim ext = GetFileType(i.ToolTip)
+                        If extcounts.ContainsKey(ext) Then
+                            extcounts(ext) += Convert.ToInt64(i.Tag.ToString().Split("/")(1))
+                        Else
+                            extcounts("oth") += Convert.ToInt64(i.Tag.ToString().Split("/")(1))
+                        End If
+                    End If
+                Next
+
+                Dim finalcounts As New Dictionary(Of String, Long) From {}
+                Dim total As Long = 0
+
+                For Each i In extcounts
+                    If i.Value > 0 Then
+                        finalcounts.Add(i.Key, i.Value)
+                        total += i.Value
+                    End If
+                Next
+
+                If finalcounts.Count > 1 Then
+                    Dim items As New List(Of BreakdownItem) From {}
+
+                    For Each i In finalcounts
+                        Dim d As New BreakdownItem()
+
+                        Select Case i.Key
+                            Case "img"
+                                d.Name = "Images"
+                            Case "aud"
+                                d.Name = "Audio"
+                            Case "arc"
+                                d.Name = "Archives"
+                            Case "fnt"
+                                d.Name = Funcs.ChooseLang("Fonts", "Polices")
+                            Case "cde"
+                                d.Name = Funcs.ChooseLang("Code files", "Fichiers de code")
+                            Case "vid"
+                                d.Name = Funcs.ChooseLang("Video", "Vidéo")
+                            Case "doc"
+                                d.Name = "Documents"
+                            Case Else
+                                d.Name = Funcs.ChooseLang("Other files", "Autres fichiers")
+                        End Select
+
+                        d.Size = i.Value
+                        d.Tag = FormatBytes(d.Size)
+                        d.Icon = FindResource(GetFileImg("", i.Key))
+                        items.Add(d)
+                    Next
+
+                    BreakdownItems.ItemsSource = items.OrderBy(Function(o) o.Size).Reverse().ToList()
+                    BreakdownStack.Visibility = Visibility.Visible
+
+                End If
+
+            End If
         Else
             Dim count As Long = 0
             For Each btn In SelectedBtns
@@ -1222,22 +1285,20 @@ Class MainWindow
 
     Private Sub DriveMenuBtn_Click(sender As Object, e As RoutedEventArgs) Handles DriveMenuBtn.Click
         Dim AllDrives() = DriveInfo.GetDrives()
-        DrivePopupPnl.Children.Clear()
+        Dim DriveList As New List(Of DriveItem) From {}
 
         For Each d In AllDrives
-            Dim btn As Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='{DynamicResource BackColor}' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,10,0' Style='{DynamicResource AppButton}' Name='DriveInfoBtn' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><StackPanel Orientation='Horizontal'><ContentControl Content='{DynamicResource " +
-                                                 GetDriveIcon(d.DriveType) + "}' Name='DriveInfoImg' Width='24' Margin='10,0,0,0' /><TextBlock Text='" +
-                                                 Funcs.ChooseLang("Drive ", "Lecteur ") + Funcs.EscapeChars(d.Name) + "' FontSize='14' Padding='10,0,0,0' Name='HomeBtnTxt_Copy242' Height='21.31' Margin='0,0,0,0' HorizontalAlignment='Center' VerticalAlignment='Center' /></StackPanel></Button>")
-            btn.Tag = d.Name
-            AddHandler btn.Click, AddressOf DrivePopupBtns_Click
-            DrivePopupPnl.Children.Add(btn)
+            DriveList.Add(New DriveItem() With {.Name = Funcs.ChooseLang("Drive ", "Lecteur ") + d.Name,
+                                                .Icon = FindResource(GetDriveIcon(d.DriveType)),
+                                                .Tag = d.Name})
         Next
 
-        If DrivePopupPnl.Children.Count = 0 Then
+        If DriveList.Count = 0 Then
             NewMessage(Funcs.ChooseLang("Unable to retrieve drive info. You may not have sufficient access rights.",
                                         "Impossible de récupérer les informations sur les lecteurs. Vous ne disposez peut-être pas de droits d'accès suffisants."),
                        Funcs.ChooseLang("Drive error", "Erreur de lecteur"), MessageBoxButton.OK, MessageBoxImage.Error)
         Else
+            DrivePopupPnl.ItemsSource = DriveList
             DrivePopup.IsOpen = True
         End If
 
@@ -1247,11 +1308,11 @@ Class MainWindow
 
         Select Case d
             Case DriveType.CDRom
-                Return "CDIcon"
+                Return "CdIcon"
             Case DriveType.Network
                 Return "NetworkDriveIcon"
             Case DriveType.Removable
-                Return "USBIcon"
+                Return "UsbIcon"
             Case Else
                 Return "DriveIcon"
         End Select
@@ -1268,8 +1329,7 @@ Class MainWindow
     ' HOME > HIGHLIGHTING
     ' --
 
-    Private Sub HighlightingBtn_Click(sender As Object, e As RoutedEventArgs) Handles HighlightingBtn.Click
-        Funcs.ToggleCheckButton(HighlightingImg)
+    Private Sub HighlightingBtn_Click(sender As Object, e As RoutedEventArgs) Handles HighlightingBtn.Checked, HighlightingBtn.Unchecked
         HighlightItems()
 
     End Sub
@@ -1279,7 +1339,7 @@ Class MainWindow
         For Each i In FileStack.Children.OfType(Of Button)
             Dim grd As Grid = i.FindName("HighlighterGrid")
 
-            If HighlightingImg.Tag = 0 Then
+            If HighlightingBtn.IsChecked = False Then
                 grd.Visibility = Visibility.Hidden
             Else
                 grd.Visibility = Visibility.Visible
@@ -1295,11 +1355,11 @@ Class MainWindow
 
     Private Sub FilesBtn_Click(sender As Object, e As RoutedEventArgs) Handles FilesBtn.Click
 
-        If Funcs.ToggleCheckButton(FilesImg) Then
+        If FilesBtn.IsChecked Then
             IncludeFiles = True
         Else
-            If FoldersImg.Tag = 0 Then
-                Funcs.SetCheckButton(True, FoldersImg)
+            If FoldersBtn.IsChecked = False Then
+                FoldersBtn.IsChecked = True
                 IncludeFiles = False
                 IncludeFolders = True
             Else
@@ -1313,11 +1373,11 @@ Class MainWindow
 
     Private Sub FoldersBtn_Click(sender As Object, e As RoutedEventArgs) Handles FoldersBtn.Click
 
-        If Funcs.ToggleCheckButton(FoldersImg) Then
+        If FoldersBtn.IsChecked Then
             IncludeFolders = True
         Else
-            If FilesImg.Tag = 0 Then
-                Funcs.SetCheckButton(True, FilesImg)
+            If FilesBtn.IsChecked = False Then
+                FilesBtn.IsChecked = True
                 IncludeFiles = True
                 IncludeFolders = False
             Else
@@ -1349,7 +1409,7 @@ Class MainWindow
         FilterFntBtn.Click, FilterImgBtn.Click, FilterVidBtn.Click, FilterNoneBtn.Click
 
         If sender.Tag = "None" Then
-            FilterTxt.Text = Funcs.ChooseLang("None", "Aucun")
+            FilterBtn.Text = Funcs.ChooseLang("None", "Aucun")
             For Each i In FileStack.Children.OfType(Of Button)
                 i.Visibility = Visibility.Visible
             Next
@@ -1366,19 +1426,19 @@ Class MainWindow
 
             Select Case sender.Tag
                 Case "img"
-                    FilterTxt.Text = "Images"
+                    FilterBtn.Text = "Images"
                 Case "aud"
-                    FilterTxt.Text = "Audio"
+                    FilterBtn.Text = "Audio"
                 Case "arc"
-                    FilterTxt.Text = "Archives"
+                    FilterBtn.Text = "Archives"
                 Case "fnt"
-                    FilterTxt.Text = Funcs.ChooseLang("Fonts", "Polices")
+                    FilterBtn.Text = Funcs.ChooseLang("Fonts", "Polices")
                 Case "cde"
-                    FilterTxt.Text = Funcs.ChooseLang("Code files", "Fichier de code")
+                    FilterBtn.Text = Funcs.ChooseLang("Code files", "Fichiers de code")
                 Case "vid"
-                    FilterTxt.Text = Funcs.ChooseLang("Video", "Vidéo")
+                    FilterBtn.Text = Funcs.ChooseLang("Video", "Vidéo")
                 Case "doc"
-                    FilterTxt.Text = "Documents"
+                    FilterBtn.Text = "Documents"
             End Select
         End If
 
@@ -1423,17 +1483,17 @@ Class MainWindow
 
         Select Case Sorter
             Case "az"
-                SortTxt.Text = Funcs.ChooseLang("Name A-Z", "Nom A-Z")
+                SortBtn.Text = Funcs.ChooseLang("Name A-Z", "Nom A-Z")
             Case "za"
-                SortTxt.Text = Funcs.ChooseLang("Name Z-A", "Nom Z-A")
+                SortBtn.Text = Funcs.ChooseLang("Name Z-A", "Nom Z-A")
             Case "sa"
-                SortTxt.Text = Funcs.ChooseLang("Size ascending", "Taille croissante")
+                SortBtn.Text = Funcs.ChooseLang("Size ascending", "Taille croissante")
             Case "sd"
-                SortTxt.Text = Funcs.ChooseLang("Size descending", "Taille décroissante")
+                SortBtn.Text = Funcs.ChooseLang("Size descending", "Taille décroissante")
             Case "nf"
-                SortTxt.Text = Funcs.ChooseLang("Newest first", "Plus récent en premier")
+                SortBtn.Text = Funcs.ChooseLang("Newest first", "Plus récent en premier")
             Case "of"
-                SortTxt.Text = Funcs.ChooseLang("Oldest first", "Moins récent en premier")
+                SortBtn.Text = Funcs.ChooseLang("Oldest first", "Moins récent en premier")
         End Select
 
     End Sub
@@ -1832,16 +1892,16 @@ Class MainWindow
         Help2Btn.Visibility = Visibility.Visible
         Help3Btn.Visibility = Visibility.Visible
 
-        Help1Img.SetResourceReference(ContentProperty, "DriveIcon")
-        Help1Txt.Text = Funcs.ChooseLang("Getting started", "Prise en main")
+        Help1Btn.Icon = FindResource("DriveIcon")
+        Help1Btn.Text = Funcs.ChooseLang("Getting started", "Prise en main")
         Help1Btn.Tag = 1
 
-        Help2Img.SetResourceReference(ContentProperty, "QuotaExpressVariantIcon")
-        Help2Txt.Text = Funcs.ChooseLang("What's new and still to come", "Nouvelles fonctions et autres à venir")
+        Help2Btn.Icon = FindResource("QuotaExpressIcon")
+        Help2Btn.Text = Funcs.ChooseLang("What's new and still to come", "Nouvelles fonctions et autres à venir")
         Help2Btn.Tag = 9
 
-        Help3Img.SetResourceReference(ContentProperty, "FeedbackIcon")
-        Help3Txt.Text = Funcs.ChooseLang("Troubleshooting and feedback", "Dépannage et commentaires")
+        Help3Btn.Icon = FindResource("FeedbackIcon")
+        Help3Btn.Text = Funcs.ChooseLang("Troubleshooting and feedback", "Dépannage et commentaires")
         Help3Btn.Tag = 10
 
     End Sub
@@ -1937,7 +1997,7 @@ Class MainWindow
                 icon = "DriveIcon"
                 title = Funcs.ChooseLang("Analysing your storage", "Analyser votre stockage")
             Case 2
-                icon = "AppearanceIcon"
+                icon = "PaneIcon"
                 title = Funcs.ChooseLang("The View tab", "L'onglet Affichage")
             Case 3
                 icon = "DoughnutIcon"
@@ -1946,7 +2006,7 @@ Class MainWindow
                 icon = "DefaultsIcon"
                 title = Funcs.ChooseLang("Default options", "Paramètres par défaut")
             Case 5
-                icon = "OptionsIcon"
+                icon = "GearsIcon"
                 title = Funcs.ChooseLang("General options", "Paramètres généraux")
             Case 6
                 icon = "StartupIcon"
@@ -1955,10 +2015,10 @@ Class MainWindow
                 icon = "NotificationIcon"
                 title = "Notifications"
             Case 8
-                icon = "KeyboardIcon"
+                icon = "CtrlIcon"
                 title = Funcs.ChooseLang("Keyboard shortcuts", "Raccourcis clavier")
             Case 9
-                icon = "QuotaExpressVariantIcon"
+                icon = "QuotaExpressIcon"
                 title = Funcs.ChooseLang("What's new and still to come", "Nouvelles fonctions et autres à venir")
             Case 10
                 icon = "FeedbackIcon"
@@ -1968,16 +2028,16 @@ Class MainWindow
         Select Case btn
             Case 1
                 Help1Btn.Tag = topic
-                Help1Img.SetResourceReference(ContentProperty, icon)
-                Help1Txt.Text = title
+                Help1Btn.Icon = FindResource(icon)
+                Help1Btn.Text = title
             Case 2
                 Help2Btn.Tag = topic
-                Help2Img.SetResourceReference(ContentProperty, icon)
-                Help2Txt.Text = title
+                Help2Btn.Icon = FindResource(icon)
+                Help2Btn.Text = title
             Case 3
                 Help3Btn.Tag = topic
-                Help3Img.SetResourceReference(ContentProperty, icon)
-                Help3Txt.Text = title
+                Help3Btn.Icon = FindResource(icon)
+                Help3Btn.Text = title
         End Select
 
     End Sub
@@ -2007,4 +2067,17 @@ Class MainWindow
 
     End Sub
 
+End Class
+
+Public Class DriveItem
+    Public Property Name As String
+    Public Property Icon As Object
+    Public Property Tag As String
+End Class
+
+Public Class BreakdownItem
+    Public Property Name As String
+    Public Property Icon As Object
+    Public Property Size As Long
+    Public Property Tag As String
 End Class

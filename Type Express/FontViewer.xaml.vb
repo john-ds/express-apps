@@ -15,12 +15,12 @@
         DisplayTxt.FontFamily = ffcv.ConvertFromString(name)
 
         If My.Settings.favouritefonts.Contains(name) Then
-            FavImg.SetResourceReference(ContentProperty, "FavouriteIcon")
+            FavouriteBtn.Icon = FindResource("FavouriteIcon")
             FavouriteBtn.ToolTip = Funcs.ChooseLang("Remove from favourites", "Supprimer des favoris")
 
         End If
 
-        If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then BoldImg.SetResourceReference(ContentProperty, "GrasIcon")
+        If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then BoldBtn.Icon = FindResource("GrasIcon")
 
     End Sub
 
@@ -69,14 +69,14 @@
             My.Settings.favouritefonts.Remove(FontNameTxt.Text)
             My.Settings.Save()
 
-            FavImg.SetResourceReference(ContentProperty, "AddFavouriteIcon")
+            FavouriteBtn.Icon = FindResource("AddFavouriteIcon")
             FavouriteBtn.ToolTip = Funcs.ChooseLang("Add to favourites", "Ajouter aux favoris")
 
         Else
             My.Settings.favouritefonts.Add(FontNameTxt.Text)
             My.Settings.Save()
 
-            FavImg.SetResourceReference(ContentProperty, "FavouriteIcon")
+            FavouriteBtn.Icon = FindResource("FavouriteIcon")
             FavouriteBtn.ToolTip = Funcs.ChooseLang("Remove from favourites", "Supprimer des favoris")
 
         End If
@@ -87,7 +87,7 @@
 
     Private Sub SizeSlider_ValueChanged(sender As Slider, e As RoutedPropertyChangedEventArgs(Of Double)) Handles SizeSlider.ValueChanged
         Try
-            DisplayTxt.FontSize = SizeSlider.Value
+            If IsLoaded Then DisplayTxt.FontSize = SizeSlider.Value
         Catch
         End Try
 

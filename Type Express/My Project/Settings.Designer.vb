@@ -14,7 +14,7 @@ Option Explicit On
 
 
 <Global.System.Runtime.CompilerServices.CompilerGeneratedAttribute(),  _
- Global.System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.4.0.0"),  _
+ Global.System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "16.10.0.0"),  _
  Global.System.ComponentModel.EditorBrowsableAttribute(Global.System.ComponentModel.EditorBrowsableState.Advanced)>  _
 Partial Friend NotInheritable Class MySettings
     Inherits Global.System.Configuration.ApplicationSettingsBase
@@ -503,6 +503,81 @@ Partial Friend NotInheritable Class MySettings
         End Get
         Set
             Me("autodarkto") = value
+        End Set
+    End Property
+    
+    <Global.System.Configuration.UserScopedSettingAttribute(),  _
+     Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+     Global.System.Configuration.DefaultSettingValueAttribute("<?xml version=""1.0"" encoding=""utf-16""?>"&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10)&"<ArrayOfString xmlns:xsi=""http://www.w3."& _ 
+        "org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" />")>  _
+    Public Property savedcharts() As Global.System.Collections.Specialized.StringCollection
+        Get
+            Return CType(Me("savedcharts"),Global.System.Collections.Specialized.StringCollection)
+        End Get
+        Set
+            Me("savedcharts") = value
+        End Set
+    End Property
+    
+    <Global.System.Configuration.UserScopedSettingAttribute(),  _
+     Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+     Global.System.Configuration.DefaultSettingValueAttribute("True")>  _
+    Public Property savecharts() As Boolean
+        Get
+            Return CType(Me("savecharts"),Boolean)
+        End Get
+        Set
+            Me("savecharts") = value
+        End Set
+    End Property
+    
+    <Global.System.Configuration.UserScopedSettingAttribute(),  _
+     Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+     Global.System.Configuration.DefaultSettingValueAttribute("<?xml version=""1.0"" encoding=""utf-16""?>"&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10)&"<ArrayOfString xmlns:xsi=""http://www.w3."& _ 
+        "org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" />")>  _
+    Public Property savedshapes() As Global.System.Collections.Specialized.StringCollection
+        Get
+            Return CType(Me("savedshapes"),Global.System.Collections.Specialized.StringCollection)
+        End Get
+        Set
+            Me("savedshapes") = value
+        End Set
+    End Property
+    
+    <Global.System.Configuration.UserScopedSettingAttribute(),  _
+     Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+     Global.System.Configuration.DefaultSettingValueAttribute("True")>  _
+    Public Property saveshapes() As Boolean
+        Get
+            Return CType(Me("saveshapes"),Boolean)
+        End Get
+        Set
+            Me("saveshapes") = value
+        End Set
+    End Property
+    
+    <Global.System.Configuration.UserScopedSettingAttribute(),  _
+     Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+     Global.System.Configuration.DefaultSettingValueAttribute("<?xml version=""1.0"" encoding=""utf-16""?>"&Global.Microsoft.VisualBasic.ChrW(13)&Global.Microsoft.VisualBasic.ChrW(10)&"<ArrayOfString xmlns:xsi=""http://www.w3."& _ 
+        "org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"" />")>  _
+    Public Property savedfonts() As Global.System.Collections.Specialized.StringCollection
+        Get
+            Return CType(Me("savedfonts"),Global.System.Collections.Specialized.StringCollection)
+        End Get
+        Set
+            Me("savedfonts") = value
+        End Set
+    End Property
+    
+    <Global.System.Configuration.UserScopedSettingAttribute(),  _
+     Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+     Global.System.Configuration.DefaultSettingValueAttribute("True")>  _
+    Public Property savefonts() As Boolean
+        Get
+            Return CType(Me("savefonts"),Boolean)
+        End Get
+        Set
+            Me("savefonts") = value
         End Set
     End Property
 End Class

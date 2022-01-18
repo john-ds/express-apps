@@ -8,11 +8,79 @@
         InitializeComponent()
 
         ' Add any initialization after the InitializeComponent() call.
+        SetDefaults()
+        Chart1.Series.Item(0).Points.Add(1.0, 0).AxisLabel = Funcs.ChooseLang("Add some data", "Ajouter des données")
+        Chart1.Palette = Forms.DataVisualization.Charting.ChartColorPalette.BrightPastel
+
+    End Sub
+
+    Public Sub New(data As List(Of KeyValuePair(Of String, Double)), charttype As Forms.DataVisualization.Charting.SeriesChartType, values As Boolean,
+                   theme As Forms.DataVisualization.Charting.ChartColorPalette, Optional xlabel As String = "",
+                   Optional ylabel As String = "", Optional title As String = "")
+
+        ' This call is required by the designer.
+        InitializeComponent()
+
+        ' Add any initialization after the InitializeComponent() call.
+        SetDefaults()
+
+        Chart1.Series.Item(0).Points.Clear()
+        For Each pair In data
+            Chart1.Series.Item(0).Points.Add(pair.Value, 0).AxisLabel = pair.Key
+        Next
+
+        Chart1.Series.Item(0).ChartType = charttype
+        Select Case charttype
+            Case Forms.DataVisualization.Charting.SeriesChartType.Column
+                DoughnutPanel.Visibility = Visibility.Collapsed
+                AxisPanel.Visibility = Visibility.Visible
+                ChartSelect.Margin = New Thickness(0, 5, 0, 0)
+
+            Case Forms.DataVisualization.Charting.SeriesChartType.Bar
+                DoughnutPanel.Visibility = Visibility.Collapsed
+                AxisPanel.Visibility = Visibility.Visible
+                ChartSelect.Margin = New Thickness(41, 5, 0, 0)
+
+            Case Forms.DataVisualization.Charting.SeriesChartType.Line
+                DoughnutPanel.Visibility = Visibility.Collapsed
+                AxisPanel.Visibility = Visibility.Visible
+                ChartSelect.Margin = New Thickness(82, 5, 0, 0)
+
+            Case Forms.DataVisualization.Charting.SeriesChartType.Pie
+                DoughnutPanel.Visibility = Visibility.Visible
+                AxisPanel.Visibility = Visibility.Collapsed
+                DoughnutCheckBox.IsChecked = False
+                ChartSelect.Margin = New Thickness(123, 5, 0, 0)
+
+            Case Forms.DataVisualization.Charting.SeriesChartType.Doughnut
+                DoughnutPanel.Visibility = Visibility.Visible
+                AxisPanel.Visibility = Visibility.Collapsed
+                DoughnutCheckBox.IsChecked = True
+                ChartSelect.Margin = New Thickness(123, 5, 0, 0)
+
+        End Select
+
+        Chart1.Series.Item(0).IsValueShownAsLabel = values
+        ValueCheckBox.IsChecked = values
+
+        Chart1.Palette = theme
+        Chart1.ChartAreas.Item(0).AxisX.Title = xlabel
+        Chart1.ChartAreas.Item(0).AxisY.Title = ylabel
+        XAxisTxt.Text = xlabel
+        YAxisTxt.Text = ylabel
+
+        If Not title = "" Then
+            Chart1.Titles.Add(title)
+            Chart1.Titles.Item(0).Font = New System.Drawing.Font("Segoe UI", 12, System.Drawing.FontStyle.Bold)
+            TitleTxt.Text = title
+        End If
+
+    End Sub
+
+    Private Sub SetDefaults()
         MaxHeight = SystemParameters.WorkArea.Height + 13
         MaxWidth = SystemParameters.WorkArea.Width + 13
         AddHandler SystemParameters.StaticPropertyChanged, AddressOf WorkAreaChanged
-
-        Chart1.Series.Item(0).Points.Add(1.0, 0).AxisLabel = Funcs.ChooseLang("Add some data", "Ajouter des données")
 
         Chart1.Series.Item(0).Font = New System.Drawing.Font("Segoe UI", 10, System.Drawing.FontStyle.Bold)
         Chart1.Series.Item(0).LabelBackColor = System.Drawing.Color.White
@@ -23,7 +91,7 @@
         Chart1.ChartAreas.Item(0).AxisX.LabelStyle.Font = New System.Drawing.Font("Segoe UI", 10, System.Drawing.FontStyle.Bold)
         Chart1.ChartAreas.Item(0).AxisY.LabelStyle.Font = New System.Drawing.Font("Segoe UI", 10, System.Drawing.FontStyle.Bold)
 
-        Chart1.Palette = Forms.DataVisualization.Charting.ChartColorPalette.BrightPastel
+        Chart1.Series.Item(0).BorderWidth = 3
 
     End Sub
 
@@ -80,17 +148,45 @@
     End Sub
 
     Private Sub AddBtn_Click(sender As Object, e As RoutedEventArgs) Handles AddBtn.Click
-        Dim ChartBmp As System.Drawing.Bitmap =
-            New System.Drawing.Bitmap(Convert.ToInt32(Chart1.Size.Width * SizeSlider.Value), Convert.ToInt32(Chart1.Size.Height * SizeSlider.Value))
-
-        Dim ChartBounds As System.Drawing.Rectangle =
-            New System.Drawing.Rectangle(0, 0, Convert.ToInt32(Chart1.Size.Width * SizeSlider.Value), Convert.ToInt32(Chart1.Size.Height * SizeSlider.Value))
+        Dim ChartBmp As New System.Drawing.Bitmap(Convert.ToInt32(Chart1.Size.Width * SizeSlider.Value), Convert.ToInt32(Chart1.Size.Height * SizeSlider.Value))
+        Dim ChartBounds As New System.Drawing.Rectangle(0, 0, Convert.ToInt32(Chart1.Size.Width * SizeSlider.Value), Convert.ToInt32(Chart1.Size.Height * SizeSlider.Value))
 
         Dim NewChart As Forms.DataVisualization.Charting.Chart = Chart1
         NewChart.Size = New System.Drawing.Size(Convert.ToInt32(Chart1.Size.Width * SizeSlider.Value), Convert.ToInt32(Chart1.Size.Height * SizeSlider.Value))
 
         NewChart.DrawToBitmap(ChartBmp, ChartBounds)
         ChartToAdd = ChartBmp
+
+        ' My.Settings format
+        ' charttype>values>theme>title>xlabel>ylabel>data[label>val>label>val>...]
+
+        If My.Settings.savecharts Then
+            Dim prevaddedstr As String = ""
+
+            prevaddedstr += Chart1.Series.Item(0).ChartType.ToString()
+            prevaddedstr += ">" + Chart1.Series.Item(0).IsValueShownAsLabel.ToString()
+            prevaddedstr += ">" + Chart1.Palette.ToString()
+
+            If Chart1.Titles.Count > 0 Then
+                prevaddedstr += ">" + Funcs.EscapeChars(Chart1.Titles.Item(0).Text)
+            Else
+                prevaddedstr += ">"
+            End If
+
+            prevaddedstr += ">" + Chart1.ChartAreas.Item(0).AxisX.Title
+            prevaddedstr += ">" + Chart1.ChartAreas.Item(0).AxisY.Title
+
+            For Each pt In Chart1.Series.Item(0).Points
+                prevaddedstr += ">" + Funcs.EscapeChars(pt.AxisLabel) + ">" + pt.YValues()(0).ToString(Globalization.CultureInfo.InvariantCulture)
+            Next
+
+            If Not My.Settings.savedcharts.Contains(prevaddedstr) Then
+                If My.Settings.savedcharts.Count >= 25 Then My.Settings.savedcharts.RemoveAt(0)
+                My.Settings.savedcharts.Add(prevaddedstr)
+
+            End If
+
+        End If
 
         DialogResult = True
         Close()
@@ -106,7 +202,7 @@
         AxisPanel.Visibility = Visibility.Visible
 
         Chart1.Series.Item(0).ChartType = Forms.DataVisualization.Charting.SeriesChartType.Column
-        ChartSelect.Margin = New Thickness(0, 0, 0, 0)
+        ChartSelect.Margin = New Thickness(0, 5, 0, 0)
 
     End Sub
 
@@ -115,7 +211,7 @@
         AxisPanel.Visibility = Visibility.Visible
 
         Chart1.Series.Item(0).ChartType = Forms.DataVisualization.Charting.SeriesChartType.Bar
-        ChartSelect.Margin = New Thickness(36, 0, 0, 0)
+        ChartSelect.Margin = New Thickness(41, 5, 0, 0)
 
     End Sub
 
@@ -124,7 +220,7 @@
         AxisPanel.Visibility = Visibility.Visible
 
         Chart1.Series.Item(0).ChartType = Forms.DataVisualization.Charting.SeriesChartType.Line
-        ChartSelect.Margin = New Thickness(72, 0, 0, 0)
+        ChartSelect.Margin = New Thickness(82, 5, 0, 0)
 
     End Sub
 
@@ -132,7 +228,7 @@
         DoughnutPanel.Visibility = Visibility.Visible
         AxisPanel.Visibility = Visibility.Collapsed
 
-        If Funcs.GetCheckValue(DoughnutImg) Then
+        If DoughnutCheckBox.IsChecked Then
             Chart1.Series.Item(0).ChartType = Forms.DataVisualization.Charting.SeriesChartType.Doughnut
 
         Else
@@ -140,7 +236,7 @@
 
         End If
 
-        ChartSelect.Margin = New Thickness(108, 0, 0, 0)
+        ChartSelect.Margin = New Thickness(123, 5, 0, 0)
 
     End Sub
 
@@ -168,7 +264,7 @@
     End Sub
 
     Private Sub ValueCheckBox_Click(sender As Object, e As RoutedEventArgs) Handles ValueCheckBox.Click
-        Chart1.Series.Item(0).IsValueShownAsLabel = Funcs.ToggleCheckButton(ValueImg)
+        Chart1.Series.Item(0).IsValueShownAsLabel = ValueCheckBox.IsChecked
 
     End Sub
 
@@ -218,7 +314,7 @@
 
     Private Sub DoughnutCheckBox_Click(sender As Object, e As RoutedEventArgs) Handles DoughnutCheckBox.Click
 
-        If Funcs.ToggleCheckButton(DoughnutImg) Then
+        If DoughnutCheckBox.IsChecked Then
             Chart1.Series.Item(0).ChartType = Forms.DataVisualization.Charting.SeriesChartType.Doughnut
 
         Else

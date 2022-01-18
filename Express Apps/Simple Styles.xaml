@@ -749,13 +749,21 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ContextMenu}">
-                    <Border x:Name="Border" BorderThickness="1" Background="{DynamicResource BackColor}">
-                        <Border.BorderBrush>
-                            <SolidColorBrush Color="#FFABADB3" />
-                        </Border.BorderBrush>
-                        <StackPanel IsItemsHost="True"
-                      KeyboardNavigation.DirectionalNavigation="Cycle" />
-                    </Border>
+                    <Grid>
+                        <Border Margin="10" CornerRadius="5" Background="{DynamicResource BackColor}">
+                            <Border.Effect>
+                                <DropShadowEffect Direction="90" Color="#FFC3C3C3" Opacity="0.2" BlurRadius="10" ShadowDepth="2"/>
+                            </Border.Effect>
+                            <Border CornerRadius="5" Background="{DynamicResource BackColor}">
+                                <Border.Effect>
+                                    <DropShadowEffect Direction="270" Color="#FFC3C3C3" Opacity="0.2" BlurRadius="10" ShadowDepth="2"/>
+                                </Border.Effect>
+                            </Border>
+                        </Border>
+                        <Border x:Name="Border" Margin="10" CornerRadius="5" Background="{DynamicResource BackColor}">
+                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle" Margin="0,5"/>
+                        </Border>
+                    </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="HasDropShadow"
                    Value="true">
@@ -982,11 +990,11 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Thumb}">
                     <Grid>
-                        <Ellipse x:Name="Ellipse" Fill="{DynamicResource NormalBrush}" Stroke="{DynamicResource NormalBorderBrush}" StrokeThickness="1"/>
+                        <Ellipse x:Name="Ellipse" Fill="{DynamicResource AppColor}" StrokeThickness="0"/>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Fill" Value="{DynamicResource MouseOverBrush}" TargetName="Ellipse"/>
+                            <Setter Property="Fill" Value="{DynamicResource AppLightColor}" TargetName="Ellipse"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="false">
                             <Setter Property="Fill" Value="{DynamicResource DisabledBackgroundBrush}" TargetName="Ellipse"/>
@@ -1001,8 +1009,9 @@
     Similiar to ScrollBar this template uses Track to layout the draggable Thumb which has an up and down repeat button
     It uses Simple SliderThumb and SimpleScrollRepeatButtonStyle for the page up and down repeat buttons -->
     <Style x:Key="SimpleSlider" TargetType="{x:Type Slider}">
-        <Setter Property="Background" Value="{DynamicResource LightBrush}"/>
+        <Setter Property="Background" Value="#FFABADB3"/>
         <Setter Property="BorderBrush" Value="{DynamicResource NormalBorderBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TertiaryColor}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Slider}">

@@ -2,25 +2,41 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Viewbox x:Key="AppWhiteIcon" x:Shared="False" Stretch="Uniform">
-        <Canvas Name="svg8133" Width="173.8528" Height="174.12006">
+        <Canvas Width="91.544998" Height="91.545462">
             <Canvas.RenderTransform>
                 <TranslateTransform X="0" Y="0"/>
             </Canvas.RenderTransform>
-            <Canvas.Resources/>
-            <!--Unknown tag: sodipodi:namedview-->
-            <!--Unknown tag: metadata-->
-            <Canvas Name="laye3r11">
+            <Canvas.Resources>
+                <LinearGradientBrush xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Key="linearGradient1802" MappingMode="Absolute" StartPoint="-48,107" EndPoint="26,179">
+                    <LinearGradientBrush.GradientStops>
+                        <GradientStopCollection>
+                            <GradientStop Color="#FF2FC304" Offset="0"/>
+                            <GradientStop Color="#FF279F04" Offset="1"/>
+                        </GradientStopCollection>
+                    </LinearGradientBrush.GradientStops>
+                </LinearGradientBrush>
+            </Canvas.Resources>
+            <Canvas>
                 <Canvas.RenderTransform>
-                    <TranslateTransform X="-13.073601" Y="-109.93997"/>
+                    <TranslateTransform X="59.135975" Y="-97.732384"/>
                 </Canvas.RenderTransform>
-                <Rectangle xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Canvas.Left="13.073601" Canvas.Top="109.93997" Width="173.8528" Height="174.12006" RadiusX="30" RadiusY="30" Name="rect7835" Fill="#FFFFFFFF" StrokeThickness="7.25871181" StrokeMiterLimit="4" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
-                <Canvas Name="flo3wRoot9060" Opacity="1">
+                <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Fill="#FFCCCACB" StrokeThickness="0.486" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+                    <Path.Data>
+                        <PathGeometry Figures="m -47.246346 97.732384 h 67.765733 c 6.586854 0 11.889629 5.302776 11.889629 11.889626 v 67.76621 c 0 6.58685 -5.302775 11.88963 -11.889629 11.88963 h -67.765733 c -6.586855 0 -11.889629 -5.30278 -11.889629 -11.88963 v -67.76621 c 0 -6.58685 5.302774 -11.889626 11.889629 -11.889626 z" FillRule="EvenOdd"/>
+                    </Path.Data>
+                </Path>
+                <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Fill="White" StrokeThickness="0.486" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+                    <Path.Data>
+                        <PathGeometry Figures="m -47.550699 97.732384 h 68.374454 c 6.418239 0 11.585268 5.167026 11.585268 11.585266 v 66.03148 c 0 6.41824 -5.167029 11.58526 -11.585268 11.58526 h -68.374454 c -6.418239 0 -11.585268 -5.16702 -11.585268 -11.58526 v -66.03148 c 0 -6.41824 5.167029 -11.585266 11.585268 -11.585266 z" FillRule="EvenOdd"/>
+                    </Path.Data>
+                </Path>
+                <Canvas Opacity="1">
                     <Canvas.RenderTransform>
-                        <MatrixTransform Matrix="2.8058737 0 0 3.1135115 -413.75913 -417.60453"/>
+                        <ScaleTransform ScaleX="0.99950314" ScaleY="1.0004971"/>
                     </Canvas.RenderTransform>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path8627" Fill="#FF45B740">
+                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Fill="{StaticResource linearGradient1802}" StrokeThickness="0.264583">
                         <Path.Data>
-                            <PathGeometry Figures="m 195.98684 189.57123 h -9.08203 v 23.45704 h -7.5 v -23.45704 h -9.08203 v -5.625 h 25.66406 z" FillRule="NonZero"/>
+                            <PathGeometry Figures="M 8.6187486 125.34225 H -7.9192492 v 44.9789 H -19.043463 v -44.9789 h -16.315514 v -9.01062 H 8.6187486 Z" FillRule="NonZero"/>
                         </Path.Data>
                     </Path>
                 </Canvas>

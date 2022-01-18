@@ -161,7 +161,7 @@ Public Class Pictures
     Private PageTotal As Long = 1L
 
     Private Function GetPics(query As String) As Boolean
-        Dim client As Net.WebClient = New Net.WebClient()
+        Dim client As New Net.WebClient()
 
         ' GET 12 PHOTOS A PAGE
 
@@ -179,8 +179,8 @@ Public Class Pictures
         Try
             If CurrentPage = 1 Then dict = New Dictionary(Of String, Dictionary(Of String, String))
 
-            Using reader As StreamReader = New StreamReader(client.OpenRead("https://api.unsplash.com/search/photos?page=" + CurrentPage.ToString() +
-                                                                            "&per_page=20&query=" + query + "&client_id=" + ClientID), Text.Encoding.UTF8)
+            Using reader As New StreamReader(client.OpenRead("https://api.unsplash.com/search/photos?page=" + CurrentPage.ToString() +
+                                                             "&per_page=20&query=" + query + "&client_id=" + ClientID), Text.Encoding.UTF8)
                 If PictureWorker.CancellationPending Then Return False
 
                 Dim info As String = reader.ReadToEnd()
@@ -392,8 +392,8 @@ Public Class Pictures
                     webc.DownloadStringAsync(New Uri("https://api.unsplash.com/photos/" + SelectedPhoto + "/download?client_id=" + ClientID))
                 End Using
 
-                If AttrImg.Tag = 1 Then Credit = Funcs.ChooseLang("Photo by ", "Image par ") + dict(SelectedPhoto)("username") +
-                                                 Funcs.ChooseLang(" on", " sur") + " Unsplash"
+                If AttrBtn.IsChecked Then Credit = Funcs.ChooseLang("Photo by ", "Image par ") + dict(SelectedPhoto)("username") +
+                                                   Funcs.ChooseLang(" on", " sur") + " Unsplash"
 
                 DialogResult = True
                 Close()
@@ -415,43 +415,21 @@ Public Class Pictures
 
     Private ImageSize As String = "regular"
 
-    Private Sub SizeBtns_Click(sender As Button, e As RoutedEventArgs) Handles LargeBtn.Click, RegularBtn.Click, SmallBtn.Click, CustomBtn.Click
-        LargeImg.Visibility = Visibility.Hidden
-        RegularImg.Visibility = Visibility.Hidden
-        SmallImg.Visibility = Visibility.Hidden
-        CustomImg.Visibility = Visibility.Hidden
+    Private Sub SizeBtns_Click(sender As ExpressControls.AppRadioButton, e As RoutedEventArgs) Handles LargeBtn.Click, RegularBtn.Click, SmallBtn.Click, CustomBtn.Click
         CustomTxt.IsEnabled = False
 
         Select Case sender.Name
             Case "LargeBtn"
-                LargeImg.Visibility = Visibility.Visible
                 ImageSize = "large"
             Case "RegularBtn"
-                RegularImg.Visibility = Visibility.Visible
                 ImageSize = "regular"
             Case "SmallBtn"
-                SmallImg.Visibility = Visibility.Visible
                 ImageSize = "small"
             Case "CustomBtn"
-                CustomImg.Visibility = Visibility.Visible
                 ImageSize = CustomTxt.Text
                 CustomTxt.IsEnabled = True
                 CustomTxt.Focus()
         End Select
-
-    End Sub
-
-    Private Sub AttrBtn_Click(sender As Object, e As RoutedEventArgs) Handles AttrBtn.Click
-
-        If AttrImg.Tag = 0 Then
-            AttrImg.SetResourceReference(ContentProperty, "TickIcon")
-            AttrImg.Tag = 1
-
-        Else
-            AttrImg.SetResourceReference(ContentProperty, "UntickIcon")
-            AttrImg.Tag = 0
-
-        End If
 
     End Sub
 

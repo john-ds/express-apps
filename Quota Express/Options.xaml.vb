@@ -48,66 +48,66 @@ Public Class Options
         ' Add any initialization after the InitializeComponent() call.
         AddHandler TempLblTimer.Elapsed, AddressOf TempLblTimer_Tick
 
-        Funcs.SetCheckButton(My.Settings.percentagebars, PercentageImg)
+        PercentageBtn.IsChecked = My.Settings.percentagebars
 
         Select Case My.Settings.defaultsort
             Case "az"
-                SortTxt.Text = Funcs.ChooseLang("Name A-Z", "Nom A-Z")
+                SortBtn.Text = Funcs.ChooseLang("Name A-Z", "Nom A-Z")
             Case "za"
-                SortTxt.Text = Funcs.ChooseLang("Name Z-A", "Nom Z-A")
+                SortBtn.Text = Funcs.ChooseLang("Name Z-A", "Nom Z-A")
             Case "sa"
-                SortTxt.Text = Funcs.ChooseLang("Size ascending", "Taille croissante")
+                SortBtn.Text = Funcs.ChooseLang("Size ascending", "Taille croissante")
             Case "sd"
-                SortTxt.Text = Funcs.ChooseLang("Size descending", "Taille décroissante")
+                SortBtn.Text = Funcs.ChooseLang("Size descending", "Taille décroissante")
             Case "nf"
-                SortTxt.Text = Funcs.ChooseLang("Newest first", "Plus récent en premier")
+                SortBtn.Text = Funcs.ChooseLang("Newest first", "Plus récent en premier")
             Case "of"
-                SortTxt.Text = Funcs.ChooseLang("Oldest first", "Moins récent en premier")
+                SortBtn.Text = Funcs.ChooseLang("Oldest first", "Moins récent en premier")
         End Select
 
         Select Case My.Settings.chclrscheme
             Case 0
-                ClrSchemeTxt.Text = Funcs.ChooseLang("Basic", "Basique")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Basic", "Basique")
             Case 1
-                ClrSchemeTxt.Text = Funcs.ChooseLang("Berry", "Baie")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Berry", "Baie")
             Case 2
-                ClrSchemeTxt.Text = Funcs.ChooseLang("Chocolate", "Chocolat")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Chocolate", "Chocolat")
             Case 3
-                ClrSchemeTxt.Text = Funcs.ChooseLang("Earth", "Terre")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Earth", "Terre")
             Case 4
-                ClrSchemeTxt.Text = Funcs.ChooseLang("Fire", "Feu")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Fire", "Feu")
             Case 5
-                ClrSchemeTxt.Text = Funcs.ChooseLang("Grayscale", "Échelle de Gris")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Grayscale", "Échelle de Gris")
             Case 6
-                ClrSchemeTxt.Text = Funcs.ChooseLang("Light", "Clair")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Light", "Clair")
             Case 7
-                ClrSchemeTxt.Text = Funcs.ChooseLang("Pastel", "Pastels")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Pastel", "Pastels")
             Case 8
-                ClrSchemeTxt.Text = Funcs.ChooseLang("Sea Green", "Vert")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Sea Green", "Vert")
             Case 9
-                ClrSchemeTxt.Text = "Semi-transparent"
+                ClrSchemeBtn.Text = "Semi-transparent"
         End Select
 
         If My.Settings.language = "fr-FR" Then
-            Funcs.SetRadioBtns(FrenchRadio1Img, New List(Of ContentControl) From {EnglishRadio1Img})
+            FrenchRadio1.IsChecked = True
         Else
-            Funcs.SetRadioBtns(EnglishRadio1Img, New List(Of ContentControl) From {FrenchRadio1Img})
+            EnglishRadio1.IsChecked = True
         End If
 
-        Funcs.SetCheckButton(My.Settings.audio, SoundImg)
+        SoundBtn.IsChecked = My.Settings.audio
 
-        Funcs.SetCheckButton(My.Settings.darkmode, DarkModeImg)
-        Funcs.SetCheckButton(My.Settings.autodarkmode, AutoDarkModeImg)
+        DarkModeBtn.IsChecked = My.Settings.darkmode
+        AutoDarkModeBtn.IsChecked = My.Settings.autodarkmode
 
         If My.Settings.autodarkmode Then
             DarkModeBtn.Visibility = Visibility.Collapsed
             AutoDarkPnl.Visibility = Visibility.Visible
         End If
 
-        Dark1Lbl.Text = My.Settings.autodarkfrom
-        Dark2Lbl.Text = My.Settings.autodarkto
+        Dark1Combo.Text = My.Settings.autodarkfrom
+        Dark2Combo.Text = My.Settings.autodarkto
 
-        Funcs.SetCheckButton(My.Settings.notificationcheck, NotificationImg)
+        NotificationBtn.IsChecked = My.Settings.notificationcheck
 
         If My.Settings.startupfolder = "" Then
             StartupLocationTxt.Text = "Documents"
@@ -145,7 +145,7 @@ Public Class Options
 
     Private Sub TempLblTimer_Tick(sender As Object, e As EventArgs)
 
-        Dim deli As mydelegate = New mydelegate(AddressOf ResetStatusLbl)
+        Dim deli As New mydelegate(AddressOf ResetStatusLbl)
         SavedTxt.Dispatcher.BeginInvoke(Threading.DispatcherPriority.Normal, deli)
         TempLblTimer.Stop()
 
@@ -190,7 +190,7 @@ Public Class Options
 
 
     Private Sub PercentageBtn_Click(sender As Object, e As RoutedEventArgs) Handles PercentageBtn.Click
-        My.Settings.percentagebars = Funcs.ToggleCheckButton(PercentageImg)
+        My.Settings.percentagebars = PercentageBtn.IsChecked
         SaveAll()
 
     End Sub
@@ -208,17 +208,17 @@ Public Class Options
 
         Select Case My.Settings.defaultsort
             Case "az"
-                SortTxt.Text = Funcs.ChooseLang("Name A-Z", "Nom A-Z")
+                SortBtn.Text = Funcs.ChooseLang("Name A-Z", "Nom A-Z")
             Case "za"
-                SortTxt.Text = Funcs.ChooseLang("Name Z-A", "Nom Z-A")
+                SortBtn.Text = Funcs.ChooseLang("Name Z-A", "Nom Z-A")
             Case "sa"
-                SortTxt.Text = Funcs.ChooseLang("Size ascending", "Taille croissante")
+                SortBtn.Text = Funcs.ChooseLang("Size ascending", "Taille croissante")
             Case "sd"
-                SortTxt.Text = Funcs.ChooseLang("Size descending", "Taille décroissante")
+                SortBtn.Text = Funcs.ChooseLang("Size descending", "Taille décroissante")
             Case "nf"
-                SortTxt.Text = Funcs.ChooseLang("Newest first", "Plus récent en premier")
+                SortBtn.Text = Funcs.ChooseLang("Newest first", "Plus récent en premier")
             Case "of"
-                SortTxt.Text = Funcs.ChooseLang("Oldest first", "Moins récent en premier")
+                SortBtn.Text = Funcs.ChooseLang("Oldest first", "Moins récent en premier")
         End Select
 
         SaveAll()
@@ -238,25 +238,25 @@ Public Class Options
 
         Select Case My.Settings.chclrscheme
             Case 0
-                ClrSchemeTxt.Text = Funcs.ChooseLang("Basic", "Basique")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Basic", "Basique")
             Case 1
-                ClrSchemeTxt.Text = Funcs.ChooseLang("Berry", "Baie")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Berry", "Baie")
             Case 2
-                ClrSchemeTxt.Text = Funcs.ChooseLang("Chocolate", "Chocolat")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Chocolate", "Chocolat")
             Case 3
-                ClrSchemeTxt.Text = Funcs.ChooseLang("Earth", "Terre")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Earth", "Terre")
             Case 4
-                ClrSchemeTxt.Text = Funcs.ChooseLang("Fire", "Feu")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Fire", "Feu")
             Case 5
-                ClrSchemeTxt.Text = Funcs.ChooseLang("Grayscale", "Échelle de Gris")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Grayscale", "Échelle de Gris")
             Case 6
-                ClrSchemeTxt.Text = Funcs.ChooseLang("Light", "Clair")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Light", "Clair")
             Case 7
-                ClrSchemeTxt.Text = Funcs.ChooseLang("Pastel", "Pastels")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Pastel", "Pastels")
             Case 8
-                ClrSchemeTxt.Text = Funcs.ChooseLang("Sea Green", "Vert")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Sea Green", "Vert")
             Case 9
-                ClrSchemeTxt.Text = "Semi-transparent"
+                ClrSchemeBtn.Text = "Semi-transparent"
         End Select
 
         SaveAll()
@@ -268,7 +268,7 @@ Public Class Options
     ' GENERAL > INTERFACE
     ' --
 
-    Private Sub InterfaceRadios_Click(sender As Button, e As RoutedEventArgs) Handles EnglishRadio1.Click, FrenchRadio1.Click
+    Private Sub InterfaceRadios_Click(sender As ExpressControls.AppRadioButton, e As RoutedEventArgs) Handles EnglishRadio1.Click, FrenchRadio1.Click
 
         If (sender.Name = "EnglishRadio1" And Not My.Settings.language = "en-GB") Or (sender.Name = "FrenchRadio1" And Not My.Settings.language = "fr-FR") Then
             If MainWindow.NewMessage(Funcs.ChooseLang("Changing the interface language requires an application restart. Do you wish to continue?",
@@ -277,13 +277,9 @@ Public Class Options
                                      MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
                 If sender.Name = "EnglishRadio1" Then
-                    Funcs.SetRadioBtns(EnglishRadio1Img, New List(Of ContentControl) From {FrenchRadio1Img})
                     My.Settings.language = "en-GB"
-
                 Else
-                    Funcs.SetRadioBtns(FrenchRadio1Img, New List(Of ContentControl) From {EnglishRadio1Img})
                     My.Settings.language = "fr-FR"
-
                 End If
 
                 SaveAll()
@@ -291,6 +287,12 @@ Public Class Options
                 Forms.Application.Restart()
                 Windows.Application.Current.Shutdown()
 
+            Else
+                If sender.Name = "EnglishRadio1" Then
+                    FrenchRadio1.IsChecked = True
+                Else
+                    EnglishRadio1.IsChecked = True
+                End If
             End If
         End If
 
@@ -301,9 +303,7 @@ Public Class Options
     ' --
 
     Private Sub SoundBtn_Click(sender As Object, e As RoutedEventArgs) Handles SoundBtn.Click
-        Funcs.ToggleCheckButton(SoundImg)
-
-        If SoundImg.Tag = 0 Then My.Settings.audio = False Else My.Settings.audio = True
+        My.Settings.audio = SoundBtn.IsChecked
         SaveAll()
 
     End Sub
@@ -313,13 +313,7 @@ Public Class Options
     ' --
 
     Private Sub DarkModeBtn_Click(sender As Object, e As RoutedEventArgs) Handles DarkModeBtn.Click
-        Funcs.ToggleCheckButton(DarkModeImg)
-
-        If DarkModeImg.Tag = 0 Then
-            My.Settings.darkmode = False
-        Else
-            My.Settings.darkmode = True
-        End If
+        My.Settings.darkmode = DarkModeBtn.IsChecked
 
         If My.Settings.autodarkmode = False Then SetDarkMode(My.Settings.darkmode)
         SaveAll()
@@ -327,9 +321,8 @@ Public Class Options
     End Sub
 
     Private Sub AutoDarkModeBtn_Click(sender As Object, e As RoutedEventArgs) Handles AutoDarkModeBtn.Click
-        Funcs.ToggleCheckButton(AutoDarkModeImg)
 
-        If AutoDarkModeImg.Tag = 0 Then
+        If AutoDarkModeBtn.IsChecked = False Then
             My.Settings.autodarkmode = False
             Application.AutoDarkTimer.Stop()
 
@@ -363,14 +356,11 @@ Public Class Options
 
     End Sub
 
-    Private Sub DarkFromBtns_Click(sender As Button, e As RoutedEventArgs) Handles Dark16Btn.Click, Dark162Btn.Click, Dark17Btn.Click, Dark172Btn.Click,
+    Private Sub DarkFromBtns_Click(sender As ExpressControls.AppButton, e As RoutedEventArgs) Handles Dark16Btn.Click, Dark162Btn.Click, Dark17Btn.Click, Dark172Btn.Click,
         Dark18Btn.Click, Dark182Btn.Click, Dark19Btn.Click, Dark192Btn.Click, Dark20Btn.Click, Dark202Btn.Click, Dark21Btn.Click, Dark212Btn.Click, Dark22Btn.Click
 
-        Dim dp As StackPanel = sender.Content
-        For Each txt As TextBlock In dp.Children.OfType(Of TextBlock)
-            My.Settings.autodarkfrom = txt.Text
-            Dark1Lbl.Text = txt.Text
-        Next
+        My.Settings.autodarkfrom = sender.Text
+        Dark1Combo.Text = sender.Text
 
         SaveAll()
         DarkFromPopup.IsOpen = False
@@ -379,14 +369,11 @@ Public Class Options
 
     End Sub
 
-    Private Sub DarkToBtns_Click(sender As Button, e As RoutedEventArgs) Handles Dark4Btn.Click, Dark42Btn.Click, Dark5Btn.Click, Dark52Btn.Click, Dark6Btn.Click,
-        Dark62Btn.Click, Dark7Btn.Click, Dark72Btn.Click, Dark8Btn.Click, Dark82Btn.Click, Dark9Btn.Click, Dark92Btn.Click, Dark10Btn.Click
+    Private Sub DarkToBtns_Click(sender As ExpressControls.AppButton, e As RoutedEventArgs) Handles Dark4Btn.Click, Dark42Btn.Click, Dark5Btn.Click, Dark52Btn.Click,
+        Dark6Btn.Click, Dark62Btn.Click, Dark7Btn.Click, Dark72Btn.Click, Dark8Btn.Click, Dark82Btn.Click, Dark9Btn.Click, Dark92Btn.Click, Dark10Btn.Click
 
-        Dim dp As StackPanel = sender.Content
-        For Each txt As TextBlock In dp.Children.OfType(Of TextBlock)
-            My.Settings.autodarkto = txt.Text
-            Dark2Lbl.Text = txt.Text
-        Next
+        My.Settings.autodarkto = sender.Text
+        Dark2Combo.Text = sender.Text
 
         SaveAll()
         DarkToPopup.IsOpen = False
@@ -447,16 +434,7 @@ Public Class Options
     ' --
 
     Private Sub NotificationBtn_Click(sender As Object, e As RoutedEventArgs) Handles NotificationBtn.Click
-        Funcs.ToggleCheckButton(NotificationImg)
-
-        If NotificationImg.Tag = 0 Then
-            My.Settings.notificationcheck = False
-
-        Else
-            My.Settings.notificationcheck = True
-
-        End If
-
+        My.Settings.notificationcheck = NotificationBtn.IsChecked
         SaveAll()
 
     End Sub

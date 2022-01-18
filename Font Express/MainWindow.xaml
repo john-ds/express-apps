@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Font_Express"
+        xmlns:ex="clr-namespace:ExpressControls;assembly=ExpressControls"
         mc:Ignorable="d"
         Title="Font Express" Background="{DynamicResource BackColor}" Height="620" Width="880" WindowStartupLocation="CenterScreen" MinWidth="520" MinHeight="350" WindowStyle="None">
     <Window.Resources>
@@ -63,21 +64,21 @@
         </Storyboard>
         <Storyboard x:Key="HomeMnStoryboard">
             <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="DocTabSelector">
-                <EasingThicknessKeyFrame KeyTime="0:0:0.1" Value="65,0,0,0"/>
+                <EasingThicknessKeyFrame KeyTime="0:0:0.1" Value="87,0,0,0"/>
             </ThicknessAnimationUsingKeyFrames>
         </Storyboard>
         <Storyboard x:Key="FilterMnStoryboard">
             <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="DocTabSelector">
-                <EasingThicknessKeyFrame KeyTime="0:0:0.1" Value="153,0,0,0"/>
+                <EasingThicknessKeyFrame KeyTime="0:0:0.1" Value="169,0,0,0"/>
             </ThicknessAnimationUsingKeyFrames>
         </Storyboard>
         <Storyboard x:Key="CategoryMnStoryboard">
             <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="DocTabSelector">
-                <EasingThicknessKeyFrame KeyTime="0:0:0.1" Value="241,0,0,0"/>
+                <EasingThicknessKeyFrame KeyTime="0:0:0.1" Value="251,0,0,0"/>
             </ThicknessAnimationUsingKeyFrames>
         </Storyboard>
 
-        <Storyboard x:Key="FontHoverOut">
+        <!--<Storyboard x:Key="FontHoverOut">
             <ThicknessAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Margin)" Storyboard.TargetName="MenuIcon">
                 <EasingThicknessKeyFrame KeyTime="0:0:0.1" Value="4,9,0,0"/>
             </ThicknessAnimationUsingKeyFrames>
@@ -92,7 +93,7 @@
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.Opacity)" Storyboard.TargetName="rect835">
                 <EasingDoubleKeyFrame KeyTime="0:0:0.1" Value="0"/>
             </DoubleAnimationUsingKeyFrames>
-        </Storyboard>
+        </Storyboard>-->
         <Storyboard x:Key="LoaderStartStoryboard">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="LoadingGrid">
                 <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
@@ -139,44 +140,34 @@
                     <ScrollViewer x:Name="Scroller" Margin="0" HorizontalScrollBarVisibility="Disabled">
                         <StackPanel x:Name="RecentGrid" ScrollViewer.HorizontalScrollBarVisibility="Visible" Background="{DynamicResource BackColor}" Margin="0">
                             <WrapPanel x:Name="FontGrid" Margin="30" ItemWidth="235" ItemHeight="175" VerticalAlignment="Top">
-                                <DockPanel x:Name="FontView" Height="160" Width="220" Background="{DynamicResource BackColor}" UseLayoutRounding="True">
-                                    <Border CornerRadius="15" Background="{DynamicResource BackColor}">
-                                        <Border.Effect>
-                                            <DropShadowEffect Direction="270" Color="Gray" Opacity="0.1" BlurRadius="10"/>
-                                        </Border.Effect>
-                                        <DockPanel>
-                                            <TextBlock x:Name="FontNameTxt" VerticalAlignment="Top" TextTrimming="CharacterEllipsis" FontSize="14" Margin="5,7,5,8" DockPanel.Dock="Bottom" Text="Name of font" HorizontalAlignment="Center"/>
-                                            <Rectangle DockPanel.Dock="Bottom" Height="2" Fill="{DynamicResource AppColor}"/>
-                                            <DockPanel x:Name="OptionsPnl" DockPanel.Dock="Bottom">
-                                                <Button x:Name="ExpandBtn" HorizontalAlignment="Right" Height="25" Margin="0" Style="{DynamicResource AppButton}" VerticalAlignment="Top" Width="25" Background="{DynamicResource BackColor}" FontSize="14" DockPanel.Dock="Right" ToolTip="Expand" BorderThickness="0">
-                                                    <ContentControl Width="16" Content="{DynamicResource ExpandIcon}" Height="16"/>
-                                                </Button>
-                                                <Button x:Name="CopyBtn" HorizontalAlignment="Right" Height="25" Margin="0" Style="{DynamicResource AppButton}" VerticalAlignment="Top" Width="25" Background="{DynamicResource BackColor}" FontSize="14" DockPanel.Dock="Right" ToolTip="Copy font name" BorderThickness="0">
-                                                    <ContentControl Width="16" Content="{DynamicResource CopyIcon}" Height="16"/>
-                                                </Button>
-                                                <Button x:Name="FavouriteBtn" HorizontalAlignment="Right" Height="25" Margin="0" Style="{DynamicResource AppButton}" VerticalAlignment="Top" Width="25" Background="{DynamicResource BackColor}" FontSize="14" DockPanel.Dock="Right" ToolTip="Add to category" BorderThickness="0">
-                                                    <ContentControl Width="16" Content="{DynamicResource CategoryIcon}" Height="16"/>
-                                                </Button>
-                                                <Button x:Name="ItalicBtn" HorizontalAlignment="Right" Height="25" Margin="0" Style="{DynamicResource AppButton}" VerticalAlignment="Top" Width="25" Background="{DynamicResource BackColor}" FontSize="14" DockPanel.Dock="Right" ToolTip="Italic" BorderThickness="0">
-                                                    <ContentControl Width="16" Content="{DynamicResource ItalicIcon}" Height="16"/>
-                                                </Button>
-                                                <Button x:Name="BoldBtn" HorizontalAlignment="Right" Height="25" Margin="0" Style="{DynamicResource AppButton}" VerticalAlignment="Top" Width="25" Background="{DynamicResource BackColor}" FontSize="14" DockPanel.Dock="Right" ToolTip="Bold" BorderThickness="0">
-                                                    <ContentControl Width="16" Content="{DynamicResource BoldIcon}" Height="16"/>
-                                                </Button>
-                                                <Slider x:Name="SizeSlider" IsSnapToTickEnabled="True" Minimum="10" Maximum="70" SmallChange="1" Value="22" Margin="5,2,5,0" LargeChange="10"/>
+                                <Grid x:Name="FontView" Height="175" Width="235" Background="{DynamicResource BackColor}" UseLayoutRounding="True">
+                                    <ContentControl Content="{StaticResource PopupShadow}" Focusable="False"/>
+                                    <Border Margin="10" CornerRadius="5" Background="{DynamicResource BackColor}">
+                                        <ex:ClippedBorder CornerRadius="5">
+                                            <DockPanel>
+                                                <TextBlock x:Name="FontNameTxt" VerticalAlignment="Top" TextTrimming="CharacterEllipsis" FontSize="14" Margin="5,7,5,8" DockPanel.Dock="Bottom" Text="Name of font" HorizontalAlignment="Center"/>
+                                                <Rectangle DockPanel.Dock="Bottom" Height="2" Fill="{DynamicResource AppColor}"/>
+                                                <DockPanel x:Name="OptionsPnl" DockPanel.Dock="Bottom">
+                                                    <ex:AppButton x:Name="ExpandBtn" TextVisibility="Collapsed" Background="Transparent" GapMargin="0" IconSize="16" Icon="{DynamicResource ExpandIcon}" CornerRadius="0" NoShadow="True" Margin="0" VerticalAlignment="Top" DockPanel.Dock="Right" HorizontalContentAlignment="Stretch" Height="25" Padding="4,0"/>
+                                                    <ex:AppButton x:Name="CopyBtn" TextVisibility="Collapsed" Background="Transparent" GapMargin="0" IconSize="16" Icon="{DynamicResource CopyIcon}" CornerRadius="0" NoShadow="True" Margin="0" VerticalAlignment="Top" DockPanel.Dock="Right" HorizontalContentAlignment="Stretch" Height="25" Padding="4,0"/>
+                                                    <ex:AppButton x:Name="FavouriteBtn" TextVisibility="Collapsed" Background="Transparent" GapMargin="0" IconSize="16" Icon="{DynamicResource CategoryIcon}" CornerRadius="0" NoShadow="True" Margin="0" VerticalAlignment="Top" DockPanel.Dock="Right" HorizontalContentAlignment="Stretch" Height="25" Padding="4,0"/>
+                                                    <ex:AppButton x:Name="ItalicBtn" TextVisibility="Collapsed" Background="Transparent" GapMargin="0" IconSize="16" Icon="{DynamicResource ItalicIcon}" CornerRadius="0" NoShadow="True" Margin="0" VerticalAlignment="Top" DockPanel.Dock="Right" HorizontalContentAlignment="Stretch" Height="25" Padding="4,0"/>
+                                                    <ex:AppButton x:Name="BoldBtn" TextVisibility="Collapsed" Background="Transparent" GapMargin="0" IconSize="16" Icon="{DynamicResource BoldIcon}" CornerRadius="0" NoShadow="True" Margin="0" VerticalAlignment="Top" DockPanel.Dock="Right" HorizontalContentAlignment="Stretch" Height="25" Padding="4,0"/>
+                                                    <Slider x:Name="SizeSlider" Style="{StaticResource SimpleSlider}" IsSnapToTickEnabled="True" Minimum="10" Maximum="70" SmallChange="1" Value="20" Margin="5,2,5,0" LargeChange="10" VerticalAlignment="Center"/>
+                                                </DockPanel>
+                                                <TextBlock x:Name="DisplayTxt" Margin="10,10,10,5" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" Text="The quick brown fox jumps over the lazy dog" DockPanel.Dock="Top" FontSize="20" FontFamily="Roboto"/>
                                             </DockPanel>
-                                            <TextBlock x:Name="DisplayTxt" Margin="10,10,10,5" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" Text="The quick brown fox jumps over the lazy dog" DockPanel.Dock="Top" FontSize="22" FontFamily="Roboto"/>
-                                        </DockPanel>
+                                        </ex:ClippedBorder>
                                     </Border>
-                                </DockPanel>
+                                </Grid>
                             </WrapPanel>
-                            <Button x:Name="LoadMoreBtn" Content="{DynamicResource LoadMoreStr}" HorizontalAlignment="Center" Height="31" Margin="0,0,0,20" Style="{DynamicResource AppRoundedButton}" VerticalAlignment="Center" Width="149" Background="{DynamicResource BackColor}" FontSize="14" DockPanel.Dock="Top" Visibility="Collapsed"/>
+                            <ex:AppButton x:Name="LoadMoreBtn" FontWeight="SemiBold" LastChildFill="True" IconVisibility="Collapsed" GapMargin="0" Text="{DynamicResource LoadMoreStr}" Margin="0,0,0,20" VerticalAlignment="Top" Height="32" HorizontalContentAlignment="Stretch" DockPanel.Dock="Top" HorizontalAlignment="Center" Width="150" Visibility="Collapsed"/>
                         </StackPanel>
                     </ScrollViewer>
                     <Grid x:Name="LoadingGrid" Background="{DynamicResource BackColor}" Visibility="Collapsed">
                         <DockPanel MaxHeight="400" Margin="0,50">
                             <TextBlock Text="{DynamicResource LoaderSubtitleStr}" HorizontalAlignment="Center" FontFamily="Segoe UI" FontSize="14" VerticalAlignment="Center" Margin="0,5,0,0" DockPanel.Dock="Bottom"/>
-                            <TextBlock Text="{DynamicResource LoadingStr}" HorizontalAlignment="Center" FontFamily="Segoe UI Light" FontSize="24" VerticalAlignment="Center" Margin="0" DockPanel.Dock="Bottom"/>
+                            <TextBlock Text="{DynamicResource LoadingStr}" HorizontalAlignment="Center" FontFamily="Segoe UI Semibold" FontSize="24" VerticalAlignment="Center" Margin="0" DockPanel.Dock="Bottom"/>
                             <Viewbox>
                                 <ContentControl Content="{DynamicResource FontLoaderVector}"/>
                             </Viewbox>
@@ -191,7 +182,7 @@
                     </TabControl.Effect>
                     <TabItem x:Name="HomeTab" Header="TabItem" Focusable="False">
                         <Grid x:Name="grid2" Background="{DynamicResource SecondaryColor}">
-                            <ScrollViewer x:Name="HomeScrollViewer" Margin="60,0,40,0" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
+                            <ScrollViewer x:Name="HomeScrollViewer" Margin="0,0,58,0" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
                                 <ScrollViewer.Resources>
                                     <Style TargetType="{x:Type ScrollBar}">
                                         <Style.Triggers>
@@ -202,71 +193,39 @@
                                         </Style.Triggers>
                                     </Style>
                                 </ScrollViewer.Resources>
-                                <StackPanel x:Name="HomePnl" Margin="12,0,0,0" Background="{DynamicResource SecondaryColor}" Orientation="Horizontal" CanHorizontallyScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" HorizontalAlignment="Left">
-                                    <Button x:Name="AllBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Margin="0,4,0,0" ToolTip="{DynamicResource AllToolStr}">
-                                        <StackPanel Orientation="Horizontal" Height="36">
-                                            <TextBlock x:Name="FavouritesBtnTxt" HorizontalAlignment="Center" FontSize="14" Margin="0,7.69,5,7" Height="21.31" Text="{DynamicResource FnAllStr}" Padding="5,0,0,0"/>
-                                        </StackPanel>
-                                    </Button>
-                                    <Button x:Name="FavBtn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0,4,0,0" Height="42" ToolTip="{DynamicResource FavToolStr}">
-                                        <StackPanel Orientation="Horizontal" Height="36">
-                                            <ContentControl x:Name="FavBtnImg" Content="{DynamicResource FavouriteIcon}" Width="20" HorizontalAlignment="Left" Margin="5,0" Height="24" />
-                                            <TextBlock x:Name="HomeBtnTxt_Copy122" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" Margin="0,7.69,5,7" Height="21.31" Text="{DynamicResource FavouriteStr}" Padding="5,0,0,0"/>
-                                        </StackPanel>
-                                    </Button>
-                                    <Button x:Name="CompareBtn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0,4,0,0" Height="42" ToolTip="{DynamicResource CompareToolStr}">
-                                        <StackPanel Orientation="Horizontal" Height="36">
-                                            <ContentControl x:Name="CompareBtnImg" Content="{DynamicResource TitleCaseIcon}" Width="24" HorizontalAlignment="Left" Margin="3,0" Height="24" />
-                                            <TextBlock x:Name="HomeBtnTxt_Copy12" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" Margin="0,7.69,5,7" Height="21.31" Text="{DynamicResource CompareStr}" Padding="5,0,0,0"/>
-                                        </StackPanel>
-                                    </Button>
-                                    <Separator Margin="0,24,0,19" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Center" VerticalAlignment="Center" Width="20">
-                                        <Separator.RenderTransform>
-                                            <TransformGroup>
-                                                <ScaleTransform/>
-                                                <SkewTransform/>
-                                                <RotateTransform Angle="90"/>
-                                                <TranslateTransform/>
-                                            </TransformGroup>
-                                        </Separator.RenderTransform>
-                                    </Separator>
-                                    <TextBox x:Name="SearchTxt" Margin="0,12,5,8" Text="{DynamicResource FnSearchStr}" Width="115" UseLayoutRounding="False" VerticalContentAlignment="Center" UndoLimit="0" Foreground="#FF818181" Tag="{DynamicResource FnSearchStr}" Background="{DynamicResource BackColor}" DockPanel.Dock="Right" Template="{DynamicResource RoundedTextBox}">
+                                <StackPanel x:Name="HomePnl" Margin="12,4,2,0" Background="{DynamicResource SecondaryColor}" Orientation="Horizontal" CanHorizontallyScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" HorizontalAlignment="Left">
+                                    <ex:MenuButton x:Name="AllBtn" Text="{DynamicResource FnAllStr}" Icon="{DynamicResource EditorIcon}" ToolTip="{DynamicResource AllToolStr}"/>
+                                    <ex:MenuButton x:Name="FavBtn" Text="{DynamicResource FavouriteStr}" Icon="{DynamicResource FavouriteIcon}" ToolTip="{DynamicResource FavToolStr}"/>
+                                    <ex:MenuButton x:Name="CompareBtn" Text="{DynamicResource CompareStr}" Icon="{DynamicResource TitleCaseIcon}" ToolTip="{DynamicResource CompareToolStr}"/>
+                                    <Separator Style="{StaticResource VerticalSeparator}"/>
+                                    <TextBox x:Name="SearchTxt" Margin="6,0,5,0" Text="{DynamicResource FnSearchStr}" Width="115" UseLayoutRounding="False" VerticalAlignment="Center" UndoLimit="0" Foreground="#FF818181" Tag="{DynamicResource FnSearchStr}" Padding="0,4" Background="{DynamicResource BackColor}" DockPanel.Dock="Right" Template="{DynamicResource RoundedTextBox}">
                                         <TextBox.ContextMenu>
                                             <ContextMenu Visibility="Collapsed"/>
                                         </TextBox.ContextMenu>
                                     </TextBox>
-                                    <Button x:Name="SearchBtn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0,4,0,0" Height="42" ToolTip="{DynamicResource FnSearchStr}">
-                                        <StackPanel Orientation="Horizontal" Height="36">
-                                            <ContentControl x:Name="TemplateSharchBtnImg" Content="{DynamicResource SearchIcon}" Width="20" HorizontalAlignment="Left" Margin="5,0" Height="24" />
-                                        </StackPanel>
-                                    </Button>
-                                    <Button x:Name="ExitSearchBtn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0,4,0,0" Height="42" ToolTip="{DynamicResource FnExitSearchStr}" Visibility="Collapsed">
-                                        <StackPanel Orientation="Horizontal" Height="36">
-                                            <ContentControl x:Name="TemplateShearchBtnImg1" Content="{DynamicResource CrossIcon}" Width="20" HorizontalAlignment="Left" Margin="5,0" Height="24" />
-                                        </StackPanel>
-                                    </Button>
+                                    <ex:MenuButton x:Name="SearchBtn" TextVisibility="Collapsed" Icon="{DynamicResource SearchIcon}" ToolTip="{DynamicResource FnSearchStr}"/>
+                                    <ex:MenuButton x:Name="ExitSearchBtn" TextVisibility="Collapsed" Icon="{DynamicResource CrossIcon}" ToolTip="{DynamicResource FnExitSearchStr}"  Visibility="Collapsed"/>
                                 </StackPanel>
                             </ScrollViewer>
                             <Grid x:Name="HomeScroll" HorizontalAlignment="Right" Background="{DynamicResource SecondaryColor}">
-                                <Grid.Effect>
-                                    <DropShadowEffect Direction="180" Color="#FFA0A0A0" ShadowDepth="2" Opacity="0.2"/>
-                                </Grid.Effect>
-                                <Button x:Name="HomeLeftBtn" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Right" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" DockPanel.Dock="Right" Style="{DynamicResource AppButton}" Margin="0,0,20,0" Width="20">
-                                    <StackPanel Orientation="Horizontal">
-                                        <ContentControl x:Name="HelpBtnImg475" Content="{DynamicResource LeftIcon}" Margin="0" Height="24" Width="20" />
-                                    </StackPanel>
-                                </Button>
-                                <Button x:Name="HomeRightBtn" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Right" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0" Width="20">
-                                    <StackPanel Orientation="Horizontal">
-                                        <ContentControl x:Name="HelpBtnImg35" Content="{DynamicResource RightIcon}" Margin="0" Height="24" Width="20" />
-                                    </StackPanel>
-                                </Button>
+                                <StackPanel Orientation="Horizontal" Margin="5,4,5,0">
+                                    <ex:MenuButton x:Name="HomeLeftBtn" Background="{DynamicResource SecondaryColor}" IsRSquared="True" TextVisibility="Collapsed" Icon="{DynamicResource LeftIcon}" Padding="0">
+                                        <ex:MenuButton.Effect>
+                                            <DropShadowEffect Direction="180" Color="#FFA0A0A0" ShadowDepth="2" Opacity="0.2"/>
+                                        </ex:MenuButton.Effect>
+                                    </ex:MenuButton>
+                                    <ex:MenuButton x:Name="HomeRightBtn" Background="{DynamicResource SecondaryColor}" IsLSquared="True" TextVisibility="Collapsed" Icon="{DynamicResource RightIcon}" Padding="0">
+                                        <ex:MenuButton.Effect>
+                                            <DropShadowEffect Direction="0" Color="#FFA0A0A0" ShadowDepth="2" Opacity="0.2"/>
+                                        </ex:MenuButton.Effect>
+                                    </ex:MenuButton>
+                                </StackPanel>
                             </Grid>
                         </Grid>
                     </TabItem>
                     <TabItem x:Name="FilterTab" Header="TabItem" Focusable="False">
                         <Grid Background="{DynamicResource SecondaryColor}">
-                            <ScrollViewer x:Name="FilterScrollViewer" Margin="60,0,40,0" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
+                            <ScrollViewer x:Name="FilterScrollViewer" Margin="0,0,58,0" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
                                 <ScrollViewer.Resources>
                                     <Style TargetType="{x:Type ScrollBar}">
                                         <Style.Triggers>
@@ -277,166 +236,55 @@
                                         </Style.Triggers>
                                     </Style>
                                 </ScrollViewer.Resources>
-                                <StackPanel x:Name="FilterPnl" Margin="12,0,0,0" Background="{DynamicResource SecondaryColor}" Orientation="Horizontal" CanHorizontallyScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" HorizontalAlignment="Left">
-                                    <Button x:Name="ABtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="a" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt2" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="A"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="BBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="b" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt1" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="B"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="CBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="c" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt3" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="C"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="DBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="d" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt4" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="D"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="EBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="e" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt5" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="E"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="FBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="f" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt6" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="F"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="GBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="g" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt7" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="G"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="HBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="h" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt8" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="H"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="IBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="i" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt9" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="I"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="JBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="j" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt10" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="J"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="KBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="k" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt11" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="K"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="LBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="l" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt12" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="L"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="MBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="m" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt13" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="M"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="NBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="n" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt14" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="N"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="OBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="o" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt15" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="O"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="PBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="p" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt16" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="P"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="QBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="q" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt17" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="Q"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="RBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="r" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt18" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="R"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="SBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="s" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt19" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="S"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="TBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="t" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt20" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="T"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="UBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="u" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt21" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="U"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="VBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="v" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt22" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="V"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="WBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="w" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt23" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="W"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="XBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="x" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt24" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="X"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="YBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="y" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt25" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="Y"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="ZBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Tag="z" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt26" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="Z"/>
-                                        </Grid>
-                                    </Button>
-                                    <Button x:Name="OtherBtn" Foreground="{DynamicResource TextColor}" Height="42" Width="Auto" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderThickness="0" Style="{DynamicResource AppButton}" BorderBrush="{DynamicResource BackColor}" Margin="0,4,0,0">
-                                        <Grid>
-                                            <TextBlock x:Name="FavouritesBtnTxt27" HorizontalAlignment="Center" FontSize="16" Margin="10,0,10,2" Text="123&amp;"/>
-                                        </Grid>
-                                    </Button>
-
+                                <StackPanel x:Name="FilterPnl" Margin="12,4,2,0" Background="{DynamicResource SecondaryColor}" Orientation="Horizontal" CanHorizontallyScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" HorizontalAlignment="Left">
+                                    <ex:AppButton x:Name="ABtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="A" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="BBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="B" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="CBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="C" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="DBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="D" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="EBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="E" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="FBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="F" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="GBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="G" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="HBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="H" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="IBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="I" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="JBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="J" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="KBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="K" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="LBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="L" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="MBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="M" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="NBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="N" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="OBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="O" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="PBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="P" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="QBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="Q" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="RBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="R" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="SBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="S" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="TBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="T" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="UBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="U" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="VBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="V" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="WBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="W" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="XBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="X" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="YBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="Y" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="ZBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="Z" GapMargin="0" Padding="8,0" Height="32"/>
+                                    <ex:AppButton x:Name="OtherBtn" IconVisibility="Collapsed" NoShadow="True" Background="Transparent" Text="123&amp;" GapMargin="0" Padding="8,0" Height="32"/>
                                 </StackPanel>
-
                             </ScrollViewer>
                             <Grid x:Name="FilterScroll" HorizontalAlignment="Right" Background="{DynamicResource SecondaryColor}">
-                                <Grid.Effect>
-                                    <DropShadowEffect Direction="180" Color="#FFA0A0A0" ShadowDepth="2" Opacity="0.2"/>
-                                </Grid.Effect>
-                                <Button x:Name="FilterLeftBtn" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Right" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" DockPanel.Dock="Right" Style="{DynamicResource AppButton}" Margin="0,0,20,0" Width="20">
-                                    <StackPanel Orientation="Horizontal">
-                                        <ContentControl Content="{DynamicResource LeftIcon}" Margin="0" Height="24" Width="20" />
-                                    </StackPanel>
-                                </Button>
-                                <Button x:Name="FilterRightBtn" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Right" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0" Width="20">
-                                    <StackPanel Orientation="Horizontal">
-                                        <ContentControl Content="{DynamicResource RightIcon}" Margin="0" Height="24" Width="20" />
-                                    </StackPanel>
-                                </Button>
+                                <StackPanel Orientation="Horizontal" Margin="5,4,5,0">
+                                    <ex:MenuButton x:Name="FilterLeftBtn" Background="{DynamicResource SecondaryColor}" IsRSquared="True" TextVisibility="Collapsed" Icon="{DynamicResource LeftIcon}" Padding="0">
+                                        <ex:MenuButton.Effect>
+                                            <DropShadowEffect Direction="180" Color="#FFA0A0A0" ShadowDepth="2" Opacity="0.2"/>
+                                        </ex:MenuButton.Effect>
+                                    </ex:MenuButton>
+                                    <ex:MenuButton x:Name="FilterRightBtn" Background="{DynamicResource SecondaryColor}" IsLSquared="True" TextVisibility="Collapsed" Icon="{DynamicResource RightIcon}" Padding="0">
+                                        <ex:MenuButton.Effect>
+                                            <DropShadowEffect Direction="0" Color="#FFA0A0A0" ShadowDepth="2" Opacity="0.2"/>
+                                        </ex:MenuButton.Effect>
+                                    </ex:MenuButton>
+                                </StackPanel>
                             </Grid>
                         </Grid>
                     </TabItem>
                     <TabItem x:Name="CategoryTab" Header="TabItem" Focusable="False">
                         <Grid Background="{DynamicResource SecondaryColor}">
-                            <ScrollViewer x:Name="CategoryScrollViewer" Margin="60,0,40,0" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
+                            <ScrollViewer x:Name="CategoryScrollViewer" Margin="0,0,58,0" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
                                 <ScrollViewer.Resources>
                                     <Style TargetType="{x:Type ScrollBar}">
                                         <Style.Triggers>
@@ -447,13 +295,8 @@
                                         </Style.Triggers>
                                     </Style>
                                 </ScrollViewer.Resources>
-                                <StackPanel x:Name="CategoryPnl" Margin="12,0,0,0" Background="{DynamicResource SecondaryColor}" Orientation="Horizontal" CanHorizontallyScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" HorizontalAlignment="Left">
-                                    <Button x:Name="FavCategoryBtn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0,4,0,0" Height="42" ToolTip="{DynamicResource FavToolStr}">
-                                        <StackPanel Orientation="Horizontal" Height="36">
-                                            <ContentControl x:Name="FavCategoryBtnImg" Content="{DynamicResource FavouriteIcon}" Width="20" HorizontalAlignment="Left" Margin="5,0" Height="24" />
-                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" Margin="0,7.69,5,7" Height="21.31" Text="{DynamicResource FavouriteStr}" Padding="5,0,0,0"/>
-                                        </StackPanel>
-                                    </Button>
+                                <StackPanel x:Name="CategoryPnl" Margin="12,4,2,0" Background="{DynamicResource SecondaryColor}" Orientation="Horizontal" CanHorizontallyScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" HorizontalAlignment="Left">
+                                    <ex:MenuButton x:Name="FavCategoryBtn" Text="{DynamicResource FavouriteStr}" Icon="{DynamicResource FavouriteIcon}" ToolTip="{DynamicResource FavToolStr}"/>
                                     <StackPanel Orientation="Horizontal">
                                         <Button x:Name="CatSampleBtn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0,4,0,0" Height="42" Visibility="Collapsed">
                                             <Button.ContextMenu>
@@ -468,39 +311,24 @@
                                             </StackPanel>
                                         </Button>
                                     </StackPanel>
-                                    <Separator Margin="0,24,0,19" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Center" VerticalAlignment="Center" Width="20">
-                                        <Separator.RenderTransform>
-                                            <TransformGroup>
-                                                <ScaleTransform/>
-                                                <SkewTransform/>
-                                                <RotateTransform Angle="90"/>
-                                                <TranslateTransform/>
-                                            </TransformGroup>
-                                        </Separator.RenderTransform>
-                                    </Separator>
+                                    <Separator Style="{StaticResource VerticalSeparator}"/>
                                     <StackPanel x:Name="CategoriesPnl" Orientation="Horizontal"/>
-                                    <Button x:Name="AddCategoryBtn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0,4,0,0" Height="42">
-                                        <StackPanel Orientation="Horizontal" Height="36">
-                                            <ContentControl x:Name="AddCategoryBtnImg" Content="{DynamicResource PlusIcon}" Width="20" HorizontalAlignment="Left" Margin="5,0" Height="24" />
-                                            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" Margin="0,7.69,5,7" Height="21.31" Text="{DynamicResource AddCatStr}" Padding="5,0,0,0"/>
-                                        </StackPanel>
-                                    </Button>
+                                    <ex:MenuButton x:Name="AddCategoryBtn" Text="{DynamicResource AddCatStr}" Icon="{DynamicResource PlusIcon}"/>
                                 </StackPanel>
                             </ScrollViewer>
                             <Grid x:Name="CategoryScroll" HorizontalAlignment="Right" Background="{DynamicResource SecondaryColor}">
-                                <Grid.Effect>
-                                    <DropShadowEffect Direction="180" Color="#FFA0A0A0" ShadowDepth="2" Opacity="0.2"/>
-                                </Grid.Effect>
-                                <Button x:Name="CategoryLeftBtn" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Right" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" DockPanel.Dock="Right" Style="{DynamicResource AppButton}" Margin="0,0,20,0" Width="20">
-                                    <StackPanel Orientation="Horizontal">
-                                        <ContentControl Content="{DynamicResource LeftIcon}" Margin="0" Height="24" Width="20" />
-                                    </StackPanel>
-                                </Button>
-                                <Button x:Name="CategoryRightBtn" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Right" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0" Width="20">
-                                    <StackPanel Orientation="Horizontal">
-                                        <ContentControl Content="{DynamicResource RightIcon}" Margin="0" Height="24" Width="20" />
-                                    </StackPanel>
-                                </Button>
+                                <StackPanel Orientation="Horizontal" Margin="5,4,5,0">
+                                    <ex:MenuButton x:Name="CategoryLeftBtn" Background="{DynamicResource SecondaryColor}" IsRSquared="True" TextVisibility="Collapsed" Icon="{DynamicResource LeftIcon}" Padding="0">
+                                        <ex:MenuButton.Effect>
+                                            <DropShadowEffect Direction="180" Color="#FFA0A0A0" ShadowDepth="2" Opacity="0.2"/>
+                                        </ex:MenuButton.Effect>
+                                    </ex:MenuButton>
+                                    <ex:MenuButton x:Name="CategoryRightBtn" Background="{DynamicResource SecondaryColor}" IsLSquared="True" TextVisibility="Collapsed" Icon="{DynamicResource RightIcon}" Padding="0">
+                                        <ex:MenuButton.Effect>
+                                            <DropShadowEffect Direction="0" Color="#FFA0A0A0" ShadowDepth="2" Opacity="0.2"/>
+                                        </ex:MenuButton.Effect>
+                                    </ex:MenuButton>
+                                </StackPanel>
                             </Grid>
                         </Grid>
                     </TabItem>
@@ -508,32 +336,17 @@
                 </TabControl>
 
                 <DockPanel Margin="0" DockPanel.Dock="Bottom" Height="28" Background="{DynamicResource SecondaryColor}" VerticalAlignment="Bottom">
-                    <Button x:Name="TopBtn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Right" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" DockPanel.Dock="Right" Style="{DynamicResource AppButton}" Margin="0">
-                        <DockPanel Height="28">
-                            <ContentControl x:Name="HelpBtnImg123" Content="{DynamicResource UpIcon}" Width="16" HorizontalAlignment="Center" Margin="10,0,0,0" Height="24" />
-                            <TextBlock Text="{DynamicResource FnTopStr}" Margin="5,0,10,0" VerticalAlignment="Center"/>
-                        </DockPanel>
-                    </Button>
-                    <Button x:Name="NotificationsBtn" Width="30" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Right" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" ToolTip="{DynamicResource NotificationStr}">
-                        <StackPanel Orientation="Horizontal" Width="30" Height="24">
-                            <ContentControl x:Name="NotificationsIcn" Content="{DynamicResource NotificationIcon}" Width="24" HorizontalAlignment="Center" Margin="3,0,0,0" Height="20" />
-                        </StackPanel>
-                    </Button>
-                    <Button x:Name="RefreshBtn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Right" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0" ToolTip="{DynamicResource RefreshStr}">
-                        <DockPanel Height="28">
-                            <ContentControl Content="{DynamicResource RotateLeftIcon}" Width="20" HorizontalAlignment="Center" Margin="10,0,0,0" Height="24" />
-                            <TextBlock x:Name="FontCountLbl" Text="{DynamicResource RefreshTxtStr}" Margin="10,0,15,0" VerticalAlignment="Center"/>
-                        </DockPanel>
-                    </Button>
+                    <ex:AppButton x:Name="TopBtn" Text="{DynamicResource FnTopStr}" FontSize="12" Background="Transparent" IconSize="20" Icon="{DynamicResource UpIcon}" CornerRadius="0" NoShadow="True" Margin="0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" Height="28" DockPanel.Dock="Right" GapMargin="5,0,0,0"/>
+                    <ex:AppButton x:Name="NotificationsBtn" TextVisibility="Collapsed" Background="Transparent" GapMargin="0" IconSize="20" Icon="{DynamicResource NotificationIcon}" CornerRadius="0" NoShadow="True" Margin="0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" Height="28" Padding="5,0" ToolTip="{DynamicResource NotificationStr}"/>
+                    <ex:AppButton x:Name="RefreshBtn" Text="{DynamicResource RefreshTxtStr}" FontSize="12" Background="Transparent" IconSize="20" Icon="{DynamicResource RotateLeftIcon}" CornerRadius="0" NoShadow="True" Margin="0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" Height="28" ToolTip="{DynamicResource RefreshStr}" GapMargin="5,0,0,0"/>
                     <TextBlock x:Name="StatusLbl" Text="Font Express" Margin="5,0,0,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                 </DockPanel>
                 <Rectangle Fill="{DynamicResource AppColor}" Height="2" VerticalAlignment="Bottom" DockPanel.Dock="Bottom" Margin="0,0,0,28"/>
-
             </Grid>
         </Grid>
 
         <Rectangle x:Name="MainRect" Height="30" VerticalAlignment="Top" Fill="{DynamicResource AppColor}"/>
-        <Viewbox xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" x:Name="DocTabSelector" Stretch="Uniform" Margin="65,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="90" Height="30">
+        <Viewbox xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" x:Name="DocTabSelector" Stretch="Uniform" Margin="87,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" Width="90" Height="30">
             <Canvas x:Name="svg9" Width="23.812499" Height="7.9375002">
                 <Canvas.RenderTransform>
                     <TranslateTransform X="0" Y="0"/>
@@ -556,7 +369,7 @@
                 </Canvas>
             </Canvas>
         </Viewbox>
-        <DockPanel Height="30" Margin="60,0,0,0" VerticalAlignment="Top">
+        <DockPanel Height="30" Margin="0" VerticalAlignment="Top">
             <Button x:Name="CloseBtn" Width="30" Padding="0" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" HorizontalAlignment="Right" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" DockPanel.Dock="Right" Style="{DynamicResource TransHoverCloseButton}" Margin="0" ToolTip="{DynamicResource CloseStr}">
                 <DockPanel>
                     <ContentControl Width="16" HorizontalAlignment="Center" Margin="0" Height="16" Content="{DynamicResource CloseWhiteIcon}"/>
@@ -577,7 +390,22 @@
                     <ContentControl Width="16" HorizontalAlignment="Center" Margin="0" Height="16" Content="{DynamicResource HelpWhiteIcon}"/>
                 </DockPanel>
             </Button>
-            <Button x:Name="HomeBtn" VerticalAlignment="Top" Width="76" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource TransButton}" Height="30" Margin="12,0,0,0">
+            <Button x:Name="FontBtn" Width="76" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource TransButton}" Height="30" Margin="0">
+                <DockPanel x:Name="FontBtnPnl" RenderTransformOrigin="0.5,0.5" Margin="0">
+                    <DockPanel.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform/>
+                            <SkewTransform/>
+                            <RotateTransform/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </DockPanel.RenderTransform>
+                    <ContentControl x:Name="FontBtnIcn" Width="20" HorizontalAlignment="Center" Margin="6,0,0,1" Height="20" Content="{DynamicResource AppWhiteIcon}"/>
+                    <TextBlock x:Name="FontBtnTxt" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="8,7,0,7" Height="21.31" Text="{DynamicResource MenuStr}" TextAlignment="Center" FontSize="14" Foreground="White"/>
+                </DockPanel>
+            </Button>
+            <Separator x:Name="MenuSeparator" Style="{StaticResource VerticalSeparator}" Background="White" Width="18"/>
+            <Button x:Name="HomeBtn" VerticalAlignment="Top" Width="76" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource TransButton}" Height="30" Margin="0">
                 <DockPanel x:Name="stackPanel1" RenderTransformOrigin="0.5,0.5">
                     <DockPanel.RenderTransform>
                         <TransformGroup>
@@ -590,7 +418,7 @@
                     <TextBlock x:Name="HomeBtnTxt" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,7" Height="21.31" Text="{DynamicResource HomeStr}" TextAlignment="Center" FontSize="14" Foreground="{DynamicResource TextColor}" MaxWidth="74"/>
                 </DockPanel>
             </Button>
-            <Button x:Name="FilterBtn" VerticalAlignment="Top" Width="76" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource TransButton}" Margin="12,0,0,0">
+            <Button x:Name="FilterBtn" VerticalAlignment="Top" Width="76" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource TransButton}" Margin="6,0,0,0">
                 <DockPanel x:Name="stackPanel2" RenderTransformOrigin="0.5,0.5">
                     <DockPanel.RenderTransform>
                         <TransformGroup>
@@ -603,7 +431,7 @@
                     <TextBlock x:Name="FilterBtnTxt" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" Margin="0,7" Height="21.31" Text="{DynamicResource FilterStr}" TextAlignment="Center" Foreground="{DynamicResource BackColor}" MaxWidth="74"/>
                 </DockPanel>
             </Button>
-            <Button x:Name="CategoryBtn" VerticalAlignment="Top" Width="76" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource TransButton}" Margin="12,0,0,0">
+            <Button x:Name="CategoryBtn" VerticalAlignment="Top" Width="76" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource TransButton}" Margin="6,0,0,0">
                 <DockPanel RenderTransformOrigin="0.5,0.5">
                     <DockPanel.RenderTransform>
                         <TransformGroup>
@@ -627,18 +455,16 @@
                             <TranslateTransform/>
                         </TransformGroup>
                     </DockPanel.RenderTransform>
-                    <TextBlock x:Name="TitleTxt" VerticalAlignment="Center" Margin="0" Text="{Binding Title, ElementName=Font1}" TextAlignment="Center" Foreground="White" TextTrimming="CharacterEllipsis" Padding="10,0"/>
+                    <TextBlock x:Name="TitleTxt" VerticalAlignment="Center" Margin="0,0,0,1" Text="{Binding Title, ElementName=Font1}" TextAlignment="Center" Foreground="White" TextTrimming="CharacterEllipsis" Padding="10,0"/>
                 </DockPanel>
             </Button>
 
         </DockPanel>
-        <Viewbox xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Stretch="Uniform" Margin="0,8,0,0" Width="60" Height="27" HorizontalAlignment="Left" VerticalAlignment="Top">
+        <!--<Viewbox xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Stretch="Uniform" Margin="0,8,0,0" Width="60" Height="27" HorizontalAlignment="Left" VerticalAlignment="Top">
             <Canvas x:Name="svg7" Width="16.404167" Height="7.9374999">
                 <Canvas.RenderTransform>
                     <TranslateTransform X="0" Y="0"/>
                 </Canvas.RenderTransform>
-                <!--Unknown tag: sodipodi:namedview-->
-                <!--Unknown tag: metadata-->
                 <Canvas x:Name="layer3">
                     <Canvas.RenderTransform>
                         <TranslateTransform X="0" Y="-289.06251"/>
@@ -682,8 +508,6 @@
                 <Canvas.RenderTransform>
                     <TranslateTransform X="0" Y="0"/>
                 </Canvas.RenderTransform>
-                <!--Unknown tag: sodipodi:namedview-->
-                <!--Unknown tag: metadata-->
                 <Canvas x:Name="layer1">
                     <Canvas.RenderTransform>
                         <TranslateTransform X="0" Y="-97"/>
@@ -719,119 +543,92 @@
                 </Canvas>
             </Canvas>
         </Viewbox>
-        <Button x:Name="FontBtn" VerticalAlignment="Top" Width="46" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource TransButton}" Height="46" Margin="8,13,0,0" Cursor="Hand" ToolTip="Font Menu"/>
-        <Popup x:Name="NotificationsPopup" UseLayoutRounding="True" Placement="Top" PlacementTarget="{Binding ElementName=NotificationsBtn}" AllowsTransparency="True" PopupAnimation="Fade" StaysOpen="False">
-            <Grid Height="160" Width="320">
-                <Grid Background="{DynamicResource SecondaryColor}" Margin="0,10,10,0">
-                    <Grid.Effect>
-                        <DropShadowEffect Direction="45" Color="Gray" Opacity="0.2" BlurRadius="10"/>
-                    </Grid.Effect>
-                </Grid>
-                <Grid Margin="0,10,10,0">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <StackPanel x:Name="NotificationsStack" Margin="0">
-                            <Label x:Name="NotificationsHeaderLbl" VerticalAlignment="Top" Height="50"  VerticalContentAlignment="Bottom" Margin="0" Padding="20,0,0,10" FontSize="15" Content="{DynamicResource NotificationStr}" Background="{x:Null}" Foreground="{DynamicResource TextColor}"/>
-                            <Label x:Name="NotificationLoading" VerticalAlignment="Top"  VerticalContentAlignment="Bottom" Margin="0" Padding="20,0,0,0" Content="{DynamicResource PleaseWaitStr}" Background="{x:Null}" Foreground="{DynamicResource TextColor}" FontSize="14"/>
-                            <Label x:Name="NotificationsTxt" VerticalAlignment="Top"  VerticalContentAlignment="Bottom" Margin="0" Padding="20,0,0,0" Content="No notifications." Background="{x:Null}" Foreground="{DynamicResource TextColor}" FontSize="14" Visibility="Collapsed"/>
-                            <StackPanel x:Name="NotifyBtnStack" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,25,0,0" Visibility="Collapsed">
-                                <Button x:Name="UpdateBtn" Content="{DynamicResource UpdateStr}" HorizontalAlignment="Center" Height="31" Style="{DynamicResource AppRoundedButton}" VerticalAlignment="Top" Background="{DynamicResource BackColor}" FontSize="14" FontWeight="Bold" MinWidth="100" Padding="10,1"/>
-                                <Button x:Name="UpdateInfoBtn" Content="{DynamicResource FindOutMoreStr}" HorizontalAlignment="Center" Height="31" Margin="10,0,0,0" Style="{DynamicResource AppRoundedButton}" VerticalAlignment="Top" Background="{DynamicResource BackColor}" FontSize="14" Padding="10,1" MinWidth="100"/>
+        <Button VerticalAlignment="Top" Width="46" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource TransButton}" Height="46" Margin="8,13,0,0" Cursor="Hand" ToolTip="Font Menu"/>-->
+        <Popup x:Name="NotificationsPopup" UseLayoutRounding="True" Placement="Top" PlacementTarget="{Binding ElementName=NotificationsBtn}" AllowsTransparency="True" PopupAnimation="Slide" StaysOpen="False">
+            <Grid Height="160" Width="360">
+                <ContentControl Content="{StaticResource PopupShadow}" Focusable="False"/>
+                <Border Margin="10" CornerRadius="5" Background="{DynamicResource SecondaryColor}">
+                    <ex:ClippedBorder CornerRadius="5">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel x:Name="NotificationsStack" Margin="0">
+                                <Label x:Name="NotificationsHeaderLbl" VerticalAlignment="Top" Height="45"  VerticalContentAlignment="Bottom" Margin="0" FontWeight="SemiBold" Padding="20,0,0,5" FontSize="15" Content="{DynamicResource NotificationStr}" Background="{x:Null}" Foreground="{DynamicResource TextColor}"/>
+                                <Label x:Name="NotificationLoading" VerticalAlignment="Top"  VerticalContentAlignment="Bottom" Margin="0" Padding="20,0,0,0" Content="{DynamicResource PleaseWaitStr}" Background="{x:Null}" Foreground="{DynamicResource TextColor}" FontSize="14"/>
+                                <Label x:Name="NotificationsTxt" VerticalAlignment="Top"  VerticalContentAlignment="Bottom" Margin="0" Padding="20,0,0,0" Content="No notifications." Background="{x:Null}" Foreground="{DynamicResource TextColor}" FontSize="14" Visibility="Collapsed"/>
+                                <StackPanel x:Name="NotifyBtnStack" Orientation="Horizontal" HorizontalAlignment="Left" Margin="20,20,0,0" Visibility="Collapsed">
+                                    <ex:AppButton x:Name="UpdateBtn" Icon="{DynamicResource DownloadIcon}" Text="{DynamicResource UpdateStr}" FontWeight="SemiBold" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                                    <ex:AppButton x:Name="UpdateInfoBtn" Icon="{DynamicResource HelpIcon}" Text="{DynamicResource FindOutMoreStr}" Margin="10,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                                </StackPanel>
                             </StackPanel>
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
+                        </ScrollViewer>
+                    </ex:ClippedBorder>
+                </Border>
             </Grid>
         </Popup>
         <Popup x:Name="MenuPopup" UseLayoutRounding="True" PlacementTarget="{Binding ElementName=DocTabs}" AllowsTransparency="True" PopupAnimation="Slide" StaysOpen="False">
             <Grid>
-                <Grid Background="{DynamicResource SecondaryColor}" Margin="0,0,10,10">
-                    <Grid.Effect>
-                        <DropShadowEffect Direction="270" Color="Gray" Opacity="0.1" BlurRadius="10"/>
-                    </Grid.Effect>
-                </Grid>
-                <Grid Margin="0,0,10,10">
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <StackPanel x:Name="NotificationsStack42" Margin="0">
-                            <Button x:Name="OptionsBtn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Height="40">
-                                <StackPanel Orientation="Horizontal" Height="36" Margin="5,0,0,0">
-                                    <ContentControl x:Name="HelpBtnImg71" Content="{DynamicResource OptionsIcon}" Width="24" HorizontalAlignment="Left" Margin="12,0,3,0" Height="24" />
-                                    <TextBlock x:Name="HomeBtnTxt_Copy61" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" Margin="0,7.69,25,7" Height="21.31" Padding="10,0,0,0" Text="{DynamicResource FnOptionsStr}"/>
-                                </StackPanel>
-                            </Button>
-                            <Button x:Name="AboutBtn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Height="40">
-                                <StackPanel Orientation="Horizontal" Height="36" Margin="5,0,0,0">
-                                    <ContentControl x:Name="HelpBtnImg91" Content="{DynamicResource InfoIcon}" Width="24" HorizontalAlignment="Left" Margin="12,0,3,0" Height="24" />
-                                    <TextBlock x:Name="HomeBtnTxt_Copy201" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" Margin="0,7.69,25,7" Height="21.31" Text="{DynamicResource FnAboutStr}" Padding="10,0,0,0"/>
-                                </StackPanel>
-                            </Button>
-                        </StackPanel>
-                    </ScrollViewer>
-                </Grid>
+                <ContentControl Content="{StaticResource PopupShadow}" Focusable="False"/>
+                <Border Margin="10" CornerRadius="5" Background="{DynamicResource SecondaryColor}">
+                    <ex:ClippedBorder CornerRadius="5">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <StackPanel x:Name="NotificationsStack42" Margin="0">
+                                <ex:AppButton x:Name="OptionsBtn" Text="{DynamicResource FnOptionsStr}" HorizontalContentAlignment="Stretch" CornerRadius="0" Icon="{DynamicResource GearsIcon}" NoShadow="True" Background="Transparent"/>
+                                <ex:AppButton x:Name="AboutBtn" Text="{DynamicResource FnAboutStr}" HorizontalContentAlignment="Stretch" CornerRadius="0" Icon="{DynamicResource InfoIcon}" NoShadow="True" Background="Transparent"/>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </ex:ClippedBorder>
+                </Border>
             </Grid>
         </Popup>
-        <Popup x:Name="CategoryPopup" UseLayoutRounding="True" PlacementTarget="{Binding ElementName=FavouriteBtn}" AllowsTransparency="True" PopupAnimation="Fade" StaysOpen="False" Margin="0">
-            <Grid x:Name="FontDockPanel1" Background="{DynamicResource BackColor}" Margin="10,0,10,10" MaxHeight="200">
-                <Grid.Effect>
-                    <DropShadowEffect Direction="270" Color="Gray" Opacity="0.2" BlurRadius="10"/>
-                </Grid.Effect>
-                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel x:Name="CategoryPopupPnl" Margin="0">
-                        <Button x:Name="AddFavBtn" VerticalAlignment="Top" Padding="0,0,10,0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="{DynamicResource BackColor}" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0" Height="30" DockPanel.Dock="Bottom" Tag="Favourites">
-                            <StackPanel Orientation="Horizontal">
-                                <ContentControl x:Name="AddFavImg" Content="{DynamicResource UntickIcon}" Width="24" Margin="10,0,0,0"/>
-                                <TextBlock x:Name="HomeBtnTxt_Copy242" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" Margin="0" Height="21.31" Padding="10,0,0,0" Text="{DynamicResource FavouriteStr}"/>
+        <Popup x:Name="CategoryPopup" UseLayoutRounding="True" PlacementTarget="{Binding ElementName=FavouriteBtn}" AllowsTransparency="True" PopupAnimation="Slide" StaysOpen="False" Margin="0">
+            <Grid x:Name="FontDockPanel1" MaxHeight="200">
+                <ContentControl Content="{StaticResource PopupShadow}" Focusable="False"/>
+                <Border Margin="10" CornerRadius="5" Background="{DynamicResource BackColor}">
+                    <ex:ClippedBorder CornerRadius="5">
+                        <ScrollViewer x:Name="CatScroll" VerticalScrollBarVisibility="Auto">
+                            <StackPanel x:Name="CategoryPopupPnl" Margin="0" MaxWidth="350">
+                                <ex:AppCheckBox x:Name="AddFavBtn" Content="{DynamicResource FavouriteStr}" Tag="Favourites" CornerRadius="0" HorizontalContentAlignment="Stretch"/>
+                                <ItemsControl x:Name="CatStack">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <VirtualizingStackPanel/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <ex:AppCheckBox Click="CategoryPopupBtns_Click" Content="{Binding Name}" Tag="{Binding Name}" CornerRadius="0" HorizontalContentAlignment="Stretch" IsChecked="{Binding Checked}"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <ex:AppButton x:Name="NewCategoryBtn" NoShadow="True" Text="{DynamicResource NewCatStr}" Icon="{DynamicResource PlusIcon}" Tag="Favourites" CornerRadius="0" HorizontalContentAlignment="Stretch" Height="32"/>
                             </StackPanel>
-                        </Button>
-                        <Button x:Name="NewCategoryBtn" VerticalAlignment="Top" Padding="0,0,10,0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" Background="{DynamicResource BackColor}" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0" Height="30" DockPanel.Dock="Bottom" Tag="fr">
-                            <StackPanel Orientation="Horizontal">
-                                <ContentControl x:Name="Lang2Img" Content="{DynamicResource PlusIcon}" Width="24" Margin="10,0,0,0"/>
-                                <TextBlock x:Name="HomeBtnTxt_Copy244" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" Margin="0" Height="21.31" Padding="10,0,0,0" Text="{DynamicResource NewCatStr}"/>
-                            </StackPanel>
-                        </Button>
-                    </StackPanel>
-                </ScrollViewer>
-                
+                        </ScrollViewer>
+                    </ex:ClippedBorder>
+                </Border>
             </Grid>
         </Popup>
-        <Popup x:Name="HelpPopup" UseLayoutRounding="True" PlacementTarget="{Binding ElementName=HelpBtn}" AllowsTransparency="True" PopupAnimation="Fade" StaysOpen="False" Margin="0" Placement="Left">
-            <DockPanel x:Name="HelpDockPanel" Background="{DynamicResource AppColor}" Margin="10,0,10,10" Width="250">
-                <DockPanel.Effect>
-                    <DropShadowEffect Direction="200" Color="Gray" Opacity="0.2" BlurRadius="10"/>
-                </DockPanel.Effect>
-                <TextBox x:Name="HelpSearchTxt" Margin="5,3" UseLayoutRounding="False" VerticalContentAlignment="Center" VerticalAlignment="Top" Height="24" UndoLimit="0" Padding="5,0,0,0" Foreground="{DynamicResource TextColor}" Background="{DynamicResource BackColor}" Template="{DynamicResource RoundedTextBox}" DockPanel.Dock="Top">
-                    <TextBox.ContextMenu>
-                        <ContextMenu Visibility="Collapsed"/>
-                    </TextBox.ContextMenu>
-                </TextBox>
-                <StackPanel DockPanel.Dock="Top" Background="{DynamicResource SecondaryColor}">
-                    <TextBlock x:Name="HelpInfoTxt" Text="{DynamicResource SearchHelpStr}" Margin="10,5" TextWrapping="Wrap"></TextBlock>
-                    <Button x:Name="Help1Btn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" Background="{DynamicResource SecondaryColor}" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0" DockPanel.Dock="Bottom" Tag="8">
+        <Popup x:Name="HelpPopup" UseLayoutRounding="True" PlacementTarget="{Binding ElementName=HelpBtn}" AllowsTransparency="True" PopupAnimation="Slide" StaysOpen="False" Margin="0" Placement="Left" HorizontalOffset="10">
+            <Grid Width="280">
+                <ContentControl Content="{StaticResource PopupShadow}" Focusable="False"/>
+                <Border Margin="10,0,10,10" CornerRadius="5" Background="{DynamicResource AppColor}">
+                    <ex:ClippedBorder CornerRadius="5">
                         <DockPanel>
-                            <ContentControl x:Name="Help1Img" Content="{DynamicResource HelpIcon}" Width="20" HorizontalAlignment="Left" Margin="10,0,5,0" Height="24" Focusable="False" />
-                            <TextBlock x:Name="Help1Txt" VerticalAlignment="Top" FontSize="14" Margin="0,5" Padding="5,0" Text="Help topic" TextWrapping="Wrap"/>
+                            <TextBox x:Name="HelpSearchTxt" Margin="5,3" UseLayoutRounding="False" VerticalContentAlignment="Center" VerticalAlignment="Top" Height="24" UndoLimit="0" Padding="5,0,0,0" Foreground="{DynamicResource TextColor}" Background="{DynamicResource BackColor}" Template="{DynamicResource RoundedTextBox}" DockPanel.Dock="Top">
+                                <TextBox.ContextMenu>
+                                    <ContextMenu Visibility="Collapsed"/>
+                                </TextBox.ContextMenu>
+                            </TextBox>
+                            <StackPanel DockPanel.Dock="Top" Background="{DynamicResource SecondaryColor}">
+                                <TextBlock x:Name="HelpInfoTxt" Text="{DynamicResource SearchHelpStr}" Margin="10,5" TextWrapping="Wrap"></TextBlock>
+                                <ex:AppButton x:Name="Help1Btn" Text="Help topic" TextMargin="2,5,2,6" HorizontalContentAlignment="Stretch" CornerRadius="0" Icon="{DynamicResource HelpIcon}" NoShadow="True" Background="Transparent" Height="Auto" TextWrapping="Wrap" Padding="10,0"/>
+                                <ex:AppButton x:Name="Help2Btn" Text="Help topic" TextMargin="2,5,2,6" HorizontalContentAlignment="Stretch" CornerRadius="0" Icon="{DynamicResource HelpIcon}" NoShadow="True" Background="Transparent" Height="Auto" TextWrapping="Wrap" Padding="10,0"/>
+                                <ex:AppButton x:Name="Help3Btn" Text="Help topic" TextMargin="2,5,2,6" HorizontalContentAlignment="Stretch" CornerRadius="0" Icon="{DynamicResource HelpIcon}" NoShadow="True" Background="Transparent" Height="Auto" TextWrapping="Wrap" Padding="10,0"/>
+                                <Rectangle Height="2" Fill="{DynamicResource AppColor}"></Rectangle>
+                                <ex:AppButton x:Name="HelpLinkBtn" Text="{DynamicResource OnlineHelpStr}" TextMargin="2,5,2,6" HorizontalContentAlignment="Stretch" CornerRadius="0" Icon="{DynamicResource HelpIcon}" NoShadow="True" Background="Transparent" Height="Auto" TextWrapping="Wrap" Padding="10,0"/>
+                            </StackPanel>
                         </DockPanel>
-                    </Button>
-                    <Button x:Name="Help2Btn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" Background="{DynamicResource SecondaryColor}" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0" DockPanel.Dock="Bottom" Tag="8">
-                        <DockPanel>
-                            <ContentControl x:Name="Help2Img" Content="{DynamicResource HelpIcon}" Width="20" HorizontalAlignment="Left" Margin="10,0,5,0" Height="24" Focusable="False" />
-                            <TextBlock x:Name="Help2Txt" VerticalAlignment="Top" FontSize="14" Margin="0,5" Padding="5,0" Text="Help topic" TextWrapping="Wrap"/>
-                        </DockPanel>
-                    </Button>
-                    <Button x:Name="Help3Btn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" Background="{DynamicResource SecondaryColor}" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0" DockPanel.Dock="Bottom" Tag="8">
-                        <DockPanel>
-                            <ContentControl x:Name="Help3Img" Content="{DynamicResource HelpIcon}" Width="20" HorizontalAlignment="Left" Margin="10,0,5,0" Height="24" Focusable="False" />
-                            <TextBlock x:Name="Help3Txt" VerticalAlignment="Top" FontSize="14" Margin="0,5" Padding="5,0" Text="Help topic" TextWrapping="Wrap"/>
-                        </DockPanel>
-                    </Button>
-                    <Rectangle Height="2" Fill="{DynamicResource AppColor}"></Rectangle>
-                    <Button x:Name="HelpLinkBtn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" Background="{DynamicResource SecondaryColor}" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0" Height="30" DockPanel.Dock="Bottom">
-                        <DockPanel>
-                            <ContentControl x:Name="HelpLinkImg" Content="{DynamicResource HelpIcon}" Width="20" HorizontalAlignment="Left" Margin="10,0,5,0" Height="24" Focusable="False" />
-                            <TextBlock x:Name="HomeBtnTxt_Cop2252" VerticalAlignment="Center" FontSize="14" Margin="0" Height="21.31" Padding="5,0" Text="{DynamicResource OnlineHelpStr}" TextTrimming="CharacterEllipsis"/>
-                        </DockPanel>
-                    </Button>
-                </StackPanel>
-            </DockPanel>
+                    </ex:ClippedBorder>
+                </Border>
+            </Grid>
         </Popup>
     </Grid>
 </Window>

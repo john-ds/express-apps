@@ -30,10 +30,11 @@
     <System:String x:Key="OpDefStr" xml:space="preserve">Defaults    </System:String>
     <System:String x:Key="OpStartupStr" xml:space="preserve">Startup    </System:String>
     <System:String x:Key="SavedStr" xml:space="preserve">Saved    </System:String>
-    <System:String x:Key="OpImportStr">Import</System:String>
-    <System:String x:Key="OpExportStr">Export</System:String>
+    <System:String x:Key="OpImportStr">Import settings</System:String>
+    <System:String x:Key="OpExportStr">Export settings</System:String>
 
     <!-- v2 below -->
+    <System:String x:Key="MenuStr">Menu</System:String>
     <System:String x:Key="FindOutMoreStr">Find out more</System:String>
     <System:String x:Key="UpdateStr">Update</System:String>
     <System:String x:Key="PleaseWaitStr">Please wait...</System:String>
@@ -151,5 +152,6 @@ CTRL+H</System:String>
     <System:String x:Key="DefSortStr">Default sort</System:String>
     <System:String x:Key="ChooseStr">Choose</System:String>
     <System:String x:Key="StartupFolderStr">Startup folder</System:String>
+    <System:String x:Key="BreakdownStr">File breakdown</System:String>
 
 </ResourceDictionary>

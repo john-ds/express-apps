@@ -19,6 +19,7 @@
             <SolidColorBrush x:Key="AppHoverColor" Color="#FFC6C6"/>
             <SolidColorBrush x:Key="AppPressedColor" Color="#FF6A6A"/>
             <SolidColorBrush x:Key="AppLightColor" Color="#FFA9A9"/>
+            <Color x:Key="AppDirectColor" R="239" G="37" B="16" A="255"/>
 
             <local:AngleToPointConverter x:Key="prConverter"/>
             <local:AngleToIsLargeConverter x:Key="isLargeConverter"/>

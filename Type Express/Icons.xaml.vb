@@ -50,20 +50,14 @@ Public Class Icons
     Private IconSize As String = "regular"
     Private IconStyle As String = "all"
 
-    Private Sub SizeBtns_Click(sender As Button, e As RoutedEventArgs) Handles LargeBtn.Click, RegularBtn.Click, SmallBtn.Click
-        LargeImg.Visibility = Visibility.Hidden
-        RegularImg.Visibility = Visibility.Hidden
-        SmallImg.Visibility = Visibility.Hidden
+    Private Sub SizeBtns_Click(sender As ExpressControls.AppRadioButton, e As RoutedEventArgs) Handles LargeBtn.Click, RegularBtn.Click, SmallBtn.Click
 
         Select Case sender.Name
             Case "LargeBtn"
-                LargeImg.Visibility = Visibility.Visible
                 IconSize = "large"
             Case "RegularBtn"
-                RegularImg.Visibility = Visibility.Visible
                 IconSize = "regular"
             Case "SmallBtn"
-                SmallImg.Visibility = Visibility.Visible
                 IconSize = "small"
         End Select
 
@@ -71,37 +65,23 @@ Public Class Icons
 
     End Sub
 
-    Private Sub StyleBtns_Click(sender As Button, e As RoutedEventArgs) Handles AllBtn.Click, GlyphBtn.Click, OutlineBtn.Click, FlatBtn.Click,
-                                                                                FilledOutlineBtn.Click, HanddrawnBtn.Click, ThreeDBtn.Click
-        AllImg.Visibility = Visibility.Hidden
-        GlyphImg.Visibility = Visibility.Hidden
-        OutlineImg.Visibility = Visibility.Hidden
-        FlatImg.Visibility = Visibility.Hidden
-        FilledOutlineImg.Visibility = Visibility.Hidden
-        HanddrawnImg.Visibility = Visibility.Hidden
-        ThreeDImg.Visibility = Visibility.Hidden
+    Private Sub StyleBtns_Click(sender As ExpressControls.AppRadioButton, e As RoutedEventArgs) Handles AllBtn.Click, GlyphBtn.Click, OutlineBtn.Click,
+        FlatBtn.Click, FilledOutlineBtn.Click, HanddrawnBtn.Click, ThreeDBtn.Click
 
         Select Case sender.Name
             Case "AllBtn"
-                AllImg.Visibility = Visibility.Visible
                 IconStyle = "all"
             Case "GlyphBtn"
-                GlyphImg.Visibility = Visibility.Visible
                 IconStyle = "glyph"
             Case "OutlineBtn"
-                OutlineImg.Visibility = Visibility.Visible
                 IconStyle = "outline"
             Case "FlatBtn"
-                FlatImg.Visibility = Visibility.Visible
                 IconStyle = "flat"
             Case "FilledOutlineBtn"
-                FilledOutlineImg.Visibility = Visibility.Visible
                 IconStyle = "filledoutline"
             Case "HanddrawnBtn"
-                HanddrawnImg.Visibility = Visibility.Visible
                 IconStyle = "handdrawn"
             Case "ThreeDBtn"
-                ThreeDImg.Visibility = Visibility.Visible
                 IconStyle = "3d"
         End Select
 
@@ -260,7 +240,7 @@ Public Class Icons
     Private PageTotal As Long = 1L
 
     Private Function GetPics(query As String) As Boolean
-        Dim client As Net.WebClient = New Net.WebClient()
+        Dim client As New Net.WebClient()
         client.Headers.Add(Net.HttpRequestHeader.Authorization, "Bearer " + ClientID)
 
         ' GET 36 ICONS A PAGE
@@ -282,7 +262,7 @@ Public Class Icons
             client.QueryString.Add("license", "commercial-nonattribution")
             If Not IconStyle = "all" Then client.QueryString.Add("style", IconStyle)
 
-            Using reader As StreamReader = New StreamReader(client.OpenRead("https://api.iconfinder.com/v4/icons/search"), Text.Encoding.UTF8)
+            Using reader As New StreamReader(client.OpenRead("https://api.iconfinder.com/v4/icons/search"), Text.Encoding.UTF8)
                 If PictureWorker.CancellationPending Then Return False
 
                 Dim info As String = reader.ReadToEnd()

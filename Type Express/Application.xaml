@@ -22,6 +22,7 @@
             <SolidColorBrush x:Key="AppHoverColor" Color="#FFDAFFD8"/>
             <SolidColorBrush x:Key="AppPressedColor" Color="#FF8DDA89"/>
             <SolidColorBrush x:Key="AppLightColor" Color="#FF8DDA89"/>
+            <Color x:Key="AppDirectColor" R="60" G="180" B="60" A="255"/>
 
         </ResourceDictionary>
     </Application.Resources>

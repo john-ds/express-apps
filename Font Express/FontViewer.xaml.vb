@@ -1,10 +1,14 @@
-﻿Imports System.Windows.Markup
+﻿Imports System.Collections.ObjectModel
+Imports System.Windows.Markup
 
 Public Class FontViewer
 
     Public Property FavouriteChange As Boolean = False
     Private ReadOnly FontName As String = ""
     Private ReadOnly CurrentCategory As String = ""
+    Private IsGlyphsVisible As Boolean = False
+    Private ReadOnly GlyphList As ObservableCollection(Of String) = New ExpressControls.Glyphs()
+    Private GlyphPage As Integer = 1
 
     Public Sub New(name As String, currentcat As String)
 
@@ -19,8 +23,12 @@ Public Class FontViewer
 
         Dim ffcv As New FontFamilyConverter()
         DisplayTxt.FontFamily = ffcv.ConvertFromString(name)
+        GlyphItems.FontFamily = ffcv.ConvertFromString(name)
 
-        If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then BoldImg.SetResourceReference(ContentProperty, "GrasIcon")
+        If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then
+            BoldBtn.Icon = FindResource("GrasIcon")
+            BoldGlyphBtn.Icon = FindResource("GrasIcon")
+        End If
 
         RefreshCategories()
         SetCategoryBtns()
@@ -66,28 +74,45 @@ Public Class FontViewer
 
     End Sub
 
+    Private Sub BoldGlyphBtn_Click(sender As Object, e As RoutedEventArgs) Handles BoldGlyphBtn.Click
+
+        If GlyphItems.FontWeight = FontWeights.Bold Then
+            GlyphItems.FontWeight = FontWeights.Normal
+
+        Else
+            GlyphItems.FontWeight = FontWeights.Bold
+
+        End If
+
+    End Sub
+
+    Private Sub ItalicGlyphBtn_Click(sender As Object, e As RoutedEventArgs) Handles ItalicGlyphBtn.Click
+
+        If GlyphItems.FontStyle = FontStyles.Italic Then
+            GlyphItems.FontStyle = FontStyles.Normal
+
+        Else
+            GlyphItems.FontStyle = FontStyles.Italic
+
+        End If
+
+    End Sub
+
     Private Sub FavouriteBtn_Click(sender As Button, e As RoutedEventArgs) Handles CategoryBtn.Click
         CategoryPopup.IsOpen = True
 
     End Sub
 
     Private Sub RefreshCategories()
-        CategoryPopupPnl.Children.Clear()
-        CategoryPopupPnl.Children.Add(AddFavBtn)
+        Dim CatList As New List(Of CategoryItem) From {}
 
         For Each i In My.Settings.categories
             Dim info = i.Split({"//"}, StringSplitOptions.RemoveEmptyEntries)
-            Dim btn2 As Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='{DynamicResource BackColor}' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,10,0' Style='{DynamicResource AppButton}' Name='AddFavBtn' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><StackPanel Orientation='Horizontal'><ContentControl Content='{DynamicResource UntickIcon}' Name='AddFavImg' Width='24' Margin='10,0,0,0' /><TextBlock Text='" +
-                                                  Funcs.EscapeChars(info(0)) + "' FontSize='14' Padding='10,0,0,0' Name='HomeBtnTxt_Copy242' Height='21.31' Margin='0,0,0,0' HorizontalAlignment='Center' VerticalAlignment='Center' /></StackPanel></Button>")
-
-            btn2.Tag = info(0)
-            CategoryPopupPnl.Children.Add(btn2)
-
-            AddHandler btn2.Click, AddressOf CategoryPopupBtns_Click
+            CatList.Add(New CategoryItem() With {.Name = info(0)})
 
         Next
 
-        CategoryPopupPnl.Children.Add(NewCategoryBtn)
+        CatStack.ItemsSource = CatList
 
     End Sub
 
@@ -110,6 +135,7 @@ Public Class FontViewer
 
     Private Sub SetCategoryBtns()
         Dim fontcategories As New List(Of String) From {}
+        Dim items As List(Of CategoryItem) = CatStack.Items.OfType(Of CategoryItem).ToList()
 
         For Each i In My.Settings.categories
             Dim fonts = i.Split({"//"}, StringSplitOptions.RemoveEmptyEntries).ToList()
@@ -118,31 +144,24 @@ Public Class FontViewer
             If fonts.Contains(FontName) Then fontcategories.Add(i.Split("//")(0))
         Next
 
-        For Each i In CategoryPopupPnl.Children.OfType(Of Button)
-            If Not i.Tag Is Nothing Then
-                Dim catname = i.Tag.ToString()
-                Dim checkimg As ContentControl = i.FindName("AddFavImg")
+        For Each i In items
+            Dim catname = i.Name.ToString()
 
-                If (Not catname = "Favourites") And fontcategories.Contains(catname) Then ' do not translate
-                    Funcs.SetCheckButton(True, checkimg)
-                ElseIf Not catname = "Favourites" Then
-                    Funcs.SetCheckButton(False, checkimg)
-                End If
+            If (Not catname = "Favourites") And fontcategories.Contains(catname) Then ' do not translate
+                i.Checked = True
+            ElseIf Not catname = "Favourites" Then
+                i.Checked = False
             End If
-
         Next
 
-        If My.Settings.favouritefonts.Contains(FontName) Then
-            Funcs.SetCheckButton(True, AddFavImg)
-        Else
-            Funcs.SetCheckButton(False, AddFavImg)
-        End If
+        CatStack.ItemsSource = items
+        AddFavBtn.IsChecked = My.Settings.favouritefonts.Contains(FontName)
 
     End Sub
 
-    Private Sub CategoryPopupBtns_Click(sender As Button, e As RoutedEventArgs) Handles AddFavBtn.Click
+    Private Sub CategoryPopupBtns_Click(sender As ExpressControls.AppCheckBox, e As RoutedEventArgs) Handles AddFavBtn.Click
 
-        If Funcs.ToggleCheckButton(sender.FindName("AddFavImg")) Then
+        If sender.IsChecked Then
             If sender.Tag.ToString() = Funcs.ChooseLang("Favourites", "Favoris") Then
                 My.Settings.favouritefonts.Add(FontName)
                 My.Settings.Save()
@@ -195,6 +214,60 @@ Public Class FontViewer
             End If
         Catch
         End Try
+
+    End Sub
+
+    Private Sub ToggleBtn_Click(sender As Object, e As RoutedEventArgs) Handles ToggleBtn.Click
+
+        If IsGlyphsVisible Then ' show free text
+            FreeTextPnl.Visibility = Visibility.Visible
+            GlyphsPnl.Visibility = Visibility.Collapsed
+            ToggleBtn.Icon = FindResource("TextIcon")
+            ToggleBtn.Text = Funcs.ChooseLang("Glyphs", "Glyphes")
+
+        Else ' show glyphs
+            FreeTextPnl.Visibility = Visibility.Collapsed
+            GlyphsPnl.Visibility = Visibility.Visible
+            ToggleBtn.Icon = FindResource("EditorIcon")
+            ToggleBtn.Text = Funcs.ChooseLang("Free text", "Texte libre")
+
+            GlyphItems.ItemsSource = GlyphList.Take(66)
+            PrevBtn.IsEnabled = False
+            NextBtn.IsEnabled = True
+            PageTxt.Text = Funcs.ChooseLang("Page 1 of " + Math.Ceiling(GlyphList.Count / 66).ToString(), "Page 1 sur " + Math.Ceiling(GlyphList.Count / 66).ToString())
+            GlyphPage = 1
+
+        End If
+
+        IsGlyphsVisible = Not IsGlyphsVisible
+
+    End Sub
+
+    Private Sub PrevBtn_Click(sender As Object, e As RoutedEventArgs) Handles PrevBtn.Click
+
+        If GlyphPage > 1 Then
+            GlyphPage -= 1
+            GlyphItems.ItemsSource = GlyphList.Skip((GlyphPage * 66) - 66).Take(66)
+            PageTxt.Text = Funcs.ChooseLang("Page " + GlyphPage.ToString() + " of " + Math.Ceiling(GlyphList.Count / 66).ToString(), "Page " + GlyphPage.ToString() + " sur " + Math.Ceiling(GlyphList.Count / 66).ToString())
+
+            NextBtn.IsEnabled = GlyphPage < Math.Ceiling(GlyphList.Count / 66)
+            PrevBtn.IsEnabled = GlyphPage > 1
+
+        End If
+
+    End Sub
+
+    Private Sub NextBtn_Click(sender As Object, e As RoutedEventArgs) Handles NextBtn.Click
+
+        If GlyphPage < Math.Ceiling(GlyphList.Count / 66) Then
+            GlyphPage += 1
+            GlyphItems.ItemsSource = GlyphList.Skip((GlyphPage * 66) - 66).Take(66)
+            PageTxt.Text = Funcs.ChooseLang("Page " + GlyphPage.ToString() + " of " + Math.Ceiling(GlyphList.Count / 66).ToString(), "Page " + GlyphPage.ToString() + " sur " + Math.Ceiling(GlyphList.Count / 66).ToString())
+
+            NextBtn.IsEnabled = GlyphPage < Math.Ceiling(GlyphList.Count / 66)
+            PrevBtn.IsEnabled = GlyphPage > 1
+
+        End If
 
     End Sub
 

@@ -22,13 +22,21 @@ Public Class TTS
         AddHandler SpeechTTS.SpeakProgress, AddressOf SpeechTTS_SpeakProgress
         AddHandler SpeechTTS.SpeakCompleted, AddressOf SpeechTTS_SpeakCompleted
 
-        VoiceStack.Children.Clear()
+        Dim voices As New List(Of VoiceItem) From {}
 
         For Each voice In SpeechTTS.GetInstalledVoices()
-            VoiceStack.Children.Add(CreateVoiceBtn($"{voice.VoiceInfo.Name} — {voice.VoiceInfo.Culture.DisplayName}", voice.VoiceInfo.Name))
+            voices.Add(New VoiceItem() With {
+                       .Name = $"{voice.VoiceInfo.Name} — {voice.VoiceInfo.Culture.DisplayName}",
+                       .Tag = voice.VoiceInfo.Name
+            })
         Next
 
-        VoiceStack.Children.Add(CreateVoiceBtn(Funcs.ChooseLang("Get more voices...", "Obtenir plus de voix..."), "/more/"))
+        voices.Add(New VoiceItem() With {
+                   .Name = Funcs.ChooseLang("Get more voices...", "Obtenir plus de voix..."),
+                   .Tag = "/more/"
+        })
+
+        VoiceStack.ItemsSource = voices
         If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then saveDialog.Filter = "Fichiers WAV (.wav)|*.wav"
 
         TTSTxt.Document.Blocks.Clear()
@@ -48,9 +56,9 @@ Public Class TTS
 
     Private Sub TTS_Loaded(sender As Object, e As RoutedEventArgs) Handles Me.Loaded
 
-        If VoiceStack.Children.Count <= 1 Then
+        If VoiceStack.Items.Count <= 1 Then
             If MainWindow.NewMessage(Funcs.ChooseLang("You don't have any text-to-speech voices installed. Would you like to open Settings to get some?",
-                                                           "Vous n'avez pas de voix de synthèse vocale installées. Voulez-vous ouvrir Paramètres pour en obtenir ?"),
+                                                      "Vous n'avez pas de voix de synthèse vocale installées. Voulez-vous ouvrir Paramètres pour en obtenir ?"),
                                      Funcs.ChooseLang("No voices installed", "Aucune voix installée"),
                                      MessageBoxButton.YesNo, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
                 OpenSettings()
@@ -59,7 +67,7 @@ Public Class TTS
             Close()
 
         Else
-            VoiceLbl.Text = Funcs.ChooseLang("Voice: ", "Voix : ") + SpeechTTS.GetInstalledVoices()(0).VoiceInfo.Name
+            VoiceCombo.Text = Funcs.ChooseLang("Voice: ", "Voix : ") + SpeechTTS.GetInstalledVoices()(0).VoiceInfo.Name
 
         End If
 
@@ -90,18 +98,18 @@ Public Class TTS
     Private Sub PlayBtn_Click(sender As Object, e As RoutedEventArgs) Handles PlayBtn.Click
 
         If SpeechTTS.State = SynthesizerState.Speaking Then
-            PlayImg.SetResourceReference(ContentProperty, "PlayIcon")
+            PlayBtn.Icon = FindResource("PlayIcon")
             PlayBtn.ToolTip = Funcs.ChooseLang("Play", "Lire")
             SpeechTTS.Pause()
 
         ElseIf SpeechTTS.State = SynthesizerState.Paused Then
-            PlayImg.SetResourceReference(ContentProperty, "PauseIcon")
+            PlayBtn.Icon = FindResource("PauseIcon")
             PlayBtn.ToolTip = "Pause"
             SpeechTTS.Resume()
 
         Else
             DisableControls()
-            PlayImg.SetResourceReference(ContentProperty, "PauseIcon")
+            PlayBtn.Icon = FindResource("PauseIcon")
             PlayBtn.ToolTip = "Pause"
             StopBtn.Visibility = Visibility.Visible
 
@@ -137,7 +145,7 @@ Public Class TTS
 
     Private Sub SpeechTTS_SpeakCompleted(sender As Object, e As SpeakCompletedEventArgs)
         EnableControls()
-        PlayImg.SetResourceReference(ContentProperty, "PlayIcon")
+        PlayBtn.Icon = FindResource("PlayIcon")
         PlayBtn.ToolTip = Funcs.ChooseLang("Play", "Lire")
         StopBtn.Visibility = Visibility.Collapsed
 
@@ -157,7 +165,7 @@ Public Class TTS
             OpenSettings()
         Else
             SpeechTTS.SelectVoice(sender.Tag.ToString())
-            VoiceLbl.Text = Funcs.ChooseLang("Voice: ", "Voix : ") + sender.Tag.ToString()
+            VoiceCombo.Text = Funcs.ChooseLang("Voice: ", "Voix : ") + sender.Tag.ToString()
         End If
 
     End Sub
@@ -207,16 +215,9 @@ Public Class TTS
 
     End Sub
 
-    Private Function CreateVoiceBtn(text As String, tag As String) As Button
-        Dim copy As Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0' Background='{DynamicResource SecondaryColor}' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='VoiceBtn' Tag='8' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><DockPanel><TextBlock Text='" +
-                                              Funcs.EscapeChars(text) + "' FontSize='14' Padding='20,0,0,0' TextTrimming='CharacterEllipsis' Name='HomeBtnTxt1' Height='21.31' Margin='0,0,20,0' VerticalAlignment='Center' /></DockPanel></Button>")
+End Class
 
-        copy.Tag = tag
-        If Not copy.Tag = "/more/" Then copy.ToolTip = text
-
-        AddHandler copy.Click, AddressOf VoiceCombo_DropDownClosed
-        Return copy
-
-    End Function
-
+Public Class VoiceItem
+    Public Property Name As String
+    Public Property Tag As String
 End Class

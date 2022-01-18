@@ -13,9 +13,8 @@ Imports System.Windows.Forms
 
 Class MainWindow
 
-    ' TYPE EXPRESS v4.2.1
-    ' Part of Express Apps by John D
-    ' ------------------------------
+    ' FOR KEYBOARD SHORTCUTS:
+    ' See DocTxt_KeyDown()
 
     Public ThisFile As String = ""
     ReadOnly PrintDoc As New PrintDocument
@@ -129,7 +128,7 @@ Class MainWindow
             "∈*ELEMENT OF", "∋*CONTAINS AS MEMBER", "∴*THEREFORE", "¬*NEGATION", "ℵ*ALEPH", "∑*SUMMATION SIGN", "∫*INTEGRAL SIGN"}
 
     Private ReadOnly Emoji As New List(Of String) From
-        {"😀*GRINNING FACE", "😁*GRINNING FACE WITH SMILING EYES", "😂*FACE WITH TEARS OF JOY", "	😃*SMILING FACE WITH OPEN MOUTH",
+        {"😀*GRINNING FACE", "😁*GRINNING FACE WITH SMILING EYES", "😂*FACE WITH TEARS OF JOY", "😃*SMILING FACE WITH OPEN MOUTH",
             "😄*SMILING FACE WITH OPEN MOUTH AND SMILING EYES", "😅*SMILING FACE WITH OPEN MOUTH AND COLD SWEAT", "😆*SMILING FACE WITH OPEN MOUTH AND TIGHTLY-CLOSED EYES",
             "😇*SMILING FACE WITH HALO", "😈*SMILING FACE WITH HORNS", "😉*WINKING FACE", "😊*SMILING FACE WITH SMILING EYES", "😋*FACE SAVOURING DELICIOUS FOOD",
             "😌*RELIEVED FACE", "😍*SMILING FACE WITH HEART-SHAPED EYES", "😎*SMILING FACE WITH SUNGLASSES", "😏*SMIRKING FACE", "😐*NEUTRAL FACE", "😑*EXPRESSIONLESS FACE",
@@ -158,7 +157,7 @@ Class MainWindow
 
     Private Sub TempLblTimer_Tick(sender As Object, e As EventArgs)
 
-        Dim deli As mydelegate = New mydelegate(AddressOf ResetStatusLbl)
+        Dim deli As New mydelegate(AddressOf ResetStatusLbl)
         StatusLbl.Dispatcher.BeginInvoke(DispatcherPriority.Normal, deli)
         TempLblTimer.Stop()
 
@@ -180,9 +179,8 @@ Class MainWindow
     ReadOnly ToolsMnStoryboard As Animation.Storyboard
     ReadOnly DesignMnStoryboard As Animation.Storyboard
     ReadOnly ReviewMnStoryboard As Animation.Storyboard
-
-    ReadOnly TypeHoverIn As Animation.Storyboard
-    ReadOnly TypeHoverOut As Animation.Storyboard
+    ReadOnly OpenMenuStoryboard As Animation.Storyboard
+    ReadOnly CloseMenuStoryboard As Animation.Storyboard
 
     Public Sub New()
 
@@ -257,8 +255,9 @@ Class MainWindow
         ToolsMnStoryboard = TryFindResource("ToolsMnStoryboard")
         DesignMnStoryboard = TryFindResource("DesignMnStoryboard")
         ReviewMnStoryboard = TryFindResource("ReviewMnStoryboard")
-        TypeHoverIn = TryFindResource("TypeHoverIn")
-        TypeHoverOut = TryFindResource("TypeHoverOut")
+        OpenMenuStoryboard = TryFindResource("OpenMenuStoryboard")
+        CloseMenuStoryboard = TryFindResource("CloseMenuStoryboard")
+        AddHandler CloseMenuStoryboard.Completed, AddressOf CloseMenu_Completed
 
 
         SideBarGrid.Visibility = Visibility.Collapsed
@@ -277,63 +276,8 @@ Class MainWindow
 
         urc.AddItem(DocTxt.Text)
 
-
-        Dim objFontCollection As WinDrawing.Text.FontCollection
-        objFontCollection = New WinDrawing.Text.InstalledFontCollection
-
-        FontsStack.Children.Clear()
-        FontsStack.Children.Add(FavouriteFontsLbl)
         DefineStack.Children.Clear()
-
-        For Each favfont In My.Settings.favouritefonts.Cast(Of String).Distinct().ToList()
-            Dim fontname As String = Funcs.EscapeChars(favfont)
-
-            Try
-                If Not fontname = "" Then
-                    Dim testfont As New WinDrawing.FontFamily(favfont)
-                    testfont.Dispose()
-
-                    Dim copy As Controls.Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='{DynamicResource SecondaryColor}' HorizontalContentAlignment='Left' VerticalContentAlignment='Stretch' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='FontSampleBtn' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><DockPanel VerticalAlignment='Center'><TextBlock Text='" +
-                                                  fontname + "' FontFamily='" +
-                                                  fontname + "' FontSize='14' Padding='20,0,0,0' Name='HomeBtnTxt_Copy1291' Height='21.31' Margin='0,0,10,0' HorizontalAlignment='Center'/></DockPanel></Button>")
-
-                    copy.Tag = favfont
-                    copy.ToolTip = favfont
-                    FontsStack.Children.Add(copy)
-                    AddHandler copy.Click, AddressOf FontBtns_Click
-
-                End If
-
-            Catch
-            End Try
-        Next
-
-        If FontsStack.Children.Count = 1 Then
-            FontsStack.Children.Clear()
-        Else
-            FontsStack.Children.Add(AllFontsLbl)
-        End If
-
-        For Each objFontFamily As WinDrawing.FontFamily In objFontCollection.Families
-            Dim fontname As String = Funcs.EscapeChars(objFontFamily.Name)
-
-            If Not fontname = "" Then
-                Dim copy As Controls.Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='{DynamicResource SecondaryColor}' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='FontSampleBtn' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><StackPanel Orientation='Horizontal'><TextBlock Text='" +
-                                                  fontname + "' FontFamily='" +
-                                                  fontname + "' FontSize='14' Padding='20,0,0,0' Name='HomeBtnTxt_Copy1291' Height='21.31' Margin='0,7.69,10,7' HorizontalAlignment='Center' VerticalAlignment='Center' /></StackPanel></Button>")
-
-                copy.Tag = objFontFamily.Name
-                copy.ToolTip = objFontFamily.Name
-                FontsStack.Children.Add(copy)
-                AddHandler copy.Click, AddressOf FontBtns_Click
-
-            End If
-        Next
-
-
         TextSelection()
-        MoreImg.RenderTransform = Nothing
-        MoreImg1.RenderTransform = Nothing
 
         ColourPicker.StandardColors.Remove(New Xceed.Wpf.Toolkit.ColorItem(Color.FromArgb(0, 255, 255, 255), "Transparent"))
         RefreshColourTooltips()
@@ -403,6 +347,49 @@ Class MainWindow
                 .Item("AcryllicColor") = New SolidColorBrush(Color.FromArgb(255, 38, 38, 38)) With {.Opacity = 0.6}
             End With
         End If
+
+        RefreshSavedFonts()
+
+    End Sub
+
+    Public Sub RefreshSavedFonts()
+
+        ' My.Settings format
+        ' styleid>fontname>fontsize>fontstyle[style,style,...]>colour
+
+        For Each i In My.Settings.savedfonts
+            Dim info = i.Split(">")
+
+            Try
+                Dim fontname = Funcs.EscapeChars(info(1), True)
+                Dim fontsize = Convert.ToSingle(info(2), Globalization.CultureInfo.InvariantCulture)
+                Dim fontstyle As New WinDrawing.FontStyle
+
+                If info(3).Contains("Bold") Then fontstyle = fontstyle Or WinDrawing.FontStyle.Bold
+                If info(3).Contains("Italic") Then fontstyle = fontstyle Or WinDrawing.FontStyle.Italic
+                If info(3).Contains("Underline") Then fontstyle = fontstyle Or WinDrawing.FontStyle.Underline
+                If info(3).Contains("Strikethrough") Then fontstyle = fontstyle Or WinDrawing.FontStyle.Strikeout
+
+                Dim clr = ConvertColorFromHex(info(4))
+                Dim fontcolour = WinDrawing.Color.FromArgb(clr.R, clr.G, clr.B)
+
+                Select Case info(0)
+                    Case "H1"
+                        ApplyFontStyle(New WinDrawing.Font(fontname, fontsize, fontstyle), fontcolour, H1Txt, False)
+                    Case "H2"
+                        ApplyFontStyle(New WinDrawing.Font(fontname, fontsize, fontstyle), fontcolour, H2Txt, False)
+                    Case "H3"
+                        ApplyFontStyle(New WinDrawing.Font(fontname, fontsize, fontstyle), fontcolour, H3Txt, False)
+                    Case "B1"
+                        ApplyFontStyle(New WinDrawing.Font(fontname, fontsize, fontstyle), fontcolour, B1Txt, False)
+                    Case "B2"
+                        ApplyFontStyle(New WinDrawing.Font(fontname, fontsize, fontstyle), fontcolour, B2Txt, False)
+                    Case "B3"
+                        ApplyFontStyle(New WinDrawing.Font(fontname, fontsize, fontstyle), fontcolour, B3Txt, False)
+                End Select
+            Catch
+            End Try
+        Next
 
     End Sub
 
@@ -548,7 +535,7 @@ Class MainWindow
 
         Threading.Thread.Sleep(250)
 
-        Dim deli As mydelegate = New mydelegate(AddressOf GetTemplates)
+        Dim deli As New mydelegate(AddressOf GetTemplates)
         TemplateGrid.Dispatcher.BeginInvoke(DispatcherPriority.Normal, deli)
 
     End Sub
@@ -563,8 +550,8 @@ Class MainWindow
 
         Threading.Thread.Sleep(250)
 
-        Dim deli As mydelegate = New mydelegate(AddressOf CheckNotifications)
-        NotificationsIcn.Dispatcher.BeginInvoke(DispatcherPriority.Normal, deli)
+        Dim deli As New mydelegate(AddressOf CheckNotifications)
+        NotificationsBtn.Dispatcher.BeginInvoke(DispatcherPriority.Normal, deli)
 
     End Sub
 
@@ -582,28 +569,28 @@ Class MainWindow
             .Title = caption
 
             If buttons = MessageBoxButton.OK Then
-                .Button1.Content = "OK"
+                .Button1.Text = "OK"
                 .Button2.Visibility = Visibility.Collapsed
                 .Button2.IsEnabled = False
                 .Button3.Visibility = Visibility.Collapsed
                 .Button3.IsEnabled = False
 
             ElseIf buttons = MessageBoxButton.YesNo Then
-                .Button1.Content = Funcs.ChooseLang("Yes", "Oui")
+                .Button1.Text = Funcs.ChooseLang("Yes", "Oui")
                 .Button2.Visibility = Visibility.Collapsed
                 .Button2.IsEnabled = False
                 .Button3.Content = Funcs.ChooseLang("No", "Non")
 
             ElseIf buttons = MessageBoxButton.YesNoCancel Then
-                .Button1.Content = Funcs.ChooseLang("Yes", "Oui")
-                .Button2.Content = Funcs.ChooseLang("No", "Non")
-                .Button3.Content = Funcs.ChooseLang("Cancel", "Annuler")
+                .Button1.Text = Funcs.ChooseLang("Yes", "Oui")
+                .Button2.Text = Funcs.ChooseLang("No", "Non")
+                .Button3.Text = Funcs.ChooseLang("Cancel", "Annuler")
 
             Else ' buttons = MessageBoxButtons.OKCancel
-                .Button1.Content = "OK"
+                .Button1.Text = "OK"
                 .Button2.Visibility = Visibility.Collapsed
                 .Button2.IsEnabled = False
-                .Button3.Content = Funcs.ChooseLang("Cancel", "Annuler")
+                .Button3.Text = Funcs.ChooseLang("Cancel", "Annuler")
 
             End If
 
@@ -672,8 +659,8 @@ Class MainWindow
             "∪*UNION", "∩*INTERSECTION", "∈*APPARTIENT À", "∋*CONTIENT COMME ÉLÉMENT", "∴*PAR CONSÉQUENT", "¬*NÉGATION", "ℵ*ALEPH", "∑*SYMBOLE SOMME", "∫*SYMBOLE INTÉGRALE"}
 
 
-            BoldBtnImg.SetResourceReference(ContentProperty, "GrasIcon")
-            UnderlineBtnImg.SetResourceReference(ContentProperty, "SousligneIcon")
+            BoldBtn.Icon = FindResource("GrasIcon")
+            UnderlineBtn.Icon = FindResource("SousligneIcon")
 
             DateTimeLang = "fr"
             DefineLang = "fr"
@@ -832,9 +819,9 @@ Class MainWindow
 
             Else
                 If DocTxt.SelectedText = "" Then
-                    WordCountStatusBtn.Content = $"{chars.ToString()} {Funcs.ChooseLang("characters", "caractères")}"
+                    WordCountStatusBtn.Content = $"{chars} {Funcs.ChooseLang("characters", "caractères")}"
                 Else
-                    WordCountStatusBtn.Content = $"{selectchars.ToString()} {Funcs.ChooseLang("of", "de")} {chars.ToString()} {Funcs.ChooseLang("characters", "caractères")}"
+                    WordCountStatusBtn.Content = $"{selectchars} {Funcs.ChooseLang("of", "de")} {chars} {Funcs.ChooseLang("characters", "caractères")}"
                 End If
 
             End If
@@ -846,7 +833,7 @@ Class MainWindow
                 WordCountStatusBtn.Content = Funcs.ChooseLang("1 line", "1 ligne")
 
             Else
-                WordCountStatusBtn.Content = $"{lines.ToString()} {Funcs.ChooseLang("lines", "lignes")}"
+                WordCountStatusBtn.Content = $"{lines} {Funcs.ChooseLang("lines", "lignes")}"
 
             End If
 
@@ -859,9 +846,9 @@ Class MainWindow
 
             Else
                 If DocTxt.SelectedText = "" Then
-                    WordCountStatusBtn.Content = $"{words.ToString()} {Funcs.ChooseLang("words", "mots")}"
+                    WordCountStatusBtn.Content = $"{words} {Funcs.ChooseLang("words", "mots")}"
                 Else
-                    WordCountStatusBtn.Content = $"{selectwords.ToString()} {Funcs.ChooseLang("of", "de")} {words.ToString()} {Funcs.ChooseLang("words", "mots")}"
+                    WordCountStatusBtn.Content = $"{selectwords} {Funcs.ChooseLang("of", "de")} {words} {Funcs.ChooseLang("words", "mots")}"
                 End If
 
             End If
@@ -874,8 +861,8 @@ Class MainWindow
         CutBtn.Click, CopyBtn.Click, PasteBtn.Click, BoldBtn.Click, ItalicBtn.Click, UnderlineBtn.Click, StrikethroughBtn.Click, LeftBtn.Click, CentreBtn.Click,
         RightBtn.Click, NumberBtn.Click, DecIndentBtn.Click, IncIndentBtn.Click, TextColourBtn.Click, HighlightBtn.Click, SubscriptBtn.Click, SuperscriptBtn.Click,
         BulletBtn.Click, PictureBtn.Click, ScreenshotBtn.Click, TableBtn.Click, ShapeBtn.Click, EquationBtn.Click, SymbolBtn.Click, LinkBtn.Click,
-        ChartBtn.Click, StylesBtn.Click, ColourSchemesBtn.Click, CasingBtn.Click, SelectAllBtn.Click, ClearBtn.Click, FindReplaceBtn.Click, WordCountBtn.Click,
-        ReadAloudBtn.Click, SpellcheckerBtn.Click, WrapBtn.Click, URLBtn.Click, WordCountStatusBtn.Click
+        ChartBtn.Click, StylesBtn.Click, ColourSchemesBtn.Click, CasingBtn.Click, SelectAllBtn.Click, ClearFormattingBtn.Click, FindReplaceBtn.Click, WordCountBtn.Click,
+        ClearAllBtn.Click, ReadAloudBtn.Click, SpellcheckerBtn.Click, WrapBtn.Click, URLBtn.Click, WordCountStatusBtn.Click
 
         TextFocus()
 
@@ -1004,9 +991,11 @@ Class MainWindow
         If Not filecount = 0 Then
             PinnedStack.Children.Add(AddPinnedBtn)
             PinnedStack.Children.Add(ClearPinnedBtn)
+            NoPinnedLbl.Visibility = Visibility.Collapsed
 
         Else
             PinnedStack.Children.Add(AddPinnedBtn)
+            NoPinnedLbl.Visibility = Visibility.Visible
 
         End If
 
@@ -1015,7 +1004,7 @@ Class MainWindow
     End Sub
 
     Private Function CreateRecentBtnXml(filepath As String, count As String) As String
-        Dim img As String = "NewIcon"
+        Dim img As String = "BlankIcon"
         Dim filename As String = Path.GetFileNameWithoutExtension(filepath)
 
         If filename = "" Then
@@ -1025,16 +1014,16 @@ Class MainWindow
 
         Select Case IO.Path.GetExtension(filepath).ToLower()
             Case ".rtf"
-                img = "RTFIcon"
+                img = "RtfIcon"
             Case ".txt"
-                img = "TXTIcon"
+                img = "TxtIcon"
         End Select
 
-        Return "<Button BorderBrush='#FFFFFFFF' BorderThickness='0, 0, 0, 0' Background='#00FFFFFF' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Center' Padding='0, 0, 0, 0' Style='{DynamicResource AppButton}' Name='" +
-            $"RecentFile{count}Btn" + "' Height='57' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><DockPanel LastChildFill='False' Height='53'><ContentControl Content='{DynamicResource " +
-            img + "}' Name='RecentFileImg' Width='24' Margin='10,0,0,2' HorizontalAlignment='Left'/><TextBlock FontSize='14' TextTrimming='CharacterEllipsis' Name='RecentFileTxt' MaxWidth='556' Margin='15,6,0,0'><Run FontWeight='Bold'>" +
-            filename + "</Run><LineBreak/>" +
-            filepath + "</TextBlock></DockPanel></Button>"
+        Return "<Button BorderThickness='0' Background='#00FFFFFF' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Center' Padding='0' Style='{DynamicResource AppButton}' Name='" +
+            $"RecentFile{count}Btn" + "' Height='57' HorizontalAlignment='Left' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><DockPanel LastChildFill='False' Height='53'><ContentControl Content='{DynamicResource " +
+            img + "}' Name='RecentFileImg' Width='24' Margin='10,0,0,2' HorizontalAlignment='Left'/><TextBlock FontSize='14' VerticalAlignment='Center' TextTrimming='CharacterEllipsis' Name='RecentFileTxt' Margin='10,0,0,1'><Run FontWeight='SemiBold'>" +
+            filename + "</Run><LineBreak/><Run FontSize='12'>" +
+            filepath + "</Run></TextBlock></DockPanel></Button>"
 
     End Function
 
@@ -1046,11 +1035,11 @@ Class MainWindow
 
         End If
 
-        Return "<Button BorderBrush='#FFFFFFFF' BorderThickness='0, 0, 0, 0' Background='#00FFFFFF' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Center' Padding='0, 0, 0, 0' Style='{DynamicResource AppButton}' Name='" +
-            $"PinnedFile{count}Btn" + "' Height='57' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><DockPanel LastChildFill='False' Height='53'><ContentControl Content='{DynamicResource " +
-            "OpenIcon" + "}' Name='RecentFileImg' Width='24' Margin='10,0,0,2' HorizontalAlignment='Left'/><TextBlock FontSize='14' TextTrimming='CharacterEllipsis' Name='RecentFileTxt' MaxWidth='556' Margin='15,6,0,0'><Run FontWeight='Bold'>" +
-            folder + "</Run><LineBreak/>" +
-            filepath + "</TextBlock></DockPanel></Button>"
+        Return "<Button BorderThickness='0' Background='#00FFFFFF' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Center' Padding='0' Style='{DynamicResource AppButton}' Name='" +
+            $"PinnedFile{count}Btn" + "' Height='57' HorizontalAlignment='Left' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><DockPanel LastChildFill='False' Height='53'><ContentControl Content='{DynamicResource " +
+            "OpenIcon" + "}' Name='RecentFileImg' Width='24' Margin='10,0,0,2' HorizontalAlignment='Left'/><TextBlock FontSize='14' VerticalAlignment='Center' TextTrimming='CharacterEllipsis' Name='RecentFileTxt' Margin='10,0,0,1'><Run FontWeight='SemiBold'>" +
+            folder + "</Run><LineBreak/><Run FontSize='12'>" +
+            filepath + "</Run></TextBlock></DockPanel></Button>"
 
     End Function
 
@@ -1073,22 +1062,22 @@ Class MainWindow
     Private Sub CheckButtonSizes()
         TemplateGrid.Width = ActualWidth - 238
 
-        For Each i In RecentStack.Children
-            Dim tb As TextBlock = i.FindName("RecentFileTxt")
-            tb.MaxWidth = Math.Abs(ActualWidth - 520) ' was 504
+        For Each btn In RecentStack.Children.OfType(Of Controls.Button) _
+            .Except(New List(Of Controls.Button) From {ClearRecentsBtn})
 
+            btn.Width = Math.Abs(ActualWidth - 470) ' was 504 , 520 + 65
         Next
 
-        For Each i In FavouriteStack.Children
-            Dim tb As TextBlock = i.FindName("RecentFileTxt")
-            tb.MaxWidth = Math.Abs(ActualWidth - 520)
+        For Each btn In FavouriteStack.Children.OfType(Of Controls.Button) _
+            .Except(New List(Of Controls.Button) From {AddFavouritesBtn, ClearFavouritesBtn})
 
+            btn.Width = Math.Abs(ActualWidth - 470) ' was 504 , 520 + 65
         Next
 
-        For Each i In PinnedStack.Children
-            Dim tb As TextBlock = i.FindName("RecentFileTxt")
-            tb.MaxWidth = Math.Abs(ActualWidth - 316)
+        For Each btn In PinnedStack.Children.OfType(Of Controls.Button) _
+            .Except(New List(Of Controls.Button) From {AddPinnedBtn, ClearPinnedBtn})
 
+            btn.Width = Math.Abs(ActualWidth - 260) ' was 316
         Next
 
     End Sub
@@ -1150,36 +1139,36 @@ Class MainWindow
 
     Private Sub CheckToolbars()
 
-        If HomePnl.ActualWidth + 12 > HomeScrollViewer.ActualWidth Then
+        If HomePnl.ActualWidth + 14 > HomeScrollViewer.ActualWidth Then
             HomeScroll.Visibility = Visibility.Visible
-            HomeScrollViewer.Margin = New Thickness(60, 0, 40, 0)
+            HomeScrollViewer.Margin = New Thickness(0, 0, 58, 0)
         Else
             HomeScroll.Visibility = Visibility.Collapsed
-            HomeScrollViewer.Margin = New Thickness(60, 0, 0, 0)
+            HomeScrollViewer.Margin = New Thickness(0, 0, 0, 0)
         End If
 
-        If ToolsPnl.ActualWidth + 12 > ToolsScrollViewer.ActualWidth Then
+        If ToolsPnl.ActualWidth + 14 > ToolsScrollViewer.ActualWidth Then
             ToolsScroll.Visibility = Visibility.Visible
-            HomeScrollViewer.Margin = New Thickness(60, 0, 40, 0)
+            ToolsScrollViewer.Margin = New Thickness(0, 0, 58, 0)
         Else
             ToolsScroll.Visibility = Visibility.Collapsed
-            HomeScrollViewer.Margin = New Thickness(60, 0, 0, 0)
+            ToolsScrollViewer.Margin = New Thickness(0, 0, 0, 0)
         End If
 
-        If DesignPnl.ActualWidth + 12 > DesignScrollViewer.ActualWidth Then
+        If DesignPnl.ActualWidth + 14 > DesignScrollViewer.ActualWidth Then
             DesignScroll.Visibility = Visibility.Visible
-            HomeScrollViewer.Margin = New Thickness(60, 0, 40, 0)
+            DesignScrollViewer.Margin = New Thickness(0, 0, 58, 0)
         Else
             DesignScroll.Visibility = Visibility.Collapsed
-            HomeScrollViewer.Margin = New Thickness(60, 0, 0, 0)
+            DesignScrollViewer.Margin = New Thickness(0, 0, 0, 0)
         End If
 
-        If ReviewPnl.ActualWidth + 12 > ReviewScrollViewer.ActualWidth Then
+        If ReviewPnl.ActualWidth + 14 > ReviewScrollViewer.ActualWidth Then
             ReviewScroll.Visibility = Visibility.Visible
-            HomeScrollViewer.Margin = New Thickness(60, 0, 40, 0)
+            ReviewScrollViewer.Margin = New Thickness(0, 0, 58, 0)
         Else
             ReviewScroll.Visibility = Visibility.Collapsed
-            HomeScrollViewer.Margin = New Thickness(60, 0, 0, 0)
+            ReviewScrollViewer.Margin = New Thickness(0, 0, 0, 0)
         End If
 
     End Sub
@@ -1204,24 +1193,21 @@ Class MainWindow
 
         If MainTabs.SelectedIndex = 1 Then
             MainTabs.SelectedIndex = 0
-            BeginStoryboard(TryFindResource("MenuStoryboard"))
+            OpenMenuStoryboard.Begin()
 
         Else
-            MainTabs.SelectedIndex = 1
-            BeginStoryboard(TryFindResource("DocStoryboard"))
+            CloseMenuStoryboard.Begin()
 
         End If
 
     End Sub
 
-    Private Sub TypeBtn_MouseEnter(sender As Object, e As Input.MouseEventArgs) Handles TypeBtn.MouseEnter
-        TypeHoverIn.Begin()
 
-    End Sub
+    Private Sub CloseMenu_Completed(sender As Object, e As EventArgs)
+        If IsLoaded Then
+            MainTabs.SelectedIndex = 1
 
-    Private Sub TypeBtn_MouseLeave(sender As Object, e As Input.MouseEventArgs) Handles TypeBtn.MouseLeave
-        TypeHoverOut.Begin()
-
+        End If
     End Sub
 
     Private Sub MainTabs_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles MainTabs.SelectionChanged
@@ -1232,7 +1218,9 @@ Class MainWindow
     Private Sub CheckMenu()
 
         If MainTabs.SelectedIndex = 1 Then
-            TypeIconBack.SetResourceReference(Shape.FillProperty, "SecondaryColor")
+            TypeBtnTxt.Text = "Menu"
+            TypeBtnIcn.SetResourceReference(ContentProperty, "AppWhiteIcon")
+            TypeBtn.Width = 76
             DocTabSelector.Visibility = Visibility.Visible
             HomeBtn.Visibility = Visibility.Visible
             ToolsBtn.Visibility = Visibility.Visible
@@ -1241,7 +1229,9 @@ Class MainWindow
             MenuTabs.SelectedIndex = 5
 
         Else
-            TypeIconBack.SetResourceReference(Shape.FillProperty, "BackColor")
+            TypeBtnTxt.Text = Funcs.ChooseLang("Close menu", "Fermer le menu")
+            TypeBtnIcn.SetResourceReference(ContentProperty, "BackWhiteIcon")
+            TypeBtn.Width = 161
             DocTabSelector.Visibility = Visibility.Collapsed
             HomeBtn.Visibility = Visibility.Collapsed
             ToolsBtn.Visibility = Visibility.Collapsed
@@ -1254,54 +1244,39 @@ Class MainWindow
 
     Private Sub MenuTabs_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles MenuTabs.SelectionChanged
 
-        NewBtnTxt.SetResourceReference(ForegroundProperty, "TextColor")
-        OpenBtnTxt.SetResourceReference(ForegroundProperty, "TextColor")
-        SaveAsBtnTxt.SetResourceReference(ForegroundProperty, "TextColor")
-        PrintBtnTxt.SetResourceReference(ForegroundProperty, "TextColor")
-        ShareBtnTxt.SetResourceReference(ForegroundProperty, "TextColor")
-        InfoBtnTxt.SetResourceReference(ForegroundProperty, "TextColor")
-
-        NewIcn.SetResourceReference(ContentProperty, "NewIcon")
-        OpenIcn.SetResourceReference(ContentProperty, "OpenIcon")
-        SaveIcn.SetResourceReference(ContentProperty, "SaveAsIcon")
-        PrintIcn.SetResourceReference(ContentProperty, "PrintIcon")
-        ShareIcn.SetResourceReference(ContentProperty, "ShareIcon")
-        InfoIcn.SetResourceReference(ContentProperty, "InfoIcon")
+        NewBtn.FontWeight = FontWeights.Normal
+        OpenBtn.FontWeight = FontWeights.Normal
+        SaveAsBtn.FontWeight = FontWeights.Normal
+        PrintBtn.FontWeight = FontWeights.Normal
+        ShareBtn.FontWeight = FontWeights.Normal
+        InfoBtn.FontWeight = FontWeights.Normal
 
         Select Case MenuTabs.SelectedIndex
             Case 0
                 BeginStoryboard(TryFindResource("NewStoryboard"))
-                NewIcn.SetResourceReference(ContentProperty, "NewWhiteIcon")
-                NewBtnTxt.Foreground = New SolidColorBrush(Color.FromRgb(255, 255, 255))
+                NewBtn.FontWeight = FontWeights.SemiBold
 
             Case 1
                 BeginStoryboard(TryFindResource("OpenStoryboard"))
-                OpenIcn.SetResourceReference(ContentProperty, "OpenWhiteIcon")
-                OpenBtnTxt.Foreground = New SolidColorBrush(Color.FromRgb(255, 255, 255))
-
+                OpenBtn.FontWeight = FontWeights.SemiBold
                 If OpenTabs.SelectedIndex = 1 Then RefreshRecents() Else RefreshFavourites()
 
             Case 2
                 BeginStoryboard(TryFindResource("SaveStoryboard"))
-                SaveIcn.SetResourceReference(ContentProperty, "SaveWhiteIcon")
-                SaveAsBtnTxt.Foreground = New SolidColorBrush(Color.FromRgb(255, 255, 255))
-
+                SaveAsBtn.FontWeight = FontWeights.SemiBold
                 RefreshPinned()
 
             Case 3
                 BeginStoryboard(TryFindResource("PrintStoryboard"))
-                PrintIcn.SetResourceReference(ContentProperty, "PrintWhiteIcon")
-                PrintBtnTxt.Foreground = New SolidColorBrush(Color.FromRgb(255, 255, 255))
+                PrintBtn.FontWeight = FontWeights.SemiBold
 
             Case 4
                 BeginStoryboard(TryFindResource("ShareStoryboard"))
-                ShareIcn.SetResourceReference(ContentProperty, "ShareWhiteIcon")
-                ShareBtnTxt.Foreground = New SolidColorBrush(Color.FromRgb(255, 255, 255))
+                ShareBtn.FontWeight = FontWeights.SemiBold
 
             Case 5
                 BeginStoryboard(TryFindResource("InfoStoryboard"))
-                InfoIcn.SetResourceReference(ContentProperty, "InfoWhiteIcon")
-                InfoBtnTxt.Foreground = New SolidColorBrush(Color.FromRgb(255, 255, 255))
+                InfoBtn.FontWeight = FontWeights.SemiBold
 
         End Select
 
@@ -1331,7 +1306,7 @@ Class MainWindow
     ' [app-name]*[latest-version]*[Low/High]*[feature#feature]*[fonction#fonction]$...
 
     Private Sub NotificationsBtn_Click(sender As Object, e As RoutedEventArgs) Handles NotificationsBtn.Click
-        NotificationsIcn.SetResourceReference(ContentProperty, "NotificationIcon")
+        NotificationsBtn.Icon = FindResource("NotificationIcon")
         NotificationsPopup.IsOpen = True
 
         If NotificationLoading.Visibility = Visibility.Visible Then
@@ -1343,14 +1318,14 @@ Class MainWindow
     Private Sub CheckNotifications(Optional forcedialog As Boolean = False)
 
         Try
-            Dim info As String() = Funcs.GetNotificationInfo("Type").Split("*")
+            Dim info As String() = Funcs.GetNotificationInfo("Type")
 
-            If Not info(1) = My.Application.Info.Version.ToString(3) Then
+            If Not info(0) = My.Application.Info.Version.ToString(3) Then
                 NotificationsTxt.Content = Funcs.ChooseLang("An update is available.", "Une mise à jour est disponible.")
                 NotifyBtnStack.Visibility = Visibility.Visible
 
                 If NotificationsPopup.IsOpen = False Then
-                    NotificationsIcn.SetResourceReference(ContentProperty, "NotificationNewIcon")
+                    NotificationsBtn.Icon = FindResource("NotificationNewIcon")
                     CreateNotifyMsg(info)
 
                 End If
@@ -1379,8 +1354,8 @@ Class MainWindow
     Private Sub CreateNotifyMsg(info As String())
 
         Try
-            Dim version As String = info(1)
-            Dim featurelist As String() = info(Convert.ToInt32(Funcs.ChooseLang("3", "4"))).Split("#")
+            Dim version As String = info(0)
+            Dim featurelist As String() = info.Skip(2).ToArray()
             Dim features As String = ""
 
             If featurelist.Length <> 0 Then
@@ -1394,7 +1369,7 @@ Class MainWindow
             Dim start As String = Funcs.ChooseLang("An update is available.", "Une mise à jour est disponible.")
             Dim icon As MessageBoxImage = MessageBoxImage.Information
 
-            If info(2) = "High" Then
+            If info(1) = "High" Then
                 start = Funcs.ChooseLang("An important update is available!", "Une mise à jour importante est disponible !")
                 icon = MessageBoxImage.Exclamation
             End If
@@ -1403,7 +1378,7 @@ Class MainWindow
                           Funcs.ChooseLang("Would you like to visit the download page?", "Vous souhaitez visiter la page de téléchargement ?"),
                           Funcs.ChooseLang("Type Express Updates", "Mises à Jour Type Express"), MessageBoxButton.YesNoCancel, icon) = MessageBoxResult.Yes Then
 
-                Process.Start("https://jwebsites404.wixsite.com/expressapps/update?app=type")
+                Process.Start("https://express.johnjds.co.uk/update?app=type")
 
             End If
 
@@ -1423,59 +1398,7 @@ Class MainWindow
 
     Private Sub UpdateBtn_Click(sender As Object, e As RoutedEventArgs) Handles UpdateBtn.Click
         NotificationsPopup.IsOpen = False
-        Process.Start("https://jwebsites404.wixsite.com/expressapps/update?app=type")
-
-    End Sub
-
-
-    ' MENU
-    ' --
-
-    Private Sub MenuBtns_MouseEnter(sender As Controls.Button, e As RoutedEventArgs) Handles NewBtn.MouseEnter, OpenBtn.MouseEnter, SaveBtn.MouseEnter,
-        SaveAsBtn.MouseEnter, PrintBtn.MouseEnter, ShareBtn.MouseEnter, OptionsBtn.MouseEnter, InfoBtn.MouseEnter
-
-        Select Case sender.Name
-            Case "NewBtn"
-                NewHover.Visibility = Visibility.Visible
-            Case "OpenBtn"
-                OpenHover.Visibility = Visibility.Visible
-            Case "SaveBtn"
-                SaveHover.Visibility = Visibility.Visible
-            Case "SaveAsBtn"
-                SaveAsHover.Visibility = Visibility.Visible
-            Case "PrintBtn"
-                PrintHover.Visibility = Visibility.Visible
-            Case "ShareBtn"
-                ShareHover.Visibility = Visibility.Visible
-            Case "OptionsBtn"
-                OptionsHover.Visibility = Visibility.Visible
-            Case "InfoBtn"
-                InfoHover.Visibility = Visibility.Visible
-        End Select
-
-    End Sub
-
-    Private Sub MenuBtns_MouseLeave(sender As Controls.Button, e As RoutedEventArgs) Handles NewBtn.MouseLeave, OpenBtn.MouseLeave, SaveBtn.MouseLeave,
-        SaveAsBtn.MouseLeave, PrintBtn.MouseLeave, ShareBtn.MouseLeave, OptionsBtn.MouseLeave, InfoBtn.MouseLeave
-
-        Select Case sender.Name
-            Case "NewBtn"
-                NewHover.Visibility = Visibility.Hidden
-            Case "OpenBtn"
-                OpenHover.Visibility = Visibility.Hidden
-            Case "SaveBtn"
-                SaveHover.Visibility = Visibility.Hidden
-            Case "SaveAsBtn"
-                SaveAsHover.Visibility = Visibility.Hidden
-            Case "PrintBtn"
-                PrintHover.Visibility = Visibility.Hidden
-            Case "ShareBtn"
-                ShareHover.Visibility = Visibility.Hidden
-            Case "OptionsBtn"
-                OptionsHover.Visibility = Visibility.Hidden
-            Case "InfoBtn"
-                InfoHover.Visibility = Visibility.Hidden
-        End Select
+        Process.Start("https://express.johnjds.co.uk/update?app=type")
 
     End Sub
 
@@ -1485,7 +1408,10 @@ Class MainWindow
     ' --
 
     Private Sub NewBtn_Click(sender As Object, e As RoutedEventArgs) Handles NewBtn.Click
-        MainTabs.SelectedIndex = 0
+        If MainTabs.SelectedIndex = 1 Then
+            MainTabs.SelectedIndex = 0
+            OpenMenuStoryboard.Begin()
+        End If
         MenuTabs.SelectedIndex = 0
 
     End Sub
@@ -1493,8 +1419,7 @@ Class MainWindow
     Private Sub BlankBtn_Click(sender As Object, e As RoutedEventArgs) Handles BlankBtn.Click
 
         If ThisFile = "" And DocTxt.Text = "" Then
-            MainTabs.SelectedIndex = 1
-            BeginStoryboard(TryFindResource("DocStoryboard"))
+            CloseMenuStoryboard.Begin()
             TextFocus()
 
         Else
@@ -1514,15 +1439,14 @@ Class MainWindow
         TemplateSearchTxt.Focus()
 
         If ThisFile = "" And DocTxt.Text = "" Then
-            SetTemplate(sender.Tag.ToString().Split(","))
-            MainTabs.SelectedIndex = 1
-            BeginStoryboard(TryFindResource("DocStoryboard"))
+            SetTemplate(CType(sender.Tag, String()))
+            CloseMenuStoryboard.Begin()
             TextFocus()
 
         Else
             Dim NewForm1 As New MainWindow
             NewForm1.Show()
-            NewForm1.SetTemplate(sender.Tag.ToString().Split(","))
+            NewForm1.SetTemplate(CType(sender.Tag, String()))
             NewForm1.MainTabs.SelectedIndex = 1
             NewForm1.TextFocus()
 
@@ -1538,8 +1462,7 @@ Class MainWindow
 
         If ThisFile = "" And DocTxt.Text = "" Then
             SetRTFTemplate(sender.Tag.ToString())
-            MainTabs.SelectedIndex = 1
-            BeginStoryboard(TryFindResource("DocStoryboard"))
+            CloseMenuStoryboard.Begin()
             TextFocus()
 
         Else
@@ -1589,7 +1512,7 @@ Class MainWindow
 
     Private Sub GetTemplates()
 
-        ' BASIC TEMPLATE TAG FORMAT (SEE templatesv3.txt FILE)
+        ' BASIC TEMPLATE TAG FORMAT
         ' --
         ' NAME        | BUTTON DISPLAY                            | DOCUMENT TITLE                                                                       | DOCUMENT BODY
         ' templateName,topPadding,titleDisplaySize,bodyDisplaySize,titleFont,titleSize,titleWeight,titleStyle,titleDecorations,titleColour,titleAlignment,bodyFont,bodySize,bodyWeight,bodyStyle,bodyDecorations,bodyColour,bodyAlignment
@@ -1613,23 +1536,100 @@ Class MainWindow
         If AllTemplates = True Then search = ""
 
         Try
-            Dim client As Net.WebClient = New Net.WebClient()
-            Dim reader As StreamReader = New StreamReader(client.OpenRead(Funcs.ChooseLang("https://dl.dropboxusercontent.com/s/0uy5woni5j57c1j/templatesv3.txt", "https://dl.dropboxusercontent.com/s/gt7fpojawit7qyc/templatesv3fr.txt")))
+            Dim client As New Net.WebClient()
+            Dim reader As New StreamReader(client.OpenRead("https://api.johnjds.co.uk/express/v1/type/templates"))
             Dim info As String = reader.ReadToEnd()
+
+            Dim templates = New List(Of String()) From {}
+            Dim xmldoc = JsonConvert.DeserializeXmlNode(info, "info")
+
+            For Each i As Xml.XmlNode In xmldoc.ChildNodes.Item(0)
+                If i.OuterXml.StartsWith("<rtf>") Then
+                    Dim template = New List(Of String) From {"/rtf/", "", "", ""}
+
+                    For Each j As Xml.XmlNode In i.ChildNodes
+                        If j.OuterXml.StartsWith("<name>") Then
+                            template(1) = Funcs.GetXmlLocaleString(j.ChildNodes)
+
+                        ElseIf j.OuterXml.StartsWith("<image>") Then
+                            template(2) = Funcs.GetXmlLocaleString(j.ChildNodes)
+
+                        ElseIf j.OuterXml.StartsWith("<file>") Then
+                            template(3) = Funcs.GetXmlLocaleString(j.ChildNodes)
+
+                        End If
+                    Next
+                    templates.Add(template.ToArray())
+
+                ElseIf i.OuterXml.StartsWith("<basic>") Then
+                    Dim template = New List(Of String) From
+                        {"", "0", "0", "0", "", "0", "Normal", "Normal", "None", "#000000", "Left", "", "0", "Normal", "Normal", "None", "#000000", "Left"}
+
+                    For Each j As Xml.XmlNode In i.ChildNodes
+                        If j.OuterXml.StartsWith("<name>") Then
+                            template(0) = Funcs.GetXmlLocaleString(j.ChildNodes)
+
+                        ElseIf j.OuterXml.StartsWith("<display>") Then
+                            For Each k As Xml.XmlNode In j.ChildNodes
+                                If k.OuterXml.StartsWith("<padding>") Then
+                                    template(1) = k.InnerText
+
+                                ElseIf k.OuterXml.StartsWith("<title_size>") Then
+                                    template(2) = k.InnerText
+
+                                ElseIf k.OuterXml.StartsWith("<body_size>") Then
+                                    template(3) = k.InnerText
+
+                                End If
+                            Next
+
+                        ElseIf j.OuterXml.StartsWith("<title>") Or j.OuterXml.StartsWith("<body>") Then
+                            Dim inc = 0
+                            If j.OuterXml.StartsWith("<body>") Then inc = 7
+
+                            For Each k As Xml.XmlNode In j.ChildNodes
+                                If k.OuterXml.StartsWith("<font>") Then
+                                    template(inc + 4) = k.InnerText
+
+                                ElseIf k.OuterXml.StartsWith("<size>") Then
+                                    template(inc + 5) = k.InnerText
+
+                                ElseIf k.OuterXml.StartsWith("<weight>") Then
+                                    template(inc + 6) = k.InnerText
+
+                                ElseIf k.OuterXml.StartsWith("<style>") Then
+                                    template(inc + 7) = k.InnerText
+
+                                ElseIf k.OuterXml.StartsWith("<decorations>") Then
+                                    template(inc + 8) = k.InnerText
+
+                                ElseIf k.OuterXml.StartsWith("<colour>") Then
+                                    template(inc + 9) = k.InnerText
+
+                                ElseIf k.OuterXml.StartsWith("<alignment>") Then
+                                    template(inc + 10) = k.InnerText
+
+                                End If
+                            Next
+
+                        End If
+                    Next
+                    templates.Add(template.ToArray())
+
+                End If
+            Next
 
             TemplateGrid.Children.Clear()
             BackTemplateBtn.Visibility = Visibility.Visible
 
             Dim count As Integer = 0
-            For Each i In info.Split("*")
-                If i.Split(",")(0).ToLower().Contains(search.ToLower()) And Not i.Split(",")(0) = "/rtf/" Then ' (future proofed)
-
-                    Dim TempInfo As String() = i.Split(",")
+            For Each TempInfo In templates
+                If TempInfo(0).ToLower().Contains(search.ToLower()) And Not TempInfo(0) = "/rtf/" Then ' (future proofed)
                     'rtb1.Document.Blocks.Add(New Paragraph(New Run(XamlWriter.Save(BlankBtn))))
 
                     Dim copy As Controls.Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0, 0, 0, 0' Background='#00FFFFFF' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='" +
                                             $"NewTemplate{count}Btn" +
-                                            "' Width='170' Height='130' Margin='0,0,0,0' HorizontalAlignment='Center' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><StackPanel Width='170' Height='130'><Border BorderThickness='1,1,1,1' BorderBrush='#FFABADB3' Background='#FFFFFFFF' Height='85' Margin='10, 10, 10, 0'><TextBlock FontSize='14' Padding='12, " +
+                                            "' Width='170' Height='130' Margin='0,0,0,0' HorizontalAlignment='Center' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><StackPanel Width='170' Height='130'><Border BorderThickness='1,1,1,1' BorderBrush='#FFABADB3' Background='#FFFFFFFF' Height='85' Margin='10, 10, 10, 0' CornerRadius='5'><TextBlock FontSize='14' Padding='12, " +
                                             TempInfo(1) +
                                             ", 0, 0' Name='DisplayTxt' Margin='0, 0, 0, 0'><Run Foreground='" +
                                             TempInfo(9) +
@@ -1649,7 +1649,7 @@ Class MainWindow
                                             Funcs.EscapeChars(TempInfo(0)) +
                                             "' FontSize='14' Padding='0, 6, 0, 0' TextTrimming='CharacterEllipsis' Name='OnlineTempBtnTxt' Height='33.62' Margin='15, 0, 10, 0' VerticalAlignment='Center' /></StackPanel></Button>")
 
-                    copy.Tag = i
+                    copy.Tag = TempInfo
                     copy.ToolTip = TempInfo(0)
                     TemplateGrid.Children.Add(copy)
                     AddHandler copy.Click, AddressOf TemplateBtns_Click
@@ -1657,16 +1657,14 @@ Class MainWindow
                     count += 1
 
 
-                ElseIf i.Split(",")(1).ToLower().Contains(search.ToLower()) And i.Split(",")(0) = "/rtf/" Then
-
-                    Dim TempInfo As String() = i.Split(",")
+                ElseIf TempInfo(1).ToLower().Contains(search.ToLower()) And TempInfo(0) = "/rtf/" Then
                     'rtb1.Document.Blocks.Add(New Paragraph(New Run(XamlWriter.Save(BlankBtn))))
 
                     Dim copy As Controls.Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0, 0, 0, 0' Background='#00FFFFFF' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='" +
                                             $"NewTemplate{count}Btn" +
-                                            "' Width='170' Height='130' Margin='0,0,0,0' HorizontalAlignment='Center' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><StackPanel Width='170' Height='130'><Border BorderThickness='1,1,1,1' BorderBrush='#FFABADB3' Background='#FFFFFFFF' Height='85' Margin='10, 10, 10, 0'><Image Name='DisplayImg' Margin='0' Source='" +
+                                            "' Width='170' Height='130' Margin='0,0,0,0' HorizontalAlignment='Center' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' xmlns:ex='clr-namespace:ExpressControls;assembly=ExpressControls'><StackPanel Width='170' Height='130'><Border BorderThickness='1,1,1,1' BorderBrush='#FFABADB3' Background='#FFFFFFFF' Height='85' Margin='10, 10, 10, 0' CornerRadius='5'><ex:ClippedBorder CornerRadius='5'><Image Name='DisplayImg' Margin='0' Source='" +
                                             TempInfo(2) +
-                                            "'/></Border><TextBlock Text='" +
+                                            "'/></ex:ClippedBorder></Border><TextBlock Text='" +
                                             Funcs.EscapeChars(TempInfo(1)) +
                                             "' FontSize='14' Padding='0, 6, 0, 0' TextTrimming='CharacterEllipsis' Name='OnlineTempBtnTxt' Height='33.62' Margin='15, 0, 10, 0' VerticalAlignment='Center' /></StackPanel></Button>")
 
@@ -1842,8 +1840,8 @@ Class MainWindow
     End Sub
 
     Public Sub SetRTFTemplate(link As String)
-        Dim client As Net.WebClient = New Net.WebClient()
-        Dim reader As StreamReader = New StreamReader(client.OpenRead(link))
+        Dim client As New Net.WebClient()
+        Dim reader As New StreamReader(client.OpenRead(link))
         Dim info As String = reader.ReadToEnd()
 
         DocTxt.Rtf = info
@@ -1860,7 +1858,10 @@ Class MainWindow
     ' --
 
     Private Sub OpenBtn_Click(sender As Object, e As RoutedEventArgs) Handles OpenBtn.Click
-        MainTabs.SelectedIndex = 0
+        If MainTabs.SelectedIndex = 1 Then
+            MainTabs.SelectedIndex = 0
+            OpenMenuStoryboard.Begin()
+        End If
         MenuTabs.SelectedIndex = 1
 
         If OpenTabs.SelectedIndex = 0 Then
@@ -1995,26 +1996,31 @@ Class MainWindow
         'End Using
     End Function
 
-    Private Sub ResetOpenTabItemBorders()
-        RecentBtn.SetResourceReference(BorderBrushProperty, "BackColor")
-        FavouritesBtn.SetResourceReference(BorderBrushProperty, "BackColor")
-        OnlineOpenBtn.SetResourceReference(BorderBrushProperty, "BackColor")
+    'Private Sub ResetOpenTabItemBorders()
+    '    RecentBtn.SetResourceReference(BorderBrushProperty, "BackColor")
+    '    FavouritesBtn.SetResourceReference(BorderBrushProperty, "BackColor")
+    '    OnlineOpenBtn.SetResourceReference(BorderBrushProperty, "BackColor")
 
-    End Sub
+    'End Sub
 
     Private Sub OpenTabs_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles OpenTabs.SelectionChanged
-        ResetOpenTabItemBorders()
+        RecentBtn.FontWeight = FontWeights.Normal
+        FavouritesBtn.FontWeight = FontWeights.Normal
+        OnlineOpenBtn.FontWeight = FontWeights.Normal
 
         If OpenTabs.SelectedIndex = 0 Then
-            RecentBtn.BorderBrush = New SolidColorBrush(Color.FromArgb(255, 171, 173, 179))
+            BeginStoryboard(TryFindResource("RecentsStoryboard"))
+            RecentBtn.FontWeight = FontWeights.SemiBold
             RefreshRecents()
 
         ElseIf OpenTabs.SelectedIndex = 1 Then
-            FavouritesBtn.BorderBrush = New SolidColorBrush(Color.FromArgb(255, 171, 173, 179))
+            BeginStoryboard(TryFindResource("FavouritesStoryboard"))
+            FavouritesBtn.FontWeight = FontWeights.SemiBold
             RefreshFavourites()
 
         Else
-            OnlineOpenBtn.BorderBrush = New SolidColorBrush(Color.FromArgb(255, 171, 173, 179))
+            BeginStoryboard(TryFindResource("OnlineStoryboard"))
+            OnlineOpenBtn.FontWeight = FontWeights.SemiBold
 
         End If
 
@@ -2232,7 +2238,7 @@ Class MainWindow
 
                     Do
                         AmmendedName = DownloadLocationLbl.Text + "\" + Path.GetFileNameWithoutExtension(FileDownloadTxt.Text) +
-                            $" ({counter.ToString()})" + Path.GetExtension(FileDownloadTxt.Text)
+                            $" ({counter})" + Path.GetExtension(FileDownloadTxt.Text)
 
                         counter += 1
 
@@ -2277,16 +2283,18 @@ Class MainWindow
 
     Private Sub FileDownloadTxt_TextChanged(sender As Object, e As TextChangedEventArgs) Handles FileDownloadTxt.TextChanged
 
-        Try
-            If FileDownloadTxt.Text = "" Or FileDownloadTxt.Foreground.ToString() = "#FF818181" Then
-                DownloadFileBtn.IsEnabled = False
+        If IsLoaded Then
+            Try
+                If FileDownloadTxt.Text = "" Or FileDownloadTxt.Foreground.ToString() = "#FF818181" Then
+                    DownloadFileBtn.IsEnabled = False
 
-            Else
-                DownloadFileBtn.IsEnabled = True
+                Else
+                    DownloadFileBtn.IsEnabled = True
 
-            End If
-        Catch
-        End Try
+                End If
+            Catch
+            End Try
+        End If
 
     End Sub
 
@@ -2312,13 +2320,16 @@ Class MainWindow
     Private Sub SaveBtn_Click(sender As Object, e As RoutedEventArgs) Handles SaveBtn.Click
 
         If ThisFile = "" Then
-            MainTabs.SelectedIndex = 0
+            If MainTabs.SelectedIndex = 1 Then
+                MainTabs.SelectedIndex = 0
+                OpenMenuStoryboard.Begin()
+            End If
             MenuTabs.SelectedIndex = 2
             RefreshPinned()
 
         Else
             SaveFile(ThisFile)
-            MainTabs.SelectedIndex = 1
+            CloseMenuStoryboard.Begin()
 
         End If
 
@@ -2400,7 +2411,7 @@ Class MainWindow
 
         If saveDialog.ShowDialog() = True Then
             SaveFile(saveDialog.FileName)
-            MainTabs.SelectedIndex = 1
+            CloseMenuStoryboard.Begin()
 
         End If
 
@@ -2447,7 +2458,7 @@ Class MainWindow
 
         If saveDialog.ShowDialog() = True Then
             SaveFile(saveDialog.FileName)
-            MainTabs.SelectedIndex = 1
+            CloseMenuStoryboard.Begin()
 
         End If
 
@@ -2456,9 +2467,11 @@ Class MainWindow
     Private Sub SaveStatusBtn_Click(sender As Object, e As RoutedEventArgs) Handles SaveStatusBtn.Click
 
         If ThisFile = "" Then
-            MainTabs.SelectedIndex = 0
+            If MainTabs.SelectedIndex = 1 Then
+                MainTabs.SelectedIndex = 0
+                OpenMenuStoryboard.Begin()
+            End If
             MenuTabs.SelectedIndex = 2
-            BeginStoryboard(TryFindResource("MenuStoryboard"))
 
         Else
             SaveFile(ThisFile)
@@ -2472,7 +2485,10 @@ Class MainWindow
     ' --
 
     Private Sub PrintBtn_Click(sender As Object, e As RoutedEventArgs) Handles PrintBtn.Click
-        MainTabs.SelectedIndex = 0
+        If MainTabs.SelectedIndex = 1 Then
+            MainTabs.SelectedIndex = 0
+            OpenMenuStoryboard.Begin()
+        End If
         MenuTabs.SelectedIndex = 3
 
     End Sub
@@ -2492,7 +2508,7 @@ Class MainWindow
 
         If PrintDialog1.ShowDialog() = Forms.DialogResult.OK Then
             PrintDoc.Print()
-            MainTabs.SelectedIndex = 1
+            CloseMenuStoryboard.Begin()
 
             CreateTempLabel(Funcs.ChooseLang("Sent to printer", "Envoyé à l'imprimante"))
 
@@ -2534,25 +2550,31 @@ Class MainWindow
     ' --
 
     Private Sub ShareBtn_Click(sender As Object, e As RoutedEventArgs) Handles ShareBtn.Click
-        MainTabs.SelectedIndex = 0
+        If MainTabs.SelectedIndex = 1 Then
+            MainTabs.SelectedIndex = 0
+            OpenMenuStoryboard.Begin()
+        End If
         MenuTabs.SelectedIndex = 4
 
     End Sub
 
-    Private Sub ResetShareTabItemBorders()
-        EmailBtn.SetResourceReference(BorderBrushProperty, "BackColor")
-        LockBtn.SetResourceReference(BorderBrushProperty, "BackColor")
+    'Private Sub ResetShareTabItemBorders()
+    '    EmailBtn.SetResourceReference(BorderBrushProperty, "BackColor")
+    '    LockBtn.SetResourceReference(BorderBrushProperty, "BackColor")
 
-    End Sub
+    'End Sub
 
     Private Sub ShareTabs_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles ShareTabs.SelectionChanged
-        ResetShareTabItemBorders()
+        EmailBtn.FontWeight = FontWeights.Normal
+        LockBtn.FontWeight = FontWeights.Normal
 
         If ShareTabs.SelectedIndex = 0 Then
-            EmailBtn.BorderBrush = New SolidColorBrush(Color.FromArgb(255, 171, 173, 179))
+            BeginStoryboard(TryFindResource("EmailStoryboard"))
+            EmailBtn.FontWeight = FontWeights.SemiBold
 
         Else
-            LockBtn.BorderBrush = New SolidColorBrush(Color.FromArgb(255, 171, 173, 179))
+            BeginStoryboard(TryFindResource("LockStoryboard"))
+            LockBtn.FontWeight = FontWeights.SemiBold
 
         End If
 
@@ -2569,16 +2591,18 @@ Class MainWindow
 
     Private Sub EmailAddressTxt_TextChanged(sender As Object, e As TextChangedEventArgs) Handles EmailAddressTxt.TextChanged
 
-        Try
-            If EmailAddressTxt.Text = "" Or EmailAddressTxt.Foreground.ToString() = "#FF818181" Then
-                EmailDocBtn.IsEnabled = False
+        If IsLoaded Then
+            Try
+                If EmailAddressTxt.Text = "" Or EmailAddressTxt.Foreground.ToString() = "#FF818181" Then
+                    EmailDocBtn.IsEnabled = False
 
-            Else
-                EmailDocBtn.IsEnabled = True
+                Else
+                    EmailDocBtn.IsEnabled = True
 
-            End If
-        Catch
-        End Try
+                End If
+            Catch
+            End Try
+        End If
 
     End Sub
 
@@ -2604,13 +2628,13 @@ Class MainWindow
             EmailSubjectTxt.Focus()
             EmailSubjectTxt.Text = ""
 
-            MainTabs.SelectedIndex = 1
+            CloseMenuStoryboard.Begin()
             proc.Dispose()
 
         Catch
             NewMessage(Funcs.ChooseLang("Please make sure you have entered a valid email address.",
                                     "Veuillez mettre une adresse mail valide."),
-                        Funcs.ChooseLang("Invalid email", ""), MessageBoxButton.OK, MessageBoxImage.Error)
+                        Funcs.ChooseLang("Invalid email", "Email invalide"), MessageBoxButton.OK, MessageBoxImage.Error)
 
             EmailAddressTxt.Focus()
             EmailAddressTxt.SelectAll()
@@ -2628,7 +2652,21 @@ Class MainWindow
 
     End Sub
 
+    Private Sub LockPasswordTxt_KeyDown(sender As Object, e As Input.KeyEventArgs) Handles LockPasswordTxt.KeyDown
+
+        If e.Key = Key.Enter Then
+            e.Handled = True
+            PerformLock()
+        End If
+
+    End Sub
+
     Private Sub LockDocBtn_Click(sender As Object, e As RoutedEventArgs) Handles LockDocBtn.Click
+        PerformLock()
+
+    End Sub
+
+    Private Sub PerformLock()
 
         If LockPasswordTxt.Password.Length < 4 Then
             NewMessage(Funcs.ChooseLang("Your password is too short. Please try again.", "Votre mot de passe est trop court. Veuillez réessayer."),
@@ -2637,7 +2675,6 @@ Class MainWindow
         Else
             For Each i As Window In My.Application.Windows
                 i.Hide()
-
             Next
 
             Dim UnlockWindow As New Unlock With {.LockPass = LockPasswordTxt.Password}
@@ -2662,7 +2699,10 @@ Class MainWindow
                 UnlockWindow.Show()
 
             Else
-                MainTabs.SelectedIndex = 0
+                If MainTabs.SelectedIndex = 1 Then
+                    MainTabs.SelectedIndex = 0
+                    OpenMenuStoryboard.Begin()
+                End If
                 MenuTabs.SelectedIndex = 4
                 ShareTabs.SelectedIndex = 1
 
@@ -2684,7 +2724,7 @@ Class MainWindow
             Dim htmlwin As New HTML With {.HTMLCode = DocTxt.Text}
             If htmlwin.ShowDialog() = True Then
                 ExportFile(htmlwin.HTMLCode, htmlwin.Filename)
-                MainTabs.SelectedIndex = 1
+                CloseMenuStoryboard.Begin()
 
             End If
 
@@ -3087,12 +3127,12 @@ Class MainWindow
 
         Title = Funcs.ChooseLang("Untitled - Type Express", "Sans titre - Type Express")
         TitleTxt.Text = Funcs.ChooseLang("Untitled - Type Express", "Sans titre - Type Express")
-        MainTabs.SelectedIndex = 1
+        CloseMenuStoryboard.Begin()
 
     End Sub
 
     Private Sub StorageBtn_Click(sender As Object, e As RoutedEventArgs) Handles StorageBtn.Click
-        Process.Start("https://jwebsites404.wixsite.com/expressapps")
+        Process.Start("https://express.johnjds.co.uk")
 
     End Sub
 
@@ -3172,25 +3212,28 @@ Class MainWindow
 
     End Sub
 
-    Private Sub DocBtns_MouseEnter(sender As Controls.Button, e As Input.MouseEventArgs) Handles HomeBtn.MouseEnter, ToolsBtn.MouseEnter, DesignBtn.MouseEnter, ReviewBtn.MouseEnter
+    Private Sub DocBtns_MouseEnter(sender As Controls.Button, e As Input.MouseEventArgs) Handles TypeBtn.MouseEnter, HomeBtn.MouseEnter, ToolsBtn.MouseEnter, DesignBtn.MouseEnter, ReviewBtn.MouseEnter
 
         If sender.Equals(HomeBtn) Then
-            HomeBtnTxt.FontWeight = FontWeights.Bold
+            HomeBtnTxt.FontWeight = FontWeights.SemiBold
 
         ElseIf sender.Equals(ToolsBtn) Then
-            ToolsBtnTxt.FontWeight = FontWeights.Bold
+            ToolsBtnTxt.FontWeight = FontWeights.SemiBold
 
         ElseIf sender.Equals(DesignBtn) Then
-            DesignBtnTxt.FontWeight = FontWeights.Bold
+            DesignBtnTxt.FontWeight = FontWeights.SemiBold
 
         ElseIf sender.Equals(ReviewBtn) Then
-            ReviewBtnTxt.FontWeight = FontWeights.Bold
+            ReviewBtnTxt.FontWeight = FontWeights.SemiBold
+
+        ElseIf sender.Equals(TypeBtn) Then
+            TypeBtnTxt.FontWeight = FontWeights.SemiBold
 
         End If
 
     End Sub
 
-    Private Sub DocBtns_MouseLeave(sender As Controls.Button, e As Input.MouseEventArgs) Handles HomeBtn.MouseLeave, ToolsBtn.MouseLeave, DesignBtn.MouseLeave, ReviewBtn.MouseLeave
+    Private Sub DocBtns_MouseLeave(sender As Controls.Button, e As Input.MouseEventArgs) Handles TypeBtn.MouseLeave, HomeBtn.MouseLeave, ToolsBtn.MouseLeave, DesignBtn.MouseLeave, ReviewBtn.MouseLeave
 
         If sender.Equals(HomeBtn) Then
             HomeBtnTxt.FontWeight = FontWeights.Normal
@@ -3203,6 +3246,9 @@ Class MainWindow
 
         ElseIf sender.Equals(ReviewBtn) Then
             ReviewBtnTxt.FontWeight = FontWeights.Normal
+
+        ElseIf sender.Equals(TypeBtn) Then
+            TypeBtnTxt.FontWeight = FontWeights.Normal
 
         End If
 
@@ -3287,10 +3333,10 @@ Class MainWindow
     Private Sub UndoBtn_IsEnabledChanged(sender As Object, e As DependencyPropertyChangedEventArgs) Handles UndoBtn.IsEnabledChanged
         Try
             If UndoBtn.IsEnabled Then
-                UndoBtnImg.SetResourceReference(ContentProperty, "UndoIcon")
+                UndoBtn.Icon = FindResource("UndoIcon")
 
             Else
-                UndoBtnImg.SetResourceReference(ContentProperty, "NoUndoIcon")
+                UndoBtn.Icon = FindResource("NoUndoIcon")
 
             End If
 
@@ -3302,10 +3348,10 @@ Class MainWindow
     Private Sub RedoBtn_IsEnabledChanged(sender As Object, e As DependencyPropertyChangedEventArgs) Handles RedoBtn.IsEnabledChanged
         Try
             If RedoBtn.IsEnabled Then
-                RedoBtnImg.SetResourceReference(ContentProperty, "RedoIcon")
+                RedoBtn.Icon = FindResource("RedoIcon")
 
             Else
-                RedoBtnImg.SetResourceReference(ContentProperty, "NoRedoIcon")
+                RedoBtn.Icon = FindResource("NoRedoIcon")
 
             End If
 
@@ -3400,13 +3446,40 @@ Class MainWindow
     ' HOME > FONTS
     ' --
 
+    Private Sub RefreshFavouriteFonts()
+        Dim favfonts As New List(Of String) From {}
+
+        For Each favfont In My.Settings.favouritefonts.Cast(Of String).Where(Function(s) Not String.IsNullOrWhiteSpace(s)).Distinct()
+            Try
+                Dim testfont As New WinDrawing.FontFamily(favfont)
+                testfont.Dispose()
+
+                favfonts.Add(favfont)
+            Catch
+            End Try
+        Next
+
+        If favfonts.Count = 0 Then
+            FavouriteFontsLbl.Visibility = Visibility.Collapsed
+            FavFontList.Visibility = Visibility.Collapsed
+            AllFontsLbl.Visibility = Visibility.Collapsed
+        Else
+            FavouriteFontsLbl.Visibility = Visibility.Visible
+            FavFontList.Visibility = Visibility.Visible
+            AllFontsLbl.Visibility = Visibility.Visible
+            FavFontList.ItemsSource = favfonts
+        End If
+
+    End Sub
+
     Private Sub MoreFontsBtn_Click(sender As Object, e As RoutedEventArgs) Handles MoreFontsBtn.Click
+        RefreshFavouriteFonts()
         FontPopup.IsOpen = True
 
     End Sub
 
     Private Sub FontBtns_Click(sender As Controls.Button, e As RoutedEventArgs)
-        FontStyleTxt.Text = sender.Tag.ToString()
+        FontStyleTxt.Text = sender.ToolTip.ToString()
         FontPopup.IsOpen = False
         ChangeFont()
 
@@ -3431,23 +3504,23 @@ Class MainWindow
 
         If FontPopup.IsOpen Then
             If alphabet.Contains(e.Key.ToString().ToUpper()) Then
-                Dim offset = ReturnFontPos(e.Key.ToString().ToUpper())
-                If Not offset = Nothing Then FontScroll.ScrollToVerticalOffset(offset)
-
+                FontScroll.ScrollToVerticalOffset(ReturnFontPos(e.Key.ToString().ToUpper()))
             End If
         End If
 
     End Sub
 
     Private Function ReturnFontPos(letter As String) As Integer
+        Dim count = 0
 
-        For Each i As Controls.Button In FontsStack.Children.OfType(Of Controls.Button).ToList()
-            If i.Tag.ToString().ToUpper()(0) = letter Then
-                Return FontsStack.Children.IndexOf(i) * 30 + 10
+        For Each i As String In AllFontList.Items
+            If i.ToUpper()(0) = letter Then
+                Return count * 32 + FavFontList.ActualHeight + AllFontsLbl.ActualHeight + FavouriteFontsLbl.ActualHeight
             End If
 
+            count += 1
         Next
-        Return Nothing
+        Return 0
 
     End Function
 
@@ -3506,6 +3579,21 @@ Class MainWindow
 
     End Sub
 
+    Private Sub FontStyleTxt_MouseLeftButtonUp(sender As Object, e As MouseButtonEventArgs) Handles FontStyleTxt.MouseLeftButtonUp
+        Try
+            Dim testfont As New WinDrawing.FontFamily(FontStyleTxt.Text)
+            testfont.Dispose()
+            ChangeFont()
+
+        Catch
+            Try
+                FontStyleTxt.Text = DocTxt.SelectionFont.FontFamily.Name.ToString()
+            Catch
+                FontStyleTxt.Text = ""
+            End Try
+        End Try
+    End Sub
+
     Private Sub FontStyleTxt_KeyDown(sender As Object, e As Input.KeyEventArgs) Handles FontStyleTxt.KeyDown
 
         If e.Key = Key.Enter Then
@@ -3518,10 +3606,14 @@ Class MainWindow
                 ChangeFont()
 
             Catch
-                NewMessage(Funcs.ChooseLang("The font you entered could not be found.", "La police que vous avez entrée est introuvable."),
-                            Funcs.ChooseLang("Invalid font", "Police invalide"), MessageBoxButton.OK, MessageBoxImage.Error)
+                Try
+                    FontStyleTxt.Text = DocTxt.SelectionFont.FontFamily.Name.ToString()
+                Catch
+                    FontStyleTxt.Text = ""
+                End Try
+                'NewMessage(Funcs.ChooseLang("The font you entered could not be found.", "La police que vous avez entrée est introuvable."),
+                'Funcs.ChooseLang("Invalid font", "Police invalide"), MessageBoxButton.OK, MessageBoxImage.Error)
 
-                FontStyleTxt.Text = ""
 
             End Try
 
@@ -3607,11 +3699,11 @@ Class MainWindow
 
     End Sub
 
-    Private Sub Font8Btn_Click(sender As Controls.Button, e As RoutedEventArgs) Handles Font8Btn.Click, Font9Btn.Click, Font10Btn.Click, Font11Btn.Click, Font12Btn.Click,
-        Font14Btn.Click, Font16Btn.Click, Font18Btn.Click, Font20Btn.Click, Font22Btn.Click, Font24Btn.Click, Font26Btn.Click, Font28Btn.Click, Font36Btn.Click,
-        Font48Btn.Click, Font72Btn.Click
+    Private Sub Font8Btn_Click(sender As ExpressControls.AppButton, e As RoutedEventArgs) Handles Font8Btn.Click, Font9Btn.Click, Font10Btn.Click, Font11Btn.Click,
+        Font12Btn.Click, Font14Btn.Click, Font16Btn.Click, Font18Btn.Click, Font20Btn.Click, Font22Btn.Click, Font24Btn.Click, Font26Btn.Click, Font28Btn.Click,
+        Font36Btn.Click, Font48Btn.Click, Font72Btn.Click
 
-        FontSizeTxt.Text = sender.Tag
+        FontSizeTxt.Text = sender.Text
         FontSizePopup.IsOpen = False
         ChangeFontSize()
 
@@ -3770,6 +3862,52 @@ Class MainWindow
 
             Next
 
+
+            bufferrtf.SelectAll()
+            bufferrtf.Copy()
+            DocTxt.Paste()
+            PutBacktoClip()
+
+            bufferrtf.Dispose()
+
+        End If
+
+
+        TextFocus()
+        DocTxt.Select(SelectStart, SelectLength)
+
+        EnableFontChange = True
+        TextSelection()
+
+    End Sub
+
+    Private Overloads Sub ClearStyle()
+
+        EnableFontChange = False
+
+        Dim SelectStart As Integer = DocTxt.SelectionStart
+        Dim SelectLength As Integer = DocTxt.SelectionLength
+
+
+        If SelectLength = 0 Then
+            DocTxt.SelectionFont = New WinDrawing.Font(DocTxt.SelectionFont.FontFamily, DocTxt.SelectionFont.Size)
+
+        Else
+            TakeFromClip()
+
+            Dim bufferrtf As New WinFormsTxt
+            DocTxt.Copy()
+            bufferrtf.Paste()
+            bufferrtf.SelectAll()
+
+
+            Dim FormatSelection As Integer = bufferrtf.SelectionLength
+
+            For i = 0 To FormatSelection - 1
+                bufferrtf.Select(i, 1)
+                bufferrtf.SelectionFont = New WinDrawing.Font(bufferrtf.SelectionFont.FontFamily, bufferrtf.SelectionFont.Size)
+
+            Next
 
             bufferrtf.SelectAll()
             bufferrtf.Copy()
@@ -4429,7 +4567,7 @@ Class MainWindow
                 For columns As Integer = 1 To ColumnUpDown.Value
 
                     ' Add on another starting width to the variable (e.g. 1000+1000 = 2000)
-                    .Append($"\cellx{CurrentWidth.ToString()}")
+                    .Append($"\cellx{CurrentWidth}")
                     CurrentWidth += CellWidthUpDown.Value
 
                 Next
@@ -4590,7 +4728,7 @@ Class MainWindow
     Private Function GetColourScheme() As List(Of Color)
 
         Dim ColourList As New List(Of Color)
-        For Each clr In New List(Of Ellipse) From {Colour3, Colour4, Colour5, Colour6, Colour7, Colour8, Colour9, Colour10}
+        For Each clr In New List(Of Rectangle) From {Colour3, Colour4, Colour5, Colour6, Colour7, Colour8, Colour9, Colour10}
             ColourList.Add(clr.Fill.GetValue(SolidColorBrush.ColorProperty))
 
         Next
@@ -4609,8 +4747,8 @@ Class MainWindow
 
             Catch ex As Exception
                 NewMessage(Funcs.ChooseLang($"An error occurred when inserting your shape.{Chr(10)}Please try again.",
-                                        $"Une erreur s'est produite lors de l'insertion de cette forme.{Chr(10)}Veuillez réessayer."),
-                            Funcs.ChooseLang("Shape error", "Erreur de forme"), MessageBoxButton.OK, MessageBoxImage.Error)
+                                            $"Une erreur s'est produite lors de l'insertion de cette forme.{Chr(10)}Veuillez réessayer."),
+                           Funcs.ChooseLang("Shape error", "Erreur de forme"), MessageBoxButton.OK, MessageBoxImage.Error)
 
             End Try
         End If
@@ -4628,8 +4766,8 @@ Class MainWindow
 
             Catch ex As Exception
                 NewMessage(Funcs.ChooseLang($"An error occurred when inserting your shape.{Chr(10)}Please try again.",
-                                                        $"Une erreur s'est produite lors de l'insertion de cette forme.{Chr(10)}Veuillez réessayer."),
-                                            Funcs.ChooseLang("Shape error", "Erreur de forme"), MessageBoxButton.OK, MessageBoxImage.Error)
+                                            $"Une erreur s'est produite lors de l'insertion de cette forme.{Chr(10)}Veuillez réessayer."),
+                           Funcs.ChooseLang("Shape error", "Erreur de forme"), MessageBoxButton.OK, MessageBoxImage.Error)
             End Try
         End If
 
@@ -4646,8 +4784,8 @@ Class MainWindow
 
             Catch ex As Exception
                 NewMessage(Funcs.ChooseLang($"An error occurred when inserting your shape.{Chr(10)}Please try again.",
-                                                        $"Une erreur s'est produite lors de l'insertion de cette forme.{Chr(10)}Veuillez réessayer."),
-                                            Funcs.ChooseLang("Shape error", "Erreur de forme"), MessageBoxButton.OK, MessageBoxImage.Error)
+                                            $"Une erreur s'est produite lors de l'insertion de cette forme.{Chr(10)}Veuillez réessayer."),
+                           Funcs.ChooseLang("Shape error", "Erreur de forme"), MessageBoxButton.OK, MessageBoxImage.Error)
             End Try
         End If
 
@@ -4664,9 +4802,43 @@ Class MainWindow
 
             Catch ex As Exception
                 NewMessage(Funcs.ChooseLang($"An error occurred when inserting your shape.{Chr(10)}Please try again.",
-                                                        $"Une erreur s'est produite lors de l'insertion de cette forme.{Chr(10)}Veuillez réessayer."),
-                                            Funcs.ChooseLang("Shape error", "Erreur de forme"), MessageBoxButton.OK, MessageBoxImage.Error)
+                                            $"Une erreur s'est produite lors de l'insertion de cette forme.{Chr(10)}Veuillez réessayer."),
+                           Funcs.ChooseLang("Shape error", "Erreur de forme"), MessageBoxButton.OK, MessageBoxImage.Error)
             End Try
+        End If
+
+    End Sub
+
+    Private Sub PrevShapeBtn_Click(sender As Object, e As RoutedEventArgs) Handles PrevShapeBtn.Click
+
+        If My.Settings.saveshapes = False Then
+            NewMessage(Funcs.ChooseLang("Saving shapes has been turned off. To view previously added shapes, go to Options > General.",
+                                        "L'enregistrement des formes a été désactivé. Pour afficher les formes ajoutées précédemment, accédez à Paramètres > Général."),
+                       Funcs.ChooseLang("Previously added shapes", "Formes ajoutées précédemment"), MessageBoxButton.OK, MessageBoxImage.Information)
+
+        ElseIf My.Settings.savedshapes.Count = 0 Then
+            NewMessage(Funcs.ChooseLang("There are no previously added shapes. Please add a shape first.",
+                                        "Il n'y a pas de formes ajoutées précédemment. Veuillez d'abord ajouter une forme."),
+                       Funcs.ChooseLang("No previously added shapes", "Pas de formes ajoutées précédemment"), MessageBoxButton.OK, MessageBoxImage.Information)
+
+        Else
+            Dim shp As New PreviouslyAdded("shape") With {
+                .ColourScheme = GetColourScheme()
+            }
+            If shp.ErrorOccurred = False Then
+                If shp.ShowDialog() = True Then
+                    Try
+                        TakeFromClip()
+                        InsertPicture(RemoveTransparency(shp.ShapeToAdd))
+                        PutBacktoClip()
+
+                    Catch ex As Exception
+                        NewMessage(Funcs.ChooseLang($"An error occurred when inserting your shape.{Chr(10)}Please try again.",
+                                                $"Une erreur s'est produite lors de l'insertion de cette forme.{Chr(10)}Veuillez réessayer."),
+                               Funcs.ChooseLang("Shape error", "Erreur de forme"), MessageBoxButton.OK, MessageBoxImage.Error)
+                    End Try
+                End If
+            End If
         End If
 
     End Sub
@@ -4720,8 +4892,6 @@ Class MainWindow
     End Sub
 
     Private Sub ShowSymbolDisplay()
-        SymbolPanel.Children.Clear()
-
         SymbolPanel.Visibility = Visibility.Visible
         SymbolBackBtn.Visibility = Visibility.Visible
         SymbolLbl.Visibility = Visibility.Collapsed
@@ -4743,22 +4913,14 @@ Class MainWindow
     Private IsEmoji As Boolean = False
 
     Private Sub DisplaySymbols(symbols As List(Of String))
+        Dim SymbolList As New List(Of SymbolItem) From {}
         ShowSymbolDisplay()
 
-        Dim count As Integer = 0
         For Each symbol In symbols
-            Dim copy As Controls.Button = XamlReader.Parse("<Button BorderThickness='0,0,0,0' Background='{DynamicResource BackColor}' FontSize='14' Style='{DynamicResource AppButton}' Name='" +
-                                                    $"Symbol{count.ToString()}Btn" + "' Width='38' Height='32' Margin='0,0,0,0' HorizontalAlignment='Left' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
-                                                    symbol.Split("*")(0) + "</Button>")
-
-            copy.Tag = symbol.Split("*")(0)
-            copy.ToolTip = symbol.Split("*")(1)
-            SymbolPanel.Children.Add(copy)
-
-            AddHandler copy.Click, AddressOf SymbolBtns_Click
-            count += 1
-
+            SymbolList.Add(New SymbolItem() With {.Symbol = symbol.Split("*")(0), .Info = symbol.Split("*")(1)})
         Next
+
+        SymbolPanel.ItemsSource = SymbolList
 
     End Sub
 
@@ -4808,7 +4970,7 @@ Class MainWindow
         DocTxt.SelectedRtf = ""
 
         If IsEmoji = True Then
-            DocTxt.SelectionFont = New WinDrawing.Font("Segoe UI Symbol", DocTxt.SelectionFont.Size, WinDrawing.FontStyle.Regular)
+            DocTxt.SelectionFont = New WinDrawing.Font("Segoe UI Emoji", DocTxt.SelectionFont.Size, WinDrawing.FontStyle.Regular)
 
         End If
 
@@ -4830,11 +4992,13 @@ Class MainWindow
 
     End Sub
 
-    Private Sub EqBtns_Click(sender As Controls.Button, e As RoutedEventArgs) Handles Eq8Btn.Click, Eq7Btn.Click, Eq6Btn.Click, Eq5Btn.Click, Eq4Btn.Click, Eq3Btn.Click, Eq2Btn.Click, Eq1Btn.Click
+    Private Sub EqBtns_Click(sender As ExpressControls.AppButton, e As RoutedEventArgs) Handles Eq8Btn.Click, Eq7Btn.Click, Eq6Btn.Click, Eq5Btn.Click,
+        Eq4Btn.Click, Eq3Btn.Click, Eq2Btn.Click, Eq1Btn.Click
+
         DocTxt.SelectedRtf = ""
         DocTxt.SelectionFont = New WinDrawing.Font("Cambria", DocTxt.SelectionFont.Size)
 
-        DocTxt.SelectedText = sender.Tag
+        DocTxt.SelectedText = sender.Text
 
     End Sub
 
@@ -4852,6 +5016,7 @@ Class MainWindow
     ' --
 
     Private DateTimeLang As String = "en"
+    Private ChosenCulture As New Globalization.CultureInfo("en-GB")
 
     Private Sub DateTimeBtn_Click(sender As Object, e As RoutedEventArgs) Handles DateTimeBtn.Click
         OpenSidePane(4)
@@ -4863,31 +5028,28 @@ Class MainWindow
     End Sub
 
     Private Sub ShowDateTimeList()
-        DateTimeStack.Children.Clear()
-        Dim ChosenCulture As New Globalization.CultureInfo("en-GB")
-        DateTimeLangLbl.Text = Funcs.ChooseLang("Language: English", "Langue : anglais")
+        Dim DateDisplayList As New List(Of DateTimeItem) From {}
 
         Select Case DateTimeLang
+            Case "en"
+                ChosenCulture = New Globalization.CultureInfo("en-GB")
+                DateLangBtn.Text = Funcs.ChooseLang("Language: English", "Langue : anglais")
             Case "fr"
                 ChosenCulture = New Globalization.CultureInfo("fr-FR")
-                DateTimeLangLbl.Text = Funcs.ChooseLang("Language: French", "Langue : français")
+                DateLangBtn.Text = Funcs.ChooseLang("Language: French", "Langue : français")
             Case "es"
                 ChosenCulture = New Globalization.CultureInfo("es-ES")
-                DateTimeLangLbl.Text = Funcs.ChooseLang("Language: Spanish", "Langue : espagnol")
+                DateLangBtn.Text = Funcs.ChooseLang("Language: Spanish", "Langue : espagnol")
             Case "it"
                 ChosenCulture = New Globalization.CultureInfo("it-IT")
-                DateTimeLangLbl.Text = Funcs.ChooseLang("Language: Italian", "Langue : italien")
+                DateLangBtn.Text = Funcs.ChooseLang("Language: Italian", "Langue : italien")
         End Select
 
         For Each DateStr In DateTimeList
-            Dim copy As Controls.Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='{DynamicResource BackColor}' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='DateTimeSampleBtn' Height='24' Margin='0,0,0,0' VerticalAlignment='Top' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><DockPanel><TextBlock Text='" +
-                                                  Funcs.EscapeChars(Now.ToString(DateStr, ChosenCulture)) + "' Padding='10,0,0,0' TextTrimming='CharacterEllipsis' Name='HomeBtnTxt_Copy12913' Height='21.31' Margin='0,3,10,0' HorizontalAlignment='Left' VerticalAlignment='Center' /></DockPanel></Button>")
-
-            copy.Tag = Now.ToString(DateStr, ChosenCulture)
-            AddHandler copy.Click, AddressOf DateTimeBtns_Click
-            DateTimeStack.Children.Add(copy)
-
+            DateDisplayList.Add(New DateTimeItem() With {.DateTimeStr = Now.ToString(DateStr, ChosenCulture), .DateTimeID = DateStr})
         Next
+
+        DateTimeStack.ItemsSource = DateDisplayList
 
     End Sub
 
@@ -4901,9 +5063,9 @@ Class MainWindow
 
     End Sub
 
-    Private Sub DateTimeBtns_Click(sender As Controls.Button, e As RoutedEventArgs)
+    Private Sub DateTimeBtns_Click(sender As ExpressControls.AppButton, e As RoutedEventArgs)
         DocTxt.SelectedRtf = ""
-        DocTxt.SelectedText = sender.Tag.ToString()
+        DocTxt.SelectedText = Now.ToString(sender.Tag.ToString(), ChosenCulture)
 
     End Sub
 
@@ -5026,6 +5188,11 @@ Class MainWindow
     ' --
 
     Private Sub ChartBtn_Click(sender As Object, e As RoutedEventArgs) Handles ChartBtn.Click
+        ChartPopup.IsOpen = True
+
+    End Sub
+
+    Private Sub NewChartBtn_Click(sender As Object, e As RoutedEventArgs) Handles NewChartBtn.Click
 
         Dim crt As New Chart
         If crt.ShowDialog() = True Then
@@ -5036,10 +5203,42 @@ Class MainWindow
 
             Catch ex As Exception
                 NewMessage(Funcs.ChooseLang($"An error occurred when inserting your chart.{Chr(10)}Please try again.",
-                                        $"Une erreur s'est produite lors de l'insertion de votre graphique.{Chr(10)}Veuillez réessayer."),
-                            Funcs.ChooseLang("Chart error", "Erreur de graphique"), MessageBoxButton.OK, MessageBoxImage.Error)
-
+                                            $"Une erreur s'est produite lors de l'insertion de votre graphique.{Chr(10)}Veuillez réessayer."),
+                           Funcs.ChooseLang("Chart error", "Erreur de graphique"), MessageBoxButton.OK, MessageBoxImage.Error)
             End Try
+        End If
+
+    End Sub
+
+    Private Sub PrevChartBtn_Click(sender As Object, e As RoutedEventArgs) Handles PrevChartBtn.Click
+
+        If My.Settings.savecharts = False Then
+            NewMessage(Funcs.ChooseLang("Saving charts has been turned off. To view previously added charts, go to Options > General.",
+                                        "L'enregistrement des graphiques a été désactivé. Pour afficher les graphiques ajoutés précédemment, accédez à Paramètres > Général."),
+                       Funcs.ChooseLang("Previously added charts", "Graphiques ajoutés précédemment"), MessageBoxButton.OK, MessageBoxImage.Information)
+
+        ElseIf My.Settings.savedcharts.Count = 0 Then
+            NewMessage(Funcs.ChooseLang("There are no previously added charts. Please add a chart first.",
+                                        "Il n'y a pas de graphiques ajoutés précédemment. Veuillez d'abord ajouter un graphique."),
+                       Funcs.ChooseLang("No previously added charts", "Pas de graphiques ajoutés précédemment"), MessageBoxButton.OK, MessageBoxImage.Information)
+
+        Else
+            Dim crt As New PreviouslyAdded("chart")
+            If crt.ErrorOccurred = False Then
+                If crt.ShowDialog() = True Then
+                    Try
+                        TakeFromClip()
+                        InsertPicture(crt.ChartToAdd)
+                        PutBacktoClip()
+
+                    Catch ex As Exception
+                        NewMessage(Funcs.ChooseLang($"An error occurred when inserting your chart.{Chr(10)}Please try again.",
+                                                $"Une erreur s'est produite lors de l'insertion de votre graphique.{Chr(10)}Veuillez réessayer."),
+                               Funcs.ChooseLang("Chart error", "Erreur de graphique"), MessageBoxButton.OK, MessageBoxImage.Error)
+                    End Try
+                End If
+            End If
+
         End If
 
     End Sub
@@ -5086,7 +5285,10 @@ Class MainWindow
 
 
         NoAdd = True
-        DocTxt.SelectionFont = New WinDrawing.Font(family, size, FontStyle)
+        Try
+            DocTxt.SelectionFont = New WinDrawing.Font(family, size, FontStyle)
+        Catch
+        End Try
         NoAdd = False
         DocTxt.SelectionColor = FontColour
 
@@ -5094,9 +5296,13 @@ Class MainWindow
 
     End Sub
 
-    Private Sub ApplyFontStyle(font As WinDrawing.Font, colour As WinDrawing.Color, txt As TextBlock)
+    Private Sub ApplyFontStyle(font As WinDrawing.Font, colour As WinDrawing.Color, txt As TextBlock, Optional save As Boolean = True)
 
-        txt.FontFamily = New FontFamily(font.FontFamily.Name.ToString())
+        Try
+            txt.FontFamily = New FontFamily(font.FontFamily.Name.ToString())
+        Catch
+        End Try
+
         txt.FontSize = Convert.ToDouble(font.Size)
 
         If font.Bold Then txt.FontWeight = FontWeights.Bold Else txt.FontWeight = FontWeights.Regular
@@ -5109,6 +5315,87 @@ Class MainWindow
         txt.Foreground = New SolidColorBrush(Color.FromRgb(colour.R, colour.G, colour.B))
         DocTxt.Focus()
 
+        ' My.Settings format
+        ' styleid>fontname>fontsize>fontstyle[style,style,...]>colour
+
+        If My.Settings.savefonts And save Then
+            Dim idx As Integer = -1
+            For Each i In My.Settings.savedfonts
+                If i.StartsWith(txt.Name.Substring(0, 2)) Then
+                    idx = My.Settings.savedfonts.IndexOf(i)
+                    Exit For
+                End If
+            Next
+
+            Dim fontstr = txt.Name.Substring(0, 2)
+            fontstr += ">" + Funcs.EscapeChars(font.FontFamily.Name.ToString())
+            fontstr += ">" + font.Size.ToString(Globalization.CultureInfo.InvariantCulture)
+
+            Dim styles As New List(Of String) From {}
+
+            If font.Bold Then styles.Add("Bold")
+            If font.Italic Then styles.Add("Italic")
+            If font.Underline Then styles.Add("Underline")
+            If font.Strikeout Then styles.Add("Strikethrough")
+
+            fontstr += ">" + String.Join(",", styles)
+            fontstr += ">" + ConvertColorToHex(Color.FromRgb(colour.R, colour.G, colour.B))
+
+            If idx > -1 Then
+                My.Settings.savedfonts(idx) = fontstr
+            Else
+                My.Settings.savedfonts.Add(fontstr)
+            End If
+
+        End If
+
+    End Sub
+
+    Private Function ConvertColorFromHex(hex As String) As Color
+        Dim clr = WinDrawing.ColorTranslator.FromHtml(hex)
+        Return Color.FromRgb(clr.R, clr.G, clr.B)
+
+    End Function
+
+    Private Function ConvertColorToHex(hex As Color) As String
+        Return WinDrawing.ColorTranslator.ToHtml(WinDrawing.Color.FromArgb(hex.R, hex.G, hex.B))
+
+    End Function
+
+    Private Sub ResetStyleBtn_Click(sender As Controls.MenuItem, e As RoutedEventArgs) Handles ResetStyleBtn.Click
+        Dim ct As Controls.ContextMenu = sender.Parent
+        Dim btn As Controls.Button = ct.PlacementTarget
+
+        Select Case btn.Name
+            Case "H1Btn"
+                ApplyFontStyle(New WinDrawing.Font("Calibri", 20, WinDrawing.FontStyle.Bold), WinDrawing.Color.Black, H1Txt)
+            Case "H2Btn"
+                ApplyFontStyle(New WinDrawing.Font("Calibri", 18), WinDrawing.Color.Black, H2Txt)
+            Case "H3Btn"
+                ApplyFontStyle(New WinDrawing.Font("Calibri", 16, WinDrawing.FontStyle.Bold), WinDrawing.Color.FromArgb(0, 0, 124), H3Txt)
+            Case "B1Btn"
+                ApplyFontStyle(New WinDrawing.Font("Calibri", 14), WinDrawing.Color.Black, B1Txt)
+            Case "B2Btn"
+                ApplyFontStyle(New WinDrawing.Font("Calibri", 12), WinDrawing.Color.Black, B2Txt)
+            Case "B3Btn"
+                ApplyFontStyle(New WinDrawing.Font("Calibri", 14, WinDrawing.FontStyle.Italic), WinDrawing.Color.FromArgb(0, 0, 124), B3Txt)
+        End Select
+
+    End Sub
+
+    Private Sub ResetStylesBtn_Click(sender As Object, e As RoutedEventArgs) Handles ResetStylesBtn.Click
+        Try
+            ApplyFontStyle(New WinDrawing.Font("Calibri", 20, WinDrawing.FontStyle.Bold), WinDrawing.Color.Black, H1Txt, False)
+            ApplyFontStyle(New WinDrawing.Font("Calibri", 18), WinDrawing.Color.Black, H2Txt, False)
+            ApplyFontStyle(New WinDrawing.Font("Calibri", 16, WinDrawing.FontStyle.Bold), WinDrawing.Color.FromArgb(0, 0, 124), H3Txt, False)
+            ApplyFontStyle(New WinDrawing.Font("Calibri", 14), WinDrawing.Color.Black, B1Txt, False)
+            ApplyFontStyle(New WinDrawing.Font("Calibri", 12), WinDrawing.Color.Black, B2Txt, False)
+            ApplyFontStyle(New WinDrawing.Font("Calibri", 14, WinDrawing.FontStyle.Italic), WinDrawing.Color.FromArgb(0, 0, 124), B3Txt, False)
+
+            My.Settings.savedfonts.Clear()
+            My.Settings.Save()
+        Catch
+        End Try
     End Sub
 
     Private Sub H1Btn_Click(sender As Object, e As RoutedEventArgs) Handles H1Btn.Click
@@ -5303,13 +5590,13 @@ Class MainWindow
     End Sub
 
     Private Sub ResetColourSchemeLabels()
-        BasicTxt.Text = Funcs.ChooseLang("Basic", "Basique")
-        BlueTxt.Text = Funcs.ChooseLang("Blue", "Bleu")
-        GreenTxt.Text = Funcs.ChooseLang("Green", "Vert")
-        RedOrangeTxt.Text = Funcs.ChooseLang("Red Orange", "Rouge Orange")
-        VioletTxt.Text = "Violet"
-        OfficeTxt.Text = "Office"
-        GreyscaleTxt.Text = Funcs.ChooseLang("Greyscale", "Échelle de Gris")
+        BasicBtn.Text = Funcs.ChooseLang("Basic", "Basique")
+        BlueBtn.Text = Funcs.ChooseLang("Blue", "Bleu")
+        GreenBtn.Text = Funcs.ChooseLang("Green", "Vert")
+        RedBtn.Text = Funcs.ChooseLang("Red Orange", "Rouge Orange")
+        VioletBtn.Text = "Violet"
+        OfficeBtn.Text = "Office"
+        GreyscaleBtn.Text = Funcs.ChooseLang("Greyscale", "Échelle de Gris")
 
         RefreshColourTooltips()
 
@@ -5329,7 +5616,7 @@ Class MainWindow
                 Colour10.Fill = Basic8.Fill
 
                 ResetColourSchemeLabels()
-                BasicTxt.Text += Funcs.ChooseLang(" (current)", " (actuel)")
+                BasicBtn.Text += Funcs.ChooseLang(" (current)", " (actuel)")
 
             Case 1
                 Colour3.Fill = Blue1.Fill
@@ -5342,7 +5629,7 @@ Class MainWindow
                 Colour10.Fill = Blue8.Fill
 
                 ResetColourSchemeLabels()
-                BlueTxt.Text += Funcs.ChooseLang(" (current)", " (actuel)")
+                BlueBtn.Text += Funcs.ChooseLang(" (current)", " (actuel)")
 
             Case 2
                 Colour3.Fill = Green1.Fill
@@ -5355,7 +5642,7 @@ Class MainWindow
                 Colour10.Fill = Green8.Fill
 
                 ResetColourSchemeLabels()
-                GreenTxt.Text += Funcs.ChooseLang(" (current)", " (actuel)")
+                GreenBtn.Text += Funcs.ChooseLang(" (current)", " (actuel)")
 
             Case 3
                 Colour3.Fill = Red1.Fill
@@ -5368,7 +5655,7 @@ Class MainWindow
                 Colour10.Fill = Red8.Fill
 
                 ResetColourSchemeLabels()
-                RedOrangeTxt.Text += Funcs.ChooseLang(" (current)", " (actuel)")
+                RedBtn.Text += Funcs.ChooseLang(" (current)", " (actuel)")
 
             Case 4
                 Colour3.Fill = Violet1.Fill
@@ -5381,7 +5668,7 @@ Class MainWindow
                 Colour10.Fill = Violet8.Fill
 
                 ResetColourSchemeLabels()
-                VioletTxt.Text += Funcs.ChooseLang(" (current)", " (actuel)")
+                VioletBtn.Text += Funcs.ChooseLang(" (current)", " (actuel)")
 
             Case 5
                 Colour3.Fill = Office1.Fill
@@ -5394,7 +5681,7 @@ Class MainWindow
                 Colour10.Fill = Office8.Fill
 
                 ResetColourSchemeLabels()
-                OfficeTxt.Text += Funcs.ChooseLang(" (current)", " (actuel)")
+                OfficeBtn.Text += Funcs.ChooseLang(" (current)", " (actuel)")
 
             Case 6
                 Colour3.Fill = Greyscale1.Fill
@@ -5407,7 +5694,7 @@ Class MainWindow
                 Colour10.Fill = Greyscale8.Fill
 
                 ResetColourSchemeLabels()
-                GreyscaleTxt.Text += Funcs.ChooseLang(" (current)", " (actuel)")
+                GreyscaleBtn.Text += Funcs.ChooseLang(" (current)", " (actuel)")
 
         End Select
 
@@ -5562,54 +5849,30 @@ Class MainWindow
     ' DESIGN > OPTIONS
     ' --
 
-    Private Sub URLBtn_Click(sender As Object, e As RoutedEventArgs) Handles URLBtn.Click
-
-        If URLImg.Tag = 1 Then
-            URLImg.SetResourceReference(ContentProperty, "UntickIcon")
-            URLImg.Tag = 0
-
-            DocTxt.DetectUrls = False
-
-        Else
-            URLImg.SetResourceReference(ContentProperty, "TickIcon")
-            URLImg.Tag = 1
-
-            DocTxt.DetectUrls = True
-
-        End If
+    Private Sub URLBtn_Click(sender As Object, e As RoutedEventArgs) Handles URLBtn.Checked, URLBtn.Unchecked
+        If IsLoaded Then DocTxt.DetectUrls = URLBtn.IsChecked
 
     End Sub
 
-    Private Sub WrapBtn_Click(sender As Object, e As RoutedEventArgs) Handles WrapBtn.Click
+    Private Sub WrapBtn_Click(sender As Object, e As RoutedEventArgs) Handles WrapBtn.Checked, WrapBtn.Unchecked
+        If IsLoaded Then DocTxt.WordWrap = WrapBtn.IsChecked
 
-        If WrapImg.Tag = 1 Then
-            WrapImg.SetResourceReference(ContentProperty, "UntickIcon")
-            WrapImg.Tag = 0
+        'DocTxtGrid.Margin = New Thickness(0)
+        'DocScroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Visible
 
-            DocTxt.WordWrap = False
-            'DocTxtGrid.Margin = New Thickness(0)
-            'DocScroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Visible
+        'DocTxtGrid.Margin = New Thickness(50, 20, 50, 0)
+        'DocScroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled
 
-        Else
-            WrapImg.SetResourceReference(ContentProperty, "TickIcon")
-            WrapImg.Tag = 1
+        'WinFormsHost.Width = Double.NaN
+        'DocTxt.Width = WinFormsHost.ActualWidth
 
-            DocTxt.WordWrap = True
-            'DocTxtGrid.Margin = New Thickness(50, 20, 50, 0)
-            'DocScroller.HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled
-
-            'WinFormsHost.Width = Double.NaN
-            'DocTxt.Width = WinFormsHost.ActualWidth
-
-            'If DocHeight > (DocScroller.ActualHeight - 60) Then
-            '    DocTxt.Height = DocHeight
-            '    WinFormsHost.Height = DocTxt.Height
-            'Else
-            '    DocTxt.Height = DocScroller.ActualHeight - 60
-            '    WinFormsHost.Height = DocTxt.Height
-            'End If
-
-        End If
+        'If DocHeight > (DocScroller.ActualHeight - 60) Then
+        '    DocTxt.Height = DocHeight
+        '    WinFormsHost.Height = DocTxt.Height
+        'Else
+        '    DocTxt.Height = DocScroller.ActualHeight - 60
+        '    WinFormsHost.Height = DocTxt.Height
+        'End If
 
     End Sub
 
@@ -5624,6 +5887,30 @@ Class MainWindow
     End Sub
 
     Private Sub ClearBtn_Click(sender As Object, e As RoutedEventArgs) Handles ClearBtn.Click
+        ClearPopup.IsOpen = True
+
+    End Sub
+
+    Private Sub ClearFormattingBtn_Click(sender As Object, e As RoutedEventArgs) Handles ClearFormattingBtn.Click
+        ClearPopup.IsOpen = False
+
+        Try
+            FontStyleTxt.Text = My.Settings.fontname
+            ChangeFont()
+
+            FontSizeTxt.Text = My.Settings.fontsize.ToString()
+            ChangeFontSize()
+
+            ClearStyle()
+            SetStyle(My.Settings.fontstyle)
+            DocTxt.SelectionColor = My.Settings.textcolour
+        Catch
+        End Try
+
+    End Sub
+
+    Private Sub ClearAllBtn_Click(sender As Object, e As RoutedEventArgs) Handles ClearAllBtn.Click
+        ClearPopup.IsOpen = False
         DocTxt.Clear()
 
     End Sub
@@ -5641,49 +5928,18 @@ Class MainWindow
 
     End Sub
 
-    Private Sub FindCaseCheck_Click(sender As Object, e As RoutedEventArgs) Handles FindCaseCheck.Click
-
-        If FindCaseImg.Tag = 1 Then
-            FindCaseImg.SetResourceReference(ContentProperty, "UntickIcon")
-            FindCaseImg.Tag = 0
-            MatchCase = False
-
-        Else
-            FindCaseImg.SetResourceReference(ContentProperty, "TickIcon")
-            FindCaseImg.Tag = 1
-            MatchCase = True
-
-        End If
+    Private Sub FindCaseCheck_Click(sender As Object, e As RoutedEventArgs) Handles FindCaseCheck.Checked, FindCaseCheck.Unchecked
+        MatchCase = FindCaseCheck.IsChecked
 
     End Sub
 
-    Private Sub FindWordCheck_Click(sender As Object, e As RoutedEventArgs) Handles FindWordCheck.Click
-
-        If FindWordImg.Tag = 1 Then
-            FindWordImg.SetResourceReference(ContentProperty, "UntickIcon")
-            FindWordImg.Tag = 0
-            MatchWord = False
-
-        Else
-            FindWordImg.SetResourceReference(ContentProperty, "TickIcon")
-            FindWordImg.Tag = 1
-            MatchWord = True
-
-        End If
+    Private Sub FindWordCheck_Click(sender As Object, e As RoutedEventArgs) Handles FindWordCheck.Checked, FindWordCheck.Unchecked
+        MatchWord = FindWordCheck.IsChecked
 
     End Sub
 
-    Private Sub BeforeCursorRadio_Click(sender As Object, e As RoutedEventArgs) Handles BeforeCursorRadio.Click
-        BeforeCursorImg.Visibility = Visibility.Visible
-        AfterCursorImg.Visibility = Visibility.Hidden
-        AfterCursor = False
-
-    End Sub
-
-    Private Sub AfterCursorRadio_Click(sender As Object, e As RoutedEventArgs) Handles AfterCursorRadio.Click
-        BeforeCursorImg.Visibility = Visibility.Hidden
-        AfterCursorImg.Visibility = Visibility.Visible
-        AfterCursor = True
+    Private Sub BeforeAfterCursorRadio_Click(sender As Object, e As RoutedEventArgs) Handles BeforeCursorRadio.Checked, AfterCursorRadio.Checked
+        AfterCursor = AfterCursorRadio.IsChecked
 
     End Sub
 
@@ -5712,11 +5968,11 @@ Class MainWindow
 
         If FindOptionsPnl.Visibility = Visibility.Collapsed Then
             FindOptionsPnl.Visibility = Visibility.Visible
-            MoreImg.RenderTransform = MoreBtnTransform
+            FindOptionsBtn.Icon = FindResource("UpIcon")
 
         Else
             FindOptionsPnl.Visibility = Visibility.Collapsed
-            MoreImg.RenderTransform = Nothing
+            FindOptionsBtn.Icon = FindResource("DownIcon")
 
         End If
 
@@ -5889,7 +6145,7 @@ Class MainWindow
 
     Private Sub ResetSpellchecker()
         SpellInfoPnl.Visibility = Visibility.Collapsed
-        CheckSpellBtn.Content = Funcs.ChooseLang("Start checking", "Démarrer")
+        CheckSpellBtn.Text = Funcs.ChooseLang("Start checking", "Démarrer")
         SpellOverride = False
 
     End Sub
@@ -5931,7 +6187,7 @@ Class MainWindow
         Dim originalstart As Integer = DocTxt.SelectionStart
         Dim originallength As Integer = DocTxt.SelectionLength
 
-        If CheckSpellBtn.Content = Funcs.ChooseLang("Start checking", "Démarrer") Then
+        If CheckSpellBtn.Text = Funcs.ChooseLang("Start checking", "Démarrer") Then
             DocTxt.Select(0, 0)
 
         Else
@@ -5948,7 +6204,7 @@ Class MainWindow
             Dim finish As Integer = SpellTxt.GetSpellingErrorRange(SpellTxt.GetNextSpellingErrorPosition(SpellTxt.CaretPosition, LogicalDirection.Forward)).End.GetTextRunLength(LogicalDirection.Backward)
 
             DocTxt.Select(start, finish - start)
-            CheckSpellBtn.Content = Funcs.ChooseLang("Continue", "Continuer")
+            CheckSpellBtn.Text = Funcs.ChooseLang("Continue", "Continuer")
 
 
             If SpellLang = "fr" Then
@@ -5976,22 +6232,22 @@ Class MainWindow
 
 
             incorrect = SpellTxt.GetSpellingError(SpellTxt.GetNextSpellingErrorPosition(SpellTxt.CaretPosition, LogicalDirection.Forward))
-            SuggestionPnl.Children.Clear()
+            SuggestionPnl.ItemsSource = incorrect.Suggestions
 
-            Dim count As Integer = 0
-            For Each suggestion As String In incorrect.Suggestions
+            Dim count As Integer = incorrect.Suggestions.Count
+            'For Each suggestion As String In incorrect.Suggestions
 
-                Dim copy As Controls.Button = XamlReader.Parse("<Button BorderThickness='0,0,0,0' Background='{DynamicResource BackColor}' FontSize='14' FontStyle='Italic' HorizontalContentAlignment='Left' Padding='10,1,10,1' Style='{DynamicResource AppButton}' Name='" +
-                                                        $"SpellError{count}Btn" + "' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
-                                                        suggestion + "</Button>")
+            '    Dim copy As Controls.Button = XamlReader.Parse("<Button BorderThickness='0,0,0,0' Background='{DynamicResource BackColor}' FontSize='14' FontStyle='Italic' HorizontalContentAlignment='Left' Padding='10,1,10,1' Style='{DynamicResource AppButton}' Name='" +
+            '                                            $"SpellError{count}Btn" + "' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>" +
+            '                                            suggestion + "</Button>")
 
-                copy.ContextMenu = SpellTTSMenu
-                SuggestionPnl.Children.Add(copy)
-                AddHandler copy.Click, AddressOf CorrectionBtns_Click
+            '    copy.ContextMenu = SpellTTSMenu
+            '    SuggestionPnl.Children.Add(copy)
+            '    AddHandler copy.Click, AddressOf CorrectionBtns_Click
 
-                count += 1
+            '    count += 1
 
-            Next
+            'Next
 
 
             If count = 0 Then
@@ -6023,9 +6279,9 @@ Class MainWindow
 
     End Sub
 
-    Private Sub CorrectionBtns_Click(sender As Controls.Button, e As RoutedEventArgs)
+    Private Sub CorrectionBtns_Click(sender As ExpressControls.AppButton, e As RoutedEventArgs)
         SpellOverride = False
-        DocTxt.SelectedText = sender.Content.ToString()
+        DocTxt.SelectedText = sender.Text.ToString()
         StartChecking()
 
     End Sub
@@ -6070,9 +6326,9 @@ Class MainWindow
 
     ReadOnly SpeechTTS As New Speech.Synthesis.SpeechSynthesizer
 
-    Private Sub ReadWordBtn_Click(sender As Controls.MenuItem, e As RoutedEventArgs) Handles ReadWordBtn.Click
+    Private Sub ReadWordBtn_Click(sender As Controls.MenuItem, e As RoutedEventArgs)
         Dim ct As Controls.ContextMenu = sender.Parent
-        Dim btn As Controls.Button = ct.PlacementTarget
+        Dim btn As ExpressControls.AppButton = ct.PlacementTarget
 
         Dim SpellLang As String = "en-GB"
         If SpellLang = "fr" Then
@@ -6093,15 +6349,15 @@ Class MainWindow
         Else
             SpeechTTS.Rate = 0
             SpeechTTS.SelectVoice(SpeechTTS.GetInstalledVoices(New Globalization.CultureInfo(SpellLang))(0).VoiceInfo.Name)
-            SpeechTTS.SpeakAsync(btn.Content.ToString())
+            SpeechTTS.SpeakAsync(btn.Text.ToString())
 
         End If
 
     End Sub
 
-    Private Sub SpellWordBtn_Click(sender As Object, e As RoutedEventArgs) Handles SpellWordBtn.Click
+    Private Sub SpellWordBtn_Click(sender As Object, e As RoutedEventArgs)
         Dim ct As Controls.ContextMenu = sender.Parent
-        Dim btn As Controls.Button = ct.PlacementTarget
+        Dim btn As ExpressControls.AppButton = ct.PlacementTarget
 
         Dim SpellLang As String = "en-GB"
         If SpellLang = "fr" Then
@@ -6122,7 +6378,7 @@ Class MainWindow
         Else
             Dim prompt As New Speech.Synthesis.PromptBuilder
             prompt.StartVoice(New Globalization.CultureInfo(SpellLang))
-            prompt.AppendTextWithHint(btn.Content.ToString(), Speech.Synthesis.SayAs.SpellOut)
+            prompt.AppendTextWithHint(btn.Text.ToString(), Speech.Synthesis.SayAs.SpellOut)
             prompt.EndVoice()
 
             SpeechTTS.Rate = -5
@@ -6194,13 +6450,13 @@ Class MainWindow
     '                                                       ........                      .................
 
     Private Function GetDefs(query As String, lang As String) As Boolean
-        Dim client As Net.WebClient = New Net.WebClient()
+        Dim client As New Net.WebClient()
 
         Try
             dict = New Dictionary(Of String, Dictionary(Of String, Dictionary(Of String, List(Of String))))
             query = query(0).ToString().ToUpper() + query.Substring(1).Replace(" ", "_")
 
-            Using reader As StreamReader = New StreamReader(client.OpenRead("https://api.dictionaryapi.dev/api/v2/entries/" + lang + "/" + query), Text.Encoding.UTF8)
+            Using reader As New StreamReader(client.OpenRead("https://api.dictionaryapi.dev/api/v2/entries/" + lang + "/" + query), Text.Encoding.UTF8)
                 If DefineWorker.CancellationPending Then Return False
 
                 Dim info As String = reader.ReadToEnd()
@@ -6258,22 +6514,23 @@ Class MainWindow
 
     Private Function CreateWordLbl(text As String) As TextBlock
         Dim word As TextBlock = XamlReader.Parse("<TextBlock Text='" +
-                                                 Funcs.EscapeChars(text) + "' FontWeight='Bold' FontSize='15' Padding='0,10,0,0' TextTrimming='CharacterEllipsis' Name='WordTxt' Margin='0,0,0,0' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'/>")
+                                                 Funcs.EscapeChars(text) + "' FontWeight='SemiBold' FontSize='15' Padding='0,10,0,0' TextTrimming='CharacterEllipsis' Name='WordTxt' Margin='0,0,0,0' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'/>")
         Return word
 
     End Function
 
     Private Function CreateWordTypeLbl(text As String) As TextBlock
         Dim wordtype As TextBlock = XamlReader.Parse("<TextBlock Text='" +
-                                                     Funcs.EscapeChars(text) + "' FontStyle='Italic' FontSize='14' Padding='0,5,0,0' TextWrapping='Wrap' Name='WordTypeTxt' Margin='0,0,0,0' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'/>")
+                                                     Funcs.EscapeChars(text) + "' FontStyle='Italic' FontSize='14' Padding='0,10,0,0' TextWrapping='Wrap' Name='WordTypeTxt' Margin='0,0,0,0' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'/>")
         Return wordtype
 
     End Function
 
     Private Function CreateDefPnl(text As String, synonyms As List(Of String), number As Integer) As DockPanel
-        Dim definition As DockPanel = XamlReader.Parse("<DockPanel Name='DefinitionPnl' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><Button BorderBrush='#FFFFFFFF' BorderThickness='0,0,0,0' Background='#00FFFFFF' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='SynonymsBtn' Height='30' Margin='34,5,0,0' VerticalAlignment='Top' DockPanel.Dock='Bottom'><DockPanel><TextBlock Text='—  Synonyms' FontSize='14' TextAlignment='Right' Margin='0,0,5,5' HorizontalAlignment='Left' VerticalAlignment='Center' /><ContentControl Width='12' Margin='6,0,0,2' HorizontalAlignment='Left' Content='{StaticResource DownIcon}'/></DockPanel></Button><TextBlock Text='" +
-                                                       number.ToString() + ".' FontSize='14' Padding='0,5,0,0' TextAlignment='Right' TextTrimming='CharacterEllipsis' Name='DefNumTxt' Width='24' Margin='0,0,0,0' /><TextBlock Text='" +
-                                                       Funcs.EscapeChars(text) + "' FontSize='14' Padding='10,5,0,0' TextWrapping='Wrap' Name='DefinitionTxt' Margin='0,0,0,0' /></DockPanel>")
+        Dim definition As DockPanel = XamlReader.Parse("<DockPanel Name='DefinitionPnl' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:ex='clr-namespace:ExpressControls;assembly=ExpressControls' UseLayoutRounding='True'><ex:AppButton Name='SynonymsBtn' IconVisibility='Collapsed' GapMargin='0' MoreVisibility='Visible' Text='" +
+                                                       Funcs.ChooseLang("—  Synonyms", "—  Synonymes") + "' Margin='34,10,0,0' Height='32' VerticalAlignment='Top' HorizontalAlignment='Left' DockPanel.Dock='Bottom'/><TextBlock Text='" +
+                                                       number.ToString() + ".' FontSize='14' Padding='0,10,0,0' TextAlignment='Right' TextTrimming='CharacterEllipsis' Name='DefNumTxt' Width='24' Margin='0,0,0,0' /><TextBlock Text='" +
+                                                       Funcs.EscapeChars(text) + "' FontSize='14' Padding='10,10,0,0' TextWrapping='Wrap' Name='DefinitionTxt' Margin='0,0,0,0' /></DockPanel>")
 
         Dim syn As Controls.Button = definition.FindName("SynonymsBtn")
         If synonyms.Count = 0 Then
@@ -6288,16 +6545,16 @@ Class MainWindow
     End Function
 
     Private Sub SynsBtns_Click(sender As Controls.Button, e As RoutedEventArgs)
-        SynStack.Children.Clear()
+        SynStack.ItemsSource = sender.Tag
 
-        For Each i In sender.Tag
-            Dim synbtn As Controls.Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='{DynamicResource BackColor}' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='SynSampleBtn' Tag='8' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' ToolTip='" +
-                                                    Funcs.EscapeChars(i.ToString()) + "' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><DockPanel><TextBlock Text='" +
-                                                    Funcs.EscapeChars(i.ToString()) + "' FontSize='14' Padding='10,0,5,0' TextTrimming='CharacterEllipsis' Name='HomeBtnTxt_Copy25' Height='21.31' Margin='0,0,0,0' HorizontalAlignment='Center' VerticalAlignment='Center' /></DockPanel></Button>")
-            synbtn.Tag = i.ToString()
-            AddHandler synbtn.Click, AddressOf SynBtns_Click
-            SynStack.Children.Add(synbtn)
-        Next
+        'For Each i In sender.Tag
+        '    Dim synbtn As Controls.Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='{DynamicResource BackColor}' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='SynSampleBtn' Tag='8' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' ToolTip='" +
+        '                                            Funcs.EscapeChars(i.ToString()) + "' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><DockPanel><TextBlock Text='" +
+        '                                            Funcs.EscapeChars(i.ToString()) + "' FontSize='14' Padding='10,0,5,0' TextTrimming='CharacterEllipsis' Name='HomeBtnTxt_Copy25' Height='21.31' Margin='0,0,0,0' HorizontalAlignment='Center' VerticalAlignment='Center' /></DockPanel></Button>")
+        '    synbtn.Tag = i.ToString()
+        '    AddHandler synbtn.Click, AddressOf SynBtns_Click
+        '    SynStack.Children.Add(synbtn)
+        'Next
 
         SynonymPopup.PlacementTarget = sender
         SynScroll.ScrollToTop()
@@ -6305,9 +6562,9 @@ Class MainWindow
 
     End Sub
 
-    Private Sub SynBtns_Click(sender As Controls.Button, e As RoutedEventArgs)
+    Private Sub SynBtns_Click(sender As ExpressControls.AppButton, e As RoutedEventArgs)
         DocTxt.SelectedRtf = ""
-        DocTxt.SelectedText = sender.Tag
+        DocTxt.SelectedText = sender.Text
 
     End Sub
 
@@ -6362,14 +6619,6 @@ Class MainWindow
 
     End Sub
 
-    Private Sub ClearLangPopupChecks()
-        Lang1Img.Visibility = Visibility.Hidden
-        Lang2Img.Visibility = Visibility.Hidden
-        Lang3Img.Visibility = Visibility.Hidden
-        Lang4Img.Visibility = Visibility.Hidden
-
-    End Sub
-
     Private Sub DefineLangBtn_Click(sender As Object, e As RoutedEventArgs) Handles DefineLangBtn.Click
         SetLangPopupChecks(DefineLang)
         'LanguagePopup.HorizontalOffset = -138
@@ -6381,40 +6630,38 @@ Class MainWindow
     End Sub
 
     Private Sub SetLangPopupChecks(lang As String)
-        ClearLangPopupChecks()
 
         Select Case lang
             Case "fr"
-                Lang2Img.Visibility = Visibility.Visible
+                Lang2Btn.IsChecked = True
             Case "es"
-                Lang3Img.Visibility = Visibility.Visible
+                Lang3Btn.IsChecked = True
             Case "it"
-                Lang4Img.Visibility = Visibility.Visible
+                Lang4Btn.IsChecked = True
             Case Else
-                Lang1Img.Visibility = Visibility.Visible
+                Lang1Btn.IsChecked = True
         End Select
 
     End Sub
 
-    Private Sub LangBtns_Click(sender As Controls.Button, e As RoutedEventArgs) Handles Lang1Btn.Click, Lang2Btn.Click, Lang3Btn.Click, Lang4Btn.Click
+    Private Sub LangBtns_Click(sender As ExpressControls.AppRadioButton, e As RoutedEventArgs) Handles Lang1Btn.Checked, Lang2Btn.Checked, Lang3Btn.Checked, Lang4Btn.Checked
 
-        If LanguagePopup.PlacementTarget.Equals(DefineLangBtn) Then
-            DefineLang = sender.Tag.ToString()
-            SetLangPopupChecks(DefineLang)
+        If LanguagePopup.IsOpen Then
+            If LanguagePopup.PlacementTarget.Equals(DefineLangBtn) Then
+                DefineLang = sender.Tag.ToString()
 
-        ElseIf LanguagePopup.PlacementTarget.Equals(DateLangBtn) Then
-            DateTimeLang = sender.Tag.ToString()
-            SetLangPopupChecks(DateTimeLang)
-            ShowDateTimeList()
+            ElseIf LanguagePopup.PlacementTarget.Equals(DateLangBtn) Then
+                DateTimeLang = sender.Tag.ToString()
+                ShowDateTimeList()
 
-        ElseIf LanguagePopup.PlacementTarget.Equals(SpellOptionsBtn) Then
-            SpellLang = sender.Tag.ToString()
-            SetLangPopupChecks(SpellLang)
-            ResetSpellchecker()
+            ElseIf LanguagePopup.PlacementTarget.Equals(SpellOptionsBtn) Then
+                SpellLang = sender.Tag.ToString()
+                ResetSpellchecker()
 
+            End If
+
+            LanguagePopup.IsOpen = False
         End If
-
-        LanguagePopup.IsOpen = False
 
     End Sub
 
@@ -6462,11 +6709,14 @@ Class MainWindow
     ' --
 
     Private Sub ZoomSlider_ValueChanged(sender As Object, e As RoutedPropertyChangedEventArgs(Of Double)) Handles ZoomSlider.ValueChanged
-        Try
-            DocTxt.ZoomFactor = ZoomSlider.Value / 10
-            ZoomLbl.Content = (ZoomSlider.Value * 10).ToString() + " %"
-        Catch
-        End Try
+
+        If IsLoaded Then
+            Try
+                DocTxt.ZoomFactor = ZoomSlider.Value / 10
+                ZoomLbl.Content = Math.Round(ZoomSlider.Value * 10).ToString() + " %"
+            Catch
+            End Try
+        End If
 
     End Sub
 
@@ -6487,6 +6737,16 @@ Class MainWindow
         End If
 
     End Sub
+
+    Private Sub DocTxt_MouseWheel(sender As Object, e As MouseEventArgs) Handles DocTxt.MouseWheel
+        Try
+            ZoomSlider.Value = DocTxt.ZoomFactor * 10
+            ZoomLbl.Content = Math.Round(ZoomSlider.Value * 10).ToString() + " %"
+        Catch
+        End Try
+
+    End Sub
+
 
 
     ' CONTEXT MENU
@@ -6530,16 +6790,16 @@ Class MainWindow
         Help2Btn.Visibility = Visibility.Visible
         Help3Btn.Visibility = Visibility.Visible
 
-        Help1Img.SetResourceReference(ContentProperty, "NewIcon")
-        Help1Txt.Text = Funcs.ChooseLang("Getting started", "Prise en main")
+        Help1Btn.Icon = FindResource("BlankIcon")
+        Help1Btn.Text = Funcs.ChooseLang("Getting started", "Prise en main")
         Help1Btn.Tag = 1
 
-        Help2Img.SetResourceReference(ContentProperty, "TypeExpressVariantIcon")
-        Help2Txt.Text = Funcs.ChooseLang("What's new and still to come", "Nouvelles fonctions et autres à venir")
+        Help2Btn.Icon = FindResource("TypeExpressIcon")
+        Help2Btn.Text = Funcs.ChooseLang("What's new and still to come", "Nouvelles fonctions et autres à venir")
         Help2Btn.Tag = 37
 
-        Help3Img.SetResourceReference(ContentProperty, "FeedbackIcon")
-        Help3Txt.Text = Funcs.ChooseLang("Troubleshooting and feedback", "Dépannage et commentaires")
+        Help3Btn.Icon = FindResource("FeedbackIcon")
+        Help3Btn.Text = Funcs.ChooseLang("Troubleshooting and feedback", "Dépannage et commentaires")
         Help3Btn.Tag = 38
 
     End Sub
@@ -6744,7 +7004,7 @@ Class MainWindow
 
         Select Case topic
             Case 1
-                icon = "NewIcon"
+                icon = "BlankIcon"
                 title = Funcs.ChooseLang("Creating a document with templates", "Créer un document avec des modèles")
             Case 2
                 icon = "FavouriteIcon"
@@ -6771,13 +7031,13 @@ Class MainWindow
                 icon = "LockIcon"
                 title = Funcs.ChooseLang("Locking documents", "Verrouiller les documents")
             Case 10
-                icon = "HTMLIcon"
+                icon = "HtmlIcon"
                 title = Funcs.ChooseLang("Converting your document to HTML", "Convertir votre document en HTML")
             Case 11
                 icon = "DefaultsIcon"
                 title = Funcs.ChooseLang("Default options", "Paramètres par défaut")
             Case 12
-                icon = "OptionsIcon"
+                icon = "GearsIcon"
                 title = Funcs.ChooseLang("General options", "Paramètres généraux")
             Case 13
                 icon = "ColoursIcon"
@@ -6792,7 +7052,7 @@ Class MainWindow
                 icon = "PasteIcon"
                 title = Funcs.ChooseLang("Undo, redo and the clipboard", "Annuler, rétablir et le presse-papiers")
             Case 17
-                icon = "TextBlockIcon"
+                icon = "TextIcon"
                 title = Funcs.ChooseLang("Fonts and formatting", "Polices et mise en forme")
             Case 18
                 icon = "LeftAlignIcon"
@@ -6801,7 +7061,7 @@ Class MainWindow
                 icon = "HighlighterIcon"
                 title = Funcs.ChooseLang("Text colour and highlighting", "Couleur du texte et surlignage")
             Case 20
-                icon = "BulletIcon"
+                icon = "BulletsIcon"
                 title = Funcs.ChooseLang("Lists and tables", "Listes et tableaux")
             Case 21
                 icon = "PictureIcon"
@@ -6810,7 +7070,7 @@ Class MainWindow
                 icon = "ShapesIcon"
                 title = Funcs.ChooseLang("Shapes", "Formes")
             Case 23
-                icon = "DrawingIcon"
+                icon = "EditIcon"
                 title = Funcs.ChooseLang("Drawings", "Dessins")
             Case 24
                 icon = "SymbolIcon"
@@ -6846,13 +7106,13 @@ Class MainWindow
                 icon = "NotificationIcon"
                 title = "Notifications"
             Case 35
-                icon = "AppearanceIcon"
+                icon = "PaneIcon"
                 title = Funcs.ChooseLang("Using the side pane and status bar", "Utiliser le panneau à côté et la barre d'état")
             Case 36
-                icon = "KeyboardIcon"
+                icon = "CtrlIcon"
                 title = Funcs.ChooseLang("Keyboard shortcuts", "Raccourcis clavier")
             Case 37
-                icon = "TypeExpressVariantIcon"
+                icon = "TypeExpressIcon"
                 title = Funcs.ChooseLang("What's new and still to come", "Nouvelles fonctions et autres à venir")
             Case 38
                 icon = "FeedbackIcon"
@@ -6862,16 +7122,16 @@ Class MainWindow
         Select Case btn
             Case 1
                 Help1Btn.Tag = topic
-                Help1Img.SetResourceReference(ContentProperty, icon)
-                Help1Txt.Text = title
+                Help1Btn.Icon = FindResource(icon)
+                Help1Btn.Text = title
             Case 2
                 Help2Btn.Tag = topic
-                Help2Img.SetResourceReference(ContentProperty, icon)
-                Help2Txt.Text = title
+                Help2Btn.Icon = FindResource(icon)
+                Help2Btn.Text = title
             Case 3
                 Help3Btn.Tag = topic
-                Help3Img.SetResourceReference(ContentProperty, icon)
-                Help3Txt.Text = title
+                Help3Btn.Icon = FindResource(icon)
+                Help3Btn.Text = title
         End Select
 
     End Sub
@@ -6900,6 +7160,8 @@ Class MainWindow
         End If
 
     End Sub
+
+
 
     'Public DocHeight As Integer = 0
     'Public DocWidth As Integer = 0
@@ -6956,4 +7218,14 @@ Class MainWindow
 
     'End Sub
 
+End Class
+
+Public Class SymbolItem
+    Public Property Symbol As String
+    Public Property Info As String
+End Class
+
+Public Class DateTimeItem
+    Public Property DateTimeStr As String
+    Public Property DateTimeID As String
 End Class

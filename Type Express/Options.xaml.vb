@@ -24,6 +24,7 @@ Public Class Options
     ' - prompt to save on close
     ' - quick lock shortcut with default password
     ' - spellchecker custom dictionaries
+    ' - saved data
 
     ' Appearance:
     ' - application theme
@@ -79,31 +80,21 @@ Public Class Options
         ' Add any initialization after the InitializeComponent() call.
         AddHandler TempLblTimer.Elapsed, AddressOf TempLblTimer_Tick
 
-        Dim objFontCollection As WinDrawing.Text.FontCollection
-        objFontCollection = New WinDrawing.Text.InstalledFontCollection
-
-        FontsStack.Children.Clear()
+        Dim objFontCollection As WinDrawing.Text.FontCollection = New WinDrawing.Text.InstalledFontCollection
+        Dim FavouriteSelectableList As New List(Of SelectableFontItem) From {}
 
         For Each objFontFamily As WinDrawing.FontFamily In objFontCollection.Families
             Dim fontname As String = Funcs.EscapeChars(objFontFamily.Name)
 
             If Not fontname = "" Then
-                Dim copy As Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='{DynamicResource SecondaryColor}' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='FontSampleBtn' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><StackPanel Orientation='Horizontal'><TextBlock Text='" +
-                                                  fontname + "' FontFamily='" +
-                                                  fontname + "' FontSize='14' Padding='20,0,0,0' Name='HomeBtnTxt_Copy1291' Height='21.31' Margin='0,7.69,10,7' HorizontalAlignment='Center' VerticalAlignment='Center' /></StackPanel></Button>")
-
-                copy.Tag = objFontFamily.Name
-                copy.ToolTip = objFontFamily.Name
-                FontsStack.Children.Add(copy)
-                AddHandler copy.Click, AddressOf FontBtns_Click
-
-                Dim FontCk As New CheckBox() With {.Content = fontname, .IsChecked = My.Settings.favouritefonts.Contains(fontname)}
-                FavouriteList.Children.Add(FontCk)
-                AddHandler FontCk.Click, AddressOf FontCk_Click
-
+                FavouriteSelectableList.Add(New SelectableFontItem() With {
+                                             .Name = fontname,
+                                             .Selected = My.Settings.favouritefonts.Contains(fontname)
+                                            })
             End If
         Next
 
+        FavouriteList.ItemsSource = FavouriteSelectableList
         FontStyleTxt.Text = My.Settings.fontname
         FontSizeTxt.Text = My.Settings.fontsize.ToString()
 
@@ -122,52 +113,49 @@ Public Class Options
         End If
 
         If My.Settings.filterindex = 0 Then
-            Funcs.SetRadioBtns(RTFRadioImg, New List(Of ContentControl) From {TXTRadioImg})
+            RTFRadio.IsChecked = True
         Else
-            Funcs.SetRadioBtns(TXTRadioImg, New List(Of ContentControl) From {RTFRadioImg})
+            TXTRadio.IsChecked = True
         End If
 
         Select Case My.Settings.colourscheme
             Case 0
-                ClrSchemeLbl.Text = Funcs.ChooseLang("Basic", "Basique")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Basic", "Basique")
             Case 1
-                ClrSchemeLbl.Text = Funcs.ChooseLang("Blue", "Bleu")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Blue", "Bleu")
             Case 2
-                ClrSchemeLbl.Text = Funcs.ChooseLang("Green", "Vert")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Green", "Vert")
             Case 3
-                ClrSchemeLbl.Text = Funcs.ChooseLang("Red Orange", "Rouge Orange")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Red Orange", "Rouge Orange")
             Case 4
-                ClrSchemeLbl.Text = "Violet"
+                ClrSchemeBtn.Text = "Violet"
             Case 5
-                ClrSchemeLbl.Text = "Office"
+                ClrSchemeBtn.Text = "Office"
             Case 6
-                ClrSchemeLbl.Text = Funcs.ChooseLang("Greyscale", "Échelle de Gris")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Greyscale", "Échelle de Gris")
         End Select
 
         If My.Settings.spelllang = 0 Then
-            Funcs.SetRadioBtns(EnglishRadioImg, New List(Of ContentControl) From {FrenchRadioImg, SpanishRadioImg})
-
+            EnglishRadio.IsChecked = True
         ElseIf My.Settings.spelllang = 1 Then
-            Funcs.SetRadioBtns(FrenchRadioImg, New List(Of ContentControl) From {EnglishRadioImg, SpanishRadioImg})
-
+            FrenchRadio.IsChecked = True
         Else
-            Funcs.SetRadioBtns(SpanishRadioImg, New List(Of ContentControl) From {EnglishRadioImg, FrenchRadioImg})
-
+            SpanishRadio.IsChecked = True
         End If
 
         If My.Settings.language = "fr-FR" Then
-            Funcs.SetRadioBtns(FrenchRadio1Img, New List(Of ContentControl) From {EnglishRadio1Img})
+            FrenchRadio1.IsChecked = True
         Else
-            Funcs.SetRadioBtns(EnglishRadio1Img, New List(Of ContentControl) From {FrenchRadio1Img})
+            EnglishRadio1.IsChecked = True
         End If
 
         RecentUpDown.Value = My.Settings.recentcount
 
-        Funcs.SetCheckButton(My.Settings.audio, SoundImg)
-        Funcs.SetCheckButton(My.Settings.showprompt, PromptImg)
+        SoundBtn.IsChecked = My.Settings.audio
+        SavePromptBtn.IsChecked = My.Settings.showprompt
 
         If My.Settings.lockshortcut = False Then
-            Funcs.SetCheckButton(My.Settings.lockshortcut, LockImg)
+            LockBtn.IsChecked = My.Settings.lockshortcut
             LockPasswordTxt.Password = ""
 
             LockPasswordTxt.Visibility = Visibility.Collapsed
@@ -175,7 +163,7 @@ Public Class Options
             PasswordLbl.Visibility = Visibility.Collapsed
 
         Else
-            Funcs.SetCheckButton(My.Settings.lockshortcut, LockImg)
+            LockBtn.IsChecked = My.Settings.lockshortcut
             LockPasswordTxt.Password = My.Settings.lockpass
 
             LockPasswordTxt.Visibility = Visibility.Visible
@@ -184,14 +172,18 @@ Public Class Options
 
         End If
 
+        SaveChartsBtn.IsChecked = My.Settings.savecharts
+        SaveShapesBtn.IsChecked = My.Settings.saveshapes
+        SaveFontStylesBtn.IsChecked = My.Settings.savefonts
+
         If My.Settings.wordstatus = False Then
-            Funcs.SetCheckButton(My.Settings.wordstatus, WordImg)
+            WordCountBtn.IsChecked = My.Settings.wordstatus
 
             WordLbl.Visibility = Visibility.Collapsed
             WordCountCombo.Visibility = Visibility.Collapsed
 
         Else
-            Funcs.SetCheckButton(My.Settings.wordstatus, WordImg)
+            WordCountBtn.IsChecked = My.Settings.wordstatus
 
             WordLbl.Visibility = Visibility.Visible
             WordCountCombo.Visibility = Visibility.Visible
@@ -200,31 +192,31 @@ Public Class Options
 
         Select Case My.Settings.preferredcount
             Case "char"
-                WordCountLbl.Text = Funcs.ChooseLang("Characters", "Caractères")
+                WordCountCombo.Text = Funcs.ChooseLang("Characters", "Caractères")
 
             Case "line"
-                WordCountLbl.Text = Funcs.ChooseLang("Lines", "Lignes")
+                WordCountCombo.Text = Funcs.ChooseLang("Lines", "Lignes")
 
             Case Else
-                WordCountLbl.Text = Funcs.ChooseLang("Words", "Mots")
+                WordCountCombo.Text = Funcs.ChooseLang("Words", "Mots")
 
         End Select
 
-        Funcs.SetCheckButton(My.Settings.saveshortcut, SaveImg)
-        Funcs.SetCheckButton(My.Settings.darkmode, DarkModeImg)
-        Funcs.SetCheckButton(My.Settings.autodarkmode, AutoDarkModeImg)
+        SaveBtn.IsChecked = My.Settings.saveshortcut
+        DarkModeBtn.IsChecked = My.Settings.darkmode
+        AutoDarkModeBtn.IsChecked = My.Settings.autodarkmode
 
         If My.Settings.autodarkmode Then
             DarkModeBtn.Visibility = Visibility.Collapsed
             AutoDarkPnl.Visibility = Visibility.Visible
         End If
 
-        Dark1Lbl.Text = My.Settings.autodarkfrom
-        Dark2Lbl.Text = My.Settings.autodarkto
+        Dark1Combo.Text = My.Settings.autodarkfrom
+        Dark2Combo.Text = My.Settings.autodarkto
 
-        Funcs.SetCheckButton(My.Settings.openmenu, MenuImg)
-        Funcs.SetCheckButton(My.Settings.notificationcheck, NotificationImg)
-        Funcs.SetCheckButton(My.Settings.openrecent, RecentImg)
+        MenuBtn.IsChecked = My.Settings.openmenu
+        NotificationBtn.IsChecked = My.Settings.notificationcheck
+        RecentBtn.IsChecked = My.Settings.openrecent
 
         If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then
             folderBrowser.Description = "Choisissez un dossier ci-dessous..."
@@ -233,8 +225,8 @@ Public Class Options
             exportDialog.Title = "Sélectionner un emplacement d'exportation - Type Express"
             importDialog.Title = "Choisissez un fichier à importer - Type Express"
 
-            BoldBtnImg.SetResourceReference(ContentProperty, "GrasIcon")
-            UnderlineBtnImg.SetResourceReference(ContentProperty, "SousligneIcon")
+            BoldBtn.Icon = FindResource("GrasIcon")
+            UnderlineBtn.Icon = FindResource("SousligneIcon")
 
         End If
 
@@ -261,7 +253,7 @@ Public Class Options
 
     Private Sub TempLblTimer_Tick(sender As Object, e As EventArgs)
 
-        Dim deli As mydelegate = New mydelegate(AddressOf ResetStatusLbl)
+        Dim deli As New mydelegate(AddressOf ResetStatusLbl)
         SavedTxt.Dispatcher.BeginInvoke(Threading.DispatcherPriority.Normal, deli)
         TempLblTimer.Stop()
 
@@ -296,14 +288,14 @@ Public Class Options
     Private Sub AppearanceBtn_Click(sender As Object, e As RoutedEventArgs) Handles AppearanceBtn.Click
         Scroller.ScrollToVerticalOffset(100.0 + FontPnl.ActualHeight + TextColourPnl.ActualHeight + SaveLocationPnl.ActualHeight + FileTypePnl.ActualHeight +
                                         ColourSchemePnl.ActualHeight + SpellcheckPnl.ActualHeight + InterfacePnl.ActualHeight +
-                                        SoundsPnl.ActualHeight + PromptPnl.ActualHeight + LockPnl.ActualHeight + DictionaryPnl.ActualHeight)
+                                        SoundsPnl.ActualHeight + PromptPnl.ActualHeight + LockPnl.ActualHeight + DictionaryPnl.ActualHeight + SavedDataPnl.ActualHeight)
 
     End Sub
 
     Private Sub StartupBtn_Click(sender As Object, e As RoutedEventArgs) Handles StartupBtn.Click
         Scroller.ScrollToVerticalOffset(150.0 + FontPnl.ActualHeight + TextColourPnl.ActualHeight + SaveLocationPnl.ActualHeight + FileTypePnl.ActualHeight +
                                         ColourSchemePnl.ActualHeight + SpellcheckPnl.ActualHeight + InterfacePnl.ActualHeight + RecentsPnl.ActualHeight +
-                                        SoundsPnl.ActualHeight + PromptPnl.ActualHeight + LockPnl.ActualHeight + DictionaryPnl.ActualHeight +
+                                        SoundsPnl.ActualHeight + PromptPnl.ActualHeight + LockPnl.ActualHeight + DictionaryPnl.ActualHeight + SavedDataPnl.ActualHeight +
                                         WordCountPnl.ActualHeight + SavePnl.ActualHeight + ColourPnl.ActualHeight)
 
     End Sub
@@ -311,7 +303,7 @@ Public Class Options
     Private Sub FontsBtn_Click(sender As Object, e As RoutedEventArgs) Handles FontsBtn.Click
         Scroller.ScrollToVerticalOffset(200.0 + FontPnl.ActualHeight + TextColourPnl.ActualHeight + SaveLocationPnl.ActualHeight + FileTypePnl.ActualHeight +
                                         ColourSchemePnl.ActualHeight + SpellcheckPnl.ActualHeight + InterfacePnl.ActualHeight + RecentsPnl.ActualHeight +
-                                        SoundsPnl.ActualHeight + PromptPnl.ActualHeight + LockPnl.ActualHeight + DictionaryPnl.ActualHeight +
+                                        SoundsPnl.ActualHeight + PromptPnl.ActualHeight + LockPnl.ActualHeight + DictionaryPnl.ActualHeight + SavedDataPnl.ActualHeight +
                                         WordCountPnl.ActualHeight + SavePnl.ActualHeight + StartupPnl.ActualHeight + ColourPnl.ActualHeight)
 
     End Sub
@@ -356,8 +348,8 @@ Public Class Options
 
     End Sub
 
-    Private Sub FontBtns_Click(sender As Button, e As RoutedEventArgs)
-        FontStyleTxt.Text = sender.Tag.ToString()
+    Private Sub FontBtns_Click(sender As ExpressControls.AppButton, e As RoutedEventArgs)
+        FontStyleTxt.Text = sender.Text
         FontPopup.IsOpen = False
         ChangeFont()
 
@@ -613,16 +605,12 @@ Public Class Options
     ' DEFAULTS > FILTER TYPE
     ' --
 
-    Private Sub RTFTXTRadios_Click(sender As Button, e As RoutedEventArgs) Handles RTFRadio.Click, TXTRadio.Click
+    Private Sub RTFTXTRadios_Click(sender As ExpressControls.AppRadioButton, e As RoutedEventArgs) Handles RTFRadio.Click, TXTRadio.Click
 
         If sender.Name = "RTFRadio" Then
-            Funcs.SetRadioBtns(RTFRadioImg, New List(Of ContentControl) From {TXTRadioImg})
             My.Settings.filterindex = 0
-
         Else
-            Funcs.SetRadioBtns(TXTRadioImg, New List(Of ContentControl) From {RTFRadioImg})
             My.Settings.filterindex = 1
-
         End If
 
         SaveAll()
@@ -643,25 +631,25 @@ Public Class Options
 
         Select Case sender.Name
             Case "BasicBtn"
-                ClrSchemeLbl.Text = Funcs.ChooseLang("Basic", "Basique")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Basic", "Basique")
                 My.Settings.colourscheme = 0
             Case "BlueBtn"
-                ClrSchemeLbl.Text = Funcs.ChooseLang("Blue", "Bleu")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Blue", "Bleu")
                 My.Settings.colourscheme = 1
             Case "GreenBtn"
-                ClrSchemeLbl.Text = Funcs.ChooseLang("Green", "Vert")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Green", "Vert")
                 My.Settings.colourscheme = 2
             Case "RedBtn"
-                ClrSchemeLbl.Text = Funcs.ChooseLang("Red Orange", "Rouge Orange")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Red Orange", "Rouge Orange")
                 My.Settings.colourscheme = 3
             Case "VioletBtn"
-                ClrSchemeLbl.Text = "Violet"
+                ClrSchemeBtn.Text = "Violet"
                 My.Settings.colourscheme = 4
             Case "OfficeBtn"
-                ClrSchemeLbl.Text = "Office"
+                ClrSchemeBtn.Text = "Office"
                 My.Settings.colourscheme = 5
             Case "GreyscaleBtn"
-                ClrSchemeLbl.Text = Funcs.ChooseLang("Greyscale", "Échelle de Gris")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("Greyscale", "Échelle de Gris")
                 My.Settings.colourscheme = 6
         End Select
 
@@ -674,20 +662,14 @@ Public Class Options
     ' DEFAULTS > SPELLCHECKER
     ' --
 
-    Private Sub SpellRadios_Click(sender As Button, e As RoutedEventArgs) Handles EnglishRadio.Click, FrenchRadio.Click, SpanishRadio.Click
+    Private Sub SpellRadios_Click(sender As ExpressControls.AppRadioButton, e As RoutedEventArgs) Handles EnglishRadio.Click, FrenchRadio.Click, SpanishRadio.Click
 
         If sender.Name = "FrenchRadio" Then
-            Funcs.SetRadioBtns(FrenchRadioImg, New List(Of ContentControl) From {EnglishRadioImg, SpanishRadioImg})
             My.Settings.spelllang = 1
-
         ElseIf sender.Name = "SpanishRadio" Then
-            Funcs.SetRadioBtns(SpanishRadioImg, New List(Of ContentControl) From {EnglishRadioImg, FrenchRadioImg})
             My.Settings.spelllang = 2
-
         Else
-            Funcs.SetRadioBtns(EnglishRadioImg, New List(Of ContentControl) From {FrenchRadioImg, SpanishRadioImg})
             My.Settings.spelllang = 0
-
         End If
 
         SaveAll()
@@ -699,20 +681,17 @@ Public Class Options
     ' GENERAL > INTERFACE
     ' --
 
-    Private Sub InterfaceRadios_Click(sender As Button, e As RoutedEventArgs) Handles EnglishRadio1.Click, FrenchRadio1.Click
+    Private Sub InterfaceRadios_Click(sender As ExpressControls.AppRadioButton, e As RoutedEventArgs) Handles EnglishRadio1.Click, FrenchRadio1.Click
 
         If (sender.Name = "EnglishRadio1" And Not My.Settings.language = "en-GB") Or (sender.Name = "FrenchRadio1" And Not My.Settings.language = "fr-FR") Then
             If MainWindow.NewMessage(Funcs.ChooseLang("Changing the interface language requires an application restart. All unsaved work will be lost. Do you wish to continue?",
-                                                           "Pour changer la langue de l'interface, un redémarrage de l'application est nécessaire. Tous le travail non enregistré sera perdu. Vous souhaitez continuer ?"),
+                                                           "Pour changer la langue de l'interface, un redémarrage de l'application est nécessaire. Tout le travail non enregistré sera perdu. Vous souhaitez continuer ?"),
                                      Funcs.ChooseLang("Language warning", "Avertissement de langue"),
                                      MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
                 If sender.Name = "EnglishRadio1" Then
-                    Funcs.SetRadioBtns(EnglishRadio1Img, New List(Of ContentControl) From {FrenchRadio1Img})
                     My.Settings.language = "en-GB"
-
                 Else
-                    Funcs.SetRadioBtns(FrenchRadio1Img, New List(Of ContentControl) From {EnglishRadio1Img})
                     My.Settings.language = "fr-FR"
 
                 End If
@@ -722,6 +701,12 @@ Public Class Options
                 Forms.Application.Restart()
                 Windows.Application.Current.Shutdown()
 
+            Else
+                If sender.Name = "EnglishRadio1" Then
+                    FrenchRadio1.IsChecked = True
+                Else
+                    EnglishRadio1.IsChecked = True
+                End If
             End If
         End If
 
@@ -732,9 +717,7 @@ Public Class Options
     ' --
 
     Private Sub SoundBtn_Click(sender As Object, e As RoutedEventArgs) Handles SoundBtn.Click
-        Funcs.ToggleCheckButton(SoundImg)
-
-        If SoundImg.Tag = 0 Then My.Settings.audio = False Else My.Settings.audio = True
+        My.Settings.audio = SoundBtn.IsChecked
         SaveAll()
 
     End Sub
@@ -744,9 +727,7 @@ Public Class Options
     ' --
 
     Private Sub SavePromptBtn_Click(sender As Object, e As RoutedEventArgs) Handles SavePromptBtn.Click
-        Funcs.ToggleCheckButton(PromptImg)
-
-        If PromptImg.Tag = 0 Then My.Settings.showprompt = False Else My.Settings.showprompt = True
+        My.Settings.showprompt = SavePromptBtn.IsChecked
         SaveAll()
 
     End Sub
@@ -756,9 +737,8 @@ Public Class Options
     ' --
 
     Private Sub LockBtn_Click(sender As Object, e As RoutedEventArgs) Handles LockBtn.Click
-        Funcs.ToggleCheckButton(LockImg)
 
-        If LockImg.Tag = 0 Then
+        If LockBtn.IsChecked = False Then
             My.Settings.lockshortcut = False
             LockPasswordTxt.Password = ""
 
@@ -816,18 +796,73 @@ Public Class Options
     End Sub
 
 
+    ' GENERAL > SAVED DATA
+    ' --
+
+    Private Sub SaveChartsBtn_Click(sender As Object, e As RoutedEventArgs) Handles SaveChartsBtn.Click
+
+        If SaveChartsBtn.IsChecked = False And My.Settings.savedcharts.Count > 0 Then
+            If Not MainWindow.NewMessage(Funcs.ChooseLang("Turning off this setting will clear the list of previously added charts. Do you wish to continue?",
+                                                          "La désactivation de ce paramètre efface la liste des graphiques ajoutés précédemment. Souhaitez-vous continuer ?"),
+                                         Funcs.ChooseLang("Previously added charts",
+                                                          "Graphiques ajoutés précédemment"), MessageBoxButton.YesNoCancel, MessageBoxImage.Warning) = MessageBoxResult.Yes Then
+
+                SaveChartsBtn.IsChecked = True
+                Exit Sub
+            End If
+        End If
+
+        My.Settings.savedcharts.Clear()
+        My.Settings.savecharts = SaveChartsBtn.IsChecked
+        SaveAll()
+
+    End Sub
+
+    Private Sub SaveShapesBtn_Click(sender As Object, e As RoutedEventArgs) Handles SaveShapesBtn.Click
+
+        If SaveShapesBtn.IsChecked = False And My.Settings.savedshapes.Count > 0 Then
+            If Not MainWindow.NewMessage(Funcs.ChooseLang("Turning off this setting will clear the list of previously added shapes. Do you wish to continue?",
+                                                          "La désactivation de ce paramètre efface la liste des formes ajoutées précédemment. Souhaitez-vous continuer ?"),
+                                         Funcs.ChooseLang("Previously added shapes",
+                                                          "Formes ajoutées précédemment"), MessageBoxButton.YesNoCancel, MessageBoxImage.Warning) = MessageBoxResult.Yes Then
+
+                SaveShapesBtn.IsChecked = True
+                Exit Sub
+            End If
+        End If
+
+        My.Settings.savedshapes.Clear()
+        My.Settings.saveshapes = SaveShapesBtn.IsChecked
+        SaveAll()
+
+    End Sub
+
+    Private Sub SaveFontStylesBtn_Click(sender As Object, e As RoutedEventArgs) Handles SaveFontStylesBtn.Click
+
+        If SaveFontStylesBtn.IsChecked = False Then
+            If Not MainWindow.NewMessage(Funcs.ChooseLang("Turning off this setting will reset any changes you've made to the Font Styles tab. Do you wish to continue?",
+                                                          "La désactivation de ce paramètre réinitialisera toutes les modifications apportées à l'onglet Styles de Police. Souhaitez-vous continuer ?"),
+                                         Funcs.ChooseLang("Font style choices",
+                                                          "Choix de style de police"), MessageBoxButton.YesNoCancel, MessageBoxImage.Warning) = MessageBoxResult.Yes Then
+
+                SaveFontStylesBtn.IsChecked = True
+                Exit Sub
+            End If
+        End If
+
+        My.Settings.savedfonts.Clear()
+        My.Settings.savefonts = SaveFontStylesBtn.IsChecked
+        SaveAll()
+
+    End Sub
+
+
 
     ' APPEARANCE > APP THEME
     ' --
 
     Private Sub DarkModeBtn_Click(sender As Object, e As RoutedEventArgs) Handles DarkModeBtn.Click
-        Funcs.ToggleCheckButton(DarkModeImg)
-
-        If DarkModeImg.Tag = 0 Then
-            My.Settings.darkmode = False
-        Else
-            My.Settings.darkmode = True
-        End If
+        My.Settings.darkmode = DarkModeBtn.IsChecked
 
         If My.Settings.autodarkmode = False Then SetDarkMode(My.Settings.darkmode)
         SaveAll()
@@ -835,9 +870,8 @@ Public Class Options
     End Sub
 
     Private Sub AutoDarkModeBtn_Click(sender As Object, e As RoutedEventArgs) Handles AutoDarkModeBtn.Click
-        Funcs.ToggleCheckButton(AutoDarkModeImg)
 
-        If AutoDarkModeImg.Tag = 0 Then
+        If AutoDarkModeBtn.IsChecked = False Then
             My.Settings.autodarkmode = False
             Application.AutoDarkTimer.Stop()
 
@@ -871,14 +905,11 @@ Public Class Options
 
     End Sub
 
-    Private Sub DarkFromBtns_Click(sender As Button, e As RoutedEventArgs) Handles Dark16Btn.Click, Dark162Btn.Click, Dark17Btn.Click, Dark172Btn.Click,
+    Private Sub DarkFromBtns_Click(sender As ExpressControls.AppButton, e As RoutedEventArgs) Handles Dark16Btn.Click, Dark162Btn.Click, Dark17Btn.Click, Dark172Btn.Click,
         Dark18Btn.Click, Dark182Btn.Click, Dark19Btn.Click, Dark192Btn.Click, Dark20Btn.Click, Dark202Btn.Click, Dark21Btn.Click, Dark212Btn.Click, Dark22Btn.Click
 
-        Dim dp As StackPanel = sender.Content
-        For Each txt As TextBlock In dp.Children.OfType(Of TextBlock)
-            My.Settings.autodarkfrom = txt.Text
-            Dark1Lbl.Text = txt.Text
-        Next
+        My.Settings.autodarkfrom = sender.Text
+        Dark1Combo.Text = sender.Text
 
         SaveAll()
         DarkFromPopup.IsOpen = False
@@ -887,14 +918,11 @@ Public Class Options
 
     End Sub
 
-    Private Sub DarkToBtns_Click(sender As Button, e As RoutedEventArgs) Handles Dark4Btn.Click, Dark42Btn.Click, Dark5Btn.Click, Dark52Btn.Click, Dark6Btn.Click,
-        Dark62Btn.Click, Dark7Btn.Click, Dark72Btn.Click, Dark8Btn.Click, Dark82Btn.Click, Dark9Btn.Click, Dark92Btn.Click, Dark10Btn.Click
+    Private Sub DarkToBtns_Click(sender As ExpressControls.AppButton, e As RoutedEventArgs) Handles Dark4Btn.Click, Dark42Btn.Click, Dark5Btn.Click, Dark52Btn.Click,
+        Dark6Btn.Click, Dark62Btn.Click, Dark7Btn.Click, Dark72Btn.Click, Dark8Btn.Click, Dark82Btn.Click, Dark9Btn.Click, Dark92Btn.Click, Dark10Btn.Click
 
-        Dim dp As StackPanel = sender.Content
-        For Each txt As TextBlock In dp.Children.OfType(Of TextBlock)
-            My.Settings.autodarkto = txt.Text
-            Dark2Lbl.Text = txt.Text
-        Next
+        My.Settings.autodarkto = sender.Text
+        Dark2Combo.Text = sender.Text
 
         SaveAll()
         DarkToPopup.IsOpen = False
@@ -968,9 +996,8 @@ Public Class Options
     ' --
 
     Private Sub WordCountBtn_Click(sender As Object, e As RoutedEventArgs) Handles WordCountBtn.Click
-        Funcs.ToggleCheckButton(WordImg)
 
-        If WordImg.Tag = 0 Then
+        If WordCountBtn.IsChecked = False Then
             My.Settings.wordstatus = False
 
             WordLbl.Visibility = Visibility.Collapsed
@@ -1007,15 +1034,15 @@ Public Class Options
 
         Select Case sender.Name
             Case "CharsBtn"
-                WordCountLbl.Text = Funcs.ChooseLang("Characters", "Caractères")
+                WordCountCombo.Text = Funcs.ChooseLang("Characters", "Caractères")
                 My.Settings.preferredcount = "char"
 
             Case "LinesBtn"
-                WordCountLbl.Text = Funcs.ChooseLang("Lines", "Lignes")
+                WordCountCombo.Text = Funcs.ChooseLang("Lines", "Lignes")
                 My.Settings.preferredcount = "line"
 
             Case "WordsBtn"
-                WordCountLbl.Text = Funcs.ChooseLang("Words", "Mots")
+                WordCountCombo.Text = Funcs.ChooseLang("Words", "Mots")
                 My.Settings.preferredcount = "word"
 
         End Select
@@ -1034,16 +1061,7 @@ Public Class Options
     ' --
 
     Private Sub SaveBtn_Click(sender As Object, e As RoutedEventArgs) Handles SaveBtn.Click
-        Funcs.ToggleCheckButton(SaveImg)
-
-        If SaveImg.Tag = 0 Then
-            My.Settings.saveshortcut = False
-
-        Else
-            My.Settings.saveshortcut = True
-
-        End If
-
+        My.Settings.saveshortcut = SaveBtn.IsChecked
         SaveAll()
 
         For Each win As MainWindow In My.Application.Windows.OfType(Of MainWindow)
@@ -1064,58 +1082,37 @@ Public Class Options
     ' --
 
     Private Sub MenuBtn_Click(sender As Object, e As RoutedEventArgs) Handles MenuBtn.Click
+        MenuBtn.IsChecked = Not MenuBtn.IsChecked
         ToggleMenuBtn()
 
     End Sub
 
     Private Sub ToggleMenuBtn()
-        Funcs.ToggleCheckButton(MenuImg)
+        MenuBtn.IsChecked = Not MenuBtn.IsChecked
+        My.Settings.openmenu = MenuBtn.IsChecked
 
-        If MenuImg.Tag = 0 Then
-            My.Settings.openmenu = False
-
-        Else
-            My.Settings.openmenu = True
-
-        End If
-
-        If MenuImg.Tag = 1 And RecentImg.Tag = 1 Then ToggleRecentBtn()
+        If MenuBtn.IsChecked And RecentBtn.IsChecked Then ToggleRecentBtn()
         SaveAll()
 
     End Sub
 
     Private Sub NotificationBtn_Click(sender As Object, e As RoutedEventArgs) Handles NotificationBtn.Click
-        Funcs.ToggleCheckButton(NotificationImg)
-
-        If NotificationImg.Tag = 0 Then
-            My.Settings.notificationcheck = False
-
-        Else
-            My.Settings.notificationcheck = True
-
-        End If
-
+        My.Settings.notificationcheck = NotificationBtn.IsChecked
         SaveAll()
 
     End Sub
 
     Private Sub RecentBtn_Click(sender As Object, e As RoutedEventArgs) Handles RecentBtn.Click
+        RecentBtn.IsChecked = Not RecentBtn.IsChecked
         ToggleRecentBtn()
 
     End Sub
 
     Private Sub ToggleRecentBtn()
-        Funcs.ToggleCheckButton(RecentImg)
+        RecentBtn.IsChecked = Not RecentBtn.IsChecked
+        My.Settings.openrecent = RecentBtn.IsChecked
 
-        If RecentImg.Tag = 0 Then
-            My.Settings.openrecent = False
-
-        Else
-            My.Settings.openrecent = True
-
-        End If
-
-        If MenuImg.Tag = 1 And RecentImg.Tag = 1 Then ToggleMenuBtn()
+        If MenuBtn.IsChecked And RecentBtn.IsChecked Then ToggleMenuBtn()
         SaveAll()
 
     End Sub
@@ -1124,7 +1121,7 @@ Public Class Options
     ' FONTS
     ' --
 
-    Private Sub FontCk_Click(sender As CheckBox, e As RoutedEventArgs)
+    Private Sub FontCk_Click(sender As ExpressControls.AppCheckBox, e As RoutedEventArgs)
 
         If sender.IsChecked Then
             My.Settings.favouritefonts.Add(sender.Content.ToString())
@@ -1248,6 +1245,18 @@ Public Class Options
     '        <dict-es>
     '            <word></word>
     '        </dict-es>
+    '        <save-charts></save-charts>
+    '        <save-shapes></save-shapes>
+    '        <save-fonts></save-fonts>
+    '        <saved-charts>
+    '            <data></data>
+    '        </saved-charts>
+    '        <saved-shapes>
+    '            <data></data>
+    '        </saved-shapes>
+    '        <saved-fonts>
+    '            <data></data>
+    '        </saved-fonts>
     '    </general>
     '    <appearance>
     '        <dark-mode></dark-mode>
@@ -1268,7 +1277,8 @@ Public Class Options
 
     ReadOnly defsettings As New List(Of String) From
              {"font-family", "font-size", "bold", "italic", "underline", "text-colour", "save-location", "file-type", "colour-scheme", "spellchecker-language"}
-    ReadOnly gensettings As New List(Of String) From {"sounds", "save-prompt", "lock-shortcut", "dict-en", "dict-fr", "dict-es"}
+    ReadOnly gensettings As New List(Of String) From
+             {"sounds", "save-prompt", "lock-shortcut", "dict-en", "dict-fr", "dict-es", "save-charts", "save-shapes", "save-fonts", "saved-charts", "saved-shapes", "saved-fonts"}
     ReadOnly appsettings As New List(Of String) From {"dark-mode", "auto-dark", "dark-on", "dark-off", "recent-files", "stat-shortcut", "stat-figure", "save-shortcut"}
     ReadOnly strsettings As New List(Of String) From {"type-menu", "notifications", "open-recent"}
 
@@ -1438,6 +1448,48 @@ Public Class Options
                                             End If
                                         Next
                                         count += 1
+                                    ElseIf j.OuterXml.StartsWith("<save-charts>") Then
+                                        Dim result As Boolean
+                                        If Boolean.TryParse(val, result) Then
+                                            My.Settings.savecharts = result
+                                            count += 1
+                                        End If
+                                    ElseIf j.OuterXml.StartsWith("<save-shapes>") Then
+                                        Dim result As Boolean
+                                        If Boolean.TryParse(val, result) Then
+                                            My.Settings.saveshapes = result
+                                            count += 1
+                                        End If
+                                    ElseIf j.OuterXml.StartsWith("<save-fonts>") Then
+                                        Dim result As Boolean
+                                        If Boolean.TryParse(val, result) Then
+                                            My.Settings.savefonts = result
+                                            count += 1
+                                        End If
+                                    ElseIf j.OuterXml.StartsWith("<saved-charts>") Then
+                                        For Each k As Xml.XmlNode In j.ChildNodes
+                                            If k.OuterXml.StartsWith("<data>") Then
+                                                If (Not k.InnerText = "") And My.Settings.savedcharts.Contains(Funcs.EscapeChars(k.InnerText, True)) = False Then
+                                                    My.Settings.savedcharts.Add(Funcs.EscapeChars(k.InnerText, True))
+                                                End If
+                                            End If
+                                        Next
+                                    ElseIf j.OuterXml.StartsWith("<saved-shapes>") Then
+                                        For Each k As Xml.XmlNode In j.ChildNodes
+                                            If k.OuterXml.StartsWith("<data>") Then
+                                                If (Not k.InnerText = "") And My.Settings.savedshapes.Contains(Funcs.EscapeChars(k.InnerText, True)) = False Then
+                                                    My.Settings.savedshapes.Add(Funcs.EscapeChars(k.InnerText, True))
+                                                End If
+                                            End If
+                                        Next
+                                    ElseIf j.OuterXml.StartsWith("<saved-fonts>") Then
+                                        For Each k As Xml.XmlNode In j.ChildNodes
+                                            If k.OuterXml.StartsWith("<data>") Then
+                                                If (Not k.InnerText = "") And My.Settings.savedfonts.Contains(Funcs.EscapeChars(k.InnerText, True)) = False Then
+                                                    My.Settings.savedfonts.Add(Funcs.EscapeChars(k.InnerText, True))
+                                                End If
+                                            End If
+                                        Next
                                     End If
                                 End If
                             Next
@@ -1560,6 +1612,7 @@ Public Class Options
 
                     For Each win As MainWindow In My.Application.Windows.OfType(Of MainWindow)
                         win.CheckWordStatus()
+                        win.RefreshSavedFonts()
 
                         If My.Settings.saveshortcut = True Then
                             win.SaveStatusBtn.Visibility = Visibility.Visible
@@ -1644,6 +1697,24 @@ Public Class Options
                             For Each j In My.Settings.customes
                                 result += "<word>" + Funcs.EscapeChars(j) + "</word>"
                             Next
+                        Case "save-charts"
+                            result = My.Settings.savecharts.ToString()
+                        Case "save-shapes"
+                            result = My.Settings.saveshapes.ToString()
+                        Case "save-fonts"
+                            result = My.Settings.savefonts.ToString()
+                        Case "saved-charts"
+                            For Each j In My.Settings.savedcharts
+                                result += "<data>" + Funcs.EscapeChars(j) + "</data>"
+                            Next
+                        Case "saved-shapes"
+                            For Each j In My.Settings.savedshapes
+                                result += "<data>" + Funcs.EscapeChars(j) + "</data>"
+                            Next
+                        Case "saved-fonts"
+                            For Each j In My.Settings.savedfonts
+                                result += "<data>" + Funcs.EscapeChars(j) + "</data>"
+                            Next
                     End Select
 
                     xml += "<" + i + ">" + result + "</" + i + ">"
@@ -1703,4 +1774,9 @@ Public Class Options
         End If
     End Sub
 
+End Class
+
+Public Class SelectableFontItem
+    Public Property Name As String
+    Public Property Selected As Boolean
 End Class

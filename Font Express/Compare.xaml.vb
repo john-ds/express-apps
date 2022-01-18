@@ -44,12 +44,11 @@ Public Class Compare
                     Dim testfont As New System.Drawing.FontFamily(favfont)
                     testfont.Dispose()
 
-                    Dim copy As Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='{DynamicResource BackColor}' HorizontalContentAlignment='Left' VerticalContentAlignment='Stretch' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='FontSampleBtn' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><DockPanel VerticalAlignment='Center'><ContentControl Name='FontImg' Content='{DynamicResource UntickIcon}' Width='20' Margin='10,0,0,0' Tag='0'/><TextBlock Text='" +
-                                            fontname + "' FontFamily='" +
-                                            fontname + "' FontSize='14' Padding='10,0,0,0' Name='HomeBtnTxt_Copy1291' Height='21.31' Margin='0,0,10,0' HorizontalAlignment='Left'/></DockPanel></Button>")
+                    Dim copy As ExpressControls.AppCheckBox = XamlReader.Parse("<ex:AppCheckBox xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:ex='clr-namespace:ExpressControls;assembly=ExpressControls' Content='" +
+                        fontname + "' FontFamily='" +
+                        fontname + "' ToolTip='" +
+                        fontname + "' CornerRadius='0' HorizontalContentAlignment='Stretch' IsChecked='False' Margin='0'/>")
 
-                    copy.Tag = favfont
-                    copy.ToolTip = favfont
                     FontsStack.Children.Add(copy)
                     AddHandler copy.Click, AddressOf FontBtns_Click
 
@@ -66,12 +65,11 @@ Public Class Compare
             Dim fontname As String = Funcs.EscapeChars(objFontFamily.Name)
 
             If Not fontname = "" Then
-                Dim copy As Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='{DynamicResource BackColor}' HorizontalContentAlignment='Left' VerticalContentAlignment='Stretch' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='FontSampleBtn' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><DockPanel VerticalAlignment='Center'><ContentControl Name='FontImg' Content='{DynamicResource UntickIcon}' Width='20' Margin='10,0,0,0' Tag='0'/><TextBlock Text='" +
-                                        fontname + "' FontFamily='" +
-                                        fontname + "' FontSize='14' Padding='10,0,0,0' Name='HomeBtnTxt_Copy1291' Height='21.31' Margin='0,0,10,0' HorizontalAlignment='Left'/></DockPanel></Button>")
+                Dim copy As ExpressControls.AppCheckBox = XamlReader.Parse("<ex:AppCheckBox xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:ex='clr-namespace:ExpressControls;assembly=ExpressControls' Content='" +
+                        fontname + "' FontFamily='" +
+                        fontname + "' ToolTip='" +
+                        fontname + "' CornerRadius='0' HorizontalContentAlignment='Stretch' IsChecked='False' Margin='0'/>")
 
-                copy.Tag = objFontFamily.Name
-                copy.ToolTip = objFontFamily.Name
                 FontsStack.Children.Add(copy)
                 AddHandler copy.Click, AddressOf FontBtns_Click
 
@@ -96,46 +94,45 @@ Public Class Compare
     ' FONT SELECTION
     ' --
 
-    Private Sub FontBtns_Click(sender As Button, e As RoutedEventArgs)
-        Dim img As ContentControl = sender.FindName("FontImg")
+    Private Sub FontBtns_Click(sender As ExpressControls.AppCheckBox, e As RoutedEventArgs)
 
-        If Funcs.ToggleCheckButton(img) Then ' ticked
+        If sender.IsChecked Then
             If Font1 = "" Or Font2 = "" Then
                 If Font1 = "" Then
                     ' Add this font to font 1
-                    SetFont1(sender.Tag)
+                    SetFont1(sender.ToolTip.ToString())
                 Else
                     ' Add this font to font 2
-                    SetFont2(sender.Tag)
-                    SwapBtn.Visibility = Visibility.Visible
+                    SetFont2(sender.ToolTip.ToString())
+                    'SwapBtn.Visibility = Visibility.Visible
                 End If
 
             Else
                 ' Replace font 2 with this font
                 SetFontCheckBtns(Font2, False)
-                SetFont2(sender.Tag)
+                SetFont2(sender.ToolTip.ToString())
             End If
 
+            If Not (Font1 = "" And Font2 = "") Then
+                SwapBtn.Visibility = Visibility.Visible
+            End If
             ClearSelectionBtn.Visibility = Visibility.Visible
 
-        Else ' unticked
-            If Font1 = sender.Tag Then
-                If Font2 = "" Then
-                    ' Remove font 1
-                    RemoveFont1()
-                Else
-                    ' Remove font 1 and replace with font 2
-                    SetFont1(Font2)
-                    RemoveFont2()
-                End If
+        Else
+            If Font1 = sender.ToolTip.ToString() Then
+                ' Remove font 1
+                RemoveFont1()
 
-            ElseIf Font2 = sender.Tag Then
+            ElseIf Font2 = sender.ToolTip.ToString() Then
                 ' Remove font 2
                 RemoveFont2()
             End If
 
             SwapBtn.Visibility = Visibility.Collapsed
-            ClearSelectionBtn.Visibility = Visibility.Collapsed
+            If Font1 = "" And Font2 = "" Then
+                ClearSelectionBtn.Visibility = Visibility.Collapsed
+            End If
+
 
         End If
 
@@ -177,10 +174,9 @@ Public Class Compare
 
     Private Sub SetFontCheckBtns(name As String, val As Boolean)
 
-        For Each i In FontsStack.Children.OfType(Of Button)
-            If i.Tag = name Then
-                Dim img As ContentControl = i.FindName("FontImg")
-                Funcs.SetCheckButton(val, img)
+        For Each i In FontsStack.Children.OfType(Of ExpressControls.AppCheckBox)
+            If i.ToolTip = name Then
+                i.IsChecked = val
             End If
         Next
 
@@ -190,8 +186,10 @@ Public Class Compare
 
         If Font1 = "" And Font2 = "" Then
             SelectedLbl.Text = Funcs.ChooseLang("No fonts selected.", "Aucune police sélectionnée.")
-        ElseIf Font2 = "" Then
-            SelectedLbl.Text = Funcs.ChooseLang("Selected font: ", "Police sélectionnée : ") + Font1 + Funcs.ChooseLang(". Select one more.", ". Sélectionnez une autre.")
+        ElseIf Font1 = "" Or Font2 = "" Then
+            Dim onlyfont As String
+            If Font1 = "" Then onlyfont = Font2 Else onlyfont = Font1
+            SelectedLbl.Text = Funcs.ChooseLang("Selected font: ", "Police sélectionnée : ") + onlyfont + Funcs.ChooseLang(". Select one more.", ". Sélectionnez une autre.")
         Else
             SelectedLbl.Text = Funcs.ChooseLang("Selected fonts: ", "Polices sélectionnées : ") + Font1 + " / " + Font2
         End If
@@ -207,7 +205,7 @@ Public Class Compare
 
         Else
             Font1Txt.FontSize = 22
-            Font1Txt.Text = Funcs.ChooseLang("The quick brown fox jumps over the lazy dog", "Portez ce vieux whisky au juge blonde qui fume")
+            Font1Txt.Text = Funcs.ChooseLang("The quick brown fox jumps over the lazy dog", "Portez ce vieux whisky au juge blond qui fume")
 
         End If
 
@@ -222,7 +220,7 @@ Public Class Compare
 
         Else
             Font2Txt.FontSize = 22
-            Font2Txt.Text = Funcs.ChooseLang("The quick brown fox jumps over the lazy dog", "Portez ce vieux whisky au juge blonde qui fume")
+            Font2Txt.Text = Funcs.ChooseLang("The quick brown fox jumps over the lazy dog", "Portez ce vieux whisky au juge blond qui fume")
 
         End If
 
@@ -320,13 +318,15 @@ Public Class Compare
         Next
 
         Dim idx As Integer = FontsStack.Children.IndexOf(AllFontsLbl)
-        For Each i In FontsStack.Children.OfType(Of Button).ToList().GetRange(idx + 1, FontsStack.Children.Count - (idx + 3))
+        For Each i In FontsStack.Children.OfType(Of ExpressControls.AppCheckBox).ToList().GetRange(idx + 1, FontsStack.Children.Count - (idx + 3))
 
-            If i.Tag.ToString().ToLower().Contains(query.ToLower()) Then
+            If i.ToolTip.ToString().ToLower().Contains(query.ToLower()) Then
                 i.Visibility = Visibility.Visible
             End If
 
         Next
+
+        Scroller.ScrollToTop()
 
     End Sub
 

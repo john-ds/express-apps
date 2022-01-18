@@ -30,10 +30,11 @@
     <System:String x:Key="OpDefStr" xml:space="preserve">Par défaut    </System:String>
     <System:String x:Key="OpStartupStr" xml:space="preserve">Démarrage    </System:String>
     <System:String x:Key="SavedStr" xml:space="preserve">Enregistré    </System:String>
-    <System:String x:Key="OpImportStr">Importer</System:String>
-    <System:String x:Key="OpExportStr">Exporter</System:String>
+    <System:String x:Key="OpImportStr">Importer des parametrès</System:String>
+    <System:String x:Key="OpExportStr">Exporter des parametrès</System:String>
 
     <!-- v2 below -->
+    <System:String x:Key="MenuStr">Menu</System:String>
     <System:String x:Key="FindOutMoreStr">En savoir plus</System:String>
     <System:String x:Key="UpdateStr">Mettre à jour</System:String>
     <System:String x:Key="PleaseWaitStr">Merci de patienter...</System:String>
@@ -151,5 +152,6 @@ CTRL+H</System:String>
     <System:String x:Key="DefSortStr">Tri par défaut</System:String>
     <System:String x:Key="ChooseStr">Choisir</System:String>
     <System:String x:Key="StartupFolderStr">Dossier de démarrage</System:String>
+    <System:String x:Key="BreakdownStr">Décomposition des fichiers</System:String>
 
 </ResourceDictionary>

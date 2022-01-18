@@ -61,27 +61,6 @@ Public Class Options
         ' Add any initialization after the InitializeComponent() call.
         AddHandler TempLblTimer.Elapsed, AddressOf TempLblTimer_Tick
 
-        Dim objFontCollection As WinDrawing.Text.FontCollection
-        objFontCollection = New WinDrawing.Text.InstalledFontCollection
-
-        FontsStack.Children.Clear()
-
-        For Each objFontFamily As WinDrawing.FontFamily In objFontCollection.Families
-            Dim fontname As String = Funcs.EscapeChars(objFontFamily.Name)
-
-            If Not fontname = "" Then
-                Dim copy As Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='{DynamicResource SecondaryColor}' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='FontSampleBtn' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><StackPanel Orientation='Horizontal'><TextBlock Text='" +
-                                                  fontname + "' FontFamily='" +
-                                                  fontname + "' FontSize='14' Padding='20,0,0,0' Name='HomeBtnTxt_Copy1291' Height='21.31' Margin='0,7.69,10,7' HorizontalAlignment='Center' VerticalAlignment='Center' /></StackPanel></Button>")
-
-                copy.Tag = objFontFamily.Name
-                copy.ToolTip = objFontFamily.Name
-                FontsStack.Children.Add(copy)
-                AddHandler copy.Click, AddressOf FontBtns_Click
-
-            End If
-        Next
-
         FontStyleTxt.Text = My.Settings.fontname
 
         If My.Settings.fontstyle.HasFlag(WinDrawing.FontStyle.Bold) Then BoldSelector.Visibility = Visibility.Visible
@@ -101,46 +80,46 @@ Public Class Options
         TimingsUpDown.Value = My.Settings.defaulttimings
 
         If My.Settings.defaultsize = 0 Then
-            Funcs.SetRadioBtns(Size169RadioImg, New List(Of ContentControl) From {Size43RadioImg})
+            Size169Radio.IsChecked = True
         Else
-            Funcs.SetRadioBtns(Size43RadioImg, New List(Of ContentControl) From {Size169RadioImg})
+            Size43Radio.IsChecked = True
         End If
 
         If My.Settings.language = "fr-FR" Then
-            Funcs.SetRadioBtns(FrenchRadio1Img, New List(Of ContentControl) From {EnglishRadio1Img})
+            FrenchRadio1.IsChecked = True
         Else
-            Funcs.SetRadioBtns(EnglishRadio1Img, New List(Of ContentControl) From {FrenchRadio1Img})
+            EnglishRadio1.IsChecked = True
         End If
 
         RecentUpDown.Value = My.Settings.recentcount
 
-        Funcs.SetCheckButton(My.Settings.audio, SoundImg)
-        Funcs.SetCheckButton(My.Settings.showprompt, PromptImg)
-        Funcs.SetCheckButton(My.Settings.hidecontrols, SlideshowImg)
+        SoundBtn.IsChecked = My.Settings.audio
+        SavePromptBtn.IsChecked = My.Settings.showprompt
+        SlideshowBtn.IsChecked = My.Settings.hidecontrols
 
-        Funcs.SetCheckButton(My.Settings.saveshortcut, SaveImg)
-        Funcs.SetCheckButton(My.Settings.darkmode, DarkModeImg)
-        Funcs.SetCheckButton(My.Settings.autodarkmode, AutoDarkModeImg)
+        SaveBtn.IsChecked = My.Settings.saveshortcut
+        DarkModeBtn.IsChecked = My.Settings.darkmode
+        AutoDarkModeBtn.IsChecked = My.Settings.autodarkmode
 
         If My.Settings.autodarkmode Then
             DarkModeBtn.Visibility = Visibility.Collapsed
             AutoDarkPnl.Visibility = Visibility.Visible
         End If
 
-        Dark1Lbl.Text = My.Settings.autodarkfrom
-        Dark2Lbl.Text = My.Settings.autodarkto
+        Dark1Combo.Text = My.Settings.autodarkfrom
+        Dark2Combo.Text = My.Settings.autodarkto
 
-        Funcs.SetCheckButton(My.Settings.openmenu, MenuImg)
-        Funcs.SetCheckButton(My.Settings.notificationcheck, NotificationImg)
-        Funcs.SetCheckButton(My.Settings.openrecent, RecentImg)
+        MenuBtn.IsChecked = My.Settings.openmenu
+        NotificationBtn.IsChecked = My.Settings.notificationcheck
+        RecentBtn.IsChecked = My.Settings.openrecent
 
         If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then
             folderBrowser.Description = "Choisissez un dossier ci-dessous..."
             exportDialog.Title = "Sélectionner un emplacement d'exportation - Present Express"
             importDialog.Title = "Choisissez un fichier à importer - Present Express"
 
-            BoldBtnImg.SetResourceReference(ContentProperty, "GrasIcon")
-            UnderlineBtnImg.SetResourceReference(ContentProperty, "SousligneIcon")
+            BoldBtn.Icon = FindResource("GrasIcon")
+            UnderlineBtn.Icon = FindResource("SousligneIcon")
 
         End If
 
@@ -167,7 +146,7 @@ Public Class Options
 
     Private Sub TempLblTimer_Tick(sender As Object, e As EventArgs)
 
-        Dim deli As mydelegate = New mydelegate(AddressOf ResetStatusLbl)
+        Dim deli As New mydelegate(AddressOf ResetStatusLbl)
         SavedTxt.Dispatcher.BeginInvoke(Threading.DispatcherPriority.Normal, deli)
         TempLblTimer.Stop()
 
@@ -230,8 +209,8 @@ Public Class Options
 
     End Sub
 
-    Private Sub FontBtns_Click(sender As Button, e As RoutedEventArgs)
-        FontStyleTxt.Text = sender.Tag.ToString()
+    Private Sub FontBtns_Click(sender As ExpressControls.AppButton, e As RoutedEventArgs)
+        FontStyleTxt.Text = sender.Text
         FontPopup.IsOpen = False
         ChangeFont()
 
@@ -351,14 +330,12 @@ Public Class Options
     ' --
 
     Private Sub Size169Radio_Click(sender As Object, e As RoutedEventArgs) Handles Size169Radio.Click
-        Funcs.SetRadioBtns(Size169RadioImg, New List(Of ContentControl) From {Size43RadioImg})
         My.Settings.defaultsize = 0
         SaveAll()
 
     End Sub
 
     Private Sub Size43Radio_Click(sender As Object, e As RoutedEventArgs) Handles Size43Radio.Click
-        Funcs.SetRadioBtns(Size43RadioImg, New List(Of ContentControl) From {Size169RadioImg})
         My.Settings.defaultsize = 1
         SaveAll()
 
@@ -369,22 +346,18 @@ Public Class Options
     ' GENERAL > INTERFACE
     ' --
 
-    Private Sub InterfaceRadios_Click(sender As Button, e As RoutedEventArgs) Handles EnglishRadio1.Click, FrenchRadio1.Click
+    Private Sub InterfaceRadios_Click(sender As ExpressControls.AppRadioButton, e As RoutedEventArgs) Handles EnglishRadio1.Click, FrenchRadio1.Click
 
         If (sender.Name = "EnglishRadio1" And Not My.Settings.language = "en-GB") Or (sender.Name = "FrenchRadio1" And Not My.Settings.language = "fr-FR") Then
             If MainWindow.NewMessage(Funcs.ChooseLang("Changing the interface language requires an application restart. All unsaved work will be lost. Do you wish to continue?",
-                                                           "Pour changer la langue de l'interface, un redémarrage de l'application est nécessaire. Tous le travail non enregistré sera perdu. Vous souhaitez continuer ?"),
+                                                           "Pour changer la langue de l'interface, un redémarrage de l'application est nécessaire. Tout le travail non enregistré sera perdu. Vous souhaitez continuer ?"),
                                      Funcs.ChooseLang("Language warning", "Avertissement de langue"),
                                      MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
                 If sender.Name = "EnglishRadio1" Then
-                    Funcs.SetRadioBtns(EnglishRadio1Img, New List(Of ContentControl) From {FrenchRadio1Img})
                     My.Settings.language = "en-GB"
-
                 Else
-                    Funcs.SetRadioBtns(FrenchRadio1Img, New List(Of ContentControl) From {EnglishRadio1Img})
                     My.Settings.language = "fr-FR"
-
                 End If
 
                 SaveAll()
@@ -392,6 +365,12 @@ Public Class Options
                 Forms.Application.Restart()
                 Windows.Application.Current.Shutdown()
 
+            Else
+                If sender.Name = "EnglishRadio1" Then
+                    FrenchRadio1.IsChecked = True
+                Else
+                    EnglishRadio1.IsChecked = True
+                End If
             End If
         End If
 
@@ -402,9 +381,7 @@ Public Class Options
     ' --
 
     Private Sub SoundBtn_Click(sender As Object, e As RoutedEventArgs) Handles SoundBtn.Click
-        Funcs.ToggleCheckButton(SoundImg)
-
-        If SoundImg.Tag = 0 Then My.Settings.audio = False Else My.Settings.audio = True
+        My.Settings.audio = SoundBtn.IsChecked
         SaveAll()
 
     End Sub
@@ -414,9 +391,7 @@ Public Class Options
     ' --
 
     Private Sub SavePromptBtn_Click(sender As Object, e As RoutedEventArgs) Handles SavePromptBtn.Click
-        Funcs.ToggleCheckButton(PromptImg)
-
-        If PromptImg.Tag = 0 Then My.Settings.showprompt = False Else My.Settings.showprompt = True
+        My.Settings.showprompt = SavePromptBtn.IsChecked
         SaveAll()
 
     End Sub
@@ -426,7 +401,7 @@ Public Class Options
     ' --
 
     Private Sub SlideshowBtn_Click(sender As Object, e As RoutedEventArgs) Handles SlideshowBtn.Click
-        My.Settings.hidecontrols = Funcs.ToggleCheckButton(SlideshowImg)
+        My.Settings.hidecontrols = SlideshowBtn.IsChecked
         SaveAll()
 
     End Sub
@@ -437,13 +412,7 @@ Public Class Options
     ' --
 
     Private Sub DarkModeBtn_Click(sender As Object, e As RoutedEventArgs) Handles DarkModeBtn.Click
-        Funcs.ToggleCheckButton(DarkModeImg)
-
-        If DarkModeImg.Tag = 0 Then
-            My.Settings.darkmode = False
-        Else
-            My.Settings.darkmode = True
-        End If
+        My.Settings.darkmode = DarkModeBtn.IsChecked
 
         If My.Settings.autodarkmode = False Then SetDarkMode(My.Settings.darkmode)
         SaveAll()
@@ -451,9 +420,8 @@ Public Class Options
     End Sub
 
     Private Sub AutoDarkModeBtn_Click(sender As Object, e As RoutedEventArgs) Handles AutoDarkModeBtn.Click
-        Funcs.ToggleCheckButton(AutoDarkModeImg)
 
-        If AutoDarkModeImg.Tag = 0 Then
+        If AutoDarkModeBtn.IsChecked = False Then
             My.Settings.autodarkmode = False
             Application.AutoDarkTimer.Stop()
 
@@ -487,14 +455,11 @@ Public Class Options
 
     End Sub
 
-    Private Sub DarkFromBtns_Click(sender As Button, e As RoutedEventArgs) Handles Dark16Btn.Click, Dark162Btn.Click, Dark17Btn.Click, Dark172Btn.Click,
+    Private Sub DarkFromBtns_Click(sender As ExpressControls.AppButton, e As RoutedEventArgs) Handles Dark16Btn.Click, Dark162Btn.Click, Dark17Btn.Click, Dark172Btn.Click,
         Dark18Btn.Click, Dark182Btn.Click, Dark19Btn.Click, Dark192Btn.Click, Dark20Btn.Click, Dark202Btn.Click, Dark21Btn.Click, Dark212Btn.Click, Dark22Btn.Click
 
-        Dim dp As StackPanel = sender.Content
-        For Each txt As TextBlock In dp.Children.OfType(Of TextBlock)
-            My.Settings.autodarkfrom = txt.Text
-            Dark1Lbl.Text = txt.Text
-        Next
+        My.Settings.autodarkfrom = sender.Text
+        Dark1Combo.Text = sender.Text
 
         SaveAll()
         DarkFromPopup.IsOpen = False
@@ -503,14 +468,11 @@ Public Class Options
 
     End Sub
 
-    Private Sub DarkToBtns_Click(sender As Button, e As RoutedEventArgs) Handles Dark4Btn.Click, Dark42Btn.Click, Dark5Btn.Click, Dark52Btn.Click, Dark6Btn.Click,
-        Dark62Btn.Click, Dark7Btn.Click, Dark72Btn.Click, Dark8Btn.Click, Dark82Btn.Click, Dark9Btn.Click, Dark92Btn.Click, Dark10Btn.Click
+    Private Sub DarkToBtns_Click(sender As ExpressControls.AppButton, e As RoutedEventArgs) Handles Dark4Btn.Click, Dark42Btn.Click, Dark5Btn.Click, Dark52Btn.Click,
+        Dark6Btn.Click, Dark62Btn.Click, Dark7Btn.Click, Dark72Btn.Click, Dark8Btn.Click, Dark82Btn.Click, Dark9Btn.Click, Dark92Btn.Click, Dark10Btn.Click
 
-        Dim dp As StackPanel = sender.Content
-        For Each txt As TextBlock In dp.Children.OfType(Of TextBlock)
-            My.Settings.autodarkto = txt.Text
-            Dark2Lbl.Text = txt.Text
-        Next
+        My.Settings.autodarkto = sender.Text
+        Dark2Combo.Text = sender.Text
 
         SaveAll()
         DarkToPopup.IsOpen = False
@@ -584,16 +546,7 @@ Public Class Options
     ' --
 
     Private Sub SaveBtn_Click(sender As Object, e As RoutedEventArgs) Handles SaveBtn.Click
-        Funcs.ToggleCheckButton(SaveImg)
-
-        If SaveImg.Tag = 0 Then
-            My.Settings.saveshortcut = False
-
-        Else
-            My.Settings.saveshortcut = True
-
-        End If
-
+        My.Settings.saveshortcut = SaveBtn.IsChecked
         SaveAll()
 
         For Each win As MainWindow In My.Application.Windows.OfType(Of MainWindow)
@@ -614,58 +567,37 @@ Public Class Options
     ' --
 
     Private Sub MenuBtn_Click(sender As Object, e As RoutedEventArgs) Handles MenuBtn.Click
+        MenuBtn.IsChecked = Not MenuBtn.IsChecked
         ToggleMenuBtn()
 
     End Sub
 
     Private Sub ToggleMenuBtn()
-        Funcs.ToggleCheckButton(MenuImg)
+        MenuBtn.IsChecked = Not MenuBtn.IsChecked
+        My.Settings.openmenu = MenuBtn.IsChecked
 
-        If MenuImg.Tag = 0 Then
-            My.Settings.openmenu = False
-
-        Else
-            My.Settings.openmenu = True
-
-        End If
-
-        If MenuImg.Tag = 1 And RecentImg.Tag = 1 Then ToggleRecentBtn()
+        If MenuBtn.IsChecked And RecentBtn.IsChecked Then ToggleRecentBtn()
         SaveAll()
 
     End Sub
 
     Private Sub NotificationBtn_Click(sender As Object, e As RoutedEventArgs) Handles NotificationBtn.Click
-        Funcs.ToggleCheckButton(NotificationImg)
-
-        If NotificationImg.Tag = 0 Then
-            My.Settings.notificationcheck = False
-
-        Else
-            My.Settings.notificationcheck = True
-
-        End If
-
+        My.Settings.notificationcheck = NotificationBtn.IsChecked
         SaveAll()
 
     End Sub
 
     Private Sub RecentBtn_Click(sender As Object, e As RoutedEventArgs) Handles RecentBtn.Click
+        RecentBtn.IsChecked = Not RecentBtn.IsChecked
         ToggleRecentBtn()
 
     End Sub
 
     Private Sub ToggleRecentBtn()
-        Funcs.ToggleCheckButton(RecentImg)
+        RecentBtn.IsChecked = Not RecentBtn.IsChecked
+        My.Settings.openrecent = RecentBtn.IsChecked
 
-        If RecentImg.Tag = 0 Then
-            My.Settings.openrecent = False
-
-        Else
-            My.Settings.openrecent = True
-
-        End If
-
-        If MenuImg.Tag = 1 And RecentImg.Tag = 1 Then ToggleMenuBtn()
+        If MenuBtn.IsChecked And RecentBtn.IsChecked Then ToggleMenuBtn()
         SaveAll()
 
     End Sub
@@ -792,7 +724,9 @@ Public Class Options
 
                                     ElseIf j.OuterXml.StartsWith("<timings>") Then
                                         Try
-                                            Dim size As Integer = Convert.ToDouble(val)
+                                            Dim size As Double
+                                            If Not Funcs.ConvertDouble(val, size) Then Throw New Exception
+
                                             If size >= 0.5 And size <= 10 Then
                                                 My.Settings.defaulttimings = Math.Round(size, 2)
                                                 count += 1
@@ -994,7 +928,7 @@ Public Class Options
                         Case "save-location"
                             result = My.Settings.savelocation
                         Case "timings"
-                            result = My.Settings.defaulttimings.ToString()
+                            result = My.Settings.defaulttimings.ToString(Globalization.CultureInfo.InvariantCulture)
                         Case "slide-size"
                             result = My.Settings.defaultsize.ToString()
                     End Select

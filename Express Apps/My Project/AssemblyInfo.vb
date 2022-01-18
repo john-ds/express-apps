@@ -13,9 +13,9 @@ Imports System.Windows
 
 <Assembly: AssemblyTitle("Express_Apps")>
 <Assembly: AssemblyDescription("")>
-<Assembly: AssemblyCompany("HP Inc.")>
-<Assembly: AssemblyProduct("Express_Apps")>
-<Assembly: AssemblyCopyright("Copyright © HP Inc. 2020")>
+<Assembly: AssemblyCompany("John D")>
+<Assembly: AssemblyProduct("Express Apps")>
+<Assembly: AssemblyCopyright("Copyright © 2022")>
 <Assembly: AssemblyTrademark("")>
 <Assembly: ComVisible(false)>
 
@@ -55,5 +55,5 @@ Imports System.Windows
 ' by using the '*' as shown below:
 ' <Assembly: AssemblyVersion("1.0.*")>
 
-<Assembly: AssemblyVersion("1.0.0.0")>
-<Assembly: AssemblyFileVersion("1.0.0.0")>
+<Assembly: AssemblyVersion("2.0.0.0")>
+<Assembly: AssemblyFileVersion("2.0.0.0")>

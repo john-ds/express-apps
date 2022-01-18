@@ -15,7 +15,7 @@ Imports System.Windows
 <Assembly: AssemblyDescription("Choose fonts with ease by organising them into categories.")>
 <Assembly: AssemblyCompany("John D")>
 <Assembly: AssemblyProduct("Font Express")>
-<Assembly: AssemblyCopyright("Copyright © 2020")>
+<Assembly: AssemblyCopyright("Copyright © 2022")>
 <Assembly: AssemblyTrademark("")>
 <Assembly: ComVisible(false)>
 
@@ -55,5 +55,5 @@ Imports System.Windows
 ' by using the '*' as shown below:
 ' <Assembly: AssemblyVersion("1.0.*")>
 
-<Assembly: AssemblyVersion("2.0.1.0")>
-<Assembly: AssemblyFileVersion("2.0.1.0")>
+<Assembly: AssemblyVersion("3.0.0.0")>
+<Assembly: AssemblyFileVersion("3.0.0.0")>

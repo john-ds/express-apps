@@ -2,12 +2,14 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:Express_Apps"
-    StartupUri="DialogMenuBar.xaml">
+    StartupUri="Window1.xaml">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="ExpressIcons.xaml"/>
+                <ResourceDictionary Source="Simple Styles.xaml"/>
                 <ResourceDictionary Source="ExpressStyles.xaml"/>
+                
                 <ResourceDictionary Source="CommonDictionaryEN.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

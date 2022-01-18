@@ -15,7 +15,7 @@ Imports System.Windows
 <Assembly: AssemblyDescription("An advanced all-in-one rich text editor.")>
 <Assembly: AssemblyCompany("John D")>
 <Assembly: AssemblyProduct("Type Express")>
-<Assembly: AssemblyCopyright("Copyright © 2020")>
+<Assembly: AssemblyCopyright("Copyright © 2022")>
 <Assembly: AssemblyTrademark("")>
 <Assembly: ComVisible(false)>
 
@@ -55,6 +55,6 @@ Imports System.Windows
 ' by using the '*' as shown below:
 ' <Assembly: AssemblyVersion("1.0.*")>
 
-<Assembly: AssemblyVersion("4.2.1.0")>
-<Assembly: AssemblyFileVersion("4.2.1.0")>
+<Assembly: AssemblyVersion("5.0.0.0")>
+<Assembly: AssemblyFileVersion("5.0.0.0")>
 <Assembly: NeutralResourcesLanguage("en-GB")>

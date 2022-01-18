@@ -1,16 +1,14 @@
-Imports System.ComponentModel
+﻿Imports System.ComponentModel
 Imports System.Windows.Markup
 Imports System.Windows.Threading
 Imports Accord.Video.FFMPEG
 Imports WinDrawing = System.Drawing
 Imports Ionic.Zip
 Imports System.Drawing.Printing
+Imports System.Drawing.Imaging
+Imports Newtonsoft.Json
 
 Class MainWindow
-
-    ' PRESENT EXPRESS v1.0.1
-    ' Part of Express Apps by John D
-    ' ------------------------------
 
     ReadOnly PrintDoc As New PrintDocument
 
@@ -75,11 +73,11 @@ Class MainWindow
     ReadOnly EditingTimer As New DispatcherTimer With {.Interval = New TimeSpan(0, 1, 0)}
     ReadOnly TempLblTimer As New Timers.Timer With {.Interval = 4000}
 
-    ReadOnly PresentHoverIn As Animation.Storyboard
-    ReadOnly PresentHoverOut As Animation.Storyboard
     ReadOnly HomeMnStoryboard As Animation.Storyboard
     ReadOnly DesignMnStoryboard As Animation.Storyboard
     ReadOnly ShowMnStoryboard As Animation.Storyboard
+    ReadOnly OpenMenuStoryboard As Animation.Storyboard
+    ReadOnly CloseMenuStoryboard As Animation.Storyboard
 
     Public Sub New()
 
@@ -142,11 +140,12 @@ Class MainWindow
         AddHandler PrintDoc.BeginPrint, AddressOf PrintDocument1_BeginPrint
         AddHandler PrintDoc.PrintPage, AddressOf PrintDocument1_PrintPage
 
-        PresentHoverIn = TryFindResource("PresentHoverIn")
-        PresentHoverOut = TryFindResource("PresentHoverOut")
         HomeMnStoryboard = TryFindResource("HomeMnStoryboard")
         DesignMnStoryboard = TryFindResource("DesignMnStoryboard")
         ShowMnStoryboard = TryFindResource("ShowMnStoryboard")
+        OpenMenuStoryboard = TryFindResource("OpenMenuStoryboard")
+        CloseMenuStoryboard = TryFindResource("CloseMenuStoryboard")
+        AddHandler CloseMenuStoryboard.Completed, AddressOf CloseMenu_Completed
 
         MaxHeight = SystemParameters.WorkArea.Height + 13
         MaxWidth = SystemParameters.WorkArea.Width + 13
@@ -164,16 +163,12 @@ Class MainWindow
         If My.Settings.defaultsize = 0 Then
             Resources.Item("ImageWidth") = 160.0
             Resources.Item("ImageHeight") = 90.0
-
-            WideImg.Visibility = Visibility.Visible
-            StandardImg.Visibility = Visibility.Hidden
+            WideBtn.IsChecked = True
 
         Else
             Resources.Item("ImageWidth") = 120.0
             Resources.Item("ImageHeight") = 90.0
-
-            WideImg.Visibility = Visibility.Hidden
-            StandardImg.Visibility = Visibility.Visible
+            StandardBtn.IsChecked = True
 
         End If
 
@@ -218,25 +213,25 @@ Class MainWindow
             .Title = caption
 
             If buttons = MessageBoxButton.OK Then
-                .Button1.Content = "OK"
+                .Button1.Text = "OK"
                 .Button2.Visibility = Visibility.Collapsed
                 .Button2.IsEnabled = False
                 .Button3.Visibility = Visibility.Collapsed
                 .Button3.IsEnabled = False
 
             ElseIf buttons = MessageBoxButton.YesNo Then
-                .Button1.Content = Funcs.ChooseLang("Yes", "Oui")
+                .Button1.Text = Funcs.ChooseLang("Yes", "Oui")
                 .Button2.Visibility = Visibility.Collapsed
                 .Button2.IsEnabled = False
-                .Button3.Content = Funcs.ChooseLang("No", "Non")
+                .Button3.Text = Funcs.ChooseLang("No", "Non")
 
             ElseIf buttons = MessageBoxButton.YesNoCancel Then
-                .Button1.Content = Funcs.ChooseLang("Yes", "Oui")
-                .Button2.Content = Funcs.ChooseLang("No", "Non")
-                .Button3.Content = Funcs.ChooseLang("Cancel", "Annuler")
+                .Button1.Text = Funcs.ChooseLang("Yes", "Oui")
+                .Button2.Text = Funcs.ChooseLang("No", "Non")
+                .Button3.Text = Funcs.ChooseLang("Cancel", "Annuler")
 
             Else ' buttons = MessageBoxButtons.OKCancel
-                .Button1.Content = "OK"
+                .Button1.Text = "OK"
                 .Button2.Visibility = Visibility.Collapsed
                 .Button2.IsEnabled = False
                 .Button3.Content = Funcs.ChooseLang("Cancel", "Annuler")
@@ -351,7 +346,7 @@ Class MainWindow
     ' [app-name]*[latest-version]*[Low/High]*[feature#feature]*[fonction#fonction]$...
 
     Private Sub NotificationsBtn_Click(sender As Object, e As RoutedEventArgs) Handles NotificationsBtn.Click
-        NotificationsIcn.SetResourceReference(ContentProperty, "NotificationIcon")
+        NotificationsBtn.Icon = FindResource("NotificationIcon")
         NotificationsPopup.IsOpen = True
 
         If NotificationLoading.Visibility = Visibility.Visible Then
@@ -363,14 +358,14 @@ Class MainWindow
     Private Sub CheckNotifications(Optional forcedialog As Boolean = False)
 
         Try
-            Dim info As String() = Funcs.GetNotificationInfo("Present").Split("*")
+            Dim info As String() = Funcs.GetNotificationInfo("Present")
 
-            If Not info(1) = My.Application.Info.Version.ToString(3) Then
+            If Not info(0) = My.Application.Info.Version.ToString(3) Then
                 NotificationsTxt.Content = Funcs.ChooseLang("An update is available.", "Une mise à jour est disponible.")
                 NotifyBtnStack.Visibility = Visibility.Visible
 
                 If NotificationsPopup.IsOpen = False Then
-                    NotificationsIcn.SetResourceReference(ContentProperty, "NotificationNewIcon")
+                    NotificationsBtn.Icon = FindResource("NotificationNewIcon")
                     CreateNotifyMsg(info)
 
                 End If
@@ -399,8 +394,8 @@ Class MainWindow
     Private Sub CreateNotifyMsg(info As String())
 
         Try
-            Dim version As String = info(1)
-            Dim featurelist As String() = info(Convert.ToInt32(Funcs.ChooseLang("3", "4"))).Split("#")
+            Dim version As String = info(0)
+            Dim featurelist As String() = info.Skip(2).ToArray()
             Dim features As String = ""
 
             If featurelist.Length <> 0 Then
@@ -414,7 +409,7 @@ Class MainWindow
             Dim start As String = Funcs.ChooseLang("An update is available.", "Une mise à jour est disponible.")
             Dim icon As MessageBoxImage = MessageBoxImage.Information
 
-            If info(2) = "High" Then
+            If info(1) = "High" Then
                 start = Funcs.ChooseLang("An important update is available!", "Une mise à jour importante est disponible !")
                 icon = MessageBoxImage.Exclamation
             End If
@@ -423,7 +418,7 @@ Class MainWindow
                           Funcs.ChooseLang("Would you like to visit the download page?", "Vous souhaitez visiter la page de téléchargement ?"),
                           Funcs.ChooseLang("Present Express Updates", "Mises à Jour Present Express"), MessageBoxButton.YesNoCancel, icon) = MessageBoxResult.Yes Then
 
-                Process.Start("https://jwebsites404.wixsite.com/expressapps/update?app=present")
+                Process.Start("https://express.johnjds.co.uk/update?app=present")
 
             End If
 
@@ -443,7 +438,7 @@ Class MainWindow
 
     Private Sub UpdateBtn_Click(sender As Object, e As RoutedEventArgs) Handles UpdateBtn.Click
         NotificationsPopup.IsOpen = False
-        Process.Start("https://jwebsites404.wixsite.com/expressapps/update?app=present")
+        Process.Start("https://express.johnjds.co.uk/update?app=present")
 
     End Sub
 
@@ -463,7 +458,7 @@ Class MainWindow
 
         Threading.Thread.Sleep(250)
 
-        Dim deli As mydelegate = New mydelegate(AddressOf GetTemplates)
+        Dim deli As New mydelegate(AddressOf GetTemplates)
         TemplateGrid.Dispatcher.BeginInvoke(DispatcherPriority.Normal, deli)
 
     End Sub
@@ -478,8 +473,8 @@ Class MainWindow
 
         Threading.Thread.Sleep(250)
 
-        Dim deli As mydelegate = New mydelegate(AddressOf CheckNotifications)
-        NotificationsIcn.Dispatcher.BeginInvoke(DispatcherPriority.Normal, deli)
+        Dim deli As New mydelegate(AddressOf CheckNotifications)
+        NotificationsBtn.Dispatcher.BeginInvoke(DispatcherPriority.Normal, deli)
 
     End Sub
 
@@ -517,10 +512,9 @@ Class MainWindow
 
                         Dim img As WinDrawing.Bitmap = slide("img")
                         Dim p As WinDrawing.Point
-                        If e.Argument("fit") Then
-                            Dim ratio = height / img.Height
-                            img = New WinDrawing.Bitmap(img, Math.Round(img.Width * ratio, 0), height)
 
+                        If e.Argument("fit") Then
+                            img = ResizeBitmap(img, width, height)
                             p = New WinDrawing.Point(Math.Round((width - img.Width) / 2, 0), Math.Round((height - img.Height) / 2, 0))
 
                         Else
@@ -564,7 +558,7 @@ Class MainWindow
 
     Private Sub TempLblTimer_Tick(sender As Object, e As EventArgs)
 
-        Dim deli As mydelegate = New mydelegate(AddressOf ResetStatusLbl)
+        Dim deli As New mydelegate(AddressOf ResetStatusLbl)
         StatusLbl.Dispatcher.BeginInvoke(DispatcherPriority.Normal, deli)
         TempLblTimer.Stop()
 
@@ -637,50 +631,50 @@ Class MainWindow
     Private Sub CheckButtonSizes()
         TemplateGrid.Width = ActualWidth - 238
 
-        For Each i In RecentStack.Children
-            Dim tb As TextBlock = i.FindName("RecentFileTxt")
-            tb.MaxWidth = Math.Abs(ActualWidth - 520) ' was 504
+        For Each btn In RecentStack.Children.OfType(Of Controls.Button) _
+            .Except(New List(Of Controls.Button) From {ClearRecentsBtn})
 
+            btn.Width = Math.Abs(ActualWidth - 470) ' was 504 , 520 + 65
         Next
 
-        For Each i In FavouriteStack.Children
-            Dim tb As TextBlock = i.FindName("RecentFileTxt")
-            tb.MaxWidth = Math.Abs(ActualWidth - 520)
+        For Each btn In FavouriteStack.Children.OfType(Of Controls.Button) _
+            .Except(New List(Of Controls.Button) From {AddFavouritesBtn, ClearFavouritesBtn})
 
+            btn.Width = Math.Abs(ActualWidth - 470) ' was 504 , 520 + 65
         Next
 
-        For Each i In PinnedStack.Children
-            Dim tb As TextBlock = i.FindName("RecentFileTxt")
-            tb.MaxWidth = Math.Abs(ActualWidth - 316)
+        For Each btn In PinnedStack.Children.OfType(Of Controls.Button) _
+            .Except(New List(Of Controls.Button) From {AddPinnedBtn, ClearPinnedBtn})
 
+            btn.Width = Math.Abs(ActualWidth - 260) ' was 316
         Next
 
     End Sub
 
     Private Sub CheckToolbars()
 
-        If HomePnl.ActualWidth + 12 > HomeScrollViewer.ActualWidth Then
+        If HomePnl.ActualWidth + 14 > HomeScrollViewer.ActualWidth Then
             HomeScroll.Visibility = Visibility.Visible
-            HomeScrollViewer.Margin = New Thickness(60, 0, 40, 0)
+            HomeScrollViewer.Margin = New Thickness(0, 0, 58, 0)
         Else
             HomeScroll.Visibility = Visibility.Collapsed
-            HomeScrollViewer.Margin = New Thickness(60, 0, 0, 0)
+            HomeScrollViewer.Margin = New Thickness(0, 0, 0, 0)
         End If
 
-        If DesignPnl.ActualWidth + 12 > DesignScrollViewer.ActualWidth Then
+        If DesignPnl.ActualWidth + 14 > DesignScrollViewer.ActualWidth Then
             DesignScroll.Visibility = Visibility.Visible
-            HomeScrollViewer.Margin = New Thickness(60, 0, 40, 0)
+            DesignScrollViewer.Margin = New Thickness(0, 0, 58, 0)
         Else
             DesignScroll.Visibility = Visibility.Collapsed
-            HomeScrollViewer.Margin = New Thickness(60, 0, 0, 0)
+            DesignScrollViewer.Margin = New Thickness(0, 0, 0, 0)
         End If
 
-        If ShowPnl.ActualWidth + 12 > ShowScrollViewer.ActualWidth Then
+        If ShowPnl.ActualWidth + 14 > ShowScrollViewer.ActualWidth Then
             ShowScroll.Visibility = Visibility.Visible
-            HomeScrollViewer.Margin = New Thickness(60, 0, 40, 0)
+            ShowScrollViewer.Margin = New Thickness(0, 0, 58, 0)
         Else
             ShowScroll.Visibility = Visibility.Collapsed
-            HomeScrollViewer.Margin = New Thickness(60, 0, 0, 0)
+            ShowScrollViewer.Margin = New Thickness(0, 0, 0, 0)
         End If
 
     End Sub
@@ -701,24 +695,20 @@ Class MainWindow
 
         If MainTabs.SelectedIndex = 1 Then
             MainTabs.SelectedIndex = 0
-            BeginStoryboard(TryFindResource("MenuStoryboard"))
+            OpenMenuStoryboard.Begin()
 
         Else
-            MainTabs.SelectedIndex = 1
-            BeginStoryboard(TryFindResource("DocStoryboard"))
+            CloseMenuStoryboard.Begin()
 
         End If
 
     End Sub
 
-    Private Sub TypeBtn_MouseEnter(sender As Object, e As Input.MouseEventArgs) Handles PresentBtn.MouseEnter
-        PresentHoverIn.Begin()
+    Private Sub CloseMenu_Completed(sender As Object, e As EventArgs)
+        If IsLoaded Then
+            MainTabs.SelectedIndex = 1
 
-    End Sub
-
-    Private Sub TypeBtn_MouseLeave(sender As Object, e As Input.MouseEventArgs) Handles PresentBtn.MouseLeave
-        PresentHoverOut.Begin()
-
+        End If
     End Sub
 
     Private Sub MainTabs_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles MainTabs.SelectionChanged
@@ -729,7 +719,9 @@ Class MainWindow
     Private Sub CheckMenu()
 
         If MainTabs.SelectedIndex = 1 Then
-            TypeIconBack.SetResourceReference(Shape.FillProperty, "SecondaryColor")
+            PresentBtnTxt.Text = "Menu"
+            PresentBtnIcn.SetResourceReference(ContentProperty, "AppWhiteIcon")
+            PresentBtn.Width = 76
             DocTabSelector.Visibility = Visibility.Visible
             HomeBtn.Visibility = Visibility.Visible
             DesignBtn.Visibility = Visibility.Visible
@@ -737,7 +729,9 @@ Class MainWindow
             MenuTabs.SelectedIndex = 5
 
         Else
-            TypeIconBack.SetResourceReference(Shape.FillProperty, "BackColor")
+            PresentBtnTxt.Text = Funcs.ChooseLang("Close menu", "Fermer le menu")
+            PresentBtnIcn.SetResourceReference(ContentProperty, "BackWhiteIcon")
+            PresentBtn.Width = 161
             DocTabSelector.Visibility = Visibility.Collapsed
             HomeBtn.Visibility = Visibility.Collapsed
             DesignBtn.Visibility = Visibility.Collapsed
@@ -749,54 +743,39 @@ Class MainWindow
 
     Private Sub MenuTabs_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles MenuTabs.SelectionChanged
 
-        NewBtnTxt.SetResourceReference(ForegroundProperty, "TextColor")
-        OpenBtnTxt.SetResourceReference(ForegroundProperty, "TextColor")
-        SaveAsBtnTxt.SetResourceReference(ForegroundProperty, "TextColor")
-        PrintBtnTxt.SetResourceReference(ForegroundProperty, "TextColor")
-        ExportBtnTxt.SetResourceReference(ForegroundProperty, "TextColor")
-        InfoBtnTxt.SetResourceReference(ForegroundProperty, "TextColor")
-
-        NewIcn.SetResourceReference(ContentProperty, "NewIcon")
-        OpenIcn.SetResourceReference(ContentProperty, "OpenIcon")
-        SaveIcn.SetResourceReference(ContentProperty, "SaveAsIcon")
-        PrintIcn.SetResourceReference(ContentProperty, "PrintIcon")
-        ShareIcn.SetResourceReference(ContentProperty, "ShareIcon")
-        InfoIcn.SetResourceReference(ContentProperty, "InfoIcon")
+        NewBtn.FontWeight = FontWeights.Normal
+        OpenBtn.FontWeight = FontWeights.Normal
+        SaveAsBtn.FontWeight = FontWeights.Normal
+        PrintBtn.FontWeight = FontWeights.Normal
+        ExportBtn.FontWeight = FontWeights.Normal
+        InfoBtn.FontWeight = FontWeights.Normal
 
         Select Case MenuTabs.SelectedIndex
             Case 0
                 BeginStoryboard(TryFindResource("NewStoryboard"))
-                NewIcn.SetResourceReference(ContentProperty, "NewWhiteIcon")
-                NewBtnTxt.Foreground = New SolidColorBrush(Color.FromRgb(255, 255, 255))
+                NewBtn.FontWeight = FontWeights.SemiBold
 
             Case 1
                 BeginStoryboard(TryFindResource("OpenStoryboard"))
-                OpenIcn.SetResourceReference(ContentProperty, "OpenWhiteIcon")
-                OpenBtnTxt.Foreground = New SolidColorBrush(Color.FromRgb(255, 255, 255))
-
+                OpenBtn.FontWeight = FontWeights.SemiBold
                 If OpenTabs.SelectedIndex = 1 Then RefreshRecents() Else RefreshFavourites()
 
             Case 2
                 BeginStoryboard(TryFindResource("SaveStoryboard"))
-                SaveIcn.SetResourceReference(ContentProperty, "SaveWhiteIcon")
-                SaveAsBtnTxt.Foreground = New SolidColorBrush(Color.FromRgb(255, 255, 255))
-
+                SaveAsBtn.FontWeight = FontWeights.SemiBold
                 RefreshPinned()
 
             Case 3
                 BeginStoryboard(TryFindResource("PrintStoryboard"))
-                PrintIcn.SetResourceReference(ContentProperty, "PrintWhiteIcon")
-                PrintBtnTxt.Foreground = New SolidColorBrush(Color.FromRgb(255, 255, 255))
+                PrintBtn.FontWeight = FontWeights.SemiBold
 
             Case 4
                 BeginStoryboard(TryFindResource("ShareStoryboard"))
-                ShareIcn.SetResourceReference(ContentProperty, "ShareWhiteIcon")
-                ExportBtnTxt.Foreground = New SolidColorBrush(Color.FromRgb(255, 255, 255))
+                ExportBtn.FontWeight = FontWeights.SemiBold
 
             Case 5
                 BeginStoryboard(TryFindResource("InfoStoryboard"))
-                InfoIcn.SetResourceReference(ContentProperty, "InfoWhiteIcon")
-                InfoBtnTxt.Foreground = New SolidColorBrush(Color.FromRgb(255, 255, 255))
+                InfoBtn.FontWeight = FontWeights.SemiBold
 
         End Select
 
@@ -861,54 +840,6 @@ Class MainWindow
 
     End Sub
 
-    Private Sub MenuBtns_MouseEnter(sender As Button, e As RoutedEventArgs) Handles NewBtn.MouseEnter, OpenBtn.MouseEnter, SaveBtn.MouseEnter,
-        SaveAsBtn.MouseEnter, PrintBtn.MouseEnter, ExportBtn.MouseEnter, OptionsBtn.MouseEnter, InfoBtn.MouseEnter
-
-        Select Case sender.Name
-            Case "NewBtn"
-                NewHover.Visibility = Visibility.Visible
-            Case "OpenBtn"
-                OpenHover.Visibility = Visibility.Visible
-            Case "SaveBtn"
-                SaveHover.Visibility = Visibility.Visible
-            Case "SaveAsBtn"
-                SaveAsHover.Visibility = Visibility.Visible
-            Case "PrintBtn"
-                PrintHover.Visibility = Visibility.Visible
-            Case "ExportBtn"
-                ExportHover.Visibility = Visibility.Visible
-            Case "OptionsBtn"
-                OptionsHover.Visibility = Visibility.Visible
-            Case "InfoBtn"
-                InfoHover.Visibility = Visibility.Visible
-        End Select
-
-    End Sub
-
-    Private Sub MenuBtns_MouseLeave(sender As Button, e As RoutedEventArgs) Handles NewBtn.MouseLeave, OpenBtn.MouseLeave, SaveBtn.MouseLeave,
-        SaveAsBtn.MouseLeave, PrintBtn.MouseLeave, ExportBtn.MouseLeave, OptionsBtn.MouseLeave, InfoBtn.MouseLeave
-
-        Select Case sender.Name
-            Case "NewBtn"
-                NewHover.Visibility = Visibility.Hidden
-            Case "OpenBtn"
-                OpenHover.Visibility = Visibility.Hidden
-            Case "SaveBtn"
-                SaveHover.Visibility = Visibility.Hidden
-            Case "SaveAsBtn"
-                SaveAsHover.Visibility = Visibility.Hidden
-            Case "PrintBtn"
-                PrintHover.Visibility = Visibility.Hidden
-            Case "ExportBtn"
-                ExportHover.Visibility = Visibility.Hidden
-            Case "OptionsBtn"
-                OptionsHover.Visibility = Visibility.Hidden
-            Case "InfoBtn"
-                InfoHover.Visibility = Visibility.Hidden
-        End Select
-
-    End Sub
-
 
     ' DOCTABS
     ' --
@@ -969,22 +900,25 @@ Class MainWindow
 
     End Sub
 
-    Private Sub DocBtns_MouseEnter(sender As Controls.Button, e As Input.MouseEventArgs) Handles HomeBtn.MouseEnter, DesignBtn.MouseEnter, ShowBtn.MouseEnter
+    Private Sub DocBtns_MouseEnter(sender As Controls.Button, e As Input.MouseEventArgs) Handles PresentBtn.MouseEnter, HomeBtn.MouseEnter, DesignBtn.MouseEnter, ShowBtn.MouseEnter
 
         If sender.Equals(HomeBtn) Then
-            HomeBtnTxt.FontWeight = FontWeights.Bold
+            HomeBtnTxt.FontWeight = FontWeights.SemiBold
 
         ElseIf sender.Equals(DesignBtn) Then
-            DesignBtnTxt.FontWeight = FontWeights.Bold
+            DesignBtnTxt.FontWeight = FontWeights.SemiBold
 
         ElseIf sender.Equals(ShowBtn) Then
-            ShowBtnTxt.FontWeight = FontWeights.Bold
+            ShowBtnTxt.FontWeight = FontWeights.SemiBold
+
+        ElseIf sender.Equals(PresentBtn) Then
+            PresentBtnTxt.FontWeight = FontWeights.SemiBold
 
         End If
 
     End Sub
 
-    Private Sub DocBtns_MouseLeave(sender As Controls.Button, e As Input.MouseEventArgs) Handles HomeBtn.MouseLeave, DesignBtn.MouseLeave, ShowBtn.MouseLeave
+    Private Sub DocBtns_MouseLeave(sender As Controls.Button, e As Input.MouseEventArgs) Handles PresentBtn.MouseLeave, HomeBtn.MouseLeave, DesignBtn.MouseLeave, ShowBtn.MouseLeave
 
         If sender.Equals(HomeBtn) Then
             HomeBtnTxt.FontWeight = FontWeights.Normal
@@ -994,6 +928,9 @@ Class MainWindow
 
         ElseIf sender.Equals(ShowBtn) Then
             ShowBtnTxt.FontWeight = FontWeights.Normal
+
+        ElseIf sender.Equals(PresentBtn) Then
+            PresentBtnTxt.FontWeight = FontWeights.Normal
 
         End If
 
@@ -1005,7 +942,10 @@ Class MainWindow
     ' --
 
     Private Sub NewBtn_Click(sender As Object, e As RoutedEventArgs) Handles NewBtn.Click
-        MainTabs.SelectedIndex = 0
+        If MainTabs.SelectedIndex = 1 Then
+            MainTabs.SelectedIndex = 0
+            OpenMenuStoryboard.Begin()
+        End If
         MenuTabs.SelectedIndex = 0
 
     End Sub
@@ -1013,8 +953,7 @@ Class MainWindow
     Private Sub BlankBtn_Click(sender As Object, e As RoutedEventArgs) Handles BlankBtn.Click
 
         If ThisFile = "" And AllSlides.Count = 0 Then
-            MainTabs.SelectedIndex = 1
-            BeginStoryboard(TryFindResource("DocStoryboard"))
+            CloseMenuStoryboard.Begin()
 
         Else
             Dim NewForm1 As New MainWindow
@@ -1056,8 +995,7 @@ Class MainWindow
 
         If ThisFile = "" And AllSlides.Count = 0 Then
             LoadFile(sender.Tag.ToString())
-            MainTabs.SelectedIndex = 1
-            BeginStoryboard(TryFindResource("DocStoryboard"))
+            CloseMenuStoryboard.Begin()
 
         Else
             Dim NewForm1 As New MainWindow
@@ -1074,36 +1012,52 @@ Class MainWindow
     Private Sub GetTemplates()
 
         ' TEMPLATE TAG FORMAT
-        ' (URLS MUST START WITH https://)
         ' --
-        ' NAME                       | URLs
-        ' templateName,templateNamefr,imageURL,templateURL,templateURLfr
-        ' 0            1              2        3           4
+        ' NAME        | URLs
+        ' templateName,imageURL,templateURL
+        ' 0            1        2
 
         Try
-            Dim client As Net.WebClient = New Net.WebClient()
-            Dim reader As IO.StreamReader
-
-            If Quetzal Then
-                reader = New IO.StreamReader(client.OpenRead("https://dl.dropboxusercontent.com/s/2urg1mpurysyg2i/phototemplates.txt"))
-            Else
-                reader = New IO.StreamReader(client.OpenRead("https://dl.dropboxusercontent.com/s/x3c3b8tqu4r1iao/charttemplates.txt"))
-            End If
-
+            Dim client As New Net.WebClient()
+            Dim reader As New IO.StreamReader(client.OpenRead("https://api.johnjds.co.uk/express/v1/present/templates"))
             Dim info As String = reader.ReadToEnd()
+
+            Dim templates = New List(Of String()) From {}
+            Dim xmldoc = JsonConvert.DeserializeXmlNode(info, "info")
+
+            For Each i As Xml.XmlNode In xmldoc.ChildNodes.Item(0)
+                If (i.OuterXml.StartsWith("<photo>") And Quetzal) Or (i.OuterXml.StartsWith("<chart>") And Not Quetzal) Then
+                    Dim template = New List(Of String) From {"", "", ""}
+
+                    For Each j As Xml.XmlNode In i.ChildNodes
+                        If j.OuterXml.StartsWith("<name>") Then
+                            template(0) = Funcs.GetXmlLocaleString(j.ChildNodes)
+
+                        ElseIf j.OuterXml.StartsWith("<image>") Then
+                            template(1) = Funcs.GetXmlLocaleString(j.ChildNodes)
+
+                        ElseIf j.OuterXml.StartsWith("<file>") Then
+                            template(2) = Funcs.GetXmlLocaleString(j.ChildNodes)
+
+                        End If
+                    Next
+                    templates.Add(template.ToArray())
+
+                End If
+            Next
+
             TemplateGrid.Children.Clear()
             TemplateGrid.Children.Add(BackTemplateBtn)
 
-            For Each i In info.Split("*")
-                Dim TempInfo As String() = i.Split(",")
-                Dim copy As Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0, 0, 0, 0' Background='#00FFFFFF' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='PhotoTemplateBtn' Width='170' Height='130' Margin='0,0,0,0' HorizontalAlignment='Center' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><StackPanel Width='170' Height='130'><Border BorderThickness='1,1,1,1' BorderBrush='#FFABADB3' Background='#FFFFFFFF' Height='85' Margin='10, 10, 10, 0'><Image Name='DisplayImg' Margin='0' Source='" +
-                                        TempInfo(2) +
-                                        "'/></Border><TextBlock Text='" +
-                                        Funcs.EscapeChars(Funcs.ChooseLang(TempInfo(0), TempInfo(1))) +
+            For Each TempInfo In templates
+                Dim copy As Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0, 0, 0, 0' Background='#00FFFFFF' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='PhotoTemplateBtn' Width='170' Height='130' Margin='0,0,0,0' HorizontalAlignment='Center' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' xmlns:ex='clr-namespace:ExpressControls;assembly=ExpressControls'><StackPanel Width='170' Height='130'><Border BorderThickness='1,1,1,1' BorderBrush='#FFABADB3' Background='#FFFFFFFF' Height='85' Margin='10, 10, 10, 0' CornerRadius='5'><ex:ClippedBorder CornerRadius='5'><Image Name='DisplayImg' Margin='0' Source='" +
+                                        TempInfo(1) +
+                                        "'/></ex:ClippedBorder></Border><TextBlock Text='" +
+                                        Funcs.EscapeChars(TempInfo(0)) +
                                         "' FontSize='14' Padding='0, 6, 0, 0' TextTrimming='CharacterEllipsis' Name='OnlineTempBtnTxt' Height='33.62' Margin='15, 0, 10, 0' VerticalAlignment='Center' /></StackPanel></Button>")
 
-                copy.Tag = Funcs.ChooseLang(TempInfo(3), TempInfo(4))
-                copy.ToolTip = Funcs.ChooseLang(TempInfo(0), TempInfo(1))
+                copy.Tag = TempInfo(2)
+                copy.ToolTip = TempInfo(0)
                 TemplateGrid.Children.Add(copy)
                 AddHandler copy.Click, AddressOf TemplateBtns_Click
 
@@ -1148,7 +1102,10 @@ Class MainWindow
     ' --
 
     Private Sub OpenBtn_Click(sender As Object, e As RoutedEventArgs) Handles OpenBtn.Click
-        MainTabs.SelectedIndex = 0
+        If MainTabs.SelectedIndex = 1 Then
+            MainTabs.SelectedIndex = 0
+            OpenMenuStoryboard.Begin()
+        End If
         MenuTabs.SelectedIndex = 1
 
         If OpenTabs.SelectedIndex = 0 Then
@@ -1162,6 +1119,7 @@ Class MainWindow
     End Sub
 
     Public Function LoadFile(filename As String) As Boolean
+        Dim zip As New ZipFile
 
         For Each win As MainWindow In Windows.Application.Current.Windows.OfType(Of MainWindow)
             If win.ThisFile = filename Then
@@ -1180,12 +1138,10 @@ Class MainWindow
             Dim loopslides As Boolean = True
             Dim usetimings As Boolean = True
             Dim slidelist As New List(Of Dictionary(Of String, Object)) From {}
-
-            Dim zip As ZipFile
             Dim onlinestream As IO.Stream
 
             If filename.StartsWith("https://") Then
-                Using client As Net.WebClient = New Net.WebClient()
+                Using client As New Net.WebClient()
                     onlinestream = New IO.MemoryStream(client.DownloadData(filename))
                     zip = ZipFile.Read(onlinestream)
                 End Using
@@ -1281,9 +1237,66 @@ Class MainWindow
                                             Catch
                                             End Try
 
+                                        ElseIf k.OuterXml.StartsWith("<filters>") Then
+                                            Dim filters = New Dictionary(Of String, Object) From
+                                            {{"filter", ""}, {"brightness", 0}, {"contrast", 1}, {"rotation", 0}, {"fliph", False}, {"flipv", False}}
+
+                                            For Each l As Xml.XmlNode In k.ChildNodes
+                                                If l.OuterXml.StartsWith("<filter>") Then
+                                                    Dim opts As New List(Of String) From {"Greyscale", "Sepia", "BlackWhite", "Red", "Green", "Blue"}
+                                                    If opts.IndexOf(l.InnerText) <> -1 Then
+                                                        filters("filter") = l.InnerText
+                                                    End If
+
+                                                ElseIf l.OuterXml.StartsWith("<brightness>") Then
+                                                    Try
+                                                        Dim size As Single
+                                                        If Not Funcs.ConvertSingle(l.InnerText, size) Then Throw New Exception
+
+                                                        If size >= -0.5F And size <= 0.5F Then
+                                                            filters("brightness") = size
+                                                        End If
+                                                    Catch
+                                                    End Try
+
+                                                ElseIf l.OuterXml.StartsWith("<contrast>") Then
+                                                    Try
+                                                        Dim size As Single
+                                                        If Not Funcs.ConvertSingle(l.InnerText, size) Then Throw New Exception
+
+                                                        If size >= 0.5F And size <= 2.0F Then
+                                                            filters("contrast") = size
+                                                        End If
+                                                    Catch
+                                                    End Try
+
+                                                ElseIf l.OuterXml.StartsWith("<rotation>") Then
+                                                    Dim opts As New List(Of String) From {"0", "90", "180", "270"}
+                                                    If opts.IndexOf(l.InnerText) <> -1 Then
+                                                        filters("rotation") = Convert.ToInt32(l.InnerText)
+                                                    End If
+
+                                                ElseIf l.OuterXml.StartsWith("<fliph>") Then
+                                                    Dim result As Boolean
+                                                    If Boolean.TryParse(l.InnerText, result) Then
+                                                        filters("fliph") = result
+                                                    End If
+
+                                                ElseIf l.OuterXml.StartsWith("<flipv>") Then
+                                                    Dim result As Boolean
+                                                    If Boolean.TryParse(l.InnerText, result) Then
+                                                        filters("flipv") = result
+                                                    End If
+
+                                                End If
+                                            Next
+                                            dict.Add("filters", filters)
+
                                         ElseIf k.OuterXml.StartsWith("<timing>") Then
                                             Try
-                                                Dim size As Double = Convert.ToDouble(val)
+                                                Dim size As Double
+                                                If Not Funcs.ConvertDouble(val, size) Then Throw New Exception
+
                                                 If size >= 0.5 And size <= 10 Then
                                                     dict.Add("timing", Math.Round(size, 2))
                                                 End If
@@ -1294,7 +1307,15 @@ Class MainWindow
                                     End If
                                 Next
 
-                                If CheckAllKeys(dict.Keys.ToList(), "image") Then slidelist.Add(dict)
+                                If CheckAllKeys(dict.Keys.ToList(), "image") Then
+                                    If dict.ContainsKey("filters") Then
+                                        dict.Add("original", New WinDrawing.Bitmap(CType(dict("img"), WinDrawing.Bitmap)))
+                                        dict("img") = ApplyFilters(dict("original"), dict("filters"))
+
+                                    End If
+                                    slidelist.Add(dict)
+
+                                End If
 
                             ElseIf j.OuterXml.StartsWith("<text>") Then
                                 Dim dict As New Dictionary(Of String, Object) From {{"type", "text"}, {"fontstyle", New WinDrawing.FontStyle()}}
@@ -1350,7 +1371,9 @@ Class MainWindow
 
                                         ElseIf k.OuterXml.StartsWith("<timing>") Then
                                             Try
-                                                Dim size As Double = Convert.ToDouble(val)
+                                                Dim size As Double
+                                                If Not Funcs.ConvertDouble(val, size) Then Throw New Exception
+
                                                 If size >= 0.5 And size <= 10 Then
                                                     dict.Add("timing", Math.Round(size, 2))
                                                 End If
@@ -1387,7 +1410,9 @@ Class MainWindow
 
                                         ElseIf k.OuterXml.StartsWith("<timing>") Then
                                             Try
-                                                Dim size As Double = Convert.ToDouble(val)
+                                                Dim size As Double
+                                                If Not Funcs.ConvertDouble(val, size) Then Throw New Exception
+
                                                 If size >= 0.5 And size <= 10 Then
                                                     dict.Add("timing", Math.Round(size, 2))
                                                 End If
@@ -1418,7 +1443,9 @@ Class MainWindow
 
                                                 ElseIf l.OuterXml.StartsWith("<value>") Then
                                                     Try
-                                                        Dim size As Double = Convert.ToDouble(l.InnerText)
+                                                        Dim size As Double
+                                                        If Not Funcs.ConvertDouble(l.InnerText, size) Then Throw New Exception
+
                                                         If size >= 0 And size <= 999999 Then
                                                             value = size
                                                         End If
@@ -1461,7 +1488,9 @@ Class MainWindow
 
                                         ElseIf k.OuterXml.StartsWith("<timing>") Then
                                             Try
-                                                Dim size As Double = Convert.ToDouble(val)
+                                                Dim size As Double
+                                                If Not Funcs.ConvertDouble(val, size) Then Throw New Exception
+
                                                 If size >= 0.5 And size <= 10 Then
                                                     dict.Add("timing", Math.Round(size, 2))
                                                 End If
@@ -1498,7 +1527,9 @@ Class MainWindow
 
                                         ElseIf k.OuterXml.StartsWith("<timing>") Then
                                             Try
-                                                Dim size As Double = Convert.ToDouble(val)
+                                                Dim size As Double
+                                                If Not Funcs.ConvertDouble(val, size) Then Throw New Exception
+
                                                 If size >= 0.5 And size <= 10 Then
                                                     dict.Add("timing", Math.Round(size, 2))
                                                 End If
@@ -1529,16 +1560,14 @@ Class MainWindow
                 Resources.Item("SlideBackColour") = New SolidColorBrush(background)
                 Resources.Item("ImageWidth") = imgwidth
                 Resources.Item("ImageHeight") = imgheight
-                Funcs.SetCheckButton(fit, FitImg)
-                Funcs.SetCheckButton(loopslides, LoopImg)
-                Funcs.SetCheckButton(usetimings, UseTimingsImg)
+                FitBtn.IsChecked = fit
+                LoopBtn.IsChecked = loopslides
+                UseTimingsBtn.IsChecked = usetimings
 
                 If imgwidth = 120 Then
-                    WideImg.Visibility = Visibility.Hidden
-                    StandardImg.Visibility = Visibility.Visible
+                    StandardBtn.IsChecked = True
                 Else
-                    WideImg.Visibility = Visibility.Visible
-                    StandardImg.Visibility = Visibility.Hidden
+                    WideBtn.IsChecked = True
                 End If
 
                 If fit Then
@@ -1550,7 +1579,11 @@ Class MainWindow
                 For Each i In slidelist
                     Select Case i("type")
                         Case "image"
-                            AddSlide(i("img"), i("name"), -1, i("timing"))
+                            If i.ContainsKey("filters") Then
+                                AddSlide(i("img"), i("name"), -1, i("timing"), i("filters"), i("original"))
+                            Else
+                                AddSlide(i("img"), i("name"), -1, i("timing"))
+                            End If
                         Case "text"
                             AddSlide(i("text"), i("fontname"), i("fontstyle"), i("fontcolor"), i("fontsize"), -1, i("timing"))
                         Case "screenshot"
@@ -1581,16 +1614,14 @@ Class MainWindow
                 NewForm1.Resources.Item("SlideBackColour") = New SolidColorBrush(background)
                 NewForm1.Resources.Item("ImageWidth") = imgwidth
                 NewForm1.Resources.Item("ImageHeight") = imgheight
-                Funcs.SetCheckButton(fit, NewForm1.FitImg)
-                Funcs.SetCheckButton(loopslides, NewForm1.LoopImg)
-                Funcs.SetCheckButton(usetimings, NewForm1.UseTimingsImg)
+                NewForm1.FitBtn.IsChecked = fit
+                NewForm1.LoopBtn.IsChecked = loopslides
+                NewForm1.UseTimingsBtn.IsChecked = usetimings
 
                 If imgwidth = 120 Then
-                    NewForm1.WideImg.Visibility = Visibility.Hidden
-                    NewForm1.StandardImg.Visibility = Visibility.Visible
+                    NewForm1.StandardBtn.IsChecked = True
                 Else
-                    NewForm1.WideImg.Visibility = Visibility.Visible
-                    NewForm1.StandardImg.Visibility = Visibility.Hidden
+                    NewForm1.WideBtn.IsChecked = True
                 End If
 
                 If fit Then
@@ -1602,7 +1633,11 @@ Class MainWindow
                 For Each i In slidelist
                     Select Case i("type")
                         Case "image"
-                            NewForm1.AddSlide(i("img"), i("name"), -1, i("timing"))
+                            If i.ContainsKey("filters") Then
+                                AddSlide(i("img"), i("name"), -1, i("timing"), i("filters"), i("original"))
+                            Else
+                                AddSlide(i("img"), i("name"), -1, i("timing"))
+                            End If
                         Case "text"
                             NewForm1.AddSlide(i("text"), i("fontname"), i("fontstyle"), i("fontcolor"), i("fontsize"), -1, i("timing"))
                         Case "screenshot"
@@ -1627,11 +1662,13 @@ Class MainWindow
             End If
             Return True
 
-        Catch
+        Catch e As Exception
             NewMessage($"{Funcs.ChooseLang("We ran into a problem while opening this file:", "Nous avons rencontré une erreur lors de l'ouverture de ce fichier :")}{Chr(10)}{filename}{Chr(10)}{Chr(10)}{Funcs.ChooseLang("Please try again.", "Veuillez réessayer.")}",
-                Funcs.ChooseLang("Error opening file", "Erreur d'ouverture du fichier"), MessageBoxButton.OK, MessageBoxImage.Error)
-        Return False
+                       Funcs.ChooseLang("Error opening file", "Erreur d'ouverture du fichier"), MessageBoxButton.OK, MessageBoxImage.Error)
+            Return False
 
+        Finally
+            zip.Dispose()
         End Try
 
     End Function
@@ -1658,21 +1695,18 @@ Class MainWindow
 
     End Function
 
-    Private Sub ResetOpenTabItemBorders()
-        RecentBtn.SetResourceReference(BorderBrushProperty, "BackColor")
-        FavouritesBtn.SetResourceReference(BorderBrushProperty, "BackColor")
-
-    End Sub
-
     Private Sub OpenTabs_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles OpenTabs.SelectionChanged
-        ResetOpenTabItemBorders()
+        RecentBtn.FontWeight = FontWeights.Normal
+        FavouritesBtn.FontWeight = FontWeights.Normal
 
         If OpenTabs.SelectedIndex = 0 Then
-            RecentBtn.BorderBrush = New SolidColorBrush(Color.FromArgb(255, 171, 173, 179))
+            BeginStoryboard(TryFindResource("RecentsStoryboard"))
+            RecentBtn.FontWeight = FontWeights.SemiBold
             RefreshRecents()
 
         ElseIf OpenTabs.SelectedIndex = 1 Then
-            FavouritesBtn.BorderBrush = New SolidColorBrush(Color.FromArgb(255, 171, 173, 179))
+            BeginStoryboard(TryFindResource("FavouritesStoryboard"))
+            FavouritesBtn.FontWeight = FontWeights.SemiBold
             RefreshFavourites()
 
         End If
@@ -1850,11 +1884,11 @@ Class MainWindow
             filename = filepath
         End If
 
-        Return "<Button BorderBrush='#FFFFFFFF' BorderThickness='0, 0, 0, 0' Background='#00FFFFFF' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Center' Padding='0, 0, 0, 0' Style='{DynamicResource AppButton}' Name='" +
-            $"RecentFile{count}Btn" + "' Height='57' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><DockPanel LastChildFill='False' Height='53'><ContentControl Content='{DynamicResource " +
-            img + "}' Name='RecentFileImg' Width='24' Margin='10,0,0,2' HorizontalAlignment='Left'/><TextBlock FontSize='14' TextTrimming='CharacterEllipsis' Name='RecentFileTxt' MaxWidth='556' Margin='15,6,0,0'><Run FontWeight='Bold'>" +
-            filename + "</Run><LineBreak/>" +
-            filepath + "</TextBlock></DockPanel></Button>"
+        Return "<Button BorderThickness='0, 0, 0, 0' Background='#00FFFFFF' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Center' Padding='0' Style='{DynamicResource AppButton}' Name='" +
+            $"RecentFile{count}Btn" + "' Height='57' HorizontalAlignment='Left' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><DockPanel LastChildFill='False' Height='53'><ContentControl Content='{DynamicResource " +
+            img + "}' Name='RecentFileImg' Width='24' Margin='10,0,0,2' HorizontalAlignment='Left'/><TextBlock FontSize='14' VerticalAlignment='Center' TextTrimming='CharacterEllipsis' Name='RecentFileTxt' Margin='10,0,0,1'><Run FontWeight='SemiBold'>" +
+            filename + "</Run><LineBreak/><Run FontSize='12'>" +
+            filepath + "</Run></TextBlock></DockPanel></Button>"
 
     End Function
 
@@ -1982,13 +2016,16 @@ Class MainWindow
                        Funcs.ChooseLang("No slides", "Pas de diapositives"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
         Else
             If ThisFile = "" Then
-                MainTabs.SelectedIndex = 0
+                If MainTabs.SelectedIndex = 1 Then
+                    MainTabs.SelectedIndex = 0
+                    OpenMenuStoryboard.Begin()
+                End If
                 MenuTabs.SelectedIndex = 2
                 RefreshPinned()
 
             Else
                 SaveFile(ThisFile)
-                MainTabs.SelectedIndex = 1
+                CloseMenuStoryboard.Begin()
 
             End If
         End If
@@ -2001,16 +2038,33 @@ Class MainWindow
 
     End Sub
 
+    Private Sub SaveImageToZip(ByRef bmp As WinDrawing.Bitmap, ByRef zip As ZipFile, name As String, imgformat As WinDrawing.Imaging.ImageFormat,
+                               ByRef donotdelete As List(Of String))
+
+        Using mem As New IO.MemoryStream()
+            bmp.Save(mem, imgformat)
+            If zip.EntryFileNames.Contains(name) Then
+                zip.UpdateEntry(name, mem.ToArray())
+            Else
+                zip.AddEntry(name, mem.ToArray())
+            End If
+        End Using
+
+        donotdelete.Add(name)
+
+    End Sub
+
     Private Function SaveFile(filename As String) As Boolean
         Try
+            Dim donotdelete As New List(Of String) From {"info.xml"}
             Dim xml As String = "<present><info>"
             Dim clr As SolidColorBrush = FindResource("SlideBackColour")
             xml += "<color>" + clr.Color.R.ToString() + "," + clr.Color.G.ToString() + "," + clr.Color.B.ToString() + "</color>"
             xml += "<width>" + FindResource("ImageWidth").ToString() + "</width>"
             xml += "<height>" + FindResource("ImageHeight").ToString() + "</height>"
-            xml += "<fit>" + Funcs.GetCheckValue(FitImg).ToString() + "</fit>"
-            xml += "<loop>" + Funcs.GetCheckValue(LoopImg).ToString() + "</loop>"
-            xml += "<timings>" + Funcs.GetCheckValue(UseTimingsImg).ToString() + "</timings>"
+            xml += "<fit>" + FitBtn.IsChecked.ToString() + "</fit>"
+            xml += "<loop>" + LoopBtn.IsChecked.ToString() + "</loop>"
+            xml += "<timings>" + UseTimingsBtn.IsChecked.ToString() + "</timings>"
             xml += "</info>"
 
             Using zip As New ZipFile(filename)
@@ -2019,51 +2073,65 @@ Class MainWindow
                 For Each i In AllSlides
                     Select Case i("type")
                         Case "image"
-                            Dim bmp As WinDrawing.Bitmap = i("img")
-                            Using mem As New IO.MemoryStream()
-                                bmp.Save(mem, i("format"))
-                                If zip.EntryFileNames.Contains(i("name")) Then
-                                    zip.UpdateEntry(i("name"), mem.ToArray())
-                                Else
-                                    zip.AddEntry(i("name"), mem.ToArray())
-                                End If
-                            End Using
+                            Dim filterstr = ""
+                            If i.ContainsKey("original") Then
+                                SaveImageToZip(i("original"), zip, i("name"), i("format"), donotdelete)
 
-                            xml += "<image><name>" + Funcs.EscapeChars(i("name")) + "</name><timing>" + i("timing").ToString() + "</timing></image>"
+                                filterstr = "<filters><filter>" + i("filters")("filter") + "</filter><brightness>" +
+                                CType(i("filters")("brightness"), Single).ToString(Globalization.CultureInfo.InvariantCulture) +
+                                "</brightness><contrast>" + CType(i("filters")("contrast"), Single).ToString(Globalization.CultureInfo.InvariantCulture) +
+                                "</contrast><rotation>" + i("filters")("rotation").ToString() + "</rotation><fliph>" + i("filters")("fliph").ToString() +
+                                "</fliph><flipv>" + i("filters")("flipv").ToString() + "</flipv></filters>"
+                            Else
+                                SaveImageToZip(i("img"), zip, i("name"), i("format"), donotdelete)
+                            End If
+
+                            xml += "<image><name>" + Funcs.EscapeChars(i("name")) + "</name>" + filterstr + "<timing>" +
+                            i("timing").ToString() + "</timing></image>"
 
                         Case "text"
                             Dim br As WinDrawing.SolidBrush = i("fontcolor")
                             Dim style As WinDrawing.FontStyle = i("fontstyle")
+                            Dim objname = ""
+
+                            If i.ContainsKey("name") Then
+                                objname = i("name")
+                            Else
+                                objname = CheckExistingNames("text" + Int((6000 * Rnd()) + 1000).ToString() + ".png").Replace(".png", "")
+                            End If
+
+                            SaveImageToZip(i("img"), zip, objname + "-prender.png", WinDrawing.Imaging.ImageFormat.Png, donotdelete)
 
                             xml += "<text><content>" + Funcs.EscapeChars(i("text")) + "</content><fontname>" + Funcs.EscapeChars(i("fontname")) + "</fontname><bold>" +
                             style.HasFlag(WinDrawing.FontStyle.Bold).ToString() + "</bold><italic>" + style.HasFlag(WinDrawing.FontStyle.Italic).ToString() +
                             "</italic><underline>" + style.HasFlag(WinDrawing.FontStyle.Underline).ToString() + "</underline><fontcolor>" +
                             br.Color.R.ToString() + "," + br.Color.G.ToString() + "," + br.Color.B.ToString() + "</fontcolor><fontsize>" +
-                            i("fontsize").ToString() + "</fontsize><timing>" + i("timing").ToString() + "</timing></text>"
+                            i("fontsize").ToString() + "</fontsize><timing>" + i("timing").ToString() + "</timing><name>" + Funcs.EscapeChars(objname) + "</name></text>"
 
                         Case "screenshot"
-                            Dim bmp As WinDrawing.Bitmap = i("img")
-                            Using mem As New IO.MemoryStream()
-                                bmp.Save(mem, i("format"))
-                                If zip.EntryFileNames.Contains(i("name")) Then
-                                    zip.UpdateEntry(i("name"), mem.ToArray())
-                                Else
-                                    zip.AddEntry(i("name"), mem.ToArray())
-                                End If
-                            End Using
-
+                            SaveImageToZip(i("img"), zip, i("name"), i("format"), donotdelete)
                             xml += "<screenshot><name>" + Funcs.EscapeChars(i("name")) + "</name><timing>" + i("timing").ToString() + "</timing></screenshot>"
 
                         Case "chart"
+                            Dim objname = ""
+
+                            If i.ContainsKey("name") Then
+                                objname = i("name")
+                            Else
+                                objname = CheckExistingNames("chart" + Int((6000 * Rnd()) + 1000).ToString() + ".png").Replace(".png", "")
+                            End If
+
+                            SaveImageToZip(i("img"), zip, objname + "-prender.png", WinDrawing.Imaging.ImageFormat.Png, donotdelete)
+
                             xml += "<chart>"
                             For Each c As KeyValuePair(Of String, Double) In i("data")
-                                xml += "<data><label>" + Funcs.EscapeChars(c.Key) + "</label><value>" + c.Value.ToString() + "</value></data>"
+                                xml += "<data><label>" + Funcs.EscapeChars(c.Key) + "</label><value>" + c.Value.ToString(Globalization.CultureInfo.InvariantCulture) + "</value></data>"
                             Next
 
                             xml += "<charttype>" + i("charttype").ToString() + "</charttype><values>" + i("values").ToString() + "</values><theme>" +
                             i("theme").ToString() + "</theme><xlabel>" + Funcs.EscapeChars(i("xlabel")) + "</xlabel><ylabel>" +
                             Funcs.EscapeChars(i("ylabel")) + "</ylabel><title>" + Funcs.EscapeChars(i("title")) +
-                            "</title><timing>" + i("timing").ToString() + "</timing></chart>"
+                            "</title><timing>" + i("timing").ToString() + "</timing><name>" + Funcs.EscapeChars(objname) + "</name></chart>"
 
                         Case "drawing"
                             Dim s As Ink.StrokeCollection = i("strokes")
@@ -2075,6 +2143,10 @@ Class MainWindow
                                     zip.AddEntry(i("name"), mem.ToArray())
                                 End If
                             End Using
+                            donotdelete.Add(i("name"))
+
+                            Dim objname = CType(i("name"), String).Substring(0, CType(i("name"), String).Length - 4)
+                            SaveImageToZip(i("img"), zip, objname + "-prender.png", WinDrawing.Imaging.ImageFormat.Png, donotdelete)
 
                             xml += "<drawing><name>" + Funcs.EscapeChars(i("name")) + "</name><timing>" + i("timing").ToString() + "</timing></drawing>"
 
@@ -2089,6 +2161,12 @@ Class MainWindow
                 Else
                     zip.AddEntry("info.xml", xml, Text.Encoding.UTF8)
                 End If
+
+                For Each i In zip.EntryFileNames.ToList()
+                    If donotdelete.Contains(i) = False Then
+                        zip.RemoveEntry(i)
+                    End If
+                Next
 
                 zip.Save()
 
@@ -2106,7 +2184,7 @@ Class MainWindow
             CreateTempLabel(Funcs.ChooseLang("Saving complete", "Enregistré"))
             Return True
 
-        Catch
+        Catch e As Exception
             NewMessage(Funcs.ChooseLang($"We couldn't save your document:{Chr(10)}{filename}{Chr(10)}{Chr(10)}Check that you have permission to make changes to this file.",
                                         $"Nous n'arrivions pas à enregistrer votre document :{Chr(10)}{filename}{Chr(10)}{Chr(10)}Vérifiez que vous avez la permission de modifier ce fichier."),
                        Funcs.ChooseLang("Error saving file", "Erreur d'enregistrement du fichier"), MessageBoxButton.OK, MessageBoxImage.Error)
@@ -2125,7 +2203,7 @@ Class MainWindow
 
         ElseIf saveDialog.ShowDialog() = True Then
             SaveFile(saveDialog.FileName)
-            MainTabs.SelectedIndex = 1
+            CloseMenuStoryboard.Begin()
 
         End If
 
@@ -2166,9 +2244,11 @@ Class MainWindow
         If Not filecount = 0 Then
             PinnedStack.Children.Add(AddPinnedBtn)
             PinnedStack.Children.Add(ClearPinnedBtn)
+            NoPinnedLbl.Visibility = Visibility.Collapsed
 
         Else
             PinnedStack.Children.Add(AddPinnedBtn)
+            NoPinnedLbl.Visibility = Visibility.Visible
 
         End If
 
@@ -2184,11 +2264,11 @@ Class MainWindow
 
         End If
 
-        Return "<Button BorderBrush='#FFFFFFFF' BorderThickness='0, 0, 0, 0' Background='#00FFFFFF' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Center' Padding='0, 0, 0, 0' Style='{DynamicResource AppButton}' Name='" +
-            $"PinnedFile{count}Btn" + "' Height='57' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><DockPanel LastChildFill='False' Height='53'><ContentControl Content='{DynamicResource " +
-            "OpenIcon" + "}' Name='RecentFileImg' Width='24' Margin='10,0,0,2' HorizontalAlignment='Left'/><TextBlock FontSize='14' TextTrimming='CharacterEllipsis' Name='RecentFileTxt' MaxWidth='556' Margin='15,6,0,0'><Run FontWeight='Bold'>" +
-            folder + "</Run><LineBreak/>" +
-            filepath + "</TextBlock></DockPanel></Button>"
+        Return "<Button BorderThickness='0, 0, 0, 0' Background='#00FFFFFF' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Center' Padding='0' Style='{DynamicResource AppButton}' Name='" +
+            $"PinnedFile{count}Btn" + "' Height='57' HorizontalAlignment='Left' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'><DockPanel LastChildFill='False' Height='53'><ContentControl Content='{DynamicResource " +
+            "OpenIcon" + "}' Name='RecentFileImg' Width='24' Margin='10,0,0,2' HorizontalAlignment='Left'/><TextBlock FontSize='14' VerticalAlignment='Center' TextTrimming='CharacterEllipsis' Name='RecentFileTxt' Margin='10,0,0,1'><Run FontWeight='SemiBold'>" +
+            folder + "</Run><LineBreak/><Run FontSize='12'>" +
+            filepath + "</Run></TextBlock></DockPanel></Button>"
 
     End Function
 
@@ -2219,7 +2299,7 @@ Class MainWindow
 
             If saveDialog.ShowDialog() = True Then
                 SaveFile(saveDialog.FileName)
-                MainTabs.SelectedIndex = 1
+                CloseMenuStoryboard.Begin()
 
             End If
         End If
@@ -2270,9 +2350,11 @@ Class MainWindow
                        Funcs.ChooseLang("No slides", "Pas de diapositives"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
 
         ElseIf ThisFile = "" Then
-            MainTabs.SelectedIndex = 0
+            If MainTabs.SelectedIndex = 1 Then
+                MainTabs.SelectedIndex = 0
+                OpenMenuStoryboard.Begin()
+            End If
             MenuTabs.SelectedIndex = 2
-            BeginStoryboard(TryFindResource("MenuStoryboard"))
 
         Else
             SaveFile(ThisFile)
@@ -2286,7 +2368,10 @@ Class MainWindow
     ' --
 
     Private Sub PrintBtn_Click(sender As Object, e As RoutedEventArgs) Handles PrintBtn.Click
-        MainTabs.SelectedIndex = 0
+        If MainTabs.SelectedIndex = 1 Then
+            MainTabs.SelectedIndex = 0
+            OpenMenuStoryboard.Begin()
+        End If
         MenuTabs.SelectedIndex = 3
 
     End Sub
@@ -2317,7 +2402,7 @@ Class MainWindow
             PrintDoc.DocumentName = Title
             If PrintDialog1.ShowDialog() = Forms.DialogResult.OK Then
                 PrintDoc.Print()
-                MainTabs.SelectedIndex = 1
+                CloseMenuStoryboard.Begin()
 
                 CreateTempLabel(Funcs.ChooseLang("Sent to printer", "Envoyé à l'imprimante"))
 
@@ -2360,25 +2445,26 @@ Class MainWindow
     ' --
 
     Private Sub ExportBtn_Click(sender As Object, e As RoutedEventArgs) Handles ExportBtn.Click
-        MainTabs.SelectedIndex = 0
+        If MainTabs.SelectedIndex = 1 Then
+            MainTabs.SelectedIndex = 0
+            OpenMenuStoryboard.Begin()
+        End If
         MenuTabs.SelectedIndex = 4
 
     End Sub
 
-    Private Sub ResetExportTabItemBorders()
-        VideoBtn.SetResourceReference(BorderBrushProperty, "BackColor")
-        ImagesBtn.SetResourceReference(BorderBrushProperty, "BackColor")
-
-    End Sub
 
     Private Sub ShareTabs_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles ExportTabs.SelectionChanged
-        ResetExportTabItemBorders()
+        VideoBtn.FontWeight = FontWeights.Normal
+        ImagesBtn.FontWeight = FontWeights.Normal
 
         If ExportTabs.SelectedIndex = 0 Then
-            VideoBtn.BorderBrush = New SolidColorBrush(Color.FromArgb(255, 171, 173, 179))
+            BeginStoryboard(TryFindResource("VideoStoryboard"))
+            VideoBtn.FontWeight = FontWeights.SemiBold
 
         Else
-            ImagesBtn.BorderBrush = New SolidColorBrush(Color.FromArgb(255, 171, 173, 179))
+            BeginStoryboard(TryFindResource("ImagesStoryboard"))
+            ImagesBtn.FontWeight = FontWeights.SemiBold
 
         End If
 
@@ -2388,27 +2474,8 @@ Class MainWindow
     ' EXPORT > VIDEO
     ' --
 
-    Private ChosenRes As Integer = 1
-
     Private Sub VideoBtn_Click(sender As Object, e As RoutedEventArgs) Handles VideoBtn.Click
         ExportTabs.SelectedIndex = 0
-
-    End Sub
-
-    Private Sub RBtns_Click(sender As Button, e As RoutedEventArgs) Handles R1440pBtn.Click, R1080pBtn.Click, R720pBtn.Click, R480pBtn.Click
-
-        Dim count = 0
-        For Each btn In {R1440pBtn, R1080pBtn, R720pBtn, R480pBtn}
-            Dim img As ContentControl = btn.FindName(btn.Name.Replace("Btn", "Img"))
-            If btn.Equals(sender) Then
-                img.Visibility = Visibility.Visible
-                ChosenRes = count
-            Else
-                img.Visibility = Visibility.Hidden
-            End If
-
-            count += 1
-        Next
 
     End Sub
 
@@ -2425,23 +2492,22 @@ Class MainWindow
             Dim width As Integer
             Dim height As Integer
 
-            Select Case ChosenRes
-                Case 0
-                    height = 1440
-                    width = GetImageWidth(1440)
-                Case 1
-                    height = 1080
-                    width = GetImageWidth(1080)
-                Case 2
-                    height = 720
-                    width = GetImageWidth(720)
-                Case 3
-                    height = 460
-                    width = GetImageWidth(460)
-            End Select
+            If R1440pBtn.IsChecked Then
+                height = 1440
+                width = GetImageWidth(1440)
+            ElseIf R1080pBtn.IsChecked Then
+                height = 1080
+                width = GetImageWidth(1080)
+            ElseIf R720pBtn.IsChecked Then
+                height = 720
+                width = GetImageWidth(720)
+            ElseIf R480pBtn.IsChecked Then
+                height = 460
+                width = GetImageWidth(460)
+            End If
 
             ExportVideoWorker.RunWorkerAsync(New Dictionary(Of String, Object) From {{"color", FindResource("SlideBackColour").Color},
-                                             {"fit", Funcs.GetCheckValue(FitImg)}, {"width", width}, {"height", height}})
+                                                 {"fit", FitBtn.IsChecked}, {"width", width}, {"height", height}})
 
         End If
 
@@ -2453,22 +2519,6 @@ Class MainWindow
 
     Private Sub ImagesBtn_Click(sender As Object, e As RoutedEventArgs) Handles ImagesBtn.Click
         ExportTabs.SelectedIndex = 1
-
-    End Sub
-
-    Private Sub FormatBtns_Click(sender As Button, e As RoutedEventArgs) Handles DefaultBtn.Click, JPGBtn.Click, PNGBtn.Click
-
-        Dim count = 0
-        For Each btn In {DefaultBtn, JPGBtn, PNGBtn}
-            Dim img As ContentControl = btn.FindName(btn.Name.Replace("Btn", "Img"))
-            If btn.Equals(sender) Then
-                img.Visibility = Visibility.Visible
-            Else
-                img.Visibility = Visibility.Hidden
-            End If
-
-            count += 1
-        Next
 
     End Sub
 
@@ -2491,7 +2541,7 @@ Class MainWindow
                 IO.Directory.CreateDirectory(foldername)
 
                 For Each i In AllSlides
-                    Dim width As Integer = GetImageWidth()
+                    Dim width As Integer = GetImageWidth(1440)
                     Dim height As Integer = 1440
                     Dim bmp As New WinDrawing.Bitmap(width, height)
                     Dim backcolor As Color = FindResource("SlideBackColour").Color
@@ -2500,10 +2550,10 @@ Class MainWindow
                         Dim format As WinDrawing.Imaging.ImageFormat = i("format")
                         Dim ext As String = ""
 
-                        If JPGImg.Visibility = Visibility.Visible Then
+                        If JPGBtn.IsChecked Then
                             ext = ".jpg"
                             format = WinDrawing.Imaging.ImageFormat.Jpeg
-                        ElseIf PNGImg.Visibility = Visibility.Visible Then
+                        ElseIf PNGBtn.IsChecked Then
                             ext = ".png"
                             format = WinDrawing.Imaging.ImageFormat.Png
                         Else
@@ -2524,10 +2574,8 @@ Class MainWindow
 
                             Dim img As WinDrawing.Bitmap = i("img")
                             Dim p As WinDrawing.Point
-                            If Funcs.GetCheckValue(FitImg) Then
-                                Dim ratio = height / img.Height
-                                img = New WinDrawing.Bitmap(img, Math.Round(img.Width * ratio, 0), height)
-
+                            If FitBtn.IsChecked Then
+                                img = ResizeBitmap(img, width, height)
                                 p = New WinDrawing.Point(Math.Round((width - img.Width) / 2, 0), Math.Round((height - img.Height) / 2, 0))
 
                             Else
@@ -2557,7 +2605,7 @@ Class MainWindow
 
     End Sub
 
-    Private Function GetImageWidth(Optional height As Integer = 1440) As Integer
+    Private Function GetImageWidth(height As Integer) As Integer
 
         If FindResource("ImageWidth") = 160.0 Then ' 16:9
             Return Math.Round(height / 9 * 16, 0)
@@ -2579,7 +2627,7 @@ Class MainWindow
             NewMessage(Funcs.ChooseLang("Please add a slide first.", "Veuillez d'abord ajouter une diapositive."),
                        Funcs.ChooseLang("No slides", "Pas de diapositives"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
 
-        ElseIf folderBrowser.ShowDialog() Then
+        ElseIf folderBrowser.ShowDialog() = Forms.DialogResult.OK Then
             Try
                 Dim foldername As String = folderBrowser.SelectedPath + "\" + TitleTxt.Text + "\"
                 Dim count = 1
@@ -2594,7 +2642,7 @@ Class MainWindow
                 IO.Directory.CreateDirectory(foldername + "images\")
 
                 For Each i In AllSlides
-                    Dim width As Integer = GetImageWidth()
+                    Dim width As Integer = GetImageWidth(1440)
                     Dim height As Integer = 1440
                     Dim bmp As New WinDrawing.Bitmap(width, height)
                     Dim backcolor As Color = FindResource("SlideBackColour").Color
@@ -2619,10 +2667,8 @@ Class MainWindow
 
                             Dim img As WinDrawing.Bitmap = i("img")
                             Dim p As WinDrawing.Point
-                            If Funcs.GetCheckValue(FitImg) Then
-                                Dim ratio = height / img.Height
-                                img = New WinDrawing.Bitmap(img, Math.Round(img.Width * ratio, 0), height)
-
+                            If FitBtn.IsChecked Then
+                                img = ResizeBitmap(img, width, height)
                                 p = New WinDrawing.Point(Math.Round((width - img.Width) / 2, 0), Math.Round((height - img.Height) / 2, 0))
 
                             Else
@@ -2664,7 +2710,7 @@ Class MainWindow
                     If i = 1 Then
                         htmlstr += "          <li data-target=""#carousel-generic"" data-slide-to=""0"" class=""active""></li>" + Environment.NewLine
                     Else
-                        htmlstr += $"          <li data-target=""#carousel-generic"" data-slide-to=""{(i - 1).ToString()}""></li>" + Environment.NewLine
+                        htmlstr += $"          <li data-target=""#carousel-generic"" data-slide-to=""{(i - 1)}""></li>" + Environment.NewLine
                     End If
                 Next
 
@@ -3082,12 +3128,12 @@ Class MainWindow
         TimingUpDown.IsEnabled = False
 
         Title = "Present Express"
-        MainTabs.SelectedIndex = 1
+        CloseMenuStoryboard.Begin()
 
     End Sub
 
     Private Sub StorageBtn_Click(sender As Object, e As RoutedEventArgs) Handles StorageBtn.Click
-        Process.Start("https://jwebsites404.wixsite.com/expressapps")
+        Process.Start("https://express.johnjds.co.uk")
 
     End Sub
 
@@ -3118,18 +3164,20 @@ Class MainWindow
 
     Private Sub CreateSlide(bmp As WinDrawing.Bitmap, format As WinDrawing.Imaging.ImageFormat, Optional idx As Integer = -1)
 
-        Dim btn As Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='#00FFFFFF' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Stretch' Style='{DynamicResource AppButton}' Name='SampleSlide' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><DockPanel><TextBlock Text='" +
-                                             AllSlides.Count.ToString() + "' FontSize='14' Name='SlideLbl' Width='25' Margin='15,10,0,0' /><Border Name='SlideBorder' BorderThickness='1,1,1,1' BorderBrush='#FFABADB3' Background='" +
+        Dim btn As Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='#00FFFFFF' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Stretch' Style='{DynamicResource AppButton}' Name='SampleSlide' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' xmlns:ex='clr-namespace:ExpressControls;assembly=ExpressControls'><DockPanel><TextBlock Text='" +
+                                             AllSlides.Count.ToString() + "' FontSize='14' Name='SlideLbl' Width='35' Margin='0,10,0,0' Padding='8,0,0,0'/><Border Name='SlideBorder' BorderThickness='1,1,1,1' BorderBrush='#FFABADB3' Background='" +
                                              "{DynamicResource SlideBackColour}" + "' Width='" +
                                              "{DynamicResource ImageWidth}" + "' Height='" +
-                                             "{DynamicResource ImageHeight}" + "' Margin='0,10,10,10' HorizontalAlignment='Left'><Image Name='SlideImg' Stretch='" +
-                                             "{DynamicResource FitStretch}" + "'/></Border></DockPanel></Button>")
+                                             "{DynamicResource ImageHeight}" + "' Margin='0,10' HorizontalAlignment='Left' CornerRadius='5'><ex:ClippedBorder CornerRadius='5'><Image Name='SlideImg' Stretch='" +
+                                             "{DynamicResource FitStretch}" + "'/></ex:ClippedBorder></Border></DockPanel></Button>")
 
         btn.Tag = AllSlides.Count
         btn.ContextMenu = SlideMenu
 
         Dim img As Image = btn.FindName("SlideImg")
-        img.Source = BitmapToSource(bmp, format)
+
+
+        img.Source = BitmapToSource(ResizeBitmap(bmp, FindResource("ImageWidth"), FindResource("ImageHeight")), format)
 
         If idx = -1 Then
             SlideStack.Children.Add(btn)
@@ -3141,6 +3189,21 @@ Class MainWindow
         AddHandler btn.Click, AddressOf SlideBtns_Click
 
     End Sub
+
+    Public Shared Function ResizeBitmap(bmp As WinDrawing.Bitmap, Optional maxwidth As Integer = 2560, Optional maxheight As Integer = 1440) As WinDrawing.Bitmap
+        Dim hratio = maxheight / bmp.Height
+        Dim wratio = maxwidth / bmp.Width
+        Dim ratio As Double
+
+        If hratio >= wratio Then
+            ratio = wratio
+        Else
+            ratio = hratio
+        End If
+
+        Return New WinDrawing.Bitmap(bmp, Math.Round(bmp.Width * ratio, 0), Math.Round(bmp.Height * ratio, 0))
+
+    End Function
 
     Private Sub EditSlideImg(idx As Integer, bmp As WinDrawing.Bitmap, format As WinDrawing.Imaging.ImageFormat)
         Dim btn As Button = SlideStack.Children.Item(idx)
@@ -3277,23 +3340,23 @@ Class MainWindow
 
                     Dim entry = AllSlides(SlideNum - 1)
                     PhotoImg.Source = BitmapToSource(entry("img"), entry("format"))
-                    EditSlideMoreBtn.Visibility = Visibility.Collapsed
+                    EditSlideBtn.MoreVisibility = Visibility.Collapsed
 
                     TimingUpDown.IsEnabled = True
                     TimingUpDown.Value = entry("timing")
 
                     Select Case entry("type")
                         Case "image"
-                            EditSlideTxt.Text = Funcs.ChooseLang("Replace this image", "Remplacer cette image")
-                            EditSlideMoreBtn.Visibility = Visibility.Visible
+                            EditSlideBtn.Text = Funcs.ChooseLang("Edit/replace this image", "Modifier/remplacer cette image")
+                            EditSlideBtn.MoreVisibility = Visibility.Visible
                         Case "text"
-                            EditSlideTxt.Text = Funcs.ChooseLang("Edit this text", "Modifier ce texte")
+                            EditSlideBtn.Text = Funcs.ChooseLang("Edit this text", "Modifier ce texte")
                         Case "screenshot"
-                            EditSlideTxt.Text = Funcs.ChooseLang("Replace this screenshot", "Remplacer cette capture d'écran")
+                            EditSlideBtn.Text = Funcs.ChooseLang("Replace this screenshot", "Remplacer cette capture d'écran")
                         Case "chart"
-                            EditSlideTxt.Text = Funcs.ChooseLang("Edit this chart", "Modifier ce graphique")
+                            EditSlideBtn.Text = Funcs.ChooseLang("Edit this chart", "Modifier ce graphique")
                         Case "drawing"
-                            EditSlideTxt.Text = Funcs.ChooseLang("Edit this drawing", "Modifier ce dessin")
+                            EditSlideBtn.Text = Funcs.ChooseLang("Edit this drawing", "Modifier ce dessin")
                     End Select
 
                 Else
@@ -3313,7 +3376,7 @@ Class MainWindow
         Dim ms As New IO.MemoryStream()
         src.Save(ms, format)
 
-        Dim image As BitmapImage = New BitmapImage()
+        Dim image As New BitmapImage()
         image.BeginInit()
         ms.Seek(0, IO.SeekOrigin.Begin)
         image.StreamSource = ms
@@ -3324,6 +3387,10 @@ Class MainWindow
 
     Private Function CheckExistingNames(name As String) As String
         Dim exists As Boolean = True
+
+        If name.ToLower().EndsWith("-prender.png") Then
+            name = name.Substring(0, name.Length - 4) + "1.png"
+        End If
 
         While exists
             For Each i In AllSlides
@@ -3356,7 +3423,9 @@ Class MainWindow
     ''' <summary>
     ''' Adds an image slide
     ''' </summary>
-    Private Sub AddSlide(bmp As WinDrawing.Bitmap, filename As String, Optional editidx As Integer = -1, Optional timing As Double = -1)
+    Private Sub AddSlide(bmp As WinDrawing.Bitmap, filename As String, Optional editidx As Integer = -1, Optional timing As Double = -1,
+                         Optional filters As Dictionary(Of String, Object) = Nothing, Optional original As WinDrawing.Bitmap = Nothing)
+
         filename = CheckExistingNames(filename)
         Dim format As WinDrawing.Imaging.ImageFormat
 
@@ -3376,11 +3445,22 @@ Class MainWindow
 
         If editidx = -1 Then
             If timing = -1 Then timing = DefaultTiming
-            AllSlides.Add(New Dictionary(Of String, Object) From {{"type", "image"}, {"name", filename}, {"format", format}, {"img", bmp}, {"timing", timing}})
+
+            If filters Is Nothing Then
+                AllSlides.Add(New Dictionary(Of String, Object) From {{"type", "image"}, {"name", filename}, {"format", format}, {"img", bmp}, {"timing", timing}})
+            Else
+                AllSlides.Add(New Dictionary(Of String, Object) From {{"type", "image"}, {"name", filename}, {"format", format}, {"img", bmp}, {"original", original}, {"filters", filters}, {"timing", timing}})
+            End If
+
             CreateSlide(bmp, format)
 
         Else
-            AllSlides(editidx) = New Dictionary(Of String, Object) From {{"type", "image"}, {"name", filename}, {"format", format}, {"img", bmp}, {"timing", AllSlides(editidx)("timing")}}
+            If filters Is Nothing Then
+                AllSlides(editidx) = New Dictionary(Of String, Object) From {{"type", "image"}, {"name", filename}, {"format", format}, {"img", bmp}, {"timing", AllSlides(editidx)("timing")}}
+            Else
+                AllSlides(editidx) = New Dictionary(Of String, Object) From {{"type", "image"}, {"name", filename}, {"format", format}, {"img", bmp}, {"original", original}, {"filters", filters}, {"timing", AllSlides(editidx)("timing")}}
+            End If
+
             EditSlideImg(editidx, bmp, format)
         End If
 
@@ -3392,22 +3472,7 @@ Class MainWindow
     Private Sub AddSlide(text As String, fontname As String, fontstyle As WinDrawing.FontStyle, fontcolor As WinDrawing.SolidBrush, fontsize As Single,
                          Optional editidx As Integer = -1, Optional timing As Double = -1)
 
-        Dim bmp As New WinDrawing.Bitmap(GetImageWidth(), 1440)
-        Dim rect1 As New WinDrawing.Rectangle(30, 30, GetImageWidth() - 60, 1380)
-        Dim g = WinDrawing.Graphics.FromImage(bmp)
-
-        g.SmoothingMode = WinDrawing.Drawing2D.SmoothingMode.AntiAlias
-        g.InterpolationMode = WinDrawing.Drawing2D.InterpolationMode.HighQualityBicubic
-        g.PixelOffsetMode = WinDrawing.Drawing2D.PixelOffsetMode.HighQuality
-        g.TextRenderingHint = WinDrawing.Text.TextRenderingHint.AntiAliasGridFit
-
-        Dim stringFormat As New WinDrawing.StringFormat With {
-            .Alignment = WinDrawing.StringAlignment.Center,
-            .LineAlignment = WinDrawing.StringAlignment.Center
-        }
-
-        g.DrawString(text, New WinDrawing.Font(fontname, fontsize, fontstyle), fontcolor, rect1, stringFormat)
-        g.Flush()
+        Dim bmp = GenerateTextBmp(text, fontname, fontstyle, fontcolor, fontsize, GetImageWidth())
 
         If editidx = -1 Then
             If timing = -1 Then timing = DefaultTiming
@@ -3425,6 +3490,30 @@ Class MainWindow
         End If
 
     End Sub
+
+    Private Function GenerateTextBmp(text As String, fontname As String, fontstyle As WinDrawing.FontStyle, fontcolor As WinDrawing.SolidBrush,
+                                     fontsize As Single, width As Integer) As WinDrawing.Bitmap
+
+        Dim bmp As New WinDrawing.Bitmap(width, 1440)
+        Dim rect1 As New WinDrawing.Rectangle(30, 30, width - 60, 1380)
+        Dim g = WinDrawing.Graphics.FromImage(bmp)
+
+        g.SmoothingMode = WinDrawing.Drawing2D.SmoothingMode.AntiAlias
+        g.InterpolationMode = WinDrawing.Drawing2D.InterpolationMode.HighQualityBicubic
+        g.PixelOffsetMode = WinDrawing.Drawing2D.PixelOffsetMode.HighQuality
+        g.TextRenderingHint = WinDrawing.Text.TextRenderingHint.AntiAliasGridFit
+
+        Dim stringFormat As New WinDrawing.StringFormat With {
+            .Alignment = WinDrawing.StringAlignment.Center,
+            .LineAlignment = WinDrawing.StringAlignment.Center
+        }
+
+        g.DrawString(text, New WinDrawing.Font(fontname, fontsize, fontstyle), fontcolor, rect1, stringFormat)
+        g.Flush()
+
+        Return bmp
+
+    End Function
 
     ''' <summary>
     ''' Adds a screenshot slide
@@ -3452,16 +3541,40 @@ Class MainWindow
                          theme As Forms.DataVisualization.Charting.ChartColorPalette, Optional xlabel As String = "", Optional ylabel As String = "",
                          Optional title As String = "", Optional editidx As Integer = -1, Optional timing As Double = -1)
 
-        Dim ChartBmp As WinDrawing.Bitmap = New WinDrawing.Bitmap(GetImageWidth(), 1440)
-        Dim ChartBounds As WinDrawing.Rectangle = New WinDrawing.Rectangle(30, 30, GetImageWidth() - 60, 1380)
+        Dim ChartBmp = GenerateChartBmp(data, charttype, values, theme, xlabel, ylabel, title, GetImageWidth())
+
+        If editidx = -1 Then
+            If timing = -1 Then timing = DefaultTiming
+            AllSlides.Add(New Dictionary(Of String, Object) From {{"type", "chart"}, {"format", WinDrawing.Imaging.ImageFormat.Png}, {"img", ChartBmp}, {"timing", timing},
+                      {"data", data}, {"charttype", charttype}, {"values", values}, {"theme", theme}, {"xlabel", xlabel}, {"ylabel", ylabel}, {"title", title}})
+
+            CreateSlide(ChartBmp, WinDrawing.Imaging.ImageFormat.Png)
+
+        Else
+            AllSlides(editidx) = New Dictionary(Of String, Object) From {{"type", "chart"}, {"format", WinDrawing.Imaging.ImageFormat.Png}, {"img", ChartBmp}, {"timing", AllSlides(editidx)("timing")},
+                      {"data", data}, {"charttype", charttype}, {"values", values}, {"theme", theme}, {"xlabel", xlabel}, {"ylabel", ylabel}, {"title", title}}
+
+            EditSlideImg(editidx, ChartBmp, WinDrawing.Imaging.ImageFormat.Png)
+
+        End If
+
+    End Sub
+
+    Private Function GenerateChartBmp(data As List(Of KeyValuePair(Of String, Double)), charttype As Forms.DataVisualization.Charting.SeriesChartType,
+                                      values As Boolean, theme As Forms.DataVisualization.Charting.ChartColorPalette, xlabel As String, ylabel As String,
+                                      title As String, width As Integer) As WinDrawing.Bitmap
+
+        Dim ChartBmp As New WinDrawing.Bitmap(width, 1440)
+        Dim ChartBounds As New WinDrawing.Rectangle(30, 30, width - 60, 1380)
 
         Dim NewChart As New Forms.DataVisualization.Charting.Chart With {
-            .Size = New WinDrawing.Size(GetImageWidth() - 60, 1380),
+            .Size = New WinDrawing.Size(width - 60, 1380),
             .Palette = theme
         }
 
         NewChart.Series.Add(New Forms.DataVisualization.Charting.Series())
         NewChart.ChartAreas.Add(New Forms.DataVisualization.Charting.ChartArea())
+        NewChart.Series.Item(0).BorderWidth = 3
 
         NewChart.Series.Item(0).ChartType = charttype
         NewChart.Series.Item(0).Font = New WinDrawing.Font("Segoe UI", 30, WinDrawing.FontStyle.Bold)
@@ -3484,49 +3597,16 @@ Class MainWindow
         End If
 
         NewChart.DrawToBitmap(ChartBmp, ChartBounds)
+        Return ChartBmp
 
-        If editidx = -1 Then
-            If timing = -1 Then timing = DefaultTiming
-            AllSlides.Add(New Dictionary(Of String, Object) From {{"type", "chart"}, {"format", WinDrawing.Imaging.ImageFormat.Png}, {"img", ChartBmp}, {"timing", timing},
-                      {"data", data}, {"charttype", charttype}, {"values", values}, {"theme", theme}, {"xlabel", xlabel}, {"ylabel", ylabel}, {"title", title}})
-
-            CreateSlide(ChartBmp, WinDrawing.Imaging.ImageFormat.Png)
-
-        Else
-            AllSlides(editidx) = New Dictionary(Of String, Object) From {{"type", "chart"}, {"format", WinDrawing.Imaging.ImageFormat.Png}, {"img", ChartBmp}, {"timing", AllSlides(editidx)("timing")},
-                      {"data", data}, {"charttype", charttype}, {"values", values}, {"theme", theme}, {"xlabel", xlabel}, {"ylabel", ylabel}, {"title", title}}
-
-            EditSlideImg(editidx, ChartBmp, WinDrawing.Imaging.ImageFormat.Png)
-
-        End If
-
-    End Sub
+    End Function
 
     ''' <summary>
     ''' Adds a drawing slide
     ''' </summary>
     Private Sub AddSlide(strokes As Ink.StrokeCollection, Optional editidx As Integer = -1, Optional timing As Double = -1)
-        Dim canv As New InkCanvas() With {
-            .Background = New SolidColorBrush(Color.FromArgb(0, 255, 255, 255)),
-            .EditingMode = InkCanvasEditingMode.None,
-            .Strokes = strokes,
-            .Height = 462,
-            .Width = 616
-        }
 
-        canv.Measure(New Size(616, 462))
-        canv.Arrange(New Rect(New Size(616, 462)))
-
-        Dim rtb As RenderTargetBitmap = New RenderTargetBitmap(616, 462, 96, 96, PixelFormats.Pbgra32)
-
-        rtb.Render(canv)
-
-        Dim stream = New IO.MemoryStream()
-        Dim encoder = New PngBitmapEncoder()
-        encoder.Frames.Add(BitmapFrame.Create(rtb))
-        encoder.Save(stream)
-
-        Dim bmp As New WinDrawing.Bitmap(stream)
+        Dim bmp = GenerateDrawingBmp(strokes)
         Dim filename = CheckExistingNames("drawing" + Int((6000 * Rnd()) + 1000).ToString() + ".isf")
 
         If editidx = -1 Then
@@ -3546,6 +3626,31 @@ Class MainWindow
 
     End Sub
 
+    Private Function GenerateDrawingBmp(strokes As Ink.StrokeCollection) As WinDrawing.Bitmap
+
+        Dim canv As New InkCanvas() With {
+            .Background = New SolidColorBrush(Color.FromArgb(0, 255, 255, 255)),
+            .EditingMode = InkCanvasEditingMode.None,
+            .Strokes = strokes,
+            .Height = 462,
+            .Width = 616
+        }
+
+        canv.Measure(New Size(616, 462))
+        canv.Arrange(New Rect(New Size(616, 462)))
+
+        Dim rtb As New RenderTargetBitmap(616, 462, 96, 96, PixelFormats.Pbgra32)
+        rtb.Render(canv)
+
+        Dim stream = New IO.MemoryStream()
+        Dim encoder = New PngBitmapEncoder()
+        encoder.Frames.Add(BitmapFrame.Create(rtb))
+        encoder.Save(stream)
+
+        Return New WinDrawing.Bitmap(stream)
+
+    End Function
+
     Private Sub EditSlideBtn_Click(sender As Object, e As RoutedEventArgs) Handles EditSlideBtn.Click
         EditSlide()
 
@@ -3558,13 +3663,15 @@ Class MainWindow
             Case "image"
                 DocTabs.SelectedIndex = 0
                 PicturePopup.PlacementTarget = EditSlideBtn
+                PhotoEditorSeparator.Visibility = Visibility.Visible
+                PhotoEditorBtn.Visibility = Visibility.Visible
                 PicturePopup.IsOpen = True
 
             Case "text"
                 Dim txt As New AddEditText(FindResource("SlideBackColour"), slide("text"), slide("fontname"), slide("fontstyle"), slide("fontcolor"), slide("fontsize"))
                 If txt.ShowDialog() Then
                     Try
-                        AddSlide(txt.SlideTxt.Text, txt.FontTxt.Text, txt.ChosenStyle, txt.ChosenColour, Convert.ToSingle(txt.FontSlider.Value), CurrentSlide - 1)
+                        AddSlide(txt.SlideTxt.Text, txt.FontBtn.Text, txt.ChosenStyle, txt.ChosenColour, Convert.ToSingle(txt.FontSlider.Value), CurrentSlide - 1)
 
                     Catch
                         NewMessage(Funcs.ChooseLang($"An error occurred when inserting your text.{Chr(10)}Please try again.",
@@ -3591,7 +3698,7 @@ Class MainWindow
                 Dim cht As New Chart(slide("data"), slide("charttype"), slide("values"), slide("theme"), slide("xlabel"), slide("ylabel"), slide("title"))
                 If cht.ShowDialog() = True Then
                     Try
-                        AddSlide(cht.ChartData, cht.Chart1.Series.Item(0).ChartType, Funcs.GetCheckValue(cht.ValueImg), cht.Chart1.Palette,
+                        AddSlide(cht.ChartData, cht.Chart1.Series.Item(0).ChartType, cht.ValueCheckBox.IsChecked, cht.Chart1.Palette,
                                  cht.XAxisTxt.Text, cht.YAxisTxt.Text, cht.TitleTxt.Text, CurrentSlide - 1)
 
                     Catch ex As Exception
@@ -3627,6 +3734,8 @@ Class MainWindow
 
     Private Sub PictureBtn_Click(sender As Object, e As RoutedEventArgs) Handles PictureBtn.Click
         PicturePopup.PlacementTarget = PictureBtn
+        PhotoEditorSeparator.Visibility = Visibility.Collapsed
+        PhotoEditorBtn.Visibility = Visibility.Collapsed
         PicturePopup.IsOpen = True
 
     End Sub
@@ -3655,8 +3764,7 @@ Class MainWindow
                                 Else
                                     Dim bmp As New WinDrawing.Bitmap(i)
                                     If bmp.Width > 2560 Or bmp.Height > 1440 Then
-                                        Dim ratio = Height / bmp.Height
-                                        bmp = New WinDrawing.Bitmap(bmp, Math.Round(bmp.Width * ratio, 0), 1440)
+                                        bmp = ResizeBitmap(bmp, 2560, 1440)
                                     End If
 
                                     AddSlide(bmp, IO.Path.GetFileName(i), CurrentSlide - 1)
@@ -3688,8 +3796,7 @@ Class MainWindow
                                 Else
                                     Dim bmp As New WinDrawing.Bitmap(i)
                                     If bmp.Width > 2560 Or bmp.Height > 1440 Then
-                                        Dim ratio = Height / bmp.Height
-                                        bmp = New WinDrawing.Bitmap(bmp, Math.Round(bmp.Width * ratio, 0), 1440)
+                                        bmp = ResizeBitmap(bmp, 2560, 1440)
                                     End If
 
                                     AddSlide(bmp, IO.Path.GetFileName(i))
@@ -3747,6 +3854,182 @@ Class MainWindow
 
     End Sub
 
+    Private Sub PhotoEditorBtn_Click(sender As Object, e As RoutedEventArgs) Handles PhotoEditorBtn.Click
+
+        If AllSlides(CurrentSlide - 1).ContainsKey("original") Then
+            Dim edt As New PhotoEditor(AllSlides(CurrentSlide - 1)("original"), AllSlides(CurrentSlide - 1)("format"), New Dictionary(Of String, Object)(CType(AllSlides(CurrentSlide - 1)("filters"), Dictionary(Of String, Object))))
+
+            If edt.ShowDialog() = True Then
+                AllSlides(CurrentSlide - 1)("img") = ApplyFilters(AllSlides(CurrentSlide - 1)("original"), edt.FiltersApplied)
+                AllSlides(CurrentSlide - 1)("filters") = edt.FiltersApplied
+                EditSlideImg(CurrentSlide - 1, AllSlides(CurrentSlide - 1)("img"), AllSlides(CurrentSlide - 1)("format"))
+
+            End If
+
+        Else
+            Dim edt As New PhotoEditor(AllSlides(CurrentSlide - 1)("img"), AllSlides(CurrentSlide - 1)("format"))
+
+            If edt.ShowDialog() = True Then
+                AllSlides(CurrentSlide - 1)("original") = New WinDrawing.Bitmap(CType(AllSlides(CurrentSlide - 1)("img"), WinDrawing.Bitmap))
+                AllSlides(CurrentSlide - 1)("img") = ApplyFilters(AllSlides(CurrentSlide - 1)("img"), edt.FiltersApplied)
+                AllSlides(CurrentSlide - 1)("filters") = edt.FiltersApplied
+                EditSlideImg(CurrentSlide - 1, AllSlides(CurrentSlide - 1)("img"), AllSlides(CurrentSlide - 1)("format"))
+
+            End If
+
+        End If
+
+    End Sub
+
+    Public Shared Function ApplyFilters(img As WinDrawing.Bitmap, filters As Dictionary(Of String, Object)) As WinDrawing.Bitmap
+        Dim bmp As New WinDrawing.Bitmap(img)
+        Dim imgattr As New ImageAttributes()
+        Dim rc As New WinDrawing.Rectangle(0, 0, bmp.Width, bmp.Height)
+        Dim clr As Single()() = Nothing
+
+        Using g = WinDrawing.Graphics.FromImage(bmp)
+
+            Select Case filters("filter")
+                Case "Greyscale", "Red", "Green", "Blue"
+                    clr = New Single()() _
+                         {New Single() {0.299, 0.299, 0.299, 0, 0},
+                          New Single() {0.587, 0.587, 0.587, 0, 0},
+                          New Single() {0.114, 0.114, 0.114, 0, 0},
+                          New Single() {0, 0, 0, 1, 0},
+                          New Single() {0, 0, 0, 0, 1}}
+
+                Case "Sepia"
+                    clr = New Single()() _
+                         {New Single() {0.393F, 0.349F, 0.272F, 0, 0},
+                          New Single() {0.769F, 0.686F, 0.534F, 0, 0},
+                          New Single() {0.189F, 0.168F, 0.131F, 0, 0},
+                          New Single() {0, 0, 0, 1, 0},
+                          New Single() {0, 0, 0, 0, 1}}
+
+                Case "BlackWhite"
+                    clr = Multiply(New Single()() _
+                                  {New Single() {0.299F, 0.299F, 0.299F, 0, 0},
+                                   New Single() {0.587F, 0.587F, 0.587F, 0, 0},
+                                   New Single() {0.114F, 0.114F, 0.114F, 0, 0},
+                                   New Single() {0, 0, 0, 1, 0},
+                                   New Single() {0, 0, 0, 0, 1}},
+                                   New Single()() _
+                                  {New Single() {2.0F, 0, 0, 0, 0},
+                                   New Single() {0, 2.0F, 0, 0, 0},
+                                   New Single() {0, 0, 2.0F, 0, 0},
+                                   New Single() {0, 0, 0, 1, 0},
+                                   New Single() {0, 0, 0, 0, 1}})
+
+                    imgattr.SetThreshold(0.9)
+
+            End Select
+
+            Dim light = New Single()() _
+                       {New Single() {filters("contrast"), 0, 0, 0, 0},
+                        New Single() {0, filters("contrast"), 0, 0, 0},
+                        New Single() {0, 0, filters("contrast"), 0, 0},
+                        New Single() {0, 0, 0, 1, 0},
+                        New Single() {filters("brightness"), filters("brightness"), filters("brightness"), 0, 1}}
+
+            If clr Is Nothing Then
+                imgattr.SetColorMatrix(New ColorMatrix(light))
+            Else
+                imgattr.SetColorMatrix(New ColorMatrix(Multiply(clr, light)))
+            End If
+
+            g.DrawImage(bmp, rc, 0, 0, bmp.Width, bmp.Height, WinDrawing.GraphicsUnit.Pixel, imgattr)
+
+            Select Case filters("filter")
+                Case "Red"
+                    g.FillRectangle(New WinDrawing.SolidBrush(WinDrawing.Color.FromArgb(100, 235, 58, 52)), rc)
+                Case "Green"
+                    g.FillRectangle(New WinDrawing.SolidBrush(WinDrawing.Color.FromArgb(100, 52, 235, 73)), rc)
+                Case "Blue"
+                    g.FillRectangle(New WinDrawing.SolidBrush(WinDrawing.Color.FromArgb(100, 52, 122, 235)), rc)
+            End Select
+
+        End Using
+
+        Select Case filters("rotation")
+            Case 0
+                If filters("fliph") And filters("flipv") Then
+                    bmp.RotateFlip(WinDrawing.RotateFlipType.RotateNoneFlipXY)
+                ElseIf filters("fliph") Then
+                    bmp.RotateFlip(WinDrawing.RotateFlipType.RotateNoneFlipX)
+                ElseIf filters("flipv") Then
+                    bmp.RotateFlip(WinDrawing.RotateFlipType.RotateNoneFlipY)
+                End If
+
+            Case 90
+                If filters("fliph") And filters("flipv") Then
+                    bmp.RotateFlip(WinDrawing.RotateFlipType.Rotate90FlipXY)
+                ElseIf filters("fliph") Then
+                    bmp.RotateFlip(WinDrawing.RotateFlipType.Rotate90FlipX)
+                ElseIf filters("flipv") Then
+                    bmp.RotateFlip(WinDrawing.RotateFlipType.Rotate90FlipY)
+                Else
+                    bmp.RotateFlip(WinDrawing.RotateFlipType.Rotate90FlipNone)
+                End If
+
+            Case 180
+                If filters("fliph") And filters("flipv") Then
+                    bmp.RotateFlip(WinDrawing.RotateFlipType.Rotate180FlipXY)
+                ElseIf filters("fliph") Then
+                    bmp.RotateFlip(WinDrawing.RotateFlipType.Rotate180FlipX)
+                ElseIf filters("flipv") Then
+                    bmp.RotateFlip(WinDrawing.RotateFlipType.Rotate180FlipY)
+                Else
+                    bmp.RotateFlip(WinDrawing.RotateFlipType.Rotate180FlipNone)
+                End If
+
+            Case 270
+                If filters("fliph") And filters("flipv") Then
+                    bmp.RotateFlip(WinDrawing.RotateFlipType.Rotate270FlipXY)
+                ElseIf filters("fliph") Then
+                    bmp.RotateFlip(WinDrawing.RotateFlipType.Rotate270FlipX)
+                ElseIf filters("flipv") Then
+                    bmp.RotateFlip(WinDrawing.RotateFlipType.Rotate270FlipY)
+                Else
+                    bmp.RotateFlip(WinDrawing.RotateFlipType.Rotate270FlipNone)
+                End If
+
+        End Select
+        Return bmp
+
+    End Function
+
+    Public Shared Function Multiply(ByVal f1 As Single()(), ByVal f2 As Single()()) As Single()()
+        Dim X As Single()() = New Single(4)() {}
+
+        For d As Integer = 0 To 5 - 1
+            X(d) = New Single(4) {}
+        Next
+
+        Dim size As Integer = 5
+        Dim column As Single() = New Single(4) {}
+
+        For j As Integer = 0 To 5 - 1
+
+            For k As Integer = 0 To 5 - 1
+                column(k) = f1(k)(j)
+            Next
+
+            For i As Integer = 0 To 5 - 1
+                Dim row As Single() = f2(i)
+                Dim s As Single = 0
+
+                For k As Integer = 0 To size - 1
+                    s += row(k) * column(k)
+                Next
+
+                X(i)(j) = s
+            Next
+        Next
+
+        Return X
+
+    End Function
+
 
     ' HOME > TEXT
     ' --
@@ -3756,7 +4039,7 @@ Class MainWindow
         Dim txt As New AddEditText(FindResource("SlideBackColour"))
         If txt.ShowDialog() Then
             Try
-                AddSlide(txt.SlideTxt.Text, txt.FontTxt.Text, txt.ChosenStyle, txt.ChosenColour, Convert.ToSingle(txt.FontSlider.Value))
+                AddSlide(txt.SlideTxt.Text, txt.FontBtn.Text, txt.ChosenStyle, txt.ChosenColour, Convert.ToSingle(txt.FontSlider.Value))
                 SelectSlide(SlideStack.Children.Count)
 
             Catch
@@ -3799,7 +4082,7 @@ Class MainWindow
         Dim cht As New Chart()
         If cht.ShowDialog() = True Then
             Try
-                AddSlide(cht.ChartData, cht.Chart1.Series.Item(0).ChartType, Funcs.GetCheckValue(cht.ValueImg), cht.Chart1.Palette,
+                AddSlide(cht.ChartData, cht.Chart1.Series.Item(0).ChartType, cht.ValueCheckBox.IsChecked, cht.Chart1.Palette,
                          cht.XAxisTxt.Text, cht.YAxisTxt.Text, cht.TitleTxt.Text)
 
                 SelectSlide(SlideStack.Children.Count)
@@ -3902,24 +4185,22 @@ Class MainWindow
 
     End Sub
 
-    Private Sub WideBtn_Click(sender As Object, e As RoutedEventArgs) Handles WideBtn.Click
+    Private Sub WideBtn_Click(sender As Object, e As RoutedEventArgs) Handles WideBtn.Checked
         SlideSizePopup.IsOpen = False
         Resources.Item("ImageWidth") = 160.0
         Resources.Item("ImageHeight") = 90.0
 
-        WideImg.Visibility = Visibility.Visible
-        StandardImg.Visibility = Visibility.Hidden
+        WideBtn.IsChecked = True
         RefreshSizes()
 
     End Sub
 
-    Private Sub StandardBtn_Click(sender As Object, e As RoutedEventArgs) Handles StandardBtn.Click
+    Private Sub StandardBtn_Click(sender As Object, e As RoutedEventArgs) Handles StandardBtn.Checked
         SlideSizePopup.IsOpen = False
         Resources.Item("ImageWidth") = 120.0
         Resources.Item("ImageHeight") = 90.0
 
-        WideImg.Visibility = Visibility.Hidden
-        StandardImg.Visibility = Visibility.Visible
+        StandardBtn.IsChecked = True
         RefreshSizes()
 
     End Sub
@@ -3967,9 +4248,9 @@ Class MainWindow
 
     End Function
 
-    Private Sub FitBtn_Click(sender As Object, e As RoutedEventArgs) Handles FitBtn.Click
+    Private Sub FitBtn_Click(sender As Object, e As RoutedEventArgs) Handles FitBtn.Checked, FitBtn.Unchecked
 
-        If Funcs.ToggleCheckButton(FitImg) Then
+        If FitBtn.IsChecked Then
             Resources.Item("FitStretch") = Stretch.Uniform
         Else
             Resources.Item("FitStretch") = Stretch.Fill
@@ -3985,7 +4266,6 @@ Class MainWindow
 
         If IsLoaded And CurrentSlide > 0 Then
             AllSlides(CurrentSlide - 1)("timing") = TimingUpDown.Value
-            CreateTempLabel(Funcs.ChooseLang("Updated timings for slide ", "Minutage mis à jour pour diapositive ") + CurrentSlide.ToString())
         End If
 
     End Sub
@@ -4013,18 +4293,13 @@ Class MainWindow
                        Funcs.ChooseLang("No slides", "Pas de diapositives"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
         Else
             Dim sld As New Slideshow(AllSlides, FindResource("SlideBackColour"), FindResource("ImageWidth"), FindResource("ImageHeight"),
-                                     FindResource("FitStretch"), Funcs.GetCheckValue(LoopImg), Funcs.GetCheckValue(UseTimingsImg), CurrentMonitor)
+                                     FindResource("FitStretch"), LoopBtn.IsChecked, UseTimingsBtn.IsChecked, CurrentMonitor)
 
             SlideshowGrid.Visibility = Visibility.Visible
             sld.ShowDialog()
             SlideshowGrid.Visibility = Visibility.Collapsed
 
         End If
-
-    End Sub
-
-    Private Sub LoopBtn_Click(sender As Object, e As RoutedEventArgs) Handles LoopBtn.Click
-        Funcs.ToggleCheckButton(LoopImg)
 
     End Sub
 
@@ -4038,48 +4313,26 @@ Class MainWindow
 
         MonitorPnl.Children.Clear()
         For Each i In s
-            Dim btn As Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='{DynamicResource SecondaryColor}' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,10,0' Style='{DynamicResource AppButton}' Name='AddFavBtn' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><StackPanel Orientation='Horizontal'><ContentControl Content='{DynamicResource TickIcon}' Name='DisplayMonitorImg' Width='24' Margin='10,0,0,0' Visibility='Hidden' /><TextBlock Text='" +
-                                                 Funcs.ChooseLang("Display ", "Affichage ") + count.ToString() + "' FontSize='14' Padding='10,0,0,0' Name='HomeBtnTxt_Copy242' Height='21.31' Margin='0,0,10,0' HorizontalAlignment='Center' VerticalAlignment='Center' /></StackPanel></Button>")
+            Dim btn As ExpressControls.AppRadioButton = XamlReader.Parse("<ex:AppRadioButton xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:ex='clr-namespace:ExpressControls;assembly=ExpressControls' CornerRadius='0' HorizontalContentAlignment='Stretch' GroupName='DisplayMonitorOptions' Content='" +
+                                                        Funcs.ChooseLang("Display ", "Affichage ") + count.ToString() + "'/>")
 
             MonitorPnl.Children.Add(btn)
-            AddHandler btn.Click, AddressOf MonitorBtns_Click
+            AddHandler btn.Checked, AddressOf MonitorBtns_Click
             count += 1
         Next
 
         If CurrentMonitor >= MonitorPnl.Children.Count Then CurrentMonitor = 0
 
-        Dim b As Button = MonitorPnl.Children.Item(CurrentMonitor)
-        Dim img As ContentControl = b.FindName("DisplayMonitorImg")
-        img.Visibility = Visibility.Visible
+        Dim b As ExpressControls.AppRadioButton = MonitorPnl.Children.Item(CurrentMonitor)
+        b.IsChecked = True
         MonitorPopup.IsOpen = True
 
     End Sub
 
-    Private Sub MonitorBtns_Click(sender As Button, e As RoutedEventArgs)
+    Private Sub MonitorBtns_Click(sender As ExpressControls.AppRadioButton, e As RoutedEventArgs)
         Dim idx = MonitorPnl.Children.IndexOf(sender)
-        Dim count = 0
-
-        For Each i As Button In MonitorPnl.Children
-            Dim img As ContentControl = i.FindName("DisplayMonitorImg")
-            If count = idx Then
-                img.Visibility = Visibility.Visible
-            Else
-                img.Visibility = Visibility.Hidden
-            End If
-            count += 1
-        Next
-
         CurrentMonitor = idx
         MonitorPopup.IsOpen = False
-
-    End Sub
-
-
-    ' SHOW > USE TIMINGS
-    ' --
-
-    Private Sub UseTimingsBtn_Click(sender As Object, e As RoutedEventArgs) Handles UseTimingsBtn.Click
-        Funcs.ToggleCheckButton(UseTimingsImg)
 
     End Sub
 
@@ -4113,17 +4366,17 @@ Class MainWindow
         Help2Btn.Visibility = Visibility.Visible
         Help3Btn.Visibility = Visibility.Visible
 
-        Help1Img.SetResourceReference(ContentProperty, "NewIcon")
-        Help1Txt.Text = Funcs.ChooseLang("Getting started", "Prise en main")
+        Help1Btn.Icon = FindResource("BlankIcon")
+        Help1Btn.Text = Funcs.ChooseLang("Getting started", "Prise en main")
         Help1Btn.Tag = 1
 
-        Help2Img.SetResourceReference(ContentProperty, "PresentExpressVariantIcon")
-        Help2Txt.Text = Funcs.ChooseLang("What's new and still to come", "Nouvelles fonctions et autres à venir")
-        Help2Btn.Tag = 37
+        Help2Btn.Icon = FindResource("PresentExpressIcon")
+        Help2Btn.Text = Funcs.ChooseLang("What's new and still to come", "Nouvelles fonctions et autres à venir")
+        Help2Btn.Tag = 24
 
-        Help3Img.SetResourceReference(ContentProperty, "FeedbackIcon")
-        Help3Txt.Text = Funcs.ChooseLang("Troubleshooting and feedback", "Dépannage et commentaires")
-        Help3Btn.Tag = 38
+        Help3Btn.Icon = FindResource("FeedbackIcon")
+        Help3Btn.Text = Funcs.ChooseLang("Troubleshooting and feedback", "Dépannage et commentaires")
+        Help3Btn.Tag = 25
 
     End Sub
 
@@ -4276,7 +4529,7 @@ Class MainWindow
 
         Select Case topic
             Case 1
-                icon = "NewIcon"
+                icon = "BlankIcon"
                 title = Funcs.ChooseLang("Creating a slideshow with templates", "Créer un diaporama avec des modèles")
             Case 2
                 icon = "FavouriteIcon"
@@ -4297,13 +4550,13 @@ Class MainWindow
                 icon = "VideoIcon"
                 title = Funcs.ChooseLang("Exporting your slideshow", "Exporter votre diaporama")
             Case 8
-                icon = "HTMLIcon"
+                icon = "HtmlIcon"
                 title = Funcs.ChooseLang("Converting your slideshow to HTML", "Convertir votre diaporama en HTML")
             Case 9
                 icon = "DefaultsIcon"
                 title = Funcs.ChooseLang("Default options", "Paramètres par défaut")
             Case 10
-                icon = "OptionsIcon"
+                icon = "GearsIcon"
                 title = Funcs.ChooseLang("General options", "Paramètres généraux")
             Case 11
                 icon = "ColoursIcon"
@@ -4318,7 +4571,7 @@ Class MainWindow
                 icon = "PictureIcon"
                 title = Funcs.ChooseLang("Picture slides", "Diapositives d'images")
             Case 15
-                icon = "TextBlockIcon"
+                icon = "TextIcon"
                 title = Funcs.ChooseLang("Text slides", "Diapositives de texte")
             Case 16
                 icon = "ScreenshotIcon"
@@ -4327,7 +4580,7 @@ Class MainWindow
                 icon = "ColumnChartIcon"
                 title = Funcs.ChooseLang("Chart slides", "Diapositives de graphiques")
             Case 18
-                icon = "DrawingIcon"
+                icon = "EditIcon"
                 title = Funcs.ChooseLang("Drawing slides", "Diapositives de dessins")
             Case 19
                 icon = "ExpandIcon"
@@ -4339,13 +4592,13 @@ Class MainWindow
                 icon = "NotificationIcon"
                 title = "Notifications"
             Case 22
-                icon = "AppearanceIcon"
+                icon = "PaneIcon"
                 title = Funcs.ChooseLang("Using the side pane and status bar", "Utiliser le panneau à côté et la barre d'état")
             Case 23
-                icon = "KeyboardIcon"
+                icon = "CtrlIcon"
                 title = Funcs.ChooseLang("Keyboard shortcuts", "Raccourcis clavier")
             Case 24
-                icon = "PresentExpressVariantIcon"
+                icon = "PresentExpressIcon"
                 title = Funcs.ChooseLang("What's new and still to come", "Nouvelles fonctions et autres à venir")
             Case 25
                 icon = "FeedbackIcon"
@@ -4355,16 +4608,16 @@ Class MainWindow
         Select Case btn
             Case 1
                 Help1Btn.Tag = topic
-                Help1Img.SetResourceReference(ContentProperty, icon)
-                Help1Txt.Text = title
+                Help1Btn.Icon = FindResource(icon)
+                Help1Btn.Text = title
             Case 2
                 Help2Btn.Tag = topic
-                Help2Img.SetResourceReference(ContentProperty, icon)
-                Help2Txt.Text = title
+                Help2Btn.Icon = FindResource(icon)
+                Help2Btn.Text = title
             Case 3
                 Help3Btn.Tag = topic
-                Help3Img.SetResourceReference(ContentProperty, icon)
-                Help3Txt.Text = title
+                Help3Btn.Icon = FindResource(icon)
+                Help3Btn.Text = title
         End Select
 
     End Sub

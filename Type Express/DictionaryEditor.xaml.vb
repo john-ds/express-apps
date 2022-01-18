@@ -50,27 +50,18 @@ Public Class DictionaryEditor
 
     End Sub
 
-    Private Sub ClearLangPopupChecks()
-        Lang1Img.Visibility = Visibility.Hidden
-        Lang2Img.Visibility = Visibility.Hidden
-        Lang3Img.Visibility = Visibility.Hidden
-        Lang4Img.Visibility = Visibility.Hidden
-
-    End Sub
-
     Private Sub SetLangPopupChecks(lang As String)
-        ClearLangPopupChecks()
 
         Select Case lang
             Case "fr"
-                Lang2Img.Visibility = Visibility.Visible
-                LangLbl.Text = Funcs.ChooseLang("Language: French", "Langue : français")
+                Lang2Btn.IsChecked = True
+                LangBtn.Text = Funcs.ChooseLang("Language: French", "Langue : français")
             Case "es"
-                Lang3Img.Visibility = Visibility.Visible
-                LangLbl.Text = Funcs.ChooseLang("Language: Spanish", "Langue : espagnol")
+                Lang3Btn.IsChecked = True
+                LangBtn.Text = Funcs.ChooseLang("Language: Spanish", "Langue : espagnol")
             Case Else
-                Lang1Img.Visibility = Visibility.Visible
-                LangLbl.Text = Funcs.ChooseLang("Language: English", "Langue : anglais")
+                Lang1Btn.IsChecked = True
+                LangBtn.Text = Funcs.ChooseLang("Language: English", "Langue : anglais")
         End Select
 
     End Sub
@@ -104,7 +95,7 @@ Public Class DictionaryEditor
 
     End Sub
 
-    Private Sub LangBtns_Click(sender As Button, e As RoutedEventArgs) Handles Lang1Btn.Click, Lang2Btn.Click, Lang3Btn.Click, Lang4Btn.Click
+    Private Sub LangBtns_Click(sender As ExpressControls.AppRadioButton, e As RoutedEventArgs) Handles Lang1Btn.Click, Lang2Btn.Click, Lang3Btn.Click
         ChosenLang = sender.Tag.ToString()
         SetLangPopupChecks(ChosenLang)
         ChangeLanguage()

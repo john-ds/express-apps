@@ -20,15 +20,15 @@
 
     End Sub
 
-    Private Sub Buttons_Click(sender As Button, e As EventArgs) Handles Button1.Click, Button2.Click, Button3.Click
+    Private Sub Buttons_Click(sender As ExpressControls.AppButton, e As EventArgs) Handles Button1.Click, Button2.Click, Button3.Click
 
-        If sender.Content = "OK" Then
+        If sender.Text = "OK" Then
             Result = MessageBoxResult.OK
 
-        ElseIf sender.Content = Funcs.ChooseLang("Yes", "Oui") Then
+        ElseIf sender.Text = Funcs.ChooseLang("Yes", "Oui") Then
             Result = MessageBoxResult.Yes
 
-        ElseIf sender.Content = Funcs.ChooseLang("No", "Non") Then
+        ElseIf sender.Text = Funcs.ChooseLang("No", "Non") Then
             Result = MessageBoxResult.No
 
         Else
@@ -42,7 +42,7 @@
 
     Private Sub InfoBox_Load(sender As Object, e As EventArgs) Handles Me.Loaded
 
-        If My.Settings.audio = True And Not audioclip Is Nothing Then
+        If My.Settings.audio = True And audioclip IsNot Nothing Then
             My.Computer.Audio.Play(audioclip, AudioPlayMode.Background)
 
         End If

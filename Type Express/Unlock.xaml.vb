@@ -10,6 +10,11 @@
 
     End Sub
 
+    Private Sub Unlock_Loaded(sender As Object, e As RoutedEventArgs) Handles Me.Loaded
+        PasswordTxt.Focus()
+
+    End Sub
+
     Public Property LockPass As String
 
     Private Sub OKBtn_Click(sender As Object, e As RoutedEventArgs) Handles OKBtn.Click
@@ -35,4 +40,5 @@
         End If
 
     End Sub
+
 End Class

@@ -41,10 +41,11 @@
     <System:String x:Key="OpCatStr" xml:space="preserve">Categories    </System:String>
     <System:String x:Key="OpStartupStr" xml:space="preserve">Startup    </System:String>
     <System:String x:Key="SavedStr" xml:space="preserve">Saved    </System:String>
-    <System:String x:Key="OpImportStr">Import</System:String>
-    <System:String x:Key="OpExportStr">Export</System:String>
+    <System:String x:Key="OpImportStr">Import settings</System:String>
+    <System:String x:Key="OpExportStr">Export settings</System:String>
 
     <!-- v2 below -->
+    <System:String x:Key="MenuStr">Menu</System:String>
     <System:String x:Key="FindOutMoreStr">Find out more</System:String>
     <System:String x:Key="UpdateStr">Update</System:String>
     <System:String x:Key="PleaseWaitStr">Please wait...</System:String>
@@ -106,7 +107,8 @@ F1</System:String>
     <System:String x:Key="OptionsTitleStr">Options - Font Express</System:String>
     <System:String x:Key="CategoriesStr">Categories</System:String>
     <System:String x:Key="ViewStr">Default view</System:String>
+    <System:String x:Key="NextPageStr">Next page</System:String>
+    <System:String x:Key="PrevPageStr">Previous page</System:String>
+    <System:String x:Key="GlyphsStr">Glyphs</System:String>
 
-    
-    <!-- Translate after ViewStr (last string) -->
 </ResourceDictionary>

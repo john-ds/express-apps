@@ -15,11 +15,17 @@
 
             </ResourceDictionary.MergedDictionaries>
 
-            <SolidColorBrush x:Key="AppColor" Color="#FFFF8D2A"/>
+            <SolidColorBrush x:Key="AppColor" Color="#FFF97D02"/>
             <SolidColorBrush x:Key="AppHoverColor" Color="#FFFFDCA9"/>
             <SolidColorBrush x:Key="AppPressedColor" Color="#FFFFB449"/>
-            <SolidColorBrush x:Key="AppLightColor" Color="#FFFFC184"/>
+            <SolidColorBrush x:Key="AppLightColor" Color="#FFFFAB58"/>
+            <Color x:Key="AppDirectColor" R="255" G="141" B="42" A="255"/>
 
         </ResourceDictionary>
     </Application.Resources>
+
+    <JumpList.JumpList>
+        <JumpList ShowRecentCategory="True">
+        </JumpList>
+    </JumpList.JumpList>
 </Application>

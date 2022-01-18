@@ -119,7 +119,7 @@ Public Class Screenshot
     Private Sub Timer1_Tick(sender As Object, e As Timers.ElapsedEventArgs)
         Timer1.Stop()
 
-        Dim deli As mydelegate = New mydelegate(AddressOf SetImage)
+        Dim deli As New mydelegate(AddressOf SetImage)
         ScreenshotImg.Dispatcher.BeginInvoke(Threading.DispatcherPriority.Normal, deli)
 
     End Sub
@@ -152,24 +152,13 @@ Public Class Screenshot
 
         AddBtn.Visibility = Visibility.Visible
         Title = Funcs.ChooseLang("Screenshot - Present Express", "Capture d'Écran - Present Express")
-        CaptureBtnTxt.Text = Funcs.ChooseLang("Capture new", "Capturer nouveau")
+        CaptureBtn.Text = Funcs.ChooseLang("Capture new", "Capturer nouveau")
         IsEnabled = True
 
     End Sub
 
     Private Sub FullRadio_Click(sender As Object, e As RoutedEventArgs) Handles FullRadio.Click
-
-        If FullRadioImg.Tag = 1 Then
-            FullRadioImg.SetResourceReference(ContentProperty, "UntickIcon")
-            FullRadioImg.Tag = 0
-            Full = False
-
-        Else
-            FullRadioImg.SetResourceReference(ContentProperty, "TickIcon")
-            FullRadioImg.Tag = 1
-            Full = True
-
-        End If
+        Full = FullRadio.IsChecked
 
     End Sub
 

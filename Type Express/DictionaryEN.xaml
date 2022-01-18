@@ -14,13 +14,13 @@
     <System:String x:Key="FormalStr">Formal</System:String>
     <System:String x:Key="ClassicStr">Classic</System:String>
     <System:String x:Key="OpenStr">Open</System:String>
-    <System:String x:Key="RecentFilesStr">Recent Files</System:String>
+    <System:String x:Key="RecentFilesStr">Recent files</System:String>
     <System:String x:Key="NoRecentStr">No recent files yet.</System:String>
-    <System:String x:Key="ClearListStr" xml:space="preserve">  Clear this list</System:String>
+    <System:String x:Key="ClearListStr">Clear this list</System:String>
     <System:String x:Key="FavouriteStr">Favourites</System:String>
     <System:String x:Key="NoFavouriteStr" xml:space="preserve">You haven't added any 
 favourite files yet.</System:String>
-    <System:String x:Key="AddFavouriteStr" xml:space="preserve">  Add favourites</System:String>
+    <System:String x:Key="AddFavouriteStr">Add favourites</System:String>
     <System:String x:Key="OnlineStr">Online Sources</System:String>
     <System:String x:Key="DownloadInfoStr">Download a publicly-available TXT or RTF file online.</System:String>
     <System:String x:Key="WebAddressStr">File's web address</System:String>
@@ -30,21 +30,22 @@ favourite files yet.</System:String>
     <System:String x:Key="DownloadStr">Download</System:String>
     <System:String x:Key="DownloadInfo2Str" xml:space="preserve">When you're ready, click Download to 
 open the file in Type Express.</System:String>
-    <System:String x:Key="RecentStr" xml:space="preserve">    Recent</System:String>
-    <System:String x:Key="FavouritesStr" xml:space="preserve">    Favourites</System:String>
-    <System:String x:Key="OnlineSourcesStr" xml:space="preserve">    Online sources</System:String>
-    <System:String x:Key="BrowsePCStr" xml:space="preserve">    Browse this PC</System:String>
-    <System:String x:Key="SaveAsStr">Save As</System:String>
-    <System:String x:Key="NoPinnedStr">Your pinned folders...</System:String>
-    <System:String x:Key="PinStr" xml:space="preserve">  Pin a folder</System:String>
+    <System:String x:Key="RecentStr">Recent</System:String>
+    <System:String x:Key="FavouritesStr">Favourites</System:String>
+    <System:String x:Key="OnlineSourcesStr">Online sources</System:String>
+    <System:String x:Key="BrowsePCStr">Browse this PC</System:String>
+    <System:String x:Key="SaveAsStr">Save as</System:String>
+    <System:String x:Key="NoPinnedStr">No pinned folders yet.</System:String>
+    <System:String x:Key="PinnedTitleStr">Pinned folders</System:String>
+    <System:String x:Key="PinStr">Pin a folder</System:String>
     <System:String x:Key="PrintStr">Print</System:String>
     <System:String x:Key="PrintInfoStr">Firstly, set up the size and orientation of the page...</System:String>
-    <System:String x:Key="PageSetupStr" xml:space="preserve">    Page setup</System:String>
+    <System:String x:Key="PageSetupStr">Page setup</System:String>
     <System:String x:Key="PrintInfo2Str">You can preview your document before printing it...</System:String>
-    <System:String x:Key="PrintPreviewStr" xml:space="preserve">    Print preview</System:String>
+    <System:String x:Key="PrintPreviewStr">Print preview</System:String>
     <System:String x:Key="PrintInfo3Str">Click Print to open the print dialog box.</System:String>
     <System:String x:Key="ShareStr">Share</System:String>
-    <System:String x:Key="EmailDocStr">Email Document</System:String>
+    <System:String x:Key="EmailDocStr">Email document</System:String>
     <System:String x:Key="EmailInfoStr">Send your document via your default mail app.</System:String>
     <System:String x:Key="EmailAddressStr">Recipient's email address</System:String>
     <System:String x:Key="SubjectStr">Subject</System:String>
@@ -55,14 +56,14 @@ before sending the email.
 
 Your document will be converted to plain
 text format.</System:String>
-    <System:String x:Key="LockDocStr">Lock Documents</System:String>
+    <System:String x:Key="LockDocStr">Lock documents</System:String>
     <System:String x:Key="LockInfoStr">Protect your documents with your chosen password. This will hide all open Type Express windows. Re-enter your password to unlock them afterwards.</System:String>
     <System:String x:Key="LockInfo2Str" xml:space="preserve">Please save your work first </System:String>
     <System:String x:Key="LockInfo3Str">before locking, as it isn't possible to regain your password if you forget it.</System:String>
     <System:String x:Key="LockInfo4Str">Your password:</System:String>
     <System:String x:Key="EmailDoc2Str" xml:space="preserve">    Email document</System:String>
-    <System:String x:Key="LockDoc2Str" xml:space="preserve">    Lock documents</System:String>
-    <System:String x:Key="HTMLStr" xml:space="preserve">    Create HTML</System:String>
+    <System:String x:Key="LockDoc2Str">Lock documents</System:String>
+    <System:String x:Key="HTMLStr">Create HTML</System:String>
     <System:String x:Key="NewMStr">New</System:String>
     <System:String x:Key="OpenMStr">Open</System:String>
     <System:String x:Key="SaveMStr">Save</System:String>
@@ -117,8 +118,8 @@ CTRL+Q</System:String>
     <System:String x:Key="PictureStr">Picture</System:String>
     <System:String x:Key="ScreenToolStr">Take a screenshot to add to your document</System:String>
     <System:String x:Key="ScreenStr">Screenshot</System:String>
-    <System:String x:Key="ShapeToolStr" xml:space="preserve">Add a shape or drawing to your document
-CTRL+M</System:String>
+    <System:String x:Key="ShapeToolStr">Add a shape to your document</System:String>
+    <System:String x:Key="DrawingToolStr">Add a custom drawing to your document</System:String>
     <System:String x:Key="ShapeStr">Shape</System:String>
     <System:String x:Key="SymbolToolStr" xml:space="preserve">Add a symbol to your document
 CTRL+G</System:String>
@@ -170,18 +171,18 @@ CTRL+S</System:String>
     <System:String x:Key="PixelStr">px</System:String>
     <System:String x:Key="InsertStr">Insert</System:String>
     <System:String x:Key="SideInfoStr">Choose an option below.</System:String>
-    <System:String x:Key="RectangleStr" xml:space="preserve">Rectangle</System:String>
-    <System:String x:Key="EllipseStr" xml:space="preserve">Ellipse</System:String>
-    <System:String x:Key="LineStr" xml:space="preserve">Line</System:String>
-    <System:String x:Key="TriangleStr" xml:space="preserve">Triangle</System:String>
-    <System:String x:Key="DrawingStr" xml:space="preserve">Drawing</System:String>
-    <System:String x:Key="LetteringStr" xml:space="preserve">    Lettering</System:String>
-    <System:String x:Key="ArrowStr" xml:space="preserve">    Arrows</System:String>
-    <System:String x:Key="StandardStr" xml:space="preserve">    Standard</System:String>
-    <System:String x:Key="GreekStr" xml:space="preserve">    Greek</System:String>
-    <System:String x:Key="PunctuationStr" xml:space="preserve">    Punctuation</System:String>
-    <System:String x:Key="MathsStr" xml:space="preserve">    Mathematics</System:String>
-    <System:String x:Key="EmojiStr" xml:space="preserve">    Emoji</System:String>
+    <System:String x:Key="RectangleStr">Rectangle</System:String>
+    <System:String x:Key="EllipseStr">Ellipse</System:String>
+    <System:String x:Key="LineStr">Line</System:String>
+    <System:String x:Key="TriangleStr">Triangle</System:String>
+    <System:String x:Key="DrawingStr">Drawing</System:String>
+    <System:String x:Key="LetteringStr">Lettering</System:String>
+    <System:String x:Key="ArrowStr">Arrows</System:String>
+    <System:String x:Key="StandardStr">Standard</System:String>
+    <System:String x:Key="GreekStr">Greek</System:String>
+    <System:String x:Key="PunctuationStr">Punctuation</System:String>
+    <System:String x:Key="MathsStr">Mathematics</System:String>
+    <System:String x:Key="EmojiStr">Emoji</System:String>
     <System:String x:Key="BackStr">Go back</System:String>
     <System:String x:Key="EquationInfoStr">Choose an equation below.</System:String>
     <System:String x:Key="Eq1Str">Pythagorean Theorem</System:String>
@@ -226,7 +227,7 @@ CTRL+S</System:String>
     <System:String x:Key="SearchOptionsStr">Search options</System:String>
     <System:String x:Key="FindNextStr">Find next</System:String>
     <System:String x:Key="ReplaceStr">Replace with...</System:String>
-    <System:String x:Key="ReplaceBtnStr">Replace</System:String>
+    <System:String x:Key="ReplaceBtnStr">Replace next</System:String>
     <System:String x:Key="ReplaceAllStr">Replace all</System:String>
     <System:String x:Key="SpellInfoStr">Check for spelling errors.</System:String>
     <System:String x:Key="LangOptionsStr">Language options</System:String>
@@ -255,15 +256,15 @@ CTRL+S</System:String>
     <System:String x:Key="HelpStr" xml:space="preserve">Help
 F1</System:String>
     <System:String x:Key="NotificationStr">Notifications</System:String>
-    <System:String x:Key="MenuStr" xml:space="preserve">   Menu</System:String>
+    <System:String x:Key="MenuStr">Menu</System:String>
     <System:String x:Key="HomeStr">Home</System:String>
     <System:String x:Key="ToolsStr">Tools</System:String>
     <System:String x:Key="DesignStr">Design</System:String>
     <System:String x:Key="ReviewStr">Review</System:String>
     <System:String x:Key="PleaseWaitStr">Please wait...</System:String>
     <System:String x:Key="NoNotificationStr">No notifications at the moment.</System:String>
-    <System:String x:Key="ThemeColoursStr">Theme Colours</System:String>
-    <System:String x:Key="CustomColourStr">Custom Colour</System:String>
+    <System:String x:Key="ThemeColoursStr">Theme colours</System:String>
+    <System:String x:Key="CustomColourStr">Custom colour</System:String>
     <System:String x:Key="ApplyColourStr">Apply custom colour</System:String>
     <System:String x:Key="ChooseColourStr">Choose custom colour</System:String>
     <System:String x:Key="HighlightersStr">Highlighters</System:String>
@@ -297,8 +298,8 @@ F1</System:String>
     <System:String x:Key="ChBarStr">Bar</System:String>
     <System:String x:Key="ChLineStr">Line</System:String>
     <System:String x:Key="ChPieStr">Pie</System:String>
-    <System:String x:Key="ChDataStr">Data</System:String>
-    <System:String x:Key="ChEditDataStr">Edit chart data</System:String>
+    <System:String x:Key="ChDataStr">Chart data</System:String>
+    <System:String x:Key="ChEditDataStr">Edit/import data</System:String>
     <System:String x:Key="ChLabelsStr">Show value labels</System:String>
     <System:String x:Key="ChTitleStr">Chart title</System:String>
     <System:String x:Key="ChAxisTitleStr">Axis titles</System:String>
@@ -329,9 +330,9 @@ F1</System:String>
     <System:String x:Key="CustomClrStr">Custom Colour Scheme - Type Express</System:String>
     <System:String x:Key="CustomClrInfoStr">Create your own colour scheme.</System:String>
     <System:String x:Key="AdvancedStr">Advanced</System:String>
-    <System:String x:Key="CurrentThemeStr">Current Theme Colours</System:String>
-    <System:String x:Key="StandardColourStr">Standard Colours</System:String>
-    <System:String x:Key="RecentColoursStr">Recent Colours</System:String>
+    <System:String x:Key="CurrentThemeStr">Current theme colours</System:String>
+    <System:String x:Key="StandardColourStr">Standard colours</System:String>
+    <System:String x:Key="RecentColoursStr">Recent colours</System:String>
     <System:String x:Key="Clr1Str">Colour 1</System:String>
     <System:String x:Key="Clr2Str">Colour 2</System:String>
     <System:String x:Key="Clr3Str">Colour 3</System:String>
@@ -617,8 +618,9 @@ F1</System:String>
     <System:String x:Key="IconTitleStr">Icons - Type Express</System:String>
     <System:String x:Key="BrowsePCImagesStr">Browse this PC</System:String>
     <System:String x:Key="IconsStr">Icons</System:String>
-    <System:String x:Key="OnlinePicturesStr">Online pictures</System:String>
-    <System:String x:Key="BrowsePCImagesToolStr">Browse your device for images</System:String>
+    <System:String x:Key="OnlinePicturesStr">Online Pictures</System:String>
+    <System:String x:Key="BrowsePCImagesToolStr" xml:space="preserve">Browse your device for images
+CTRL+M</System:String>
     <System:String x:Key="OnlinePicturesToolStr">Add royalty-free images to your document</System:String>
     <System:String x:Key="IconsToolStr">Add royalty-free icons in a range of styles</System:String>
     <System:String x:Key="IconsStartStr">Browse for icons in a range of styles</System:String>
@@ -642,12 +644,23 @@ F1</System:String>
     <System:String x:Key="IcHanddrawnStr">Handdrawn</System:String>
     <System:String x:Key="ExpressAppsAdStr">Type Express is part of Express Apps. Why not explore the full collection on our website?</System:String>
     <System:String x:Key="FindOutMoreStr">Find out more</System:String>
-    <System:String x:Key="OpImportStr">Import</System:String>
-    <System:String x:Key="OpExportStr">Export</System:String>
+    <System:String x:Key="OpImportStr">Import settings</System:String>
+    <System:String x:Key="OpExportStr">Export settings</System:String>
     <System:String x:Key="UpdateStr">Update</System:String>
     <System:String x:Key="TemplateLoadingStr">Searching for templates</System:String>
     <System:String x:Key="FontLoaderStr">Loading fonts</System:String>
+    <System:String x:Key="ImportDataStr">Import data</System:String>
+    <System:String x:Key="NewChartStr">New chart</System:String>
+    <System:String x:Key="PrevChartStr">Previously added</System:String>
+    <System:String x:Key="RemoveFromListStr">Remove from this list</System:String>
+    <System:String x:Key="SavedDataStr">Saved data</System:String>
+    <System:String x:Key="SavePrevChartsStr">Save previously added charts</System:String>
+    <System:String x:Key="SavePrevShapesStr">Save previously added shapes</System:String>
+    <System:String x:Key="SaveFontStylesStr">Save font style choices</System:String>
+    <System:String x:Key="ResetAllStr">Reset all</System:String>
+    <System:String x:Key="ResetStyleStr">Reset to default</System:String>
+    <System:String x:Key="ClearMenuStr">Clear text or formatting from your document</System:String>
+    <System:String x:Key="ClearFormattingStr">Clear formatting</System:String>
+    <System:String x:Key="ClearAllTextStr">Clear all text</System:String>
 
-
-    <!-- Translate after FontLoaderStr (last string) -->
 </ResourceDictionary>

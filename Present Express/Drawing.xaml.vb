@@ -64,7 +64,7 @@
 
     Private Sub SelectBtn_Click(sender As Object, e As RoutedEventArgs) Handles SelectBtn.Click
         Canvas.EditingMode = InkCanvasEditingMode.Select
-        EditingSelect.Margin = New Thickness(0, 0, 0, 0)
+        EditingSelect.Margin = New Thickness(0, 5, 0, 0)
 
     End Sub
 
@@ -73,20 +73,20 @@
         Canvas.DefaultDrawingAttributes = inkDA
         Canvas.DefaultDrawingAttributes.Color = ColourPicker.SelectedColor
 
-        EditingSelect.Margin = New Thickness(36, 0, 0, 0)
+        EditingSelect.Margin = New Thickness(41, 5, 0, 0)
 
     End Sub
 
     Private Sub HighlightBtn_Click(sender As Object, e As RoutedEventArgs) Handles HighlightBtn.Click
         Canvas.EditingMode = InkCanvasEditingMode.Ink
         Canvas.DefaultDrawingAttributes = highlightDA
-        EditingSelect.Margin = New Thickness(72, 0, 0, 0)
+        EditingSelect.Margin = New Thickness(82, 5, 0, 0)
 
     End Sub
 
     Private Sub EraseBtn_Click(sender As Object, e As RoutedEventArgs) Handles EraseBtn.Click
         Canvas.EditingMode = InkCanvasEditingMode.EraseByStroke
-        EditingSelect.Margin = New Thickness(108, 0, 0, 0)
+        EditingSelect.Margin = New Thickness(123, 5, 0, 0)
 
     End Sub
 

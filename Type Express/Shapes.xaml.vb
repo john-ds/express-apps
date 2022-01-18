@@ -6,12 +6,135 @@ Public Class Shapes
     Public Property ShapeToAdd As WinDrawing.Bitmap
     Private Property CurrentShape As String
 
+    Private ReadOnly Data As New Dictionary(Of String, Object) From {}
+
     Public Sub New(ShapeType As String, ColourScheme As List(Of Color))
 
         ' This call is required by the designer.
         InitializeComponent()
 
         ' Add any initialization after the InitializeComponent() call.
+        SetDefaults(ShapeType, ColourScheme)
+
+    End Sub
+
+    Public Sub New(ShapeData As Dictionary(Of String, Object), ColourScheme As List(Of Color))
+
+        ' This call is required by the designer.
+        InitializeComponent()
+
+        ' Add any initialization after the InitializeComponent() call.
+        Dim ShapeType As String = ShapeData("type")
+        SetDefaults(ShapeType, ColourScheme)
+
+        Data = ShapeData
+
+    End Sub
+
+    Private Sub Shapes_Loaded(sender As Object, e As RoutedEventArgs) Handles Me.Loaded
+
+        If Data.ContainsKey("type") Then
+
+            If CurrentShape = "Line" Then
+                If Data("width") > 0 Then
+                    WidthSlider.Value = Data("width")
+                Else
+                    WidthSlider.Value = Data("height")
+                    LineShape.Y2 = LineShape.X2
+                    LineShape.X2 = 0.0
+                End If
+
+                OutlineColourPicker.SelectedColor = ConvertColorFromHex(Data("colour"))
+
+            Else
+                If Not CurrentShape = "Ellipse" Then
+                    If Data("join") = "Round" Then
+                        RoundRadio.IsChecked = True
+                        SetLineJoin(PenLineJoin.Round)
+
+                    ElseIf Data("join") = "Bevel" Then
+                        BevelRadio.IsChecked = True
+                        SetLineJoin(PenLineJoin.Bevel)
+
+                    End If
+                End If
+
+                WidthSlider.Value = Data("width")
+                HeightSlider.Value = Data("height")
+
+                If Data("fill") = "" Then
+                    NoFillCheckBox.IsChecked = True
+                    FillPanel.Visibility = Visibility.Collapsed
+                    FillShape(Color.FromArgb(255, 255, 255, 255))
+
+                Else
+                    FillColourPicker.SelectedColor = ConvertColorFromHex(Data("fill"))
+
+                End If
+
+                If Data("outline") = "" Then
+                    NoOutlineCheckBox.IsChecked = True
+                    OutlinePanel.Visibility = Visibility.Collapsed
+                    ThicknessPanel.Visibility = Visibility.Collapsed
+                    DashCheckBox.Visibility = Visibility.Collapsed
+                    DashPanel.Visibility = Visibility.Collapsed
+                    JoinPanel.Visibility = Visibility.Collapsed
+                    SetThickness(0.0)
+
+                Else
+                    OutlineColourPicker.SelectedColor = ConvertColorFromHex(Data("outline"))
+
+                End If
+
+                If CurrentShape = "Triangle" Then
+                    TriangleShape.Points = Data("points")
+                End If
+
+            End If
+
+            If CurrentShape = "Line" Then
+                ThicknessSlider.Value = Data("thickness")
+            Else
+                If Not Data("outline") = "" Then
+                    ThicknessSlider.Value = Data("thickness")
+                End If
+            End If
+
+            Select Case Data("dashes")
+                Case "Dash"
+                    DashPanel.Visibility = Visibility.Visible
+                    DashCheckBox.IsChecked = True
+                    DashRadio.IsChecked = True
+                    SetDashArray(New DoubleCollection() From {4, 4})
+                Case "Dot"
+                    DashPanel.Visibility = Visibility.Visible
+                    DashCheckBox.IsChecked = True
+                    DotRadio.IsChecked = True
+                    SetDashArray(New DoubleCollection() From {2, 2})
+                Case "DashDot"
+                    DashPanel.Visibility = Visibility.Visible
+                    DashCheckBox.IsChecked = True
+                    DashDotRadio.IsChecked = True
+                    SetDashArray(New DoubleCollection() From {4, 2, 2, 2})
+            End Select
+
+        End If
+
+    End Sub
+
+    Private Function ConvertColorFromHex(hex As String) As Color
+        Dim clr = WinDrawing.ColorTranslator.FromHtml(hex)
+        Return Color.FromRgb(clr.R, clr.G, clr.B)
+
+    End Function
+
+    Private Function ConvertColorToHex(hex As Color) As String
+        Return WinDrawing.ColorTranslator.ToHtml(WinDrawing.Color.FromArgb(hex.R, hex.G, hex.B))
+
+    End Function
+
+    Private Sub SetDefaults(ShapeType As String, ColourScheme As List(Of Color))
+
         If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" And ShapeType = "Line" Then
             Title = "Ligne - Type Express"
 
@@ -84,6 +207,82 @@ Public Class Shapes
                 ShapeToAdd = AddLine()
 
         End Select
+
+        ' My.Settings format
+        ' shapetype>linecolour[hex]>linethickness>dashes>width>height(>fillcolour[hex](>linejoin(>points)))
+        ' |all                                                       |!lines          |!circles |!rectangles
+
+        If My.Settings.saveshapes Then
+            Dim prevaddedstr As String = ""
+            prevaddedstr += CurrentShape
+
+            If (Not CurrentShape = "Line") And NoOutlineCheckBox.IsChecked Then
+                prevaddedstr += ">>0>"
+
+            Else
+                prevaddedstr += ">" + ConvertColorToHex(OutlineColourPicker.SelectedColor)
+                prevaddedstr += ">" + Convert.ToInt32(ThicknessSlider.Value).ToString()
+
+                If DashCheckBox.IsChecked Then
+                    If DashRadio.IsChecked Then
+                        prevaddedstr += ">Dash"
+                    ElseIf DotRadio.IsChecked Then
+                        prevaddedstr += ">Dot"
+                    Else
+                        prevaddedstr += ">DashDot"
+                    End If
+                Else
+                    prevaddedstr += ">"
+                End If
+
+            End If
+
+            If CurrentShape = "Line" Then
+                If LineShape.X2 = 0.0 Then
+                    prevaddedstr += ">0>" + Convert.ToInt32(WidthSlider.Value).ToString()
+                Else
+                    prevaddedstr += ">" + Convert.ToInt32(WidthSlider.Value).ToString() + ">0"
+                End If
+
+            Else
+                prevaddedstr += ">" + Convert.ToInt32(WidthSlider.Value).ToString()
+                prevaddedstr += ">" + Convert.ToInt32(HeightSlider.Value).ToString()
+
+                If NoFillCheckBox.IsChecked Then
+                    prevaddedstr += ">"
+                Else
+                    prevaddedstr += ">" + ConvertColorToHex(FillColourPicker.SelectedColor)
+                End If
+
+                If Not CurrentShape = "Ellipse" Then
+                    If BevelRadio.IsChecked = True Then
+                        prevaddedstr += ">Bevel"
+                    ElseIf RoundRadio.IsChecked = True Then
+                        prevaddedstr += ">Round"
+                    Else
+                        prevaddedstr += ">"
+                    End If
+
+                    If CurrentShape = "Triangle" Then
+                        Dim pointstr As New List(Of String) From {}
+                        For Each pt In TriangleShape.Points
+                            pointstr.Add(Convert.ToInt32(pt.X).ToString() + "," + Convert.ToInt32(pt.Y).ToString())
+                        Next
+
+                        prevaddedstr += ">" + String.Join(";", pointstr)
+                    End If
+
+                End If
+
+            End If
+
+            If Not My.Settings.savedshapes.Contains(prevaddedstr) Then
+                If My.Settings.savedshapes.Count >= 25 Then My.Settings.savedshapes.RemoveAt(0)
+                My.Settings.savedshapes.Add(prevaddedstr)
+
+            End If
+
+        End If
 
         DialogResult = True
         Close()
@@ -860,4 +1059,5 @@ Public Class Shapes
         End Select
 
     End Sub
+
 End Class

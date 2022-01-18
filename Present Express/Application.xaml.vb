@@ -33,6 +33,31 @@ Class Application
         EnsureStandardPopupAlignment()
         AddHandler SystemParameters.StaticPropertyChanged, AddressOf SystemParameters_StaticPropertyChanged
 
+        AddHandler Dispatcher.UnhandledException, AddressOf OnDispatcherUnhandledException
+
+    End Sub
+
+    Private Sub OnDispatcherUnhandledException(sender As Object, e As DispatcherUnhandledExceptionEventArgs)
+        Dim NewInfoForm As New InfoBox
+
+        With NewInfoForm
+            .TextLbl.Text = Funcs.ChooseLang("An error occurred that caused this app to stop working." + Chr(10) + Chr(10) + "Please report this issue to us by emailing expressapps@outlook.com and we will aim to fix it.",
+                                             "Une erreur s'est produite et cette application a cessé de fonctionner." + Chr(10) + Chr(10) + "Veuillez nous signaler ce problème en envoyant un mail à expressapps@outlook.com et nous nous efforcerons de le résoudre.")
+            .Title = Funcs.ChooseLang("Critical error", "Erreur critique")
+
+            .Button1.Text = "OK"
+            .Button2.Visibility = Visibility.Collapsed
+            .Button2.IsEnabled = False
+            .Button3.Visibility = Visibility.Collapsed
+            .Button3.IsEnabled = False
+
+            .IconPic.SetResourceReference(ContentControl.ContentProperty, "CriticalIcon")
+            .audioclip = My.Resources._error
+
+        End With
+
+        NewInfoForm.ShowDialog()
+
     End Sub
 
     Private Shared Sub SystemParameters_StaticPropertyChanged(ByVal sender As Object, ByVal e As PropertyChangedEventArgs)

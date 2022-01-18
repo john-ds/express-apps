@@ -97,11 +97,8 @@
     Private Sub AddBtn_Click(sender As Object, e As RoutedEventArgs) Handles AddBtn.Click
 
         If saveDialog.ShowDialog() = True Then
-            Dim ChartBmp As System.Drawing.Bitmap =
-            New System.Drawing.Bitmap(Convert.ToInt32(Chart1.Size.Width * SizeSlider.Value), Convert.ToInt32(Chart1.Size.Height * SizeSlider.Value))
-
-            Dim ChartBounds As System.Drawing.Rectangle =
-                New System.Drawing.Rectangle(0, 0, Convert.ToInt32(Chart1.Size.Width * SizeSlider.Value), Convert.ToInt32(Chart1.Size.Height * SizeSlider.Value))
+            Dim ChartBmp As New System.Drawing.Bitmap(Convert.ToInt32(Chart1.Size.Width * SizeSlider.Value), Convert.ToInt32(Chart1.Size.Height * SizeSlider.Value))
+            Dim ChartBounds As New System.Drawing.Rectangle(0, 0, Convert.ToInt32(Chart1.Size.Width * SizeSlider.Value), Convert.ToInt32(Chart1.Size.Height * SizeSlider.Value))
 
             Dim NewChart As Forms.DataVisualization.Charting.Chart = Chart1
             Dim oldsize = Chart1.Size
@@ -132,7 +129,7 @@
         AxisPanel.Visibility = Visibility.Visible
 
         Chart1.Series.Item(0).ChartType = Forms.DataVisualization.Charting.SeriesChartType.Column
-        ChartSelect.Margin = New Thickness(0, 0, 0, 0)
+        ChartSelect.Margin = New Thickness(0, 5, 0, 0)
 
     End Sub
 
@@ -141,7 +138,7 @@
         AxisPanel.Visibility = Visibility.Visible
 
         Chart1.Series.Item(0).ChartType = Forms.DataVisualization.Charting.SeriesChartType.Bar
-        ChartSelect.Margin = New Thickness(36, 0, 0, 0)
+        ChartSelect.Margin = New Thickness(41, 5, 0, 0)
 
     End Sub
 
@@ -149,7 +146,7 @@
         DoughnutPanel.Visibility = Visibility.Visible
         AxisPanel.Visibility = Visibility.Collapsed
 
-        If Funcs.GetCheckValue(DoughnutImg) Then
+        If DoughnutCheckBox.IsChecked Then
             Chart1.Series.Item(0).ChartType = Forms.DataVisualization.Charting.SeriesChartType.Doughnut
 
         Else
@@ -157,7 +154,7 @@
 
         End If
 
-        ChartSelect.Margin = New Thickness(72, 0, 0, 0)
+        ChartSelect.Margin = New Thickness(82, 5, 0, 0)
 
     End Sub
 
@@ -166,7 +163,7 @@
     ' --
 
     Private Sub ValueCheckBox_Click(sender As Object, e As RoutedEventArgs) Handles ValueCheckBox.Click
-        Chart1.Series.Item(0).IsValueShownAsLabel = Funcs.ToggleCheckButton(ValueImg)
+        Chart1.Series.Item(0).IsValueShownAsLabel = ValueCheckBox.IsChecked
 
     End Sub
 
@@ -216,7 +213,7 @@
 
     Private Sub DoughnutCheckBox_Click(sender As Object, e As RoutedEventArgs) Handles DoughnutCheckBox.Click
 
-        If Funcs.ToggleCheckButton(DoughnutImg) Then
+        If DoughnutCheckBox.IsChecked Then
             Chart1.Series.Item(0).ChartType = Forms.DataVisualization.Charting.SeriesChartType.Doughnut
 
         Else

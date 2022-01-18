@@ -1,9 +1,18 @@
 ﻿Imports System.Windows.Markup
+Imports CsvHelper.Configuration
+Imports CsvHelper.Configuration.Attributes
 
 Public Class ChartData
 
     Public Property Data As New List(Of KeyValuePair(Of String, Double))
     Private counter As Integer = 1
+
+    ReadOnly openDialog As New Microsoft.Win32.OpenFileDialog With {
+        .Title = "Choose a file - Type Express",
+        .Filter = "CSV files (.csv)|*.csv",
+        .FilterIndex = 0,
+        .Multiselect = False
+    }
 
     Public Sub New()
 
@@ -28,6 +37,17 @@ Public Class ChartData
     End Sub
 
     Private Sub ChartData_Loaded(sender As Object, e As RoutedEventArgs) Handles Me.Loaded
+
+        If My.Settings.language = "fr-FR" Then
+            openDialog.Filter = "Fichiers CSV (.csv)|*.csv"
+            openDialog.Title = "Choisir un fichier - Type Express"
+        End If
+
+        UpdateData()
+
+    End Sub
+
+    Private Sub UpdateData()
 
         For Each i In Data
             AddRow(LabelStack.Children.Count)
@@ -90,7 +110,7 @@ Public Class ChartData
     Private Sub AddRow(index As Integer)
         Dim lbltxt As TextBox = XamlReader.Parse("<TextBox TextWrapping='NoWrap' VerticalContentAlignment='Center' Padding='5,0,0,0' Height='24' Margin='0,0,0,2' MaxLength='30' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xml:space='preserve' />")
         Dim valtxt As Xceed.Wpf.Toolkit.DoubleUpDown = XamlReader.Parse("<DoubleUpDown Maximum='999999' Minimum='0' MaxLength='10' Value='{x:Null}' TextAlignment='Left' VerticalContentAlignment='Center' Padding='5,0,0,0' Height='24' Margin='0,0,0,2' xmlns='http://schemas.xceed.com/wpf/xaml/toolkit' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml' xmlns:av='http://schemas.microsoft.com/winfx/2006/xaml/presentation' />")
-        Dim btn As Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='#00FFFFFF' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Tag='5' Width='24' Margin='0,0,0,2' HorizontalAlignment='Left' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><StackPanel Orientation='Horizontal' Width='24' Height='24'><ContentControl Content='{DynamicResource MoreIcon}' Width='20' Height='24' Margin='2,0,0,0' HorizontalAlignment='Left' /></StackPanel></Button>")
+        Dim btn As ExpressControls.AppButton = XamlReader.Parse("<ex:AppButton xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:ex='clr-namespace:ExpressControls;assembly=ExpressControls' IconSize='16' NoShadow='True' Icon='{DynamicResource MoreIcon}' TextVisibility='Collapsed' Margin='0,0,0,2' VerticalAlignment='Top' HorizontalAlignment='Left' Padding='4,0' Height='24'/>")
 
         btn.Tag = counter.ToString()
         counter += 1
@@ -183,4 +203,62 @@ Public Class ChartData
         End If
 
     End Sub
+
+    Private Sub ImportBtn_Click(sender As Object, e As RoutedEventArgs) Handles ImportBtn.Click
+
+        If MainWindow.NewMessage(Funcs.ChooseLang($"Select a CSV file that that contains a comma-separated label and value on each new line, such as:{Chr(10)}{Chr(10)}Label,1{Chr(10)}Another label,2.5{Chr(10)}{Chr(10)}Importing data will clear all existing data points. Do you wish to continue?",
+                                                  $"Sélectionnez un fichier CSV qui contient une étiquette et une valeur séparées par des virgules sur chaque nouvelle ligne, par exemple :{Chr(10)}{Chr(10)}Étiquette,1{Chr(10)}Un autre étiquette,""2,5""{Chr(10)}{Chr(10)}L'importation de données effacera tous les points de données existants. Souhaitez-vous continuer ?"),
+            Funcs.ChooseLang("Import data", "Importation de données"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+
+            If openDialog.ShowDialog() = True Then
+                Try
+                    Dim config = New CsvConfiguration(Globalization.CultureInfo.InvariantCulture) With {.HasHeaderRecord = False}
+                    Dim import = New List(Of KeyValuePair(Of String, Double)) From {}
+
+                    Using reader As New IO.StreamReader(openDialog.FileName)
+                        Using csv As New CsvHelper.CsvReader(reader, config)
+
+                            For Each i In csv.GetRecords(Of DataItem)
+                                Dim val As Double = 0.0
+
+                                If i.Value = "" Then
+                                    import.Add(New KeyValuePair(Of String, Double)(i.Label, 0))
+
+                                ElseIf Funcs.ConvertDouble(i.Value, val) Then
+                                    import.Add(New KeyValuePair(Of String, Double)(i.Label, Math.Max(Math.Min(val, 999999), 0)))
+
+                                End If
+                            Next
+                        End Using
+                    End Using
+
+                    Data = import.Take(15).ToList()
+                    LabelStack.Children.Clear()
+                    ValueStack.Children.Clear()
+                    ButtonStack.Children.Clear()
+                    UpdateData()
+
+                    If Data.Count = 0 Then
+                        MainWindow.NewMessage(Funcs.ChooseLang("No valid data could be found in the CSV file.",
+                                                               "Aucune donnée valide n'a pu être trouvée dans le fichier CSV."),
+                                              Funcs.ChooseLang("No data", "Aucune donnée"), MessageBoxButton.OK, MessageBoxImage.Information)
+                    End If
+
+                Catch
+                    MainWindow.NewMessage(Funcs.ChooseLang("We couldn't import data from that file. Please make sure it can be accessed, and that it is in the correct label-value format.",
+                                                           "Impossible d'importer les données de ce fichier. Veuillez vous assurer qu'il est accessible et qu'il est dans le bon format d'étiquette-valeur."),
+                                          Funcs.ChooseLang("Import data error", "Erreur d'importation de données"), MessageBoxButton.OK, MessageBoxImage.Error)
+                End Try
+            End If
+        End If
+
+    End Sub
+
+End Class
+
+Public Class DataItem
+    <Index(0)>
+    Public Property Label As String
+    <Index(1)>
+    Public Property Value As String
 End Class

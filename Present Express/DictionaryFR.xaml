@@ -12,6 +12,7 @@
     <System:String x:Key="HelpStr" xml:space="preserve">Aide
 F1</System:String>
 
+    <System:String x:Key="MenuStr">Menu</System:String>
     <System:String x:Key="NewMStr">Nouveau</System:String>
     <System:String x:Key="OpenMStr">Ouvrir</System:String>
     <System:String x:Key="SaveMStr">Enregistrer</System:String>
@@ -26,30 +27,31 @@ F1</System:String>
     <System:String x:Key="TemplateLoadingStr">Recherche des modèles</System:String>
     <System:String x:Key="TitleStr">Present Express</System:String>
     <System:String x:Key="OpenStr">Ouvrir</System:String>
-    <System:String x:Key="RecentFilesStr">Fichiers Récents</System:String>
+    <System:String x:Key="RecentFilesStr">Fichiers récents</System:String>
     <System:String x:Key="NoRecentStr">Aucun fichier récent.</System:String>
-    <System:String x:Key="ClearListStr" xml:space="preserve">  Effacer la liste</System:String>
+    <System:String x:Key="ClearListStr">Effacer la liste</System:String>
     <System:String x:Key="FavouriteStr">Favoris</System:String>
     <System:String x:Key="NoFavouriteStr" xml:space="preserve">Vous n'avez pas ajouté 
 aucun fichier favori.</System:String>
-    <System:String x:Key="AddFavouriteStr" xml:space="preserve">  Ajouter</System:String>
-    <System:String x:Key="RecentStr" xml:space="preserve">    Récents</System:String>
-    <System:String x:Key="FavouritesStr" xml:space="preserve">    Favoris</System:String>
-    <System:String x:Key="BrowsePCStr" xml:space="preserve">    Parcourir ce PC</System:String>
+    <System:String x:Key="AddFavouriteStr">Ajouter</System:String>
+    <System:String x:Key="RecentStr">Récents</System:String>
+    <System:String x:Key="FavouritesStr">Favoris</System:String>
+    <System:String x:Key="BrowsePCStr">Parcourir ce PC</System:String>
     <System:String x:Key="OpenCmStr">Ouvrir le fichier</System:String>
     <System:String x:Key="OpenLocationCmStr">Ouvrir l'emplacement du fichier</System:String>
     <System:String x:Key="CopyPathCmStr">Copier le chemin dans le presse-papiers</System:String>
     <System:String x:Key="RemoveFileCmStr">Supprimer le fichier de la liste</System:String>
-    <System:String x:Key="SaveAsStr">Enregistrer Sous</System:String>
-    <System:String x:Key="NoPinnedStr">Vos dossiers épinglés...</System:String>
-    <System:String x:Key="PinStr" xml:space="preserve">  Épingler</System:String>
+    <System:String x:Key="SaveAsStr">Enregistrer sous</System:String>
+    <System:String x:Key="NoPinnedStr">Aucun dossier épinglé.</System:String>
+    <System:String x:Key="PinnedTitleStr">Dossiers épinglés</System:String>
+    <System:String x:Key="PinStr">Épingler</System:String>
     <System:String x:Key="SaveCmStr">Enregistrer le fichier dans ce dossier</System:String>
     <System:String x:Key="RemoveFolderCmStr">Supprimer le dossier de la liste</System:String>
     <System:String x:Key="PrintStr">Imprimer</System:String>
     <System:String x:Key="PrintInfoStr">Configurez d'abord la taille et l'orientation de la page...</System:String>
-    <System:String x:Key="PageSetupStr" xml:space="preserve">    Mise en page</System:String>
+    <System:String x:Key="PageSetupStr">Mise en page</System:String>
     <System:String x:Key="PrintInfo2Str">Vous pouvez prévisualiser votre diaporama...</System:String>
-    <System:String x:Key="PrintPreviewStr" xml:space="preserve">    Aperçu avant impression</System:String>
+    <System:String x:Key="PrintPreviewStr">Aperçu avant impression</System:String>
     <System:String x:Key="PrintInfo3Str">Cliquez sur Imprimer pour ouvrir la fenêtre d'impression.</System:String>
     <System:String x:Key="ExportStr">Exporter</System:String>
     <System:String x:Key="InfoTitleStr">Choisissez une option à gauche.</System:String>
@@ -125,8 +127,8 @@ aucun fichier favori.</System:String>
     <System:String x:Key="ChBarStr">Barres</System:String>
     <System:String x:Key="ChLineStr">Courbe</System:String>
     <System:String x:Key="ChPieStr">Secteurs</System:String>
-    <System:String x:Key="ChDataStr">Données</System:String>
-    <System:String x:Key="ChEditDataStr">Modifier les données</System:String>
+    <System:String x:Key="ChDataStr">Données de graphique</System:String>
+    <System:String x:Key="ChEditDataStr">Modifier/importer</System:String>
     <System:String x:Key="ChLabelsStr">Étiquettes de données</System:String>
     <System:String x:Key="ChTitleStr">Titre du graphique</System:String>
     <System:String x:Key="ChAxisTitleStr">Titres d'axes</System:String>
@@ -214,8 +216,8 @@ aucun fichier favori.</System:String>
     <System:String x:Key="AutoDarkModeStr">Activer le mode sombre la nuit</System:String>
     <System:String x:Key="FromStr">À partir de</System:String>
     <System:String x:Key="UntilStr">jusqu'à</System:String>
-    <System:String x:Key="OpImportStr">Importer</System:String>
-    <System:String x:Key="OpExportStr">Exporter</System:String>
+    <System:String x:Key="OpImportStr">Importer des parametrès</System:String>
+    <System:String x:Key="OpExportStr">Exporter des parametrès</System:String>
     <System:String x:Key="TextColourStr">Modifier la couleur du texte</System:String>
     <System:String x:Key="FontFaceStr">Sélectionner un nom de police</System:String>
     <System:String x:Key="FontSizeStr">Taille de police</System:String>
@@ -236,9 +238,9 @@ aucun fichier favori.</System:String>
     <System:String x:Key="ExportImagesInfoStr">Exportez votre diaporama sous forme d'ensemble d'images. Commencez par choisir un format de fichier ci-dessous.</System:String>
     <System:String x:Key="DefStr">Défaut</System:String>
     <System:String x:Key="ExportImagesStr">Images</System:String>
-    <System:String x:Key="VideoStr" xml:space="preserve">    Vidéo</System:String>
-    <System:String x:Key="ImagesStr" xml:space="preserve">    Images</System:String>
-    <System:String x:Key="HTMLStr" xml:space="preserve">    Créer HTML</System:String>
+    <System:String x:Key="VideoStr">Vidéo</System:String>
+    <System:String x:Key="ImagesStr">Images</System:String>
+    <System:String x:Key="HTMLStr">Créer HTML</System:String>
     <System:String x:Key="SlidesStr">Diapositives</System:String>
     <System:String x:Key="SlidesToolStr">Ouvrir le panneau à côté</System:String>
     <System:String x:Key="NewSlideStr">Nouvelle diapositive :</System:String>
@@ -317,5 +319,27 @@ CTRL+S</System:String>
     <System:String x:Key="NextStr">Diapositive suivante</System:String>
     <System:String x:Key="HomeStr">Retour au début</System:String>
     <System:String x:Key="EndStr">Mettre fin au diaporama</System:String>
-
+    <System:String x:Key="ImportDataStr">Importer les données</System:String>
+    <System:String x:Key="PhotoEditorStr">Éditeur de photos</System:String>
+    <System:String x:Key="PhotoEditorToolStr">Modifiez votre image en ajoutant des filtres et plus</System:String>
+    <System:String x:Key="PhotoEditorTitleStr">Éditeur de Photos - Present Express</System:String>
+    <System:String x:Key="PhotoEditorIntroStr">Commencez l'édition, puis cliquez sur « Ajouter au diaporama » ci-dessous.</System:String>
+    <System:String x:Key="FiltersStr">Filtres</System:String>
+    <System:String x:Key="GreyscaleStr">Échelle de Gris</System:String>
+    <System:String x:Key="SepiaStr">Sépia</System:String>
+    <System:String x:Key="BlackWhiteStr">Noir et Blanc</System:String>
+    <System:String x:Key="RedTintStr">Teinte Rouge</System:String>
+    <System:String x:Key="GreenTintStr">Teinte Verte</System:String>
+    <System:String x:Key="BlueTintStr">Teinte Bleue</System:String>
+    <System:String x:Key="BrightnessStr">Luminosité</System:String>
+    <System:String x:Key="ContrastStr">Contraste</System:String>
+    <System:String x:Key="RotationStr">Rotation</System:String>
+    <System:String x:Key="RotateLeftStr">Tourner de 90° dans le sens anti-horaire</System:String>
+    <System:String x:Key="RotateRightStr">Tourner de 90° dans le sens des aiguilles d'une montre</System:String>
+    <System:String x:Key="TransformStr">Retournement</System:String>
+    <System:String x:Key="FlipHorizontalStr">Horizontal</System:String>
+    <System:String x:Key="FlipVerticalStr">Vertical</System:String>
+    <System:String x:Key="ResetStr">Réinitialiser</System:String>
+    <System:String x:Key="ResetAllStr">Remettre tout</System:String>
+    
 </ResourceDictionary>

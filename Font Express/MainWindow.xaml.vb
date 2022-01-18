@@ -4,10 +4,6 @@ Imports System.Windows.Threading
 
 Class MainWindow
 
-    ' FONT EXPRESS v2.0.1
-    ' Part of Express Apps by John D
-    ' ------------------------------
-
     Public Property ChosenFont As String = ""
     ReadOnly FontCollection As New List(Of String) From {}
     Private QueriedFonts As New List(Of String) From {}
@@ -18,8 +14,6 @@ Class MainWindow
     ReadOnly ScrollTimer As New DispatcherTimer With {.Interval = New TimeSpan(0, 0, 0, 0, 10)}
     Private Parameter As String = "a"
 
-    ReadOnly FontHoverIn As Animation.Storyboard
-    ReadOnly FontHoverOut As Animation.Storyboard
     ReadOnly HomeMnStoryboard As Animation.Storyboard
     ReadOnly FilterMnStoryboard As Animation.Storyboard
     ReadOnly CategoryMnStoryboard As Animation.Storyboard
@@ -77,8 +71,6 @@ Class MainWindow
         AddHandler NotificationCheckerWorker.DoWork, AddressOf NotificationCheckerWorker_DoWork
         AddHandler ScrollTimer.Tick, AddressOf ScrollTimer_Tick
 
-        FontHoverIn = TryFindResource("FontHoverIn")
-        FontHoverOut = TryFindResource("FontHoverOut")
         HomeMnStoryboard = TryFindResource("HomeMnStoryboard")
         FilterMnStoryboard = TryFindResource("FilterMnStoryboard")
         CategoryMnStoryboard = TryFindResource("CategoryMnStoryboard")
@@ -132,28 +124,28 @@ Class MainWindow
             .Title = caption
 
             If buttons = MessageBoxButton.OK Then
-                .Button1.Content = "OK"
+                .Button1.Text = "OK"
                 .Button2.Visibility = Visibility.Collapsed
                 .Button2.IsEnabled = False
                 .Button3.Visibility = Visibility.Collapsed
                 .Button3.IsEnabled = False
 
             ElseIf buttons = MessageBoxButton.YesNo Then
-                .Button1.Content = Funcs.ChooseLang("Yes", "Oui")
+                .Button1.Text = Funcs.ChooseLang("Yes", "Oui")
                 .Button2.Visibility = Visibility.Collapsed
                 .Button2.IsEnabled = False
-                .Button3.Content = Funcs.ChooseLang("No", "Non")
+                .Button3.Text = Funcs.ChooseLang("No", "Non")
 
             ElseIf buttons = MessageBoxButton.YesNoCancel Then
-                .Button1.Content = Funcs.ChooseLang("Yes", "Oui")
-                .Button2.Content = Funcs.ChooseLang("No", "Non")
-                .Button3.Content = Funcs.ChooseLang("Cancel", "Annuler")
+                .Button1.Text = Funcs.ChooseLang("Yes", "Oui")
+                .Button2.Text = Funcs.ChooseLang("No", "Non")
+                .Button3.Text = Funcs.ChooseLang("Cancel", "Annuler")
 
             Else ' buttons = MessageBoxButtons.OKCancel
-                .Button1.Content = "OK"
+                .Button1.Text = "OK"
                 .Button2.Visibility = Visibility.Collapsed
                 .Button2.IsEnabled = False
-                .Button3.Content = Funcs.ChooseLang("Cancel", "Annuler")
+                .Button3.Text = Funcs.ChooseLang("Cancel", "Annuler")
 
             End If
 
@@ -255,7 +247,7 @@ Class MainWindow
     ' [app-name]*[latest-version]*[Low/High]*[feature#feature]*[fonction#fonction]$...
 
     Private Sub NotificationsBtn_Click(sender As Object, e As RoutedEventArgs) Handles NotificationsBtn.Click
-        NotificationsIcn.SetResourceReference(ContentProperty, "NotificationIcon")
+        NotificationsBtn.Icon = FindResource("NotificationIcon")
         NotificationsPopup.IsOpen = True
 
         If NotificationLoading.Visibility = Visibility.Visible Then
@@ -267,14 +259,14 @@ Class MainWindow
     Private Sub CheckNotifications(Optional forcedialog As Boolean = False)
 
         Try
-            Dim info As String() = Funcs.GetNotificationInfo("Font").Split("*")
+            Dim info As String() = Funcs.GetNotificationInfo("Font")
 
-            If Not info(1) = My.Application.Info.Version.ToString(3) Then
+            If Not info(0) = My.Application.Info.Version.ToString(3) Then
                 NotificationsTxt.Content = Funcs.ChooseLang("An update is available.", "Une mise à jour est disponible.")
                 NotifyBtnStack.Visibility = Visibility.Visible
 
                 If NotificationsPopup.IsOpen = False Then
-                    NotificationsIcn.SetResourceReference(ContentProperty, "NotificationNewIcon")
+                    NotificationsBtn.Icon = FindResource("NotificationNewIcon")
                     CreateNotifyMsg(info)
 
                 End If
@@ -303,8 +295,8 @@ Class MainWindow
     Private Sub CreateNotifyMsg(info As String())
 
         Try
-            Dim version As String = info(1)
-            Dim featurelist As String() = info(Convert.ToInt32(Funcs.ChooseLang("3", "4"))).Split("#")
+            Dim version As String = info(0)
+            Dim featurelist As String() = info.Skip(2).ToArray()
             Dim features As String = ""
 
             If featurelist.Length <> 0 Then
@@ -318,7 +310,7 @@ Class MainWindow
             Dim start As String = Funcs.ChooseLang("An update is available.", "Une mise à jour est disponible.")
             Dim icon As MessageBoxImage = MessageBoxImage.Information
 
-            If info(2) = "High" Then
+            If info(1) = "High" Then
                 start = Funcs.ChooseLang("An important update is available!", "Une mise à jour importante est disponible !")
                 icon = MessageBoxImage.Exclamation
             End If
@@ -327,7 +319,7 @@ Class MainWindow
                           Funcs.ChooseLang("Would you like to visit the download page?", "Vous souhaitez visiter la page de téléchargement ?"),
                           Funcs.ChooseLang("Font Express Updates", "Mises à Jour Font Express"), MessageBoxButton.YesNoCancel, icon) = MessageBoxResult.Yes Then
 
-                Process.Start("https://jwebsites404.wixsite.com/expressapps/update?app=font")
+                Process.Start("https://express.johnjds.co.uk/update?app=font")
 
             End If
 
@@ -347,7 +339,7 @@ Class MainWindow
 
     Private Sub UpdateBtn_Click(sender As Object, e As RoutedEventArgs) Handles UpdateBtn.Click
         NotificationsPopup.IsOpen = False
-        Process.Start("https://jwebsites404.wixsite.com/expressapps/update?app=font")
+        Process.Start("https://express.johnjds.co.uk/update?app=font")
 
     End Sub
 
@@ -407,28 +399,28 @@ Class MainWindow
 
     Private Sub CheckToolbars()
 
-        If HomePnl.ActualWidth + 12 > HomeScrollViewer.ActualWidth Then
+        If HomePnl.ActualWidth + 14 > HomeScrollViewer.ActualWidth Then
             HomeScroll.Visibility = Visibility.Visible
-            HomeScrollViewer.Margin = New Thickness(60, 0, 40, 0)
+            HomeScrollViewer.Margin = New Thickness(0, 0, 58, 0)
         Else
             HomeScroll.Visibility = Visibility.Collapsed
-            HomeScrollViewer.Margin = New Thickness(60, 0, 0, 0)
+            HomeScrollViewer.Margin = New Thickness(0, 0, 0, 0)
         End If
 
-        If FilterPnl.ActualWidth + 12 > FilterScrollViewer.ActualWidth Then
+        If FilterPnl.ActualWidth + 14 > FilterScrollViewer.ActualWidth Then
             FilterScroll.Visibility = Visibility.Visible
-            HomeScrollViewer.Margin = New Thickness(60, 0, 40, 0)
+            FilterScrollViewer.Margin = New Thickness(0, 0, 58, 0)
         Else
             FilterScroll.Visibility = Visibility.Collapsed
-            HomeScrollViewer.Margin = New Thickness(60, 0, 0, 0)
+            FilterScrollViewer.Margin = New Thickness(0, 0, 0, 0)
         End If
 
-        If CategoryPnl.ActualWidth + 12 > CategoryScrollViewer.ActualWidth Then
+        If CategoryPnl.ActualWidth + 14 > CategoryScrollViewer.ActualWidth Then
             CategoryScroll.Visibility = Visibility.Visible
-            HomeScrollViewer.Margin = New Thickness(60, 0, 40, 0)
+            CategoryScrollViewer.Margin = New Thickness(0, 0, 58, 0)
         Else
             CategoryScroll.Visibility = Visibility.Collapsed
-            HomeScrollViewer.Margin = New Thickness(60, 0, 0, 0)
+            CategoryScrollViewer.Margin = New Thickness(0, 0, 0, 0)
         End If
 
     End Sub
@@ -455,16 +447,6 @@ Class MainWindow
 
     Private Sub MenuBtn_Click(sender As Object, e As RoutedEventArgs) Handles FontBtn.Click
         MenuPopup.IsOpen = True
-
-    End Sub
-
-    Private Sub TypeBtn_MouseEnter(sender As Object, e As Input.MouseEventArgs) Handles FontBtn.MouseEnter
-        FontHoverIn.Begin()
-
-    End Sub
-
-    Private Sub TypeBtn_MouseLeave(sender As Object, e As Input.MouseEventArgs) Handles FontBtn.MouseLeave
-        FontHoverOut.Begin()
 
     End Sub
 
@@ -550,22 +532,25 @@ Class MainWindow
 
     End Sub
 
-    Private Sub DocBtns_MouseEnter(sender As Controls.Button, e As Input.MouseEventArgs) Handles HomeBtn.MouseEnter, FilterBtn.MouseEnter, CategoryBtn.MouseEnter
+    Private Sub DocBtns_MouseEnter(sender As Controls.Button, e As Input.MouseEventArgs) Handles FontBtn.MouseEnter, HomeBtn.MouseEnter, FilterBtn.MouseEnter, CategoryBtn.MouseEnter
 
         If sender.Equals(HomeBtn) Then
-            HomeBtnTxt.FontWeight = FontWeights.Bold
+            HomeBtnTxt.FontWeight = FontWeights.SemiBold
 
         ElseIf sender.Equals(FilterBtn) Then
-            FilterBtnTxt.FontWeight = FontWeights.Bold
+            FilterBtnTxt.FontWeight = FontWeights.SemiBold
 
         ElseIf sender.Equals(CategoryBtn) Then
-            CategoryBtnTxt.FontWeight = FontWeights.Bold
+            CategoryBtnTxt.FontWeight = FontWeights.SemiBold
+
+        ElseIf sender.Equals(FontBtn) Then
+            FontBtnTxt.FontWeight = FontWeights.SemiBold
 
         End If
 
     End Sub
 
-    Private Sub DocBtns_MouseLeave(sender As Controls.Button, e As Input.MouseEventArgs) Handles HomeBtn.MouseLeave, FilterBtn.MouseLeave, CategoryBtn.MouseLeave
+    Private Sub DocBtns_MouseLeave(sender As Controls.Button, e As Input.MouseEventArgs) Handles FontBtn.MouseLeave, HomeBtn.MouseLeave, FilterBtn.MouseLeave, CategoryBtn.MouseLeave
 
         If sender.Equals(HomeBtn) Then
             HomeBtnTxt.FontWeight = FontWeights.Normal
@@ -575,6 +560,9 @@ Class MainWindow
 
         ElseIf sender.Equals(CategoryBtn) Then
             CategoryBtnTxt.FontWeight = FontWeights.Normal
+
+        ElseIf sender.Equals(FontBtn) Then
+            FontBtnTxt.FontWeight = FontWeights.Normal
 
         End If
 
@@ -597,8 +585,8 @@ Class MainWindow
 
         Threading.Thread.Sleep(250)
 
-        Dim deli As mydelegate = New mydelegate(AddressOf CheckNotifications)
-        NotificationsIcn.Dispatcher.BeginInvoke(DispatcherPriority.Normal, deli)
+        Dim deli As New mydelegate(AddressOf CheckNotifications)
+        NotificationsBtn.Dispatcher.BeginInvoke(DispatcherPriority.Normal, deli)
 
     End Sub
 
@@ -650,7 +638,7 @@ Class MainWindow
             End Select
         End If
 
-        Dim deli As mydelegate = New mydelegate(AddressOf AddFonts)
+        Dim deli As New mydelegate(AddressOf AddFonts)
         FontGrid.Dispatcher.BeginInvoke(DispatcherPriority.Normal, deli)
 
     End Sub
@@ -755,7 +743,7 @@ Class MainWindow
         GBtn.Click, HBtn.Click, IBtn.Click, JBtn.Click, KBtn.Click, LBtn.Click, MBtn.Click, NBtn.Click, OBtn.Click, PBtn.Click, QBtn.Click, RBtn.Click,
         SBtn.Click, TBtn.Click, UBtn.Click, VBtn.Click, WBtn.Click, XBtn.Click, YBtn.Click, ZBtn.Click
 
-        Parameter = sender.Tag.ToString()
+        Parameter = sender.Name.Substring(0, 1).ToLower()
         GetFonts()
 
     End Sub
@@ -772,9 +760,8 @@ Class MainWindow
     ' --
 
     Public Sub RefreshCategories()
+        Dim CatList As New List(Of CategoryItem) From {}
         CategoriesPnl.Children.Clear()
-        CategoryPopupPnl.Children.Clear()
-        CategoryPopupPnl.Children.Add(AddFavBtn)
 
         For Each i In My.Settings.categories
             Dim info = i.Split({"//"}, StringSplitOptions.RemoveEmptyEntries)
@@ -795,26 +782,16 @@ Class MainWindow
                     icon = "FontIcon"
             End Select
 
-            Dim btn As Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='#00FFFFFF' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='CatSampleBtn' Height='42' Margin='0,4,0,0' HorizontalAlignment='Left' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><StackPanel Orientation='Horizontal' Height='36'><ContentControl Content='{DynamicResource " +
-                                                 icon + "}' Name='CategoryBtnImg' Width='20' Height='24' Margin='5,0,5,0' HorizontalAlignment='Left' /><TextBlock Name='CategoryNameTxt' Text='" +
-                                                 Funcs.EscapeChars(info(0)) + "' FontSize='14' Padding='5,0,0,0' Height='21.31' Margin='0,7.69,5,7' HorizontalAlignment='Center' VerticalAlignment='Center' /></StackPanel></Button>")
+            Dim btn As New ExpressControls.MenuButton With {.Icon = FindResource(icon), .Text = info(0),
+                                                            .Tag = info(0), .ContextMenu = CategoryMenu}
 
-            btn.Tag = info(0)
-            btn.ContextMenu = CategoryMenu
             CategoriesPnl.Children.Add(btn)
 
-            Dim btn2 As Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='{DynamicResource BackColor}' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,10,0' Style='{DynamicResource AppButton}' Name='AddFavBtn' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><StackPanel Orientation='Horizontal'><ContentControl Content='{DynamicResource UntickIcon}' Name='AddFavImg' Width='24' Margin='10,0,0,0' /><TextBlock Text='" +
-                                                  Funcs.EscapeChars(info(0)) + "' FontSize='14' Padding='10,0,0,0' Name='HomeBtnTxt_Copy242' Height='21.31' Margin='0,0,0,0' HorizontalAlignment='Center' VerticalAlignment='Center' /></StackPanel></Button>")
-
-            btn2.Tag = info(0)
-            CategoryPopupPnl.Children.Add(btn2)
-
+            CatList.Add(New CategoryItem() With {.Name = info(0)})
             AddHandler btn.Click, AddressOf CategoryMenuBtns_Click
-            AddHandler btn2.Click, AddressOf CategoryPopupBtns_Click
-
         Next
 
-        CategoryPopupPnl.Children.Add(NewCategoryBtn)
+        CatStack.ItemsSource = CatList
 
     End Sub
 
@@ -824,8 +801,8 @@ Class MainWindow
 
     End Sub
 
-    Private Sub CategoryPopupBtns_Click(sender As Button, e As RoutedEventArgs) Handles AddFavBtn.Click
-        Dim o As Object = sender
+    Private Sub CategoryPopupBtns_Click(sender As ExpressControls.AppCheckBox, e As RoutedEventArgs) Handles AddFavBtn.Click
+        Dim o As Object = CatStack
         Dim mdck As New DockPanel
         Dim txtb As New TextBlock
         Dim p As New Controls.Primitives.Popup
@@ -849,8 +826,8 @@ Class MainWindow
                        Funcs.ChooseLang("Critical Error", "Erreur Critique"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         Else
-            If Funcs.ToggleCheckButton(sender.FindName("AddFavImg")) Then
-                If sender.Tag.ToString() = Funcs.ChooseLang("Favourites", "Favoris") Then
+            If sender.IsChecked Then
+                If sender.Tag.ToString() = "Favourites" Then
                     My.Settings.favouritefonts.Add(txtb.Text)
                     My.Settings.Save()
 
@@ -867,12 +844,12 @@ Class MainWindow
                         p.IsOpen = False
                     End If
 
-                ElseIf sender.Tag.ToString() = Funcs.ChooseLang("Favourites", "Favoris") And Parameter = "fav" Then
+                ElseIf sender.Tag.ToString() = "Favourites" And Parameter = "fav" Then
                     RemoveFromCurrentCategory(mdck.Parent, txtb.Text)
                     p.IsOpen = False
                 End If
 
-                If sender.Tag.ToString() = Funcs.ChooseLang("Favourites", "Favoris") Then
+                If sender.Tag.ToString() = "Favourites" Then
                     My.Settings.favouritefonts.Remove(txtb.Text)
                     My.Settings.Save()
 
@@ -959,13 +936,13 @@ Class MainWindow
     ' FONT GRID
     ' --
 
-    Private Sub FontView_MouseEnter(sender As DockPanel, e As MouseEventArgs)
+    Private Sub FontView_MouseEnter(sender As Grid, e As MouseEventArgs)
         Dim ops As DockPanel = sender.FindName("OptionsPnl")
         ops.Visibility = Visibility.Visible
 
     End Sub
 
-    Private Sub FontView_MouseLeave(sender As DockPanel, e As MouseEventArgs)
+    Private Sub FontView_MouseLeave(sender As Grid, e As MouseEventArgs)
         Dim ops As DockPanel = sender.FindName("OptionsPnl")
         ops.Visibility = Visibility.Hidden
 
@@ -1017,6 +994,7 @@ Class MainWindow
         Dim txtb As TextBlock = mdck.FindName("FontNameTxt")
         SetCategoryBtns(txtb.Text)
 
+        CatScroll.ScrollToTop()
         CategoryPopup.IsOpen = True
 
     End Sub
@@ -1044,6 +1022,7 @@ Class MainWindow
 
     Private Sub SetCategoryBtns(name As String)
         Dim fontcategories As New List(Of String) From {}
+        Dim items As List(Of CategoryItem) = CatStack.Items.OfType(Of CategoryItem).ToList()
 
         For Each i In My.Settings.categories
             Dim fonts = i.Split({"//"}, StringSplitOptions.RemoveEmptyEntries).ToList()
@@ -1052,29 +1031,25 @@ Class MainWindow
             If fonts.Contains(name) Then fontcategories.Add(i.Split("//")(0))
         Next
 
-        For Each i In CategoryPopupPnl.Children.OfType(Of Button)
-            Dim catname = i.Tag.ToString()
-            Dim checkimg As ContentControl = i.FindName("AddFavImg")
+        For Each i In items
+            Dim catname = i.Name.ToString()
 
             If (Not catname = "Favourites") And fontcategories.Contains(catname) Then ' do not translate
-                Funcs.SetCheckButton(True, checkimg)
+                i.Checked = True
             ElseIf Not catname = "Favourites" Then
-                Funcs.SetCheckButton(False, checkimg)
+                i.Checked = False
             End If
         Next
 
-        If My.Settings.favouritefonts.Contains(name) Then
-            Funcs.SetCheckButton(True, AddFavImg)
-        Else
-            Funcs.SetCheckButton(False, AddFavImg)
-        End If
+        CatStack.ItemsSource = items
+        AddFavBtn.IsChecked = My.Settings.favouritefonts.Contains(name)
 
     End Sub
 
     Private Sub RemoveFromCurrentCategory(bdr As Border, txt As String)
         QueriedFonts.Remove(txt)
         FontGrid.Children.Remove(bdr.Parent)
-        FontCountLbl.Text = QueriedFonts.Count.ToString() + Funcs.ChooseLang(" fonts", " polices")
+        RefreshBtn.Text = QueriedFonts.Count.ToString() + Funcs.ChooseLang(" fonts", " polices")
 
         If LoadMoreBtn.Visibility = Visibility.Visible Then
             AddFontBox(Funcs.EscapeChars(QueriedFonts.Item(FontGrid.Children.Count)))
@@ -1239,7 +1214,7 @@ Class MainWindow
 
         End If
 
-        FontCountLbl.Text = QueriedFonts.Count.ToString() + Funcs.ChooseLang(" fonts", " polices")
+        RefreshBtn.Text = QueriedFonts.Count.ToString() + Funcs.ChooseLang(" fonts", " polices")
 
     End Sub
 
@@ -1250,16 +1225,17 @@ Class MainWindow
 
     Private Sub AddFontBox(name As String)
 
-        Dim fontbox As DockPanel = XamlReader.Parse("<DockPanel Background='{DynamicResource BackColor}' Name='FontView' Width='220' Height='160' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' UseLayoutRounding='True'><Border CornerRadius='15' Background='{DynamicResource BackColor}'><Border.Effect><DropShadowEffect Direction='270' Color='Gray' Opacity='0.1' BlurRadius='10'/></Border.Effect><DockPanel><TextBlock Text='" +
-                                                     name + "' FontSize='14' TextTrimming='CharacterEllipsis' Name='FontNameTxt' Margin='5,7,5,8' VerticalAlignment='Top' DockPanel.Dock='Bottom' HorizontalAlignment='Center'/><Rectangle Fill='{DynamicResource AppColor}' Height='2' DockPanel.Dock='Bottom' /><DockPanel Name='OptionsPnl' Visibility='Hidden' DockPanel.Dock='Bottom'><Button BorderThickness='0,0,0,0' Background='{DynamicResource BackColor}' FontSize='14' Style='{DynamicResource AppButton}' Name='ExpandBtn' Width='25' Height='25' Margin='0,0,0,0' HorizontalAlignment='Right' VerticalAlignment='Top' ToolTip='" +
-                                                     Funcs.ChooseLang("Expand", "Agrandir") + "' DockPanel.Dock='Right'><ContentControl Content='{DynamicResource ExpandIcon}' Width='16' Height='16' /></Button><Button BorderThickness='0,0,0,0' Background='{DynamicResource BackColor}' FontSize='14' Style='{DynamicResource AppButton}' Name='CopyBtn' Width='25' Height='25' Margin='0,0,0,0' HorizontalAlignment='Right' VerticalAlignment='Top' ToolTip='" +
-                                                     Funcs.ChooseLang("Copy font name", "Copier le nom de la police") + "' DockPanel.Dock='Right'><ContentControl Content='{DynamicResource CopyIcon}' Width='16' Height='16' /></Button><Button Name='FavouriteBtn' HorizontalAlignment='Right' Height='25' Margin='0' Style='{DynamicResource AppButton}' VerticalAlignment='Top' Width='25' Background='{DynamicResource BackColor}' FontSize='14' DockPanel.Dock='Right' ToolTip='" +
-                                                     Funcs.ChooseLang("Add to category", "Ajouter à une catégorie") + "' BorderThickness='0'><ContentControl Name='FavImg' Width='16' Content='{DynamicResource CategoryIcon}' Height='16'/></Button><Button BorderThickness='0,0,0,0' Background='{DynamicResource BackColor}' FontSize='14' Style='{DynamicResource AppButton}' Name='ItalicBtn' Width='25' Height='25' Margin='0,0,0,0' HorizontalAlignment='Right' VerticalAlignment='Top' ToolTip='" +
-                                                     Funcs.ChooseLang("Italic", "Italique") + "' DockPanel.Dock='Right'><ContentControl Content='{DynamicResource ItalicIcon}' Width='16' Height='16' /></Button><Button BorderThickness='0,0,0,0' Background='{DynamicResource BackColor}' FontSize='14' Style='{DynamicResource AppButton}' Name='BoldBtn' Width='25' Height='25' Margin='0,0,0,0' HorizontalAlignment='Right' VerticalAlignment='Top' ToolTip='" +
-                                                     Funcs.ChooseLang("Bold", "Gras") + "' DockPanel.Dock='Right'><ContentControl Content='{DynamicResource " +
-                                                     Funcs.ChooseLang("BoldIcon", "GrasIcon") + "}' Width='16' Height='16' /></Button><Slider IsSnapToTickEnabled='True' Minimum='10' Maximum='70' Value='22' LargeChange='10' SmallChange='1' Name='SizeSlider' Margin='5,2,5,0' /></DockPanel><TextBlock Text='" +
-                                                     Funcs.ChooseLang("The quick brown fox jumps over the lazy dog", "Portez ce vieux whisky au juge blonde qui fume") + "' FontFamily='" +
-                                                     name + "' FontSize='22' TextTrimming='CharacterEllipsis' TextWrapping='Wrap' Name='DisplayTxt' Margin='10,10,10,5' DockPanel.Dock='Top' /></DockPanel></Border></DockPanel>")
+        Dim fontbox As Grid = XamlReader.Parse("<Grid Background='{DynamicResource BackColor}' Name='FontView' Width='235' Height='175' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:ex='clr-namespace:ExpressControls;assembly=ExpressControls' UseLayoutRounding='True'><ContentControl Content='{StaticResource PopupShadow}'/><Border Margin='10' CornerRadius='5' Background='{DynamicResource BackColor}'><ex:ClippedBorder CornerRadius='5'><DockPanel><TextBlock Text='" +
+                                                     name + "' FontSize='14' TextTrimming='CharacterEllipsis' Name='FontNameTxt' Margin='5,7,5,8' VerticalAlignment='Top' DockPanel.Dock='Bottom' HorizontalAlignment='Center'/><Rectangle Fill='{DynamicResource AppColor}' Height='2' DockPanel.Dock='Bottom' /><DockPanel Name='OptionsPnl' Visibility='Hidden' DockPanel.Dock='Bottom'><ex:AppButton ToolTip='" +
+                                                     Funcs.ChooseLang("Expand", "Agrandir") + "' Name='ExpandBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource ExpandIcon}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/><ex:AppButton ToolTip='" +
+                                                     Funcs.ChooseLang("Copy font name", "Copier le nom de la police") + "' Name='CopyBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource CopyIcon}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/><ex:AppButton ToolTip='" +
+                                                     Funcs.ChooseLang("Add to category", "Ajouter à une catégorie") + "' Name='FavouriteBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource CategoryIcon}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/><ex:AppButton ToolTip='" +
+                                                     Funcs.ChooseLang("Italic", "Italique") + "' Name='ItalicBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource ItalicIcon}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/><ex:AppButton ToolTip='" +
+                                                     Funcs.ChooseLang("Bold", "Gras") + "' Name='BoldBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource " +
+                                                     Funcs.ChooseLang("BoldIcon", "GrasIcon") + "}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/>" +
+                                                     "<Slider Style='{StaticResource SimpleSlider}' VerticalAlignment='Center' IsSnapToTickEnabled='True' Minimum='10' Maximum='70' Value='20' LargeChange='10' SmallChange='1' Name='SizeSlider' Margin='5,2,5,0' /></DockPanel><TextBlock Text='" +
+                                                     Funcs.ChooseLang("The quick brown fox jumps over the lazy dog", "Portez ce vieux whisky au juge blond qui fume") + "' FontFamily='" +
+                                                     name + "' FontSize='20' TextTrimming='CharacterEllipsis' TextWrapping='Wrap' Name='DisplayTxt' Margin='10,10,10,5' DockPanel.Dock='Top' /></DockPanel></ex:ClippedBorder></Border></Grid>")
 
         FontGrid.Children.Add(fontbox)
 
@@ -1354,16 +1330,16 @@ Class MainWindow
         Help2Btn.Visibility = Visibility.Visible
         Help3Btn.Visibility = Visibility.Visible
 
-        Help1Img.SetResourceReference(ContentProperty, "FontIcon")
-        Help1Txt.Text = Funcs.ChooseLang("Getting started", "Prise en main")
+        Help1Btn.Icon = FindResource("FontIcon")
+        Help1Btn.Text = Funcs.ChooseLang("Getting started", "Prise en main")
         Help1Btn.Tag = 1
 
-        Help2Img.SetResourceReference(ContentProperty, "FontExpressVariantIcon")
-        Help2Txt.Text = Funcs.ChooseLang("What's new and still to come", "Nouvelles fonctions et autres à venir")
+        Help2Btn.Icon = FindResource("FontExpressIcon")
+        Help2Btn.Text = Funcs.ChooseLang("What's new and still to come", "Nouvelles fonctions et autres à venir")
         Help2Btn.Tag = 9
 
-        Help3Img.SetResourceReference(ContentProperty, "FeedbackIcon")
-        Help3Txt.Text = Funcs.ChooseLang("Troubleshooting and feedback", "Dépannage et commentaires")
+        Help3Btn.Icon = FindResource("FeedbackIcon")
+        Help3Btn.Text = Funcs.ChooseLang("Troubleshooting and feedback", "Dépannage et commentaires")
         Help3Btn.Tag = 10
 
     End Sub
@@ -1465,10 +1441,10 @@ Class MainWindow
                 icon = "TitleCaseIcon"
                 title = Funcs.ChooseLang("Comparing fonts", "Comparaison des polices")
             Case 4
-                icon = "BulletIcon"
+                icon = "BulletsIcon"
                 title = Funcs.ChooseLang("Category options", "Paramètres de catégorie")
             Case 5
-                icon = "OptionsIcon"
+                icon = "GearsIcon"
                 title = Funcs.ChooseLang("General options", "Paramètres généraux")
             Case 6
                 icon = "StartupIcon"
@@ -1477,10 +1453,10 @@ Class MainWindow
                 icon = "NotificationIcon"
                 title = "Notifications"
             Case 8
-                icon = "KeyboardIcon"
+                icon = "CtrlIcon"
                 title = Funcs.ChooseLang("Keyboard shortcuts", "Raccourcis clavier")
             Case 9
-                icon = "FontExpressVariantIcon"
+                icon = "FontExpressIcon"
                 title = Funcs.ChooseLang("What's new and still to come", "Nouvelles fonctions et autres à venir")
             Case 10
                 icon = "FeedbackIcon"
@@ -1490,16 +1466,16 @@ Class MainWindow
         Select Case btn
             Case 1
                 Help1Btn.Tag = topic
-                Help1Img.SetResourceReference(ContentProperty, icon)
-                Help1Txt.Text = title
+                Help1Btn.Icon = FindResource(icon)
+                Help1Btn.Text = title
             Case 2
                 Help2Btn.Tag = topic
-                Help2Img.SetResourceReference(ContentProperty, icon)
-                Help2Txt.Text = title
+                Help2Btn.Icon = FindResource(icon)
+                Help2Btn.Text = title
             Case 3
                 Help3Btn.Tag = topic
-                Help3Img.SetResourceReference(ContentProperty, icon)
-                Help3Txt.Text = title
+                Help3Btn.Icon = FindResource(icon)
+                Help3Btn.Text = title
         End Select
 
     End Sub
@@ -1529,4 +1505,9 @@ Class MainWindow
 
     End Sub
 
+End Class
+
+Public Class CategoryItem
+    Public Property Name As String
+    Public Property Checked As Boolean
 End Class

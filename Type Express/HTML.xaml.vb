@@ -76,7 +76,7 @@
         HTMLEditorTxt.Text = HTMLCode
 
         Try
-            HTMLPreview.NavigateToString(HTMLEditorTxt.Text)
+            HTMLPreview.NavigateToString("<html oncontextmenu='return false;'>" + HTMLCode + "</html>")
         Catch
         End Try
 
@@ -140,7 +140,7 @@
 
     Private Sub RunBtn_Click(sender As Object, e As RoutedEventArgs) Handles RunBtn.Click
         Try
-            HTMLPreview.NavigateToString(HTMLEditorTxt.Text)
+            HTMLPreview.NavigateToString("<html oncontextmenu='return false;'>" + HTMLEditorTxt.Text + "</html>")
 
         Catch
         End Try
@@ -158,5 +158,29 @@
 
         End If
 
+    End Sub
+
+    Private Sub HTMLPreview_PreviewKeyDown(sender As Object, e As KeyEventArgs) Handles HTMLPreview.PreviewKeyDown
+        Dim key As Key = (If(e.Key = Key.System, e.SystemKey, e.Key))
+
+        Select Case key
+            Case Key.F5
+                e.Handled = True
+                Return
+            Case Key.O, Key.N, Key.L
+
+                If e.KeyboardDevice.IsKeyDown(Key.LeftCtrl) Then
+                    e.Handled = True
+                End If
+
+                Return
+            Case Key.P
+
+                If e.KeyboardDevice.IsKeyDown(Key.LeftCtrl) Then
+                    e.Handled = True
+                End If
+
+                Return
+        End Select
     End Sub
 End Class
