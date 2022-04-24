@@ -661,5 +661,7 @@ CTRL+M</System:String>
     <System:String x:Key="ClearMenuStr">Effacer le texte ou le formatage de votre document</System:String>
     <System:String x:Key="ClearFormattingStr">Effacer le formatage</System:String>
     <System:String x:Key="ClearAllTextStr">Effacer tout le texte</System:String>
+    <System:String x:Key="DefinitionsStr">Définitions</System:String>
+    <System:String x:Key="SynonymsStr">Synonymes</System:String>
     
 </ResourceDictionary>

@@ -662,5 +662,7 @@ CTRL+M</System:String>
     <System:String x:Key="ClearMenuStr">Clear text or formatting from your document</System:String>
     <System:String x:Key="ClearFormattingStr">Clear formatting</System:String>
     <System:String x:Key="ClearAllTextStr">Clear all text</System:String>
+    <System:String x:Key="DefinitionsStr">Definitions</System:String>
+    <System:String x:Key="SynonymsStr">Synonyms</System:String>
 
 </ResourceDictionary>

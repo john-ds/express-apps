@@ -1,4 +1,5 @@
 ﻿Imports System.ComponentModel
+Imports System.Net.Http
 Imports System.Windows.Threading
 
 Class Application
@@ -37,7 +38,7 @@ Class Application
 
     End Sub
 
-    Private Sub OnDispatcherUnhandledException(sender As Object, e As DispatcherUnhandledExceptionEventArgs)
+    Private Async Sub OnDispatcherUnhandledException(sender As Object, e As DispatcherUnhandledExceptionEventArgs)
         Dim NewInfoForm As New InfoBox
 
         With NewInfoForm
@@ -57,6 +58,19 @@ Class Application
         End With
 
         NewInfoForm.ShowDialog()
+
+        Using client = New HttpClient()
+            Dim values = New Dictionary(Of String, String) From {
+                {"event", "App Error"},
+                {"id", e.Exception.Source},
+                {"desc", e.Exception.Message},
+                {"data", e.Exception.TargetSite.ToString()}
+            }
+
+            Dim content = New StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(values))
+            Dim resp = Await client.PostAsync("https://api.johnjds.co.uk/.netlify/functions/log", content)
+
+        End Using
 
     End Sub
 

@@ -798,7 +798,7 @@
                                                     <DataTemplate>
                                                         <Label FontFamily="{Binding}" FontSize="12" Content="{Binding}" Height="26" Background="{DynamicResource BackColor}" Padding="10,0,0,0" VerticalAlignment="Top" VerticalContentAlignment="Center" Width="176"/>
                                                         <!--<TextBlock x:Name="HomeBtnTxt_Copy1291" HorizontalAlignment="Center" FontSize="14" FontFamily="{Binding}" Margin="0,0,10,0" Padding="20,0,0,0" Text="{Binding}"/>-->
-                                                    </DataTemplate>                                                    
+                                                    </DataTemplate>
                                                 </controls:AutoCompleteBox.ItemTemplate>
                                                 <controls:AutoCompleteBox.ContextMenu>
                                                     <ContextMenu IsEnabled="False" Visibility="Collapsed"/>
@@ -1041,9 +1041,9 @@
                                     </TabItem>
                                     <TabItem x:Name="DefineTab" Header="" Focusable="False" Margin="0,0,12,-2">
                                         <ScrollViewer x:Name="DefineScroll" Margin="0,5,0,0" VerticalScrollBarVisibility="Auto">
-                                            <Grid x:Name="grid15" Margin="0,-4,0,0">
+                                            <StackPanel Orientation="Vertical" x:Name="grid15" Margin="0,-4,0,0">
                                                 <TextBlock x:Name="SymbolLbl5" Margin="15,20,0,0" FontSize="14" VerticalAlignment="Top" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="{DynamicResource DcHeaderStr}"/>
-                                                <DockPanel x:Name="dockPanel" Margin="15,50,15,0" VerticalAlignment="Top">
+                                                <DockPanel x:Name="dockPanel" Margin="15,10,15,0" VerticalAlignment="Top">
                                                     <ex:AppButton x:Name="DefineLangBtn" Icon="{DynamicResource DownIcon}" Height="26" CornerRadius="0,5,5,0" GapMargin="0" IconSize="12" TextVisibility="Collapsed" VerticalAlignment="Top" HorizontalAlignment="Left" DockPanel.Dock="Right" ToolTip="{DynamicResource LangOptionsStr}" Padding="3,0"/>
                                                     <ex:AppButton x:Name="DefineSearchBtn" Icon="{DynamicResource SearchIcon}" Height="26" CornerRadius="5,0,0,5" GapMargin="0" IconSize="18" TextVisibility="Collapsed" VerticalAlignment="Top" HorizontalAlignment="Left" DockPanel.Dock="Right" ToolTip="{DynamicResource SearchStr}" Padding="5,0"/>
                                                     <TextBox x:Name="DefineSearchTxt" Margin="0,0,10,0" Text="" UseLayoutRounding="False" VerticalContentAlignment="Center" VerticalAlignment="Top" Height="26" UndoLimit="0" Foreground="{DynamicResource TextColor}" Background="{DynamicResource BackColor}" Template="{DynamicResource RoundedTextBox}" MaxLines="1">
@@ -1052,18 +1052,44 @@
                                                         </TextBox.ContextMenu>
                                                     </TextBox>
                                                 </DockPanel>
-                                                <StackPanel x:Name="DefineStack" Margin="15,90,15,15">
-                                                    <TextBlock x:Name="DefineLoadingTxt" Margin="0" FontSize="14" VerticalAlignment="Top" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="{DynamicResource SearchingStr}" Padding="0,10,0,0"/>
+                                                <DockPanel Margin="0" ClipToBounds="True" LastChildFill="False">
+                                                    <DockPanel DockPanel.Dock="Bottom" LastChildFill="False">
+                                                        <Grid x:Name="DefinitionsSelector" Width="{Binding ActualWidth, ElementName=DefinitionsBtn}" Visibility="Visible" Margin="15,0,0,0">
+                                                            <Rectangle Fill="{DynamicResource AppColor}" Height="6" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,0,0,-3" RadiusX="3" RadiusY="3" Width="30"/>
+                                                        </Grid>
+                                                        <Grid x:Name="SynonymsSelector" Width="{Binding ActualWidth, ElementName=SynonymsBtn}" Visibility="Hidden" Margin="0,0,15,0" DockPanel.Dock="Right">
+                                                            <Rectangle Fill="{DynamicResource AppColor}" Height="6" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="0,0,0,-3" RadiusX="3" RadiusY="3" Width="30"/>
+                                                        </Grid>
+                                                    </DockPanel>
+                                                    <ex:AppButton x:Name="DefinitionsBtn" LastChildFill="True" IconVisibility="Collapsed" NoShadow="True" GapMargin="0" FontWeight="SemiBold" Text="{DynamicResource DefinitionsStr}" Margin="15,10,0,0" VerticalAlignment="Top" Height="32" HorizontalContentAlignment="Stretch"/>
+                                                    <ex:AppButton x:Name="SynonymsBtn" LastChildFill="True" IconVisibility="Collapsed" NoShadow="True" GapMargin="0" Text="{DynamicResource SynonymsStr}" Margin="0,10,15,0" VerticalAlignment="Top" Height="32" HorizontalContentAlignment="Stretch" DockPanel.Dock="Right"/>
+                                                </DockPanel>
+                                                <StackPanel x:Name="DefineStack" Margin="15,0,15,15" UseLayoutRounding="True">
+                                                    <TextBlock x:Name="DefineLoadingTxt" Margin="0" FontSize="14" VerticalAlignment="Top" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="{DynamicResource SearchingStr}" Padding="0,20,0,0"/>
                                                     <ex:AppButton x:Name="CancelDefineBtn" Icon="{DynamicResource CrossIcon}" Text="{DynamicResource CancelStr}" Margin="0,10,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
-                                                    <TextBlock x:Name="WordTxt" Margin="0" FontSize="15" VerticalAlignment="Top" TextTrimming="CharacterEllipsis" Text="word" Padding="0,10,0,0" FontWeight="SemiBold" Visibility="Collapsed"/>
+                                                    <TextBlock x:Name="WordTxt" Margin="0" FontSize="15" VerticalAlignment="Top" TextTrimming="CharacterEllipsis" Text="word" Padding="0,20,0,0" FontWeight="SemiBold" Visibility="Collapsed"/>
                                                     <TextBlock x:Name="WordTypeTxt" Margin="0" FontSize="14" VerticalAlignment="Top" Text="word type" Padding="0,5,0,0" FontStyle="Italic" TextWrapping="Wrap" Visibility="Collapsed"/>
                                                     <DockPanel x:Name="DefinitionPnl" Visibility="Collapsed">
-                                                        <ex:AppButton x:Name="SynonymsBtn" IconVisibility="Collapsed" GapMargin="0" MoreVisibility="Visible" Text="—  Synonyms" Margin="34,10,0,0" Height="32" VerticalAlignment="Top" HorizontalAlignment="Left" DockPanel.Dock="Bottom"/>
-                                                        <TextBlock x:Name="DefNumTxt" Margin="0" FontSize="14" TextTrimming="CharacterEllipsis" Text="1." Padding="0,10,0,0" Width="24" TextAlignment="Right"/>
-                                                        <TextBlock x:Name="DefinitionTxt" Margin="0" FontSize="14" Text="This is a long definition for this word" Padding="10,10,0,0" TextWrapping="Wrap"/>
+                                                        <ex:AppButton x:Name="SynonymBtn" IconVisibility="Collapsed" GapMargin="0" MoreVisibility="Visible" Text="Synonyms" Margin="25,10,0,0" Height="32" VerticalAlignment="Top" HorizontalAlignment="Left" DockPanel.Dock="Bottom"/>
+                                                        <TextBlock x:Name="DefNumTxt" Margin="0" FontSize="14" TextTrimming="CharacterEllipsis" Text="1." Padding="0,10,0,0" Width="24"/>
+                                                        <TextBlock x:Name="DefinitionTxt" Margin="0" FontSize="14" Text="This is a long definition for this word" Padding="0,10,0,0" TextWrapping="Wrap"/>
+                                                    </DockPanel>
+                                                    <DockPanel x:Name="SynonymItemsStack">
+                                                        <ItemsControl x:Name="SynonymItems">
+                                                            <ItemsControl.ItemsPanel>
+                                                                <ItemsPanelTemplate>
+                                                                    <VirtualizingStackPanel/>
+                                                                </ItemsPanelTemplate>
+                                                            </ItemsControl.ItemsPanel>
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <ex:AppButton Click="SynBtns_Click" Text="{Binding}" GapMargin="0" HorizontalContentAlignment="Stretch" CornerRadius="0" Height="32" IconVisibility="Collapsed" NoShadow="True" Background="Transparent"/>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
                                                     </DockPanel>
                                                 </StackPanel>
-                                            </Grid>
+                                            </StackPanel>
                                         </ScrollViewer>
 
                                     </TabItem>
@@ -1110,7 +1136,7 @@
                                                     <ex:AppButton x:Name="Eq6Btn" Text="(x - y)(x + y) = x² - y²" GapMargin="0" TextMargin="2,0,2,0" IconVisibility="Collapsed" FontFamily="Cambria" CornerRadius="0" NoShadow="True" Margin="0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" ToolTip="{DynamicResource Eq6Str}"/>
                                                     <ex:AppButton x:Name="Eq7Btn" Text="A = ½bh" GapMargin="0" TextMargin="2,0,2,0" IconVisibility="Collapsed" FontFamily="Cambria" CornerRadius="0" NoShadow="True" Margin="0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" ToolTip="{DynamicResource Eq7Str}"/>
                                                     <ex:AppButton x:Name="Eq8Btn" Text="V = (4/3)πr³" GapMargin="0" TextMargin="2,0,2,0" IconVisibility="Collapsed" FontFamily="Cambria" CornerRadius="0" NoShadow="True" Margin="0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" ToolTip="{DynamicResource Eq8Str}"/>
-                                                </StackPanel>   
+                                                </StackPanel>
                                             </Grid>
                                         </ScrollViewer>
                                     </TabItem>

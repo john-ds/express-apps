@@ -7,9 +7,9 @@ Imports System.ComponentModel
 Imports System.Windows.Threading
 Imports System.Drawing.Printing
 Imports System.Timers
-Imports System.Runtime.InteropServices
 Imports Newtonsoft.Json
 Imports System.Windows.Forms
+Imports Newtonsoft.Json.Linq
 
 Class MainWindow
 
@@ -1439,14 +1439,14 @@ Class MainWindow
         TemplateSearchTxt.Focus()
 
         If ThisFile = "" And DocTxt.Text = "" Then
-            SetTemplate(CType(sender.Tag, String()))
+            SetTemplate(sender.Tag.ToString().Split(","))
             CloseMenuStoryboard.Begin()
             TextFocus()
 
         Else
             Dim NewForm1 As New MainWindow
             NewForm1.Show()
-            NewForm1.SetTemplate(CType(sender.Tag, String()))
+            NewForm1.SetTemplate(sender.Tag.ToString().Split(","))
             NewForm1.MainTabs.SelectedIndex = 1
             NewForm1.TextFocus()
 
@@ -2361,6 +2361,9 @@ Class MainWindow
                 TitleTxt.Text = Path.GetFileName(filename) & " - Type Express"
                 SetUpInfo()
 
+            Else
+                SetUpInfo(True)
+
             End If
 
             CreateTempLabel(Funcs.ChooseLang("Saving complete", "Enregistré"))
@@ -2770,7 +2773,7 @@ Class MainWindow
 
     End Sub
 
-    Private Sub SetUpInfo()
+    Private Sub SetUpInfo(Optional update As Boolean = False)
         FileInfoStack.Visibility = Visibility.Visible
         FilenameTxt.Text = Path.GetFileName(ThisFile)
 
@@ -2816,9 +2819,12 @@ Class MainWindow
         ModifiedTxt.Text = dates(1)
         AccessedTxt.Text = dates(2)
 
-        EditingTimeTxt.Tag = 0
-        EditingTimeTxt.Text = "<1 minute"
-        EditingTimer.Start()
+        If Not update Then
+            EditingTimeTxt.Tag = 0
+            EditingTimeTxt.Text = "<1 minute"
+            EditingTimer.Start()
+
+        End If
 
     End Sub
 
@@ -6406,6 +6412,7 @@ Class MainWindow
 
     Private DefineLang As String = "en"
     Private SearchTerm As String = ""
+    Private DictMode As String = "definitions"
 
     Private Sub DictionaryBtn_Click(sender As Object, e As RoutedEventArgs) Handles DictionaryBtn.Click
         OpenSidePane(1)
@@ -6425,7 +6432,11 @@ Class MainWindow
         DefineSearchTxt.Text = DefineSearchTxt.Text.TrimStart(" ")
 
         If DefineSearchTxt.Text.Contains("&") Or DefineSearchTxt.Text.Contains("?") Then
-            NewMessage(Funcs.ChooseLang($"We couldn't get definitions for that word. Please check your spelling and try again.{Chr(10)}{Chr(10)}If this problem persists, we may be experiencing issues. Please try again later and check for app updates.", $"Nous n'arrivions pas à obtenir les définitions pour ce mot. Veuillez vérifier l'orthographe et réessayer.{Chr(10)}{Chr(10)}Si ce problème persiste, il est possible que nous rencontrons des problèmes de réseau. Veuillez réessayer plus tard et vérifier les mises à jour de l'application."),
+            Dim modetxt = Funcs.ChooseLang("definitions", "définitions")
+            If DictMode = "synonyms" Then modetxt = Funcs.ChooseLang("synonyms", "synonymes")
+
+            NewMessage(Funcs.ChooseLang($"We couldn't get {modetxt} for that word. Be sure to:{Chr(10)}— check your spelling is correct{Chr(10)}— try using words like 'swim' instead of 'swam'{Chr(10)}{Chr(10)}If this problem persists, we may be experiencing issues. Please try again later and check for app updates.",
+                                        $"Nous n'arrivions pas à obtenir les {modetxt} pour ce mot. Veuillez :{Chr(10)}— vérifier que l'orthographe est correcte{Chr(10)}— utiliser des mots comme 'nager' au lieu de 'nagé'{Chr(10)}{Chr(10)}Si ce problème persiste, il est possible que nous rencontrons des problèmes de réseau. Veuillez réessayer plus tard et vérifier les mises à jour de l'application."),
                        Funcs.ChooseLang("Dictionary Error", "Erreur de Dictionnaire"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
 
         ElseIf Not DefineSearchTxt.Text = "" Then
@@ -6433,6 +6444,8 @@ Class MainWindow
             DefineStack.Children.Add(DefineLoadingTxt)
             DefineStack.Children.Add(CancelDefineBtn)
             DefineSearchBtn.IsEnabled = False
+            DefinitionsBtn.IsEnabled = False
+            SynonymsBtn.IsEnabled = False
 
             SearchTerm = DefineSearchTxt.Text
             DefineScroll.ScrollToTop()
@@ -6442,63 +6455,283 @@ Class MainWindow
 
     End Sub
 
-    Private dict As New Dictionary(Of String, Dictionary(Of String, Dictionary(Of String, List(Of String))))
-    '                                 word  :{              type  :{              def.   {List(Of synonyms)
-    '                                                       type  :{              def.   {List(Of synonyms)
-    '                                                              {              def.   {List(Of synonyms)
-    '                                 word  :{              type  :{              def.   {List(Of synonyms)
+    Private MerriamWebsterKey As String = ""
+    Private LexicalaKey As String = ""
+
+    Private dict As New Dictionary(Of String, Dictionary(Of String, Dictionary(Of String, String)))
+    '                                 word  :{              type  :{              def.    sense/subsense
+    '                                                       type  :{              def.    sense/subsense
+    '                                                              {              def.    sense/subsense
+    '                                 word  :{              type  :{              def.    sense/subsense
     '                                                       ........                      .................
 
-    Private Function GetDefs(query As String, lang As String) As Boolean
+    Private thesaurus As New Dictionary(Of String, Dictionary(Of String, Dictionary(Of String, List(Of String))))
+    '                                      word  :{              type  :{              def.    List(Of synonyms)
+    '                                                            type  :{              def.    List(Of synonyms)
+    '                                                                   {              def.    List(Of synonyms)
+    '                                      word  :{              type  :{              def.    List(Of synonyms)
+    '                                                       ........                      .................
+
+    Private Function GetDictionaryResults(query As String, lang As String, mode As String) As Boolean
+
+        Select Case mode
+            Case "definitions"
+                Return UseLexicala(query, lang, mode)
+
+            Case "synonyms"
+                Select Case lang
+                    Case "en"
+                        Return UseMerriamWebster(query)
+                    Case "fr"
+                        Return UseSynonymsAPI(query)
+                    Case "es"
+                        Return UseLexicala(query, lang, mode)
+                    Case "it"
+                        Return UseLexicala(query, lang, mode)
+                    Case Else
+                        Return False
+                End Select
+
+            Case Else
+                Return False
+        End Select
+
+    End Function
+
+    Private Sub DefinitionsBtn_Click(sender As Object, e As RoutedEventArgs) Handles DefinitionsBtn.Click
+
+        If Not DictMode = "definitions" Then
+            DefinitionsBtn.FontWeight = FontWeights.SemiBold
+            SynonymsBtn.FontWeight = FontWeights.Normal
+            DefinitionsSelector.Visibility = Visibility.Visible
+            SynonymsSelector.Visibility = Visibility.Hidden
+            DictMode = "definitions"
+            StartDefineSearch()
+
+        End If
+
+    End Sub
+
+    Private Sub SynonymsBtn_Click(sender As Object, e As RoutedEventArgs) Handles SynonymsBtn.Click
+
+        If Not DictMode = "synonyms" Then
+            DefinitionsBtn.FontWeight = FontWeights.Normal
+            SynonymsBtn.FontWeight = FontWeights.SemiBold
+            DefinitionsSelector.Visibility = Visibility.Hidden
+            SynonymsSelector.Visibility = Visibility.Visible
+            DictMode = "synonyms"
+            StartDefineSearch()
+
+        End If
+
+    End Sub
+
+    Private Function UseMerriamWebster(query As String) As Boolean
         Dim client As New Net.WebClient()
 
+        If MerriamWebsterKey = "" Then
+            Try
+                ' This functionality requires an API key from Merriam-Webster
+                ' -----------------------------------------------------------
+                Dim info = Windows.Application.GetResourceStream(New Uri("pack://application:,,,/Type Express;component/keymerriam.secret"))
+                Using sr = New StreamReader(info.Stream)
+                    MerriamWebsterKey = sr.ReadToEnd()
+                End Using
+
+            Catch
+                NewMessage(Funcs.ChooseLang($"Unable to retrieve thesaurus API key.{Chr(10)}Please contact support.",
+                                            $"Impossible de récupérer la clé API dictionnaire.{Chr(10)}Veuillez contacter l'assistance."),
+                           Funcs.ChooseLang("Critical error", "Erreur critique"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+                DefineError = True
+                Return False
+            End Try
+        End If
+
         Try
-            dict = New Dictionary(Of String, Dictionary(Of String, Dictionary(Of String, List(Of String))))
-            query = query(0).ToString().ToUpper() + query.Substring(1).Replace(" ", "_")
+            thesaurus = New Dictionary(Of String, Dictionary(Of String, Dictionary(Of String, List(Of String))))
+            query = query.Replace(" ", "_")
 
-            Using reader As New StreamReader(client.OpenRead("https://api.dictionaryapi.dev/api/v2/entries/" + lang + "/" + query), Text.Encoding.UTF8)
-                If DefineWorker.CancellationPending Then Return False
+            If DefineWorker.CancellationPending Then Return False
 
-                Dim info As String = reader.ReadToEnd()
-                Dim xmldoc = JsonConvert.DeserializeXmlNode("{""info"": " + info + "}", "root")
+            Dim webRequest = Net.WebRequest.Create("https://dictionaryapi.com/api/v3/references/thesaurus/json/" + query + "?key=" + MerriamWebsterKey)
+            webRequest.Method = "GET"
+            webRequest.Timeout = 12000
+            webRequest.ContentType = "application/json"
 
-                For Each i As Xml.XmlNode In xmldoc.ChildNodes.Item(0)
-                    Try
-                        Dim currentkey = i.FirstChild.InnerText
-                        dict.Add(i.FirstChild.InnerText, New Dictionary(Of String, Dictionary(Of String, List(Of String))))
+            Using s As Stream = webRequest.GetResponse().GetResponseStream()
+                Using sr = New StreamReader(s)
+                    If DefineWorker.CancellationPending Then Return False
 
-                        For Each j As Xml.XmlNode In i.ChildNodes
-                            If j.OuterXml.StartsWith("<meanings>") Then
+                    Dim obj = JObject.Parse("{""info"":" + sr.ReadToEnd() + "}")
 
-                                Dim wordtype As String = ""
-                                For Each k As Xml.XmlNode In j.ChildNodes
-                                    If k.OuterXml.StartsWith("<partOfSpeech>") Then
-                                        wordtype = k.InnerText
-                                        dict.Item(currentkey).Add(wordtype, New Dictionary(Of String, List(Of String)))
+                    If obj("info").Count() > 0 Then
+                        For Each result In obj("info")
+                            If Not thesaurus.ContainsKey(result("hwi")("hw")) Then
+                                thesaurus.Add(result("hwi")("hw"), New Dictionary(Of String, Dictionary(Of String, List(Of String))))
+                            End If
 
-                                    ElseIf k.OuterXml.StartsWith("<definitions>") Then
-                                        Dim lastdef As String = ""
-                                        For Each l As Xml.XmlNode In k.ChildNodes
-                                            If l.OuterXml.StartsWith("<definition>") Then
-                                                lastdef = l.InnerText
-                                                If Not lastdef = "" Then dict.Item(currentkey)(wordtype).Add(lastdef, New List(Of String))
+                            thesaurus(result("hwi")("hw")).Add(result("fl"), New Dictionary(Of String, List(Of String)))
 
-                                            ElseIf l.OuterXml.StartsWith("<synonyms>") Then
-                                                If Not lastdef = "" And Not l.InnerText = "" Then
-                                                    dict.Item(currentkey)(wordtype)(lastdef).Add(l.InnerText)
-                                                End If
+                            For Each def In result("def")(0)("sseq")
+                                If def(0)(1)("syn_list") IsNot Nothing Then
+                                    If Not thesaurus(result("hwi")("hw"))(result("fl")).ContainsKey(def(0)(1)("dt")(0)(1)) Then
+                                        thesaurus(result("hwi")("hw"))(result("fl")).Add(def(0)(1)("dt")(0)(1), New List(Of String))
+                                    End If
 
+                                    For Each syn In def(0)(1)("syn_list")(0)
+                                        thesaurus(result("hwi")("hw"))(result("fl"))(def(0)(1)("dt")(0)(1)).Add(syn("wd"))
+                                    Next
+                                End If
+                            Next
+                        Next
+                    Else
+                        Throw New Exception()
+                    End If
+                End Using
+            End Using
+
+            Return True
+
+        Catch ex As Exception
+            DefineError = True
+            Return False
+
+        Finally
+            client.Dispose()
+
+        End Try
+
+    End Function
+
+    Private Function UseLexicala(query As String, lang As String, mode As String) As Boolean
+        Dim client As New Net.WebClient()
+
+        If LexicalaKey = "" Then
+            Try
+                ' This functionality requires an API key from Lexicala
+                ' ----------------------------------------------------
+                Dim info = Windows.Application.GetResourceStream(New Uri("pack://application:,,,/Type Express;component/keylexicala.secret"))
+                Using sr = New StreamReader(info.Stream)
+                    LexicalaKey = sr.ReadToEnd()
+                End Using
+
+            Catch
+                NewMessage(Funcs.ChooseLang($"Unable to retrieve dictionary/thesaurus API key.{Chr(10)}Please contact support.",
+                                            $"Impossible de récupérer la clé API dictionnaire.{Chr(10)}Veuillez contacter l'assistance."),
+                           Funcs.ChooseLang("Critical error", "Erreur critique"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+                DefineError = True
+                Return False
+            End Try
+        End If
+
+        Try
+            query = query.Replace(" ", "_")
+            If DefineWorker.CancellationPending Then Return False
+
+            Dim webRequest = Net.WebRequest.Create("https://lexicala1.p.rapidapi.com/search-entries?source=global&language=" + lang + "&text=" + query + "&morph=true")
+            webRequest.Method = "GET"
+            webRequest.Timeout = 12000
+            webRequest.ContentType = "application/json"
+            webRequest.Headers.Add("X-RapidAPI-Host", "lexicala1.p.rapidapi.com")
+            webRequest.Headers.Add("X-RapidAPI-Key", LexicalaKey)
+
+            Using s As Stream = webRequest.GetResponse().GetResponseStream()
+                Using sr = New StreamReader(s)
+                    If DefineWorker.CancellationPending Then Return False
+
+                    Dim obj = JObject.Parse(sr.ReadToEnd())
+
+                    If obj("results").Count() > 0 Then
+                        If mode = "definitions" Then
+                            dict = New Dictionary(Of String, Dictionary(Of String, Dictionary(Of String, String)))
+
+                            For Each result In obj("results")
+                                If result("headword")("pos") IsNot Nothing Then
+                                    If Not dict.ContainsKey(result("headword")("text")) Then
+                                        dict.Add(result("headword")("text"), New Dictionary(Of String, Dictionary(Of String, String)))
+                                    End If
+
+                                    dict(result("headword")("text")).Add(result("headword")("pos"), New Dictionary(Of String, String))
+
+                                    For Each def In result("senses")
+                                        If def("definition") IsNot Nothing Then
+                                            If Not dict(result("headword")("text"))(result("headword")("pos")).ContainsKey(def("definition")) Then
+                                                dict(result("headword")("text"))(result("headword")("pos")).Add(def("definition"), "sense")
                                             End If
+                                        End If
+                                    Next
+                                End If
+                            Next
+
+                        Else
+                            thesaurus = New Dictionary(Of String, Dictionary(Of String, Dictionary(Of String, List(Of String))))
+
+                            For Each result In obj("results")
+                                If Not thesaurus.ContainsKey(result("headword")("text")) Then
+                                    thesaurus.Add(result("headword")("text"), New Dictionary(Of String, Dictionary(Of String, List(Of String))))
+                                End If
+
+                                thesaurus(result("headword")("text")).Add(result("headword")("pos"), New Dictionary(Of String, List(Of String)) From {{"", New List(Of String) From {}}})
+
+                                For Each def In result("senses")
+                                    If def("synonyms") IsNot Nothing Then
+                                        For Each synonym In def("synonyms")
+                                            thesaurus(result("headword")("text"))(result("headword")("pos"))("").Add(synonym)
                                         Next
                                     End If
                                 Next
-                            End If
-                        Next
-                    Catch
-                    End Try
-                Next
+                            Next
 
+                        End If
+
+                    Else
+                        Throw New Exception()
+                    End If
+                End Using
             End Using
+
+            Return True
+
+        Catch ex As Exception
+            DefineError = True
+            Return False
+
+        Finally
+            client.Dispose()
+
+        End Try
+
+    End Function
+
+    Private Function UseSynonymsAPI(query As String) As Boolean
+        Dim client As New Net.WebClient()
+        Try
+            query = query.Replace(" ", "_")
+            If DefineWorker.CancellationPending Then Return False
+
+            Dim webRequest = Net.WebRequest.Create("https://synonymes-api.vercel.app/" + query)
+            webRequest.Method = "GET"
+            webRequest.Timeout = 12000
+            webRequest.ContentType = "application/json"
+
+            Using s As Stream = webRequest.GetResponse().GetResponseStream()
+                Using sr = New StreamReader(s)
+                    If DefineWorker.CancellationPending Then Return False
+
+                    Dim obj = JObject.Parse(sr.ReadToEnd())
+                    thesaurus = New Dictionary(Of String, Dictionary(Of String, Dictionary(Of String, List(Of String)))) From {
+                        {obj("word"), New Dictionary(Of String, Dictionary(Of String, List(Of String)))}
+                    }
+                    thesaurus(obj("word")).Add(obj("entries")(0)("category"), New Dictionary(Of String, List(Of String)) From {{"", New List(Of String) From {}}})
+
+                    For Each synonym In obj("entries")(0)("synonyms")
+                        thesaurus(obj("word"))(obj("entries")(0)("category"))("").Add(synonym)
+                    Next
+                End Using
+            End Using
+
             Return True
 
         Catch ex As Exception
@@ -6514,7 +6747,7 @@ Class MainWindow
 
     Private Function CreateWordLbl(text As String) As TextBlock
         Dim word As TextBlock = XamlReader.Parse("<TextBlock Text='" +
-                                                 Funcs.EscapeChars(text) + "' FontWeight='SemiBold' FontSize='15' Padding='0,10,0,0' TextTrimming='CharacterEllipsis' Name='WordTxt' Margin='0,0,0,0' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'/>")
+                                                 Funcs.EscapeChars(text) + "' FontWeight='SemiBold' FontSize='15' Padding='0,20,0,0' TextTrimming='CharacterEllipsis' Name='WordTxt' Margin='0,0,0,0' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'/>")
         Return word
 
     End Function
@@ -6526,35 +6759,56 @@ Class MainWindow
 
     End Function
 
-    Private Function CreateDefPnl(text As String, synonyms As List(Of String), number As Integer) As DockPanel
-        Dim definition As DockPanel = XamlReader.Parse("<DockPanel Name='DefinitionPnl' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:ex='clr-namespace:ExpressControls;assembly=ExpressControls' UseLayoutRounding='True'><ex:AppButton Name='SynonymsBtn' IconVisibility='Collapsed' GapMargin='0' MoreVisibility='Visible' Text='" +
-                                                       Funcs.ChooseLang("—  Synonyms", "—  Synonymes") + "' Margin='34,10,0,0' Height='32' VerticalAlignment='Top' HorizontalAlignment='Left' DockPanel.Dock='Bottom'/><TextBlock Text='" +
-                                                       number.ToString() + ".' FontSize='14' Padding='0,10,0,0' TextAlignment='Right' TextTrimming='CharacterEllipsis' Name='DefNumTxt' Width='24' Margin='0,0,0,0' /><TextBlock Text='" +
-                                                       Funcs.EscapeChars(text) + "' FontSize='14' Padding='10,10,0,0' TextWrapping='Wrap' Name='DefinitionTxt' Margin='0,0,0,0' /></DockPanel>")
+    Private Function CreateDefPnl(text As String, type As String, number As Integer, syns As List(Of String)) As DockPanel
 
-        Dim syn As Controls.Button = definition.FindName("SynonymsBtn")
-        If synonyms.Count = 0 Then
-            syn.Visibility = Visibility.Collapsed
+        If DictMode = "synonyms" And Not DefineLang = "en" Then
+            Dim synlist As DockPanel = XamlReader.Parse("<DockPanel Margin='0,5,0,0' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:ex='clr-namespace:ExpressControls;assembly=ExpressControls' Name='SynonymItemsStack'><StackPanel Name='SynonymItems' Orientation='Vertical'></StackPanel></DockPanel>")
+            Dim syn As StackPanel = synlist.FindName("SynonymItems")
+
+            For Each i In syns
+                Dim btn As Controls.Button = XamlReader.Parse("<ex:AppButton xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:ex='clr-namespace:ExpressControls;assembly=ExpressControls' Text='" +
+                                                              Funcs.EscapeChars(i) + "' GapMargin='0' HorizontalContentAlignment='Stretch' CornerRadius='0' Height='32' IconVisibility='Collapsed' NoShadow='True' Background='Transparent'/>")
+                syn.Children.Add(btn)
+                AddHandler btn.Click, AddressOf SynBtns_Click
+            Next
+            Return synlist
+
         Else
-            syn.Tag = synonyms
-            AddHandler syn.Click, AddressOf SynsBtns_Click
-        End If
+            Dim controlid = "•"
+            Dim controlmarg = "24"
+            Dim controlwidth = "14"
 
-        Return definition
+            If type = "sense" Then
+                controlid = number.ToString() + "."
+                controlmarg = "0"
+                controlwidth = "24"
+            End If
+
+            Dim definition As DockPanel = XamlReader.Parse("<DockPanel Name='DefinitionPnl' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:ex='clr-namespace:ExpressControls;assembly=ExpressControls' UseLayoutRounding='True'><ex:AppButton Name='SynonymsBtn' IconVisibility='Collapsed' GapMargin='0' MoreVisibility='Visible' Text='" +
+                                                           Funcs.ChooseLang("Synonyms", "Synonymes") + "' Margin='25,10,0,0' Height='32' VerticalAlignment='Top' HorizontalAlignment='Left' DockPanel.Dock='Bottom'/><TextBlock Text='" +
+                                                           controlid + "' FontSize='14' Padding='0,10,0,0' TextTrimming='CharacterEllipsis' Name='DefNumTxt' Width='" +
+                                                           controlwidth + "' Margin='" +
+                                                           controlmarg + ",0,0,0' /><TextBlock Text='" +
+                                                           Funcs.EscapeChars(text) + "' FontSize='14' Padding='0,10,0,0' TextWrapping='Wrap' Name='DefinitionTxt' Margin='0,0,0,0' /></DockPanel>")
+
+            Dim syn As Controls.Button = definition.FindName("SynonymsBtn")
+
+            If syns.Count > 0 Then
+                syn.Visibility = Visibility.Visible
+                syn.Tag = syns
+                AddHandler syn.Click, AddressOf SynsBtns_Click
+            Else
+                syn.Visibility = Visibility.Collapsed
+            End If
+
+            Return definition
+
+        End If
 
     End Function
 
     Private Sub SynsBtns_Click(sender As Controls.Button, e As RoutedEventArgs)
         SynStack.ItemsSource = sender.Tag
-
-        'For Each i In sender.Tag
-        '    Dim synbtn As Controls.Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='{DynamicResource BackColor}' HorizontalContentAlignment='Left' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='SynSampleBtn' Tag='8' Height='30' Margin='0,0,0,0' VerticalAlignment='Top' ToolTip='" +
-        '                                            Funcs.EscapeChars(i.ToString()) + "' DockPanel.Dock='Bottom' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><DockPanel><TextBlock Text='" +
-        '                                            Funcs.EscapeChars(i.ToString()) + "' FontSize='14' Padding='10,0,5,0' TextTrimming='CharacterEllipsis' Name='HomeBtnTxt_Copy25' Height='21.31' Margin='0,0,0,0' HorizontalAlignment='Center' VerticalAlignment='Center' /></DockPanel></Button>")
-        '    synbtn.Tag = i.ToString()
-        '    AddHandler synbtn.Click, AddressOf SynBtns_Click
-        '    SynStack.Children.Add(synbtn)
-        'Next
 
         SynonymPopup.PlacementTarget = sender
         SynScroll.ScrollToTop()
@@ -6584,37 +6838,99 @@ Class MainWindow
         End If
 
         DefineError = False
-        If DefineWorker.CancellationPending Or GetDefs(SearchTerm, DefineLang) = False Then e.Cancel = True
+        If DefineWorker.CancellationPending Or GetDictionaryResults(SearchTerm, DefineLang, DictMode) = False Then
+            e.Cancel = True
+        End If
 
     End Sub
 
     Private Sub DefineWorker_RunWorkerCompleted(sender As Object, e As RunWorkerCompletedEventArgs)
         DefineSearchBtn.IsEnabled = True
+        DefinitionsBtn.IsEnabled = True
+        SynonymsBtn.IsEnabled = True
         DefineStack.Children.Clear()
+        Dim NoItemsAdded = True
 
         If e.Cancelled Then
-            If DefineError Then NewMessage(Funcs.ChooseLang($"We couldn't get definitions for that word. Please check your spelling and try again.{Chr(10)}{Chr(10)}If this problem persists, we may be experiencing issues. Please try again later and check for app updates.",
-                                                      $"Nous n'arrivions pas à obtenir les définitions pour ce mot. Veuillez vérifier l'orthographe et réessayer.{Chr(10)}{Chr(10)}Si ce problème persiste, il est possible que nous rencontrons des problèmes de réseau. Veuillez réessayer plus tard et vérifier les mises à jour de l'application."),
-                                           Funcs.ChooseLang("Dictionary Error", "Erreur de Dictionnaire"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+            If DefineError Then
+                Dim modetxt = Funcs.ChooseLang("definitions", "définitions")
+                If DictMode = "synonyms" Then modetxt = Funcs.ChooseLang("synonyms", "synonymes")
+
+                NewMessage(Funcs.ChooseLang($"We couldn't get {modetxt} for that word. Be sure to:{Chr(10)}— check your spelling is correct{Chr(10)}— try using words like 'swim' instead of 'swam'{Chr(10)}{Chr(10)}If this problem persists, we may be experiencing issues. Please try again later and check for app updates.",
+                                            $"Nous n'arrivions pas à obtenir les {modetxt} pour ce mot. Veuillez :{Chr(10)}— vérifier que l'orthographe est correcte{Chr(10)}— utiliser des mots comme 'nager' au lieu de 'nagé'{Chr(10)}{Chr(10)}Si ce problème persiste, il est possible que nous rencontrons des problèmes de réseau. Veuillez réessayer plus tard et vérifier les mises à jour de l'application."),
+                           Funcs.ChooseLang("Dictionary Error", "Erreur de Dictionnaire"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+            End If
 
         Else
-            For Each word In dict.Keys
-                DefineStack.Children.Add(CreateWordLbl(word))
+            If DictMode = "definitions" Then
+                For Each word In dict.Keys
+                    If dict(word).Keys.Count > 0 Then
+                        Dim HasItems = False
+                        For Each wordtype In dict(word).Keys
+                            If dict(word)(wordtype).Keys.Count > 0 Then
+                                HasItems = True
+                                Exit For
+                            End If
+                        Next
 
-                For Each wordtype In dict(word).Keys
-                    DefineStack.Children.Add(CreateWordTypeLbl(wordtype))
+                        If HasItems Then
+                            DefineStack.Children.Add(CreateWordLbl(word))
+                            NoItemsAdded = False
 
-                    Dim defcount As Integer = 1
-                    For Each defin In dict(word)(wordtype).Keys
-                        Dim synonyms As New List(Of String) From {}
-                        synonyms.AddRange(dict(word)(wordtype)(defin))
+                            For Each wordtype In dict(word).Keys
+                                If dict(word)(wordtype).Keys.Count > 0 Then
+                                    DefineStack.Children.Add(CreateWordTypeLbl(wordtype))
 
-                        DefineStack.Children.Add(CreateDefPnl(defin, synonyms, defcount))
-                        defcount += 1
-                    Next
+                                    Dim defcount As Integer = 1
+                                    For Each defin In dict(word)(wordtype).Keys
+                                        DefineStack.Children.Add(CreateDefPnl(defin, dict(word)(wordtype)(defin), defcount, New List(Of String) From {}))
+                                        If dict(word)(wordtype)(defin) = "sense" Then defcount += 1
+                                    Next
+                                End If
+                            Next
+                        End If
+                    End If
                 Next
-            Next
 
+            Else
+                For Each word In thesaurus.Keys
+                    If thesaurus(word).Keys.Count > 0 Then
+                        Dim HasItems = False
+                        For Each wordtype In thesaurus(word).Keys
+                            If thesaurus(word)(wordtype).Keys.Count > 0 Then
+                                HasItems = True
+                                Exit For
+                            End If
+                        Next
+
+                        If HasItems Then
+                            DefineStack.Children.Add(CreateWordLbl(word))
+                            NoItemsAdded = False
+
+                            For Each wordtype In thesaurus(word).Keys
+                                If thesaurus(word)(wordtype).Keys.Count > 0 Then
+                                    DefineStack.Children.Add(CreateWordTypeLbl(wordtype))
+
+                                    Dim defcount As Integer = 1
+                                    For Each defin In thesaurus(word)(wordtype).Keys
+                                        DefineStack.Children.Add(CreateDefPnl(defin, "sense", defcount, thesaurus(word)(wordtype)(defin)))
+                                        defcount += 1
+                                    Next
+                                End If
+                            Next
+                        End If
+                    End If
+                Next
+
+            End If
+
+            If NoItemsAdded Then
+                Dim modetxt = Funcs.ChooseLang("definitions", "définitions")
+                If DictMode = "synonyms" Then modetxt = Funcs.ChooseLang("synonyms", "synonymes")
+                NewMessage(Funcs.ChooseLang($"We couldn't get {modetxt} for that word. Be sure to:{Chr(10)}— check your spelling is correct{Chr(10)}— try using words like 'swim' instead of 'swam'{Chr(10)}{Chr(10)}If this problem persists, we may be experiencing issues. Please try again later and check for app updates.",
+                                            $"Nous n'arrivions pas à obtenir les {modetxt} pour ce mot. Veuillez :{Chr(10)}— vérifier que l'orthographe est correcte{Chr(10)}— utiliser des mots comme 'nager' au lieu de 'nagé'{Chr(10)}{Chr(10)}Si ce problème persiste, il est possible que nous rencontrons des problèmes de réseau. Veuillez réessayer plus tard et vérifier les mises à jour de l'application."),
+                           Funcs.ChooseLang("Dictionary Error", "Erreur de Dictionnaire"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+            End If
         End If
 
     End Sub
@@ -7160,7 +7476,6 @@ Class MainWindow
         End If
 
     End Sub
-
 
 
     'Public DocHeight As Integer = 0
