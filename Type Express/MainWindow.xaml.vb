@@ -394,8 +394,8 @@ Class MainWindow
     End Sub
 
     Private Sub WorkAreaChanged(sender As Object, e As EventArgs)
-        MaxHeight = SystemParameters.WorkArea.Height + 12
-        MaxWidth = SystemParameters.WorkArea.Width + 12
+        MaxHeight = SystemParameters.WorkArea.Height + 13
+        MaxWidth = SystemParameters.WorkArea.Width + 13
 
     End Sub
 
@@ -1439,14 +1439,25 @@ Class MainWindow
         TemplateSearchTxt.Focus()
 
         If ThisFile = "" And DocTxt.Text = "" Then
-            SetTemplate(sender.Tag.ToString().Split(","))
+            If TypeOf sender.Tag Is String Then
+                SetTemplate(sender.Tag.ToString().Split(","))
+            Else
+                SetTemplate(sender.Tag)
+            End If
+
             CloseMenuStoryboard.Begin()
             TextFocus()
 
         Else
             Dim NewForm1 As New MainWindow
             NewForm1.Show()
-            NewForm1.SetTemplate(sender.Tag.ToString().Split(","))
+
+            If TypeOf sender.Tag Is String Then
+                NewForm1.SetTemplate(sender.Tag.ToString().Split(","))
+            Else
+                NewForm1.SetTemplate(sender.Tag)
+            End If
+
             NewForm1.MainTabs.SelectedIndex = 1
             NewForm1.TextFocus()
 

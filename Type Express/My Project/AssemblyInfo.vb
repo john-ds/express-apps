@@ -1,4 +1,4 @@
-﻿Imports System
+Imports System
 Imports System.Reflection
 Imports System.Runtime.InteropServices
 Imports System.Globalization
@@ -55,6 +55,6 @@ Imports System.Windows
 ' by using the '*' as shown below:
 ' <Assembly: AssemblyVersion("1.0.*")>
 
-<Assembly: AssemblyVersion("5.1.0.0")>
-<Assembly: AssemblyFileVersion("5.1.0.0")>
+<Assembly: AssemblyVersion("5.1.1.0")>
+<Assembly: AssemblyFileVersion("5.1.1.0")>
 <Assembly: NeutralResourcesLanguage("en-GB")>

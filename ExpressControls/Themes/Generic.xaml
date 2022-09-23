@@ -280,7 +280,7 @@
                                     VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
                                     x:Name="stack">
 
-                            <ContentControl Content="{x:Null}"
+                            <ContentControl Content="{DynamicResource CircleUntickIcon}"
                                             Focusable="False"
                                             Margin="0,4,0,4"
                                             Width="{TemplateBinding IconSize}"
@@ -301,7 +301,7 @@
 
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter Property="Content" Value="{DynamicResource TickIcon}" TargetName="contp"/>
+                            <Setter Property="Content" Value="{DynamicResource CircleTickIcon}" TargetName="contp"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter Property="Background" TargetName="border" Value="{DynamicResource AppHoverColor}"/>
