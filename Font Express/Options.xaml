@@ -91,19 +91,21 @@
                                         </ScrollViewer>
                                     </DockPanel>
                                     <DockPanel x:Name="ImportPnl" Margin="0">
-                                        <ex:AppButton x:Name="ImportBtn" Icon="{DynamicResource ImportSettingsIcon}" Text="{DynamicResource FnImportStr}" Margin="30,5,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                                        <ex:AppButton x:Name="ImportBtn" Icon="{DynamicResource ImportSettingsIcon}" Text="{DynamicResource FnImportFontsStr}" Margin="30,5,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
                                         <ex:AppButton x:Name="ExportBtn" Icon="{DynamicResource ExportSettingsIcon}" Text="{DynamicResource FnExportFontsStr}" Margin="10,5,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
                                     </DockPanel>
                                     <DockPanel x:Name="ExportPnl" Margin="0">
-                                        <TextBlock FontSize="14" Padding="30,15,0,0" DockPanel.Dock="Top" Text="{DynamicResource FnExportStr}" Margin="0,10,0,0"/>
+                                        <TextBlock FontSize="14" Padding="30,15,0,0" DockPanel.Dock="Top" Text="{DynamicResource FnExportAllFontsStr}" Margin="0,10,0,0"/>
                                         <ex:AppButton x:Name="ExportAllBtn" Icon="{DynamicResource ExportIcon}" Text="{DynamicResource FnExportAllStr}" Margin="30,5,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
                                     </DockPanel>
 
                                     <Label x:Name="MenuHeaderLbl_Copy" Height="50"  VerticalContentAlignment="Bottom" Margin="0" Padding="30,5,5,5" FontSize="20" Content="{DynamicResource GeneralStr}" Background="{x:Null}" Foreground="{DynamicResource TextColor}"/>
                                     <DockPanel x:Name="InterfacePnl" LastChildFill="False">
                                         <TextBlock FontSize="14" Padding="30,15,0,0" DockPanel.Dock="Top" Text="{DynamicResource GnLangStr}"/>
-                                        <ex:AppRadioButton x:Name="EnglishRadio1" DockPanel.Dock="Top" Content="{DynamicResource EnglishUKStr}" CornerRadius="0" HorizontalContentAlignment="Stretch" IsChecked="True" GroupName="InterfaceLangOptions" IconSize="20" FontSize="12" HorizontalAlignment="Left" MinWidth="200" Margin="30,5,0,0"/>
-                                        <ex:AppRadioButton x:Name="FrenchRadio1" DockPanel.Dock="Top" Content="{DynamicResource FrenchFRStr}" CornerRadius="0" HorizontalContentAlignment="Stretch" GroupName="InterfaceLangOptions" IconSize="20" FontSize="12" HorizontalAlignment="Left" MinWidth="200" Margin="30,0,0,0"/>
+                                        <ex:AppRadioButton Tag="en-GB" x:Name="EnglishRadio1" DockPanel.Dock="Top" Content="{DynamicResource EnglishUKStr}" CornerRadius="0" HorizontalContentAlignment="Stretch" IsChecked="True" GroupName="InterfaceLangOptions" IconSize="20" FontSize="12" HorizontalAlignment="Left" MinWidth="200" Margin="30,5,0,0"/>
+                                        <ex:AppRadioButton Tag="fr-FR" x:Name="FrenchRadio1" DockPanel.Dock="Top" Content="{DynamicResource FrenchFRStr}" CornerRadius="0" HorizontalContentAlignment="Stretch" GroupName="InterfaceLangOptions" IconSize="20" FontSize="12" HorizontalAlignment="Left" MinWidth="200" Margin="30,0,0,0"/>
+                                        <ex:AppRadioButton Tag="es-ES" x:Name="SpanishRadio1" DockPanel.Dock="Top" Content="{DynamicResource SpanishESStr}" CornerRadius="0" HorizontalContentAlignment="Stretch" GroupName="InterfaceLangOptions" IconSize="20" FontSize="12" HorizontalAlignment="Left" MinWidth="200" Margin="30,0,0,0"/>
+                                        <ex:AppRadioButton Tag="it-IT" x:Name="ItalianRadio1" DockPanel.Dock="Top" Content="{DynamicResource ItalianITStr}" CornerRadius="0" HorizontalContentAlignment="Stretch" GroupName="InterfaceLangOptions" IconSize="20" FontSize="12" HorizontalAlignment="Left" MinWidth="200" Margin="30,0,0,0"/>
                                     </DockPanel>
                                     <DockPanel x:Name="SoundsPnl" LastChildFill="False">
                                         <TextBlock FontSize="14" Padding="30,15,0,0" DockPanel.Dock="Top" Text="{DynamicResource GnSoundsStr}"/>

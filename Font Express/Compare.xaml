@@ -111,7 +111,7 @@
                             <DockPanel Height="42" VerticalAlignment="Bottom" Background="{DynamicResource SecondaryColor}" LastChildFill="False" DockPanel.Dock="Bottom">
                                 <Rectangle Fill="{DynamicResource AppColor}" Height="2" VerticalAlignment="Top" DockPanel.Dock="Top" Margin="0"/>
                                 <ex:MenuButton x:Name="SwapBtn" TextVisibility="Collapsed" Icon="{DynamicResource SwapIcon}" Margin="10,0,0,0" ToolTip="{DynamicResource SwapStr}" Visibility="Collapsed"/>
-                                <ex:MenuButton x:Name="ClearSelectionBtn" DockPanel.Dock="Right" Text="{DynamicResource ClearStr}" Icon="{DynamicResource CrossIcon}" Margin="0,0,12,0" Visibility="Collapsed"/>
+                                <ex:MenuButton x:Name="ClearSelectionBtn" DockPanel.Dock="Right" Text="{DynamicResource ClearSelectionStr}" Icon="{DynamicResource CrossIcon}" Margin="0,0,12,0" Visibility="Collapsed"/>
                                 <ex:MenuButton x:Name="TopBtn" DockPanel.Dock="Right" TextVisibility="Collapsed" Icon="{DynamicResource UpIcon}" Margin="10,0" ToolTip="{DynamicResource FnTopStr}" Visibility="Collapsed"/>
                                 <TextBlock x:Name="SelectedLbl" Margin="20,0,0,3" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="{DynamicResource NoFontsStr}"/>
                             </DockPanel>
@@ -133,9 +133,9 @@
                                     <DropShadowEffect Direction="270" Color="#FFC3C3C3" BlurRadius="15" Opacity="0.2"/>
                                 </DockPanel.Effect>
                                 <TextBlock x:Name="SideHeaderLbl" Margin="20,0,0,3" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="{DynamicResource CompareHeaderStr}"/>
-                                <ex:AppButton x:Name="ExitSearchBtn" Visibility="Collapsed" IconSize="20" Icon="{DynamicResource CrossIcon}" TextVisibility="Collapsed" GapMargin="0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" VerticalAlignment="Center" Height="Auto" Padding="4,0" ToolTip="{DynamicResource FnExitSearchStr}" DockPanel.Dock="Right" Margin="-15,0,20,0"/>
-                                <ex:AppButton x:Name="SearchBtn" IconSize="20" Icon="{DynamicResource SearchIcon}" TextVisibility="Collapsed" GapMargin="0" Margin="0,0,20,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" VerticalAlignment="Center" Height="Auto" Padding="4,0" ToolTip="{DynamicResource FnSearchStr}" DockPanel.Dock="Right"/>
-                                <TextBox x:Name="SearchTxt" Margin="15,0,10,0" Text="{DynamicResource FnSearchStr}" Foreground="#FF818181" UseLayoutRounding="False" VerticalContentAlignment="Center" VerticalAlignment="Center" Height="26" UndoLimit="0" Background="{DynamicResource BackColor}" Template="{DynamicResource RoundedTextBox}" MaxLines="1" DockPanel.Dock="Right" Width="200">
+                                <ex:AppButton x:Name="ExitSearchBtn" Visibility="Collapsed" IconSize="20" Icon="{DynamicResource CrossIcon}" TextVisibility="Collapsed" GapMargin="0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" VerticalAlignment="Center" Height="Auto" Padding="4,0" ToolTip="{DynamicResource FnClearSearchStr}" DockPanel.Dock="Right" Margin="-15,0,20,0"/>
+                                <ex:AppButton x:Name="SearchBtn" IconSize="20" Icon="{DynamicResource SearchIcon}" TextVisibility="Collapsed" GapMargin="0" Margin="0,0,20,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" VerticalAlignment="Center" Height="Auto" Padding="4,0" ToolTip="{DynamicResource SearchStr}" DockPanel.Dock="Right"/>
+                                <TextBox x:Name="SearchTxt" Margin="15,0,10,0" Text="{DynamicResource SearchStr}" Foreground="#FF818181" UseLayoutRounding="False" VerticalContentAlignment="Center" VerticalAlignment="Center" Height="26" UndoLimit="0" Background="{DynamicResource BackColor}" Template="{DynamicResource RoundedTextBox}" MaxLines="1" DockPanel.Dock="Right" Width="200">
                                     <TextBox.ContextMenu>
                                         <ContextMenu Visibility="Collapsed"/>
                                     </TextBox.ContextMenu>

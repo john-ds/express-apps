@@ -31,9 +31,8 @@
             Close()
 
         Else
-            MainWindow.NewMessage(Funcs.ChooseLang("Incorrect password. Please try again.",
-                                                        "Mot de passe incorrect. Veuillez réessayer."),
-                                  Funcs.ChooseLang("Access denied", "Accès refusé"), MessageBoxButton.OK, MessageBoxImage.Error)
+            MainWindow.NewMessage(Funcs.ChooseLang("IncorrectPasswordStr"),
+                                  Funcs.ChooseLang("AccessDeniedStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
             PasswordTxt.Clear()
 

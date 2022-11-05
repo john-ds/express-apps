@@ -61,21 +61,19 @@
     Private Sub OKBtn_Click(sender As Object, e As RoutedEventArgs) Handles OKBtn.Click
 
         If CategoryTxt.Text.Replace(" ", "") = "" Then
-            MainWindow.NewMessage(Funcs.ChooseLang("Please enter a category name first.", "Veuillez d'abord saisir un nom de catégorie."),
-                                  Funcs.ChooseLang("Category Error", "Erreur de Catégorie"), MessageBoxButton.OK, MessageBoxImage.Error)
+            MainWindow.NewMessage(Funcs.ChooseLang("NoCategoryNameStr"),
+                                  Funcs.ChooseLang("CategoryErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         ElseIf CategoryTxt.Text.Contains("//") Then
-            MainWindow.NewMessage(Funcs.ChooseLang("Category names cannot contain two slashes (//).",
-                                                   "Les noms de catégorie ne peuvent pas contenir deux barres obliques (//)."),
-                                  Funcs.ChooseLang("Category Error", "Erreur de Catégorie"), MessageBoxButton.OK, MessageBoxImage.Error)
+            MainWindow.NewMessage(Funcs.ChooseLang("CategorySlashErrorStr"),
+                                  Funcs.ChooseLang("CategoryErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         Else
             Dim count = 0
             For Each i In My.Settings.categories
-                If count <> CategoryIdx And (i.Split("//")(0) = CategoryTxt.Text Or CategoryTxt.Text = "Favourites" Or CategoryTxt.Text = "Favoris") Then
-                    MainWindow.NewMessage(Funcs.ChooseLang("That category name is already taken. Please try a different one.",
-                                                           "Ce nom de catégorie est déjà pris. Veuillez en essayer un autre."),
-                                          Funcs.ChooseLang("Category Error", "Erreur de Catégorie"), MessageBoxButton.OK, MessageBoxImage.Error)
+                If count <> CategoryIdx And i.Split("//")(0) = CategoryTxt.Text Then
+                    MainWindow.NewMessage(Funcs.ChooseLang("CategoryTakenStr"),
+                                          Funcs.ChooseLang("CategoryErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
                     Exit Sub
                 End If
 

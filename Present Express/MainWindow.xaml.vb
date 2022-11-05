@@ -11,34 +11,11 @@ Imports Newtonsoft.Json
 Class MainWindow
 
     ReadOnly PrintDoc As New PrintDocument
-
-    ReadOnly pictureDialog As New Forms.OpenFileDialog With {
-        .Title = "Choose pictures - Present Express",
-        .Filter = "Pictures|*.jpg;*.jpeg;*.png;*.bmp;*.gif|JPEG files|*.jpg;*.jpeg|PNG files|*.png|BMP files|*.bmp|GIF files|*.gif",
-        .FilterIndex = 0,
-        .Multiselect = True
-    }
-
-    ReadOnly saveDialog As New Microsoft.Win32.SaveFileDialog With {
-        .Title = "Present Express",
-        .Filter = "PRESENT files (.present)|*.present"
-    }
-
-    ReadOnly exportVideoDialog As New Microsoft.Win32.SaveFileDialog With {
-        .Title = "Present Express",
-        .Filter = "MP4 files (.mp4)|*.mp4|WMV files (.wmv)|*.wmv|AVI files (.avi)|*.avi"
-    }
-
-    ReadOnly folderBrowser As New Forms.FolderBrowserDialog With {
-        .Description = "Choose a folder below...",
-        .ShowNewFolderButton = True
-    }
-
-    ReadOnly openDialog As New Microsoft.Win32.OpenFileDialog With {
-        .Title = "Present Express",
-        .Filter = "PRESENT files (.present)|*.present",
-        .Multiselect = True
-    }
+    ReadOnly pictureDialog As Forms.OpenFileDialog
+    ReadOnly saveDialog As Microsoft.Win32.SaveFileDialog
+    ReadOnly exportVideoDialog As Microsoft.Win32.SaveFileDialog
+    ReadOnly folderBrowser As Forms.FolderBrowserDialog
+    ReadOnly openDialog As Microsoft.Win32.OpenFileDialog
 
     ReadOnly PrintPreviewDialog1 As New Forms.PrintPreviewDialog With {
         .Document = PrintDoc,
@@ -94,29 +71,35 @@ Class MainWindow
 
         End If
 
+        Funcs.SetLang(My.Settings.language)
 
-        If My.Settings.language = "fr-FR" Then
-            Threading.Thread.CurrentThread.CurrentCulture = New Globalization.CultureInfo("fr-FR")
-            Threading.Thread.CurrentThread.CurrentUICulture = New Globalization.CultureInfo("fr-FR")
+        pictureDialog = New Forms.OpenFileDialog With {
+            .Title = Funcs.ChooseLang("PicturesDialogStr") + " - Present Express",
+            .Filter = Funcs.ChooseLang("PicturesFilterStr"),
+            .FilterIndex = 0,
+            .Multiselect = True
+        }
 
-            Dim resdict As New ResourceDictionary() With {.Source = New Uri("/DictionaryFR.xaml", UriKind.Relative)}
-            Windows.Application.Current.Resources.MergedDictionaries.Add(resdict)
+        saveDialog = New Microsoft.Win32.SaveFileDialog With {
+            .Title = "Present Express",
+            .Filter = Funcs.ChooseLang("PresentFilterStr")
+        }
 
-            Dim commonresdict As New ResourceDictionary() With {.Source = New Uri("/CommonDictionaryFR.xaml", UriKind.Relative)}
-            Windows.Application.Current.Resources.MergedDictionaries.Add(commonresdict)
+        exportVideoDialog = New Microsoft.Win32.SaveFileDialog With {
+            .Title = "Present Express",
+            .Filter = Funcs.ChooseLang("VideosFilterStr")
+        }
 
-            pictureDialog.Title = "Choisir des images - Present Express"
-            pictureDialog.Filter = "Images|*.jpg;*.png;*.bmp;*.gif|Fichiers JPEG|*.jpg|Fichiers PNG|*.png|Fichiers BMP|*.bmp|Fichiers GIF|*.gif"
-            saveDialog.Filter = "Fichiers PRESENT (.present)|*.present"
-            openDialog.Filter = "Fichiers PRESENT (.present)|*.present"
-            folderBrowser.Description = "Choisissez un dossier ci-dessous..."
-            exportVideoDialog.Filter = "Fichiers MP4 (.mp4)|*.mp4|Fichiers WMV (.wmv)|*.wmv|Fichiers AVI (.avi)|*.avi"
+        folderBrowser = New Forms.FolderBrowserDialog With {
+            .Description = Funcs.ChooseLang("ChooseFolderDialogStr"),
+            .ShowNewFolderButton = True
+        }
 
-        ElseIf My.Settings.language = "en-GB" Then
-            Threading.Thread.CurrentThread.CurrentCulture = New Globalization.CultureInfo("en-GB")
-            Threading.Thread.CurrentThread.CurrentUICulture = New Globalization.CultureInfo("en-GB")
-
-        End If
+        openDialog = New Microsoft.Win32.OpenFileDialog With {
+            .Title = "Present Express",
+            .Filter = Funcs.ChooseLang("PresentFilterStr"),
+            .Multiselect = True
+        }
 
         If My.Settings.maximised Then
             WindowState = WindowState.Maximized
@@ -146,10 +129,6 @@ Class MainWindow
         OpenMenuStoryboard = TryFindResource("OpenMenuStoryboard")
         CloseMenuStoryboard = TryFindResource("CloseMenuStoryboard")
         AddHandler CloseMenuStoryboard.Completed, AddressOf CloseMenu_Completed
-
-        MaxHeight = SystemParameters.WorkArea.Height + 13
-        MaxWidth = SystemParameters.WorkArea.Width + 13
-        AddHandler SystemParameters.StaticPropertyChanged, AddressOf WorkAreaChanged
 
         ' Settings
         If My.Settings.savelocation = "" Then
@@ -220,21 +199,21 @@ Class MainWindow
                 .Button3.IsEnabled = False
 
             ElseIf buttons = MessageBoxButton.YesNo Then
-                .Button1.Text = Funcs.ChooseLang("Yes", "Oui")
+                .Button1.Text = Funcs.ChooseLang("YesStr")
                 .Button2.Visibility = Visibility.Collapsed
                 .Button2.IsEnabled = False
-                .Button3.Text = Funcs.ChooseLang("No", "Non")
+                .Button3.Text = Funcs.ChooseLang("NoStr")
 
             ElseIf buttons = MessageBoxButton.YesNoCancel Then
-                .Button1.Text = Funcs.ChooseLang("Yes", "Oui")
-                .Button2.Text = Funcs.ChooseLang("No", "Non")
-                .Button3.Text = Funcs.ChooseLang("Cancel", "Annuler")
+                .Button1.Text = Funcs.ChooseLang("YesStr")
+                .Button2.Text = Funcs.ChooseLang("NoStr")
+                .Button3.Text = Funcs.ChooseLang("CancelStr")
 
             Else ' buttons = MessageBoxButtons.OKCancel
                 .Button1.Text = "OK"
                 .Button2.Visibility = Visibility.Collapsed
                 .Button2.IsEnabled = False
-                .Button3.Content = Funcs.ChooseLang("Cancel", "Annuler")
+                .Button3.Text = Funcs.ChooseLang("CancelStr")
 
             End If
 
@@ -259,19 +238,13 @@ Class MainWindow
 
     End Function
 
-    Private Sub WorkAreaChanged(sender As Object, e As EventArgs)
-        MaxHeight = SystemParameters.WorkArea.Height + 12
-        MaxWidth = SystemParameters.WorkArea.Width + 12
-
-    End Sub
-
     Private Sub MaxBtn_Click(sender As Object, e As RoutedEventArgs) Handles MaxBtn.Click
 
         If WindowState = WindowState.Maximized Then
-            WindowState = WindowState.Normal
+            SystemCommands.RestoreWindow(Me)
 
         Else
-            WindowState = WindowState.Maximized
+            SystemCommands.MaximizeWindow(Me)
 
         End If
 
@@ -294,9 +267,11 @@ Class MainWindow
     Private Sub TitleBtn_DoubleClick(sender As Object, e As RoutedEventArgs) Handles TitleBtn.MouseDoubleClick
 
         If WindowState = WindowState.Maximized Then
-            WindowState = WindowState.Normal
+            SystemCommands.RestoreWindow(Me)
+
         Else
-            WindowState = WindowState.Maximized
+            SystemCommands.MaximizeWindow(Me)
+
         End If
 
     End Sub
@@ -312,7 +287,7 @@ Class MainWindow
     End Sub
 
     Private Sub MinBtn_Click(sender As Object, e As RoutedEventArgs) Handles MinBtn.Click
-        WindowState = WindowState.Minimized
+        SystemCommands.MinimizeWindow(Me)
 
     End Sub
 
@@ -334,6 +309,16 @@ Class MainWindow
         End If
 
         CheckMenu()
+
+    End Sub
+
+    Private Sub MainWindow_Activated(sender As Object, e As EventArgs) Handles Me.Activated
+        MainRect.Fill = TryFindResource("AppColor")
+
+    End Sub
+
+    Private Sub MainWindow_Deactivated(sender As Object, e As EventArgs) Handles Me.Deactivated
+        MainRect.Fill = TryFindResource("AppLightColor")
 
     End Sub
 
@@ -361,7 +346,7 @@ Class MainWindow
             Dim info As String() = Funcs.GetNotificationInfo("Present")
 
             If Not info(0) = My.Application.Info.Version.ToString(3) Then
-                NotificationsTxt.Content = Funcs.ChooseLang("An update is available.", "Une mise à jour est disponible.")
+                NotificationsTxt.Content = Funcs.ChooseLang("UpdateAvailableStr")
                 NotifyBtnStack.Visibility = Visibility.Visible
 
                 If NotificationsPopup.IsOpen = False Then
@@ -373,7 +358,7 @@ Class MainWindow
                 If forcedialog Then CreateNotifyMsg(info)
 
             Else
-                NotificationsTxt.Content = Funcs.ChooseLang("You're up to date!", "Vous êtes à jour !")
+                NotificationsTxt.Content = Funcs.ChooseLang("UpToDateStr")
 
             End If
 
@@ -383,9 +368,8 @@ Class MainWindow
         Catch
             If NotificationsPopup.IsOpen Then
                 NotificationsPopup.IsOpen = False
-                NewMessage(Funcs.ChooseLang("It looks like we can't get notifications at the moment. Please check that you are connected to the Internet and try again.",
-                                            "On dirait que nous ne pouvons pas recevoir de notifications pour le moment. Vérifiez votre connexion Internet et réessayez."),
-                           Funcs.ChooseLang("No Internet", "Pas d'Internet"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("NotificationErrorStr"),
+                           Funcs.ChooseLang("NoInternetStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             End If
         End Try
 
@@ -399,33 +383,32 @@ Class MainWindow
             Dim features As String = ""
 
             If featurelist.Length <> 0 Then
-                features = Chr(10) + Chr(10) + Funcs.ChooseLang("What's new in this release?", "Quoi de neuf dans cette version ?") + Chr(10)
+                features = Chr(10) + Chr(10) + Funcs.ChooseLang("WhatsNewStr") + Chr(10)
 
                 For Each i In featurelist
                     features += "— " + i + Chr(10)
                 Next
             End If
 
-            Dim start As String = Funcs.ChooseLang("An update is available.", "Une mise à jour est disponible.")
+            Dim start As String = Funcs.ChooseLang("UpdateAvailableStr")
             Dim icon As MessageBoxImage = MessageBoxImage.Information
 
             If info(1) = "High" Then
-                start = Funcs.ChooseLang("An important update is available!", "Une mise à jour importante est disponible !")
+                start = Funcs.ChooseLang("ImportantUpdateStr")
                 icon = MessageBoxImage.Exclamation
             End If
 
-            If NewMessage(start + Chr(10) + "Version " + version + features + Chr(10) + Chr(10) +
-                          Funcs.ChooseLang("Would you like to visit the download page?", "Vous souhaitez visiter la page de téléchargement ?"),
-                          Funcs.ChooseLang("Present Express Updates", "Mises à Jour Present Express"), MessageBoxButton.YesNoCancel, icon) = MessageBoxResult.Yes Then
+            If NewMessage(start + Chr(10) + Funcs.ChooseLang("VersionStr") + " " + version + features + Chr(10) + Chr(10) +
+                          Funcs.ChooseLang("VisitDownloadPageStr"),
+                          Funcs.ChooseLang("UpdatesPStr"), MessageBoxButton.YesNoCancel, icon) = MessageBoxResult.Yes Then
 
                 Process.Start("https://express.johnjds.co.uk/update?app=present")
 
             End If
 
         Catch
-            NewMessage(Funcs.ChooseLang("We can't get update information at the moment. Please check that you are connected to the Internet and try again.",
-                                        "Nous ne pouvons pas obtenir les informations de mise à jour pour le moment. Vérifiez votre connexion Internet et réessayez."),
-                       Funcs.ChooseLang("No Internet", "Pas d'Internet"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("NotificationErrorStr"),
+                       Funcs.ChooseLang("NoInternetStr"), MessageBoxButton.OK, MessageBoxImage.Error)
         End Try
 
     End Sub
@@ -719,7 +702,7 @@ Class MainWindow
     Private Sub CheckMenu()
 
         If MainTabs.SelectedIndex = 1 Then
-            PresentBtnTxt.Text = "Menu"
+            PresentBtnTxt.Text = Funcs.ChooseLang("MenuStr")
             PresentBtnIcn.SetResourceReference(ContentProperty, "AppWhiteIcon")
             PresentBtn.Width = 76
             DocTabSelector.Visibility = Visibility.Visible
@@ -729,7 +712,7 @@ Class MainWindow
             MenuTabs.SelectedIndex = 5
 
         Else
-            PresentBtnTxt.Text = Funcs.ChooseLang("Close menu", "Fermer le menu")
+            PresentBtnTxt.Text = Funcs.ChooseLang("CloseMenuStr")
             PresentBtnIcn.SetResourceReference(ContentProperty, "BackWhiteIcon")
             PresentBtn.Width = 161
             DocTabSelector.Visibility = Visibility.Collapsed
@@ -788,8 +771,8 @@ Class MainWindow
             Dim SaveChoice As MessageBoxResult = MessageBoxResult.No
 
             If My.Settings.showprompt Then
-                SaveChoice = NewMessage(Funcs.ChooseLang("Do you want to save any changes to your slideshow?", "Vous voulez enregistrer toutes les modifications à votre slideshow ?"),
-                                        Funcs.ChooseLang("Before you go...", "Deux secondes..."), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation)
+                SaveChoice = NewMessage(Funcs.ChooseLang("OnExitDescPStr"),
+                                        Funcs.ChooseLang("OnExitStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation)
 
             End If
 
@@ -958,6 +941,7 @@ Class MainWindow
         Else
             Dim NewForm1 As New MainWindow
             NewForm1.Show()
+            NewForm1.Focus()
             NewForm1.MainTabs.SelectedIndex = 1
 
         End If
@@ -1000,6 +984,7 @@ Class MainWindow
         Else
             Dim NewForm1 As New MainWindow
             NewForm1.Show()
+            NewForm1.Focus()
             NewForm1.LoadFile(sender.Tag.ToString())
             NewForm1.MainTabs.SelectedIndex = 1
 
@@ -1064,9 +1049,8 @@ Class MainWindow
             Next
 
             If TemplateGrid.Children.Count = 0 Then
-                NewMessage(Funcs.ChooseLang("It looks like we can't get templates at the moment. Please check that you are connected to the Internet and try again.",
-                                            "On dirait que nous ne pouvons pas recevoir de modèles pour le moment. Vérifiez votre connexion Internet et réessayez."),
-                           Funcs.ChooseLang("No Internet", "Pas d'Internet"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("TemplateErrorStr"),
+                           Funcs.ChooseLang("NoInternetStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
                 ResetTemplateGrid()
 
@@ -1079,9 +1063,10 @@ Class MainWindow
             reader.Dispose()
 
         Catch ex As Exception
-            NewMessage(Funcs.ChooseLang("It looks like we can't get templates at the moment. Please check that you are connected to the Internet and try again.",
-                                        "On dirait que nous ne pouvons pas recevoir de modèles pour le moment. Vérifiez votre connexion Internet et réessayez."),
-                       Funcs.ChooseLang("No Internet", "Pas d'Internet"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("TemplateErrorStr"),
+                       Funcs.ChooseLang("NoInternetStr"), MessageBoxButton.OK, MessageBoxImage.Error)
+
+            ResetTemplateGrid()
 
         End Try
 
@@ -1634,9 +1619,9 @@ Class MainWindow
                     Select Case i("type")
                         Case "image"
                             If i.ContainsKey("filters") Then
-                                AddSlide(i("img"), i("name"), -1, i("timing"), i("filters"), i("original"))
+                                NewForm1.AddSlide(i("img"), i("name"), -1, i("timing"), i("filters"), i("original"))
                             Else
-                                AddSlide(i("img"), i("name"), -1, i("timing"))
+                                NewForm1.AddSlide(i("img"), i("name"), -1, i("timing"))
                             End If
                         Case "text"
                             NewForm1.AddSlide(i("text"), i("fontname"), i("fontstyle"), i("fontcolor"), i("fontsize"), -1, i("timing"))
@@ -1663,8 +1648,8 @@ Class MainWindow
             Return True
 
         Catch e As Exception
-            NewMessage($"{Funcs.ChooseLang("We ran into a problem while opening this file:", "Nous avons rencontré une erreur lors de l'ouverture de ce fichier :")}{Chr(10)}{filename}{Chr(10)}{Chr(10)}{Funcs.ChooseLang("Please try again.", "Veuillez réessayer.")}",
-                       Funcs.ChooseLang("Error opening file", "Erreur d'ouverture du fichier"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage($"{Funcs.ChooseLang("OpenFileErrorDescStr")}{Chr(10)}{filename}{Chr(10)}{Chr(10)}{Funcs.ChooseLang("TryAgainStr")}",
+                       Funcs.ChooseLang("OpenFileErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             Return False
 
         Finally
@@ -1737,9 +1722,8 @@ Class MainWindow
             LoadFile(filename)
 
         Else
-            If NewMessage(Funcs.ChooseLang("The file you are trying to open no longer exists. Would you like to remove it from the list?",
-                                        "Le fichier que vous essayez d'ouvrir n'existe plus. Vous souhaitez le supprimer de la liste ?"),
-                            Funcs.ChooseLang("File not found", "Fichier non trouvé"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+            If NewMessage(Funcs.ChooseLang("FileNotFoundDescStr"),
+                            Funcs.ChooseLang("FileNotFoundStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
                 If OpenTabs.SelectedIndex = 0 Then
                     RemoveRecent(filename)
@@ -1768,9 +1752,8 @@ Class MainWindow
             Process.Start(IO.Path.GetDirectoryName(ChosenFilename))
 
         Catch
-            If NewMessage(Funcs.ChooseLang("The file location you are trying to open no longer exists. Would you like to remove it from the list?",
-                                        "L'emplacement du fichier que vous essayez d'ouvrir n'existe plus. Vous souhaitez le supprimer de la liste ?"),
-                            Funcs.ChooseLang("Directory not found", "Répertoire non trouvé"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+            If NewMessage(Funcs.ChooseLang("DirNotFoundDescStr"),
+                          Funcs.ChooseLang("DirNotFoundStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
                 If OpenTabs.SelectedIndex = 0 Then
                     RemoveRecent(ChosenFilename)
@@ -1804,9 +1787,8 @@ Class MainWindow
 
     Private Sub ClearRecentsBtn_Click(sender As Object, e As RoutedEventArgs) Handles ClearRecentsBtn.Click
 
-        If NewMessage(Funcs.ChooseLang("Are you sure you want to delete all the files in your recents list? This can't be undone.",
-                                    "Vous êtes sûr(e) de vouloir supprimer tous les fichiers de votre liste récente ? Cela ne peut pas être annulé."),
-                        Funcs.ChooseLang("Are you sure?", "Vous êtes sûr(e) ?"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+        If NewMessage(Funcs.ChooseLang("ConfirmRecentsDeleteStr"),
+                      Funcs.ChooseLang("AreYouSureStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
             My.Settings.recents.Clear()
             My.Settings.Save()
@@ -1926,9 +1908,8 @@ Class MainWindow
 
     Private Sub ClearFavouritesBtn_Click(sender As Object, e As RoutedEventArgs) Handles ClearFavouritesBtn.Click
 
-        If NewMessage(Funcs.ChooseLang("Are you sure you want to delete all the files in your favourites list? This can't be undone.",
-                                    "Vous êtes sûr(e) de vouloir supprimer tous les fichiers de votre liste de favoris ? Cela ne peut pas être annulé."),
-                        Funcs.ChooseLang("Are you sure?", "Vous êtes sûr(e) ?"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+        If NewMessage(Funcs.ChooseLang("ConfirmFavsDeleteStr"),
+                      Funcs.ChooseLang("AreYouSureStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
             My.Settings.favourites.Clear()
             My.Settings.Save()
@@ -2012,8 +1993,8 @@ Class MainWindow
     Private Sub SaveBtn_Click(sender As Object, e As RoutedEventArgs) Handles SaveBtn.Click
 
         If AllSlides.Count = 0 Then
-            NewMessage(Funcs.ChooseLang("Please add a slide first.", "Veuillez d'abord ajouter une diapositive."),
-                       Funcs.ChooseLang("No slides", "Pas de diapositives"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+            NewMessage(Funcs.ChooseLang("NoSlidesDescStr"),
+                       Funcs.ChooseLang("NoSlidesStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
         Else
             If ThisFile = "" Then
                 If MainTabs.SelectedIndex = 1 Then
@@ -2181,13 +2162,12 @@ Class MainWindow
 
             End If
 
-            CreateTempLabel(Funcs.ChooseLang("Saving complete", "Enregistré"))
+            CreateTempLabel(Funcs.ChooseLang("SavingCompleteStr"))
             Return True
 
         Catch e As Exception
-            NewMessage(Funcs.ChooseLang($"We couldn't save your document:{Chr(10)}{filename}{Chr(10)}{Chr(10)}Check that you have permission to make changes to this file.",
-                                        $"Nous n'arrivions pas à enregistrer votre document :{Chr(10)}{filename}{Chr(10)}{Chr(10)}Vérifiez que vous avez la permission de modifier ce fichier."),
-                       Funcs.ChooseLang("Error saving file", "Erreur d'enregistrement du fichier"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("SavingErrorDescStr").Replace("{0}", filename),
+                       Funcs.ChooseLang("SavingErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
             Return False
 
@@ -2198,8 +2178,8 @@ Class MainWindow
     Private Sub BrowseSaveBtn_Click(sender As Object, e As RoutedEventArgs) Handles BrowseSaveBtn.Click
 
         If AllSlides.Count = 0 Then
-            NewMessage(Funcs.ChooseLang("Please add a slide first.", "Veuillez d'abord ajouter une diapositive."),
-                       Funcs.ChooseLang("No slides", "Pas de diapositives"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+            NewMessage(Funcs.ChooseLang("NoSlidesDescStr"),
+                       Funcs.ChooseLang("NoSlidesStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
 
         ElseIf saveDialog.ShowDialog() = True Then
             SaveFile(saveDialog.FileName)
@@ -2291,8 +2271,8 @@ Class MainWindow
     Private Sub SavePinned(folder As String)
 
         If AllSlides.Count = 0 Then
-            NewMessage(Funcs.ChooseLang("Please add a slide first.", "Veuillez d'abord ajouter une diapositive."),
-                       Funcs.ChooseLang("No slides", "Pas de diapositives"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+            NewMessage(Funcs.ChooseLang("NoSlidesDescStr"),
+                       Funcs.ChooseLang("NoSlidesStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
 
         Else
             saveDialog.InitialDirectory = folder
@@ -2331,9 +2311,8 @@ Class MainWindow
 
     Private Sub ClearPinnedBtn_Click(sender As Object, e As RoutedEventArgs) Handles ClearPinnedBtn.Click
 
-        If NewMessage(Funcs.ChooseLang("Are you sure you want to delete all the folders in your pinned list? This can't be undone.",
-                                    "Vous êtes sûr(e) de vouloir supprimer tous les dossiers de votre liste épinglée ? Cela ne peut pas être annulé."),
-                        Funcs.ChooseLang("Are you sure?", "Vous êtes sûr(e) ?"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+        If NewMessage(Funcs.ChooseLang("ConfirmPinnedDeleteStr"),
+                      Funcs.ChooseLang("AreYouSureStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
             My.Settings.pinned.Clear()
             My.Settings.Save()
@@ -2346,8 +2325,8 @@ Class MainWindow
     Private Sub SaveStatusBtn_Click(sender As Object, e As RoutedEventArgs) Handles SaveStatusBtn.Click
 
         If AllSlides.Count = 0 Then
-            NewMessage(Funcs.ChooseLang("Please add a slide first.", "Veuillez d'abord ajouter une diapositive."),
-                       Funcs.ChooseLang("No slides", "Pas de diapositives"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+            NewMessage(Funcs.ChooseLang("NoSlidesDescStr"),
+                       Funcs.ChooseLang("NoSlidesStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
 
         ElseIf ThisFile = "" Then
             If MainTabs.SelectedIndex = 1 Then
@@ -2384,8 +2363,8 @@ Class MainWindow
     Private Sub PrintPreviewBtn_Click(sender As Object, e As RoutedEventArgs) Handles PrintPreviewBtn.Click
 
         If AllSlides.Count = 0 Then
-            NewMessage(Funcs.ChooseLang("Please add a slide first.", "Veuillez d'abord ajouter une diapositive."),
-                       Funcs.ChooseLang("No slides", "Pas de diapositives"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+            NewMessage(Funcs.ChooseLang("NoSlidesDescStr"),
+                       Funcs.ChooseLang("NoSlidesStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
         Else
             PrintPreviewDialog1.ShowDialog()
 
@@ -2396,15 +2375,15 @@ Class MainWindow
     Private Sub PrintDialogBtn_Click(sender As Object, e As RoutedEventArgs) Handles PrintDialogBtn.Click
 
         If AllSlides.Count = 0 Then
-            NewMessage(Funcs.ChooseLang("Please add a slide first.", "Veuillez d'abord ajouter une diapositive."),
-                       Funcs.ChooseLang("No slides", "Pas de diapositives"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+            NewMessage(Funcs.ChooseLang("NoSlidesDescStr"),
+                       Funcs.ChooseLang("NoSlidesStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
         Else
             PrintDoc.DocumentName = Title
             If PrintDialog1.ShowDialog() = Forms.DialogResult.OK Then
                 PrintDoc.Print()
                 CloseMenuStoryboard.Begin()
 
-                CreateTempLabel(Funcs.ChooseLang("Sent to printer", "Envoyé à l'imprimante"))
+                CreateTempLabel(Funcs.ChooseLang("SentToPrinterStr"))
 
             End If
         End If
@@ -2482,8 +2461,8 @@ Class MainWindow
     Private Sub ExportVideoBtn_Click(sender As Object, e As RoutedEventArgs) Handles ExportVideoBtn.Click
 
         If AllSlides.Count = 0 Then
-            NewMessage(Funcs.ChooseLang("Please add a slide first.", "Veuillez d'abord ajouter une diapositive."),
-                       Funcs.ChooseLang("No slides", "Pas de diapositives"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+            NewMessage(Funcs.ChooseLang("NoSlidesDescStr"),
+                       Funcs.ChooseLang("NoSlidesStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
 
         ElseIf exportVideoDialog.ShowDialog() Then
             ExportVideoBtn.IsEnabled = False
@@ -2525,8 +2504,8 @@ Class MainWindow
     Private Sub ExportImagesBtn_Click(sender As Object, e As RoutedEventArgs) Handles ExportImagesBtn.Click
 
         If AllSlides.Count = 0 Then
-            NewMessage(Funcs.ChooseLang("Please add a slide first.", "Veuillez d'abord ajouter une diapositive."),
-                       Funcs.ChooseLang("No slides", "Pas de diapositives"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+            NewMessage(Funcs.ChooseLang("NoSlidesDescStr"),
+                       Funcs.ChooseLang("NoSlidesStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
 
         ElseIf folderBrowser.ShowDialog() Then
             Try
@@ -2592,13 +2571,12 @@ Class MainWindow
                     End Using
                 Next
 
-                NewMessage(Funcs.ChooseLang("Images successfully exported to:", "Images exportées avec succès vers :") + Chr(10) + foldername,
-                           Funcs.ChooseLang("Success", "Succès"), MessageBoxButton.OK, MessageBoxImage.Information)
+                NewMessage(Funcs.ChooseLang("ImagesExportedStr") + Chr(10) + foldername,
+                           Funcs.ChooseLang("SuccessStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
             Catch
-                NewMessage(Funcs.ChooseLang("Failed to export images. Please ensure you have access to the folder you selected.",
-                                            "Impossible d'exporter des images. Veuillez vous assurer que vous avez accès au dossier que vous avez sélectionné."),
-                           Funcs.ChooseLang("Export error", "Erreur d'exportation"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("ExportErrorDescStr"),
+                           Funcs.ChooseLang("ExportErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
             End Try
         End If
@@ -2624,8 +2602,8 @@ Class MainWindow
     Private Sub HTMLBtn_Click(sender As Object, e As RoutedEventArgs) Handles HTMLBtn.Click
 
         If AllSlides.Count = 0 Then
-            NewMessage(Funcs.ChooseLang("Please add a slide first.", "Veuillez d'abord ajouter une diapositive."),
-                       Funcs.ChooseLang("No slides", "Pas de diapositives"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+            NewMessage(Funcs.ChooseLang("NoSlidesDescStr"),
+                       Funcs.ChooseLang("NoSlidesStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
 
         ElseIf folderBrowser.ShowDialog() = Forms.DialogResult.OK Then
             Try
@@ -2730,18 +2708,17 @@ Class MainWindow
 
                 info = Windows.Application.GetResourceStream(New Uri("pack://application:,,,/Present Express;component/exportend.txt"))
                 Using sr = New IO.StreamReader(info.Stream)
-                    htmlstr += sr.ReadToEnd().Replace("Slides made with<br/>Present Express", Funcs.ChooseLang("Slides made with<br/>Present Express", "Diapositives créées avec<br/>Present Express"))
+                    htmlstr += sr.ReadToEnd().Replace("Slides made with<br/>Present Express", Funcs.ChooseLang("HTMLSlidesStr").Replace("{0}", "<br/>"))
                 End Using
 
                 IO.File.WriteAllText(foldername + "index.html", htmlstr, Text.Encoding.Unicode)
 
-                NewMessage(Funcs.ChooseLang("Slideshow successfully exported to:", "Diaporama exporté avec succès vers :") + Chr(10) + foldername,
-                           Funcs.ChooseLang("Success", "Succès"), MessageBoxButton.OK, MessageBoxImage.Information)
+                NewMessage(Funcs.ChooseLang("SlideshowExportedStr") + Chr(10) + foldername,
+                           Funcs.ChooseLang("SuccessStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
             Catch
-                NewMessage(Funcs.ChooseLang("Failed to export slideshow. Please ensure you have access to the folder you selected.",
-                                            "Impossible d'exporter le diaporama. Veuillez vous assurer que vous avez accès au dossier que vous avez sélectionné."),
-                           Funcs.ChooseLang("Export error", "Erreur d'exportation"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("SlideshowExportErrorStr"),
+                           Funcs.ChooseLang("ExportErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
             End Try
         End If
@@ -2798,7 +2775,7 @@ Class MainWindow
 
         If Root2Btn.Tag = 1 Then
             BeginStoryboard(TryFindResource("MoreDownInfoStoryboard"))
-            MoreRootTxt.Text = Funcs.ChooseLang("Show more", "Afficher plus")
+            MoreRootTxt.Text = Funcs.ChooseLang("ShowMoreStr")
             ShowMoreBtn.Visibility = Visibility.Visible
 
         Else
@@ -2806,7 +2783,7 @@ Class MainWindow
 
         End If
 
-        FileSizeTxt.Text = FormatBytes(DirSize())
+        FileSizeTxt.Text = Funcs.FormatBytes(DirSize())
 
         Dim dates As List(Of String) = GetFileDates()
         CreatedTxt.Text = dates(0)
@@ -2814,14 +2791,14 @@ Class MainWindow
         AccessedTxt.Text = dates(2)
 
         EditingTimeTxt.Tag = 0
-        EditingTimeTxt.Text = "<1 minute"
+        EditingTimeTxt.Text = "<1 " + Funcs.ChooseLang("MinuteStr")
         EditingTimer.Start()
 
     End Sub
 
     Private Sub ResetInfo()
         FileInfoStack.Visibility = Visibility.Collapsed
-        FilenameTxt.Text = Funcs.ChooseLang("Choose an option from the left.", "Choisissez une option à gauche.")
+        FilenameTxt.Text = Funcs.ChooseLang("OptionFromLeftStr")
 
         Root1Txt.Text = ""
         Root2Btn.Tag = 0
@@ -2835,38 +2812,6 @@ Class MainWindow
         MoreRootBtn.Visibility = Visibility.Collapsed
 
     End Sub
-
-    Public Function FormatBytes(BytesCaller As Long) As String
-        Dim DoubleBytes As Double
-
-        Try
-            Select Case BytesCaller
-                Case Is >= 1125899906842625
-                    Return Funcs.ChooseLang("1000+ TB", "1000+ To")
-                Case 1099511627776 To 1125899906842624
-                    DoubleBytes = BytesCaller / 1099511627776 'TB
-                    Return Math.Round(DoubleBytes, 2).ToString() & Funcs.ChooseLang(" TB", " To")
-                Case 1073741824 To 1099511627775
-                    DoubleBytes = BytesCaller / 1073741824 'GB
-                    Return Math.Round(DoubleBytes, 2).ToString() & Funcs.ChooseLang(" GB", " Go")
-                Case 1048576 To 1073741823
-                    DoubleBytes = BytesCaller / 1048576 'MB
-                    Return Math.Round(DoubleBytes, 2).ToString() & Funcs.ChooseLang(" MB", " Mo")
-                Case 1024 To 1048575
-                    DoubleBytes = BytesCaller / 1024 'KB
-                    Return Math.Round(DoubleBytes, 2).ToString() & Funcs.ChooseLang(" KB", " Ko")
-                Case 1 To 1023
-                    DoubleBytes = BytesCaller ' bytes
-                    Return Math.Round(DoubleBytes, 2).ToString() & Funcs.ChooseLang(" b", " o")
-                Case Else
-                    Return "—"
-            End Select
-
-        Catch
-            Return "—"
-        End Try
-
-    End Function
 
     Private Function DirSize() As Long
         Dim size As Long = 0L
@@ -2915,32 +2860,32 @@ Class MainWindow
 
         If hours = 0 Then
             If minutes = 1 Then
-                EditingTimeTxt.Text = "1 minute"
+                EditingTimeTxt.Text = "1 " + Funcs.ChooseLang("MinuteStr")
             Else
-                EditingTimeTxt.Text = minutes.ToString() + " minutes"
+                EditingTimeTxt.Text = minutes.ToString() + " " + Funcs.ChooseLang("MinutesStr")
             End If
 
         ElseIf hours >= 100 Then
-            EditingTimeTxt.Text = Funcs.ChooseLang("100+ hours", "100+ heures")
+            EditingTimeTxt.Text = "100+ " + Funcs.ChooseLang("HoursStr")
             EditingTimer.Stop()
 
         Else
             If hours = 1 Then
                 If minutes = 0 Then
-                    EditingTimeTxt.Text = Funcs.ChooseLang("1 hour", "1 heure")
+                    EditingTimeTxt.Text = "1 " + Funcs.ChooseLang("HourStr")
                 ElseIf minutes = 1 Then
-                    EditingTimeTxt.Text = Funcs.ChooseLang("1 hour, 1 minute", "1 heure, 1 minute")
+                    EditingTimeTxt.Text = $"1 {Funcs.ChooseLang("HourStr")}, 1 {Funcs.ChooseLang("MinuteStr")}"
                 Else
-                    EditingTimeTxt.Text = Funcs.ChooseLang("1 hour, ", "1 heure, ") + minutes.ToString() + " minutes"
+                    EditingTimeTxt.Text = "1 " + Funcs.ChooseLang("HourStr") + ", " + minutes.ToString() + " " + Funcs.ChooseLang("MinutesStr")
                 End If
 
             Else
                 If minutes = 0 Then
-                    EditingTimeTxt.Text = hours.ToString() + Funcs.ChooseLang(" hours", " heures")
+                    EditingTimeTxt.Text = hours.ToString() + " " + Funcs.ChooseLang("HoursStr")
                 ElseIf minutes = 1 Then
-                    EditingTimeTxt.Text = hours.ToString() + Funcs.ChooseLang(" hours, 1 minute", " heures, 1 minute")
+                    EditingTimeTxt.Text = hours.ToString() + $" {Funcs.ChooseLang("HoursStr")}, 1 {Funcs.ChooseLang("MinuteStr")}"
                 Else
-                    EditingTimeTxt.Text = hours.ToString() + Funcs.ChooseLang(" hours, ", " heures, ") + minutes.ToString() + " minutes"
+                    EditingTimeTxt.Text = hours.ToString() + $" {Funcs.ChooseLang("HoursStr")}, {minutes} {Funcs.ChooseLang("MinutesStr")}"
                 End If
 
             End If
@@ -2964,9 +2909,8 @@ Class MainWindow
             Process.Start(IO.Path.GetDirectoryName(ThisFile))
 
         Catch
-            NewMessage(Funcs.ChooseLang("Can't open file location. Check that you have permission to access it.",
-                                    "Impossible d'ouvrir l'emplacement du fichier. Vérifiez que vous avez la permission d'y accéder."),
-                        Funcs.ChooseLang("Access denied", "Accès refusé"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("AccessDeniedDescStr"),
+                       Funcs.ChooseLang("AccessDeniedStr"), MessageBoxButton.OK, MessageBoxImage.Error)
         End Try
 
     End Sub
@@ -3019,7 +2963,7 @@ Class MainWindow
 
             If InfoStack.Children.Count = 0 Then
                 Dim filebtn As Controls.Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='#00FFFFFF' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='InfoBtn' Height='26' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><DockPanel LastChildFill='False' Height='26' Margin='0'><TextBlock Text='" +
-                                                            Funcs.ChooseLang("No files to open in this folder.", "Aucun fichier à ouvrir dans ce dossier.") + "' Padding='" +
+                                                            Funcs.ChooseLang("NoFilesToOpenStr") + "' Padding='" +
                                                             margin.ToString() + ",0,0,0' TextTrimming='CharacterEllipsis' Name='HomeBtnTxt_Copy22' Margin='0,0,15,0' HorizontalAlignment='Center' VerticalAlignment='Center' /></DockPanel></Button>")
 
                 filebtn.IsEnabled = False
@@ -3030,7 +2974,7 @@ Class MainWindow
         Catch
             InfoStack.Children.Clear()
             Dim filebtn As Controls.Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='#00FFFFFF' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='InfoBtn' Height='26' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><DockPanel LastChildFill='False' Height='26' Margin='0'><TextBlock Text='" +
-                                                        Funcs.ChooseLang("No files to open in this folder.", "Aucun fichier à ouvrir dans ce dossier.") + "' Padding='" +
+                                                        Funcs.ChooseLang("NoFilesToOpenStr") + "' Padding='" +
                                                         margin.ToString() + ",0,0,0' TextTrimming='CharacterEllipsis' Name='HomeBtnTxt_Copy22' Margin='0,0,15,0' HorizontalAlignment='Center' VerticalAlignment='Center' /></DockPanel></Button>")
 
             filebtn.IsEnabled = False
@@ -3050,7 +2994,7 @@ Class MainWindow
 
     Private Sub ShowMoreBtn_Click(sender As Object, e As RoutedEventArgs) Handles ShowMoreBtn.Click
 
-        If MoreRootTxt.Text = Funcs.ChooseLang("Show more", "Afficher plus") Then
+        If MoreRootTxt.Text = Funcs.ChooseLang("ShowMoreStr") Then
             If Root2Btn.Tag = 1 Then Root2Btn.Visibility = Visibility.Visible
             If Root3Btn.Tag = 1 Then Root3Btn.Visibility = Visibility.Visible
             If Root4Btn.Tag = 1 Then Root4Btn.Visibility = Visibility.Visible
@@ -3074,7 +3018,7 @@ Class MainWindow
             End If
 
             BeginStoryboard(TryFindResource("MoreUpInfoStoryboard"))
-            MoreRootTxt.Text = Funcs.ChooseLang("Show less", "Afficher moins")
+            MoreRootTxt.Text = Funcs.ChooseLang("ShowLessStr")
 
         Else
             Root2Btn.Visibility = Visibility.Collapsed
@@ -3084,7 +3028,7 @@ Class MainWindow
 
             Root1Img.Margin = New Thickness(3, 0, 0, 0)
             BeginStoryboard(TryFindResource("MoreDownInfoStoryboard"))
-            MoreRootTxt.Text = Funcs.ChooseLang("Show more", "Afficher plus")
+            MoreRootTxt.Text = Funcs.ChooseLang("ShowMoreStr")
 
         End If
 
@@ -3095,8 +3039,8 @@ Class MainWindow
         Dim SaveChoice As MessageBoxResult = MessageBoxResult.No
 
         If My.Settings.showprompt Then
-            SaveChoice = NewMessage(Funcs.ChooseLang("Do you want to save any changes to your slideshow?", "Vous voulez enregistrer toutes les modifications à votre diaporama ?"),
-                                    Funcs.ChooseLang("Before you go...", "Deux secondes..."), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation)
+            SaveChoice = NewMessage(Funcs.ChooseLang("OnExitDescPStr"),
+                                    Funcs.ChooseLang("OnExitStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation)
 
         End If
 
@@ -3122,7 +3066,7 @@ Class MainWindow
         StartGrid.Visibility = Visibility.Visible
         SlideView.Visibility = Visibility.Collapsed
         EditSlideBtn.Visibility = Visibility.Collapsed
-        CountLbl.Text = Funcs.ChooseLang("Slide 0 of 0", "Diapositive 0 par 0")
+        CountLbl.Text = Funcs.ChooseLang("SlideCounterStr").Replace("{0}", "0").Replace("{1}", "0")
 
         TimingUpDown.Value = DefaultTiming
         TimingUpDown.IsEnabled = False
@@ -3294,24 +3238,24 @@ Class MainWindow
                 StartGrid.Visibility = Visibility.Visible
                 SlideView.Visibility = Visibility.Collapsed
                 EditSlideBtn.Visibility = Visibility.Collapsed
-                CountLbl.Text = Funcs.ChooseLang("Slide 0 of 0", "Diapositive 0 par 0")
+                CountLbl.Text = Funcs.ChooseLang("SlideCounterStr").Replace("{0}", "0").Replace("{1}", "0")
 
                 TimingUpDown.Value = DefaultTiming
                 TimingUpDown.IsEnabled = False
 
             ElseIf CurrentSlide > AllSlides.Count Then
                 SelectSlide(SelectedSlide - 1)
-                CountLbl.Text = Funcs.ChooseLang("Slide ", "Diapositive ") + CurrentSlide.ToString() + Funcs.ChooseLang(" of ", " sur ") + AllSlides.Count.ToString()
+                CountLbl.Text = Funcs.ChooseLang("SlideCounterStr").Replace("{0}", CurrentSlide.ToString()).Replace("{1}", AllSlides.Count.ToString())
 
             Else
                 SelectSlide(SelectedSlide)
-                CountLbl.Text = Funcs.ChooseLang("Slide ", "Diapositive ") + CurrentSlide.ToString() + Funcs.ChooseLang(" of ", " sur ") + AllSlides.Count.ToString()
+                CountLbl.Text = Funcs.ChooseLang("SlideCounterStr").Replace("{0}", CurrentSlide.ToString()).Replace("{1}", AllSlides.Count.ToString())
 
             End If
 
         ElseIf CurrentSlide > SelectedSlide Then
             SelectSlide(CurrentSlide - 1)
-            CountLbl.Text = Funcs.ChooseLang("Slide ", "Diapositive ") + CurrentSlide.ToString() + Funcs.ChooseLang(" of ", " sur ") + AllSlides.Count.ToString()
+            CountLbl.Text = Funcs.ChooseLang("SlideCounterStr").Replace("{0}", CurrentSlide.ToString()).Replace("{1}", AllSlides.Count.ToString())
 
         End If
 
@@ -3336,7 +3280,7 @@ Class MainWindow
                     StartGrid.Visibility = Visibility.Collapsed
                     SlideView.Visibility = Visibility.Visible
                     EditSlideBtn.Visibility = Visibility.Visible
-                    CountLbl.Text = Funcs.ChooseLang("Slide ", "Diapositive ") + SlideNum.ToString() + Funcs.ChooseLang(" of ", " sur ") + AllSlides.Count.ToString()
+                    CountLbl.Text = Funcs.ChooseLang("SlideCounterStr").Replace("{0}", SlideNum.ToString()).Replace("{1}", AllSlides.Count.ToString())
 
                     Dim entry = AllSlides(SlideNum - 1)
                     PhotoImg.Source = BitmapToSource(entry("img"), entry("format"))
@@ -3347,16 +3291,16 @@ Class MainWindow
 
                     Select Case entry("type")
                         Case "image"
-                            EditSlideBtn.Text = Funcs.ChooseLang("Edit/replace this image", "Modifier/remplacer cette image")
+                            EditSlideBtn.Text = Funcs.ChooseLang("EditThisImageStr")
                             EditSlideBtn.MoreVisibility = Visibility.Visible
                         Case "text"
-                            EditSlideBtn.Text = Funcs.ChooseLang("Edit this text", "Modifier ce texte")
+                            EditSlideBtn.Text = Funcs.ChooseLang("EditThisTextStr")
                         Case "screenshot"
-                            EditSlideBtn.Text = Funcs.ChooseLang("Replace this screenshot", "Remplacer cette capture d'écran")
+                            EditSlideBtn.Text = Funcs.ChooseLang("EditThisScreenshotStr")
                         Case "chart"
-                            EditSlideBtn.Text = Funcs.ChooseLang("Edit this chart", "Modifier ce graphique")
+                            EditSlideBtn.Text = Funcs.ChooseLang("EditThisChartStr")
                         Case "drawing"
-                            EditSlideBtn.Text = Funcs.ChooseLang("Edit this drawing", "Modifier ce dessin")
+                            EditSlideBtn.Text = Funcs.ChooseLang("EditThisDrawingStr")
                     End Select
 
                 Else
@@ -3674,9 +3618,8 @@ Class MainWindow
                         AddSlide(txt.SlideTxt.Text, txt.FontBtn.Text, txt.ChosenStyle, txt.ChosenColour, Convert.ToSingle(txt.FontSlider.Value), CurrentSlide - 1)
 
                     Catch
-                        NewMessage(Funcs.ChooseLang($"An error occurred when inserting your text.{Chr(10)}Please try again.",
-                                                    $"Une erreur s'est produite lors de l'insertion de votre texte.{Chr(10)}Veuillez réessayer."),
-                                   Funcs.ChooseLang("Text error", "Erreur de texte"), MessageBoxButton.OK, MessageBoxImage.Error)
+                        NewMessage(Funcs.ChooseLang("TextErrorDescStr"),
+                                   Funcs.ChooseLang("TextErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
                     End Try
                 End If
 
@@ -3687,9 +3630,8 @@ Class MainWindow
                         AddSlide(scr.CaptureToAdd, CurrentSlide - 1)
 
                     Catch ex As Exception
-                        NewMessage(Funcs.ChooseLang($"An error occurred when inserting your screenshot.{Chr(10)}Please try again.",
-                                                    $"Une erreur s'est produite lors de l'insertion de votre capture d'écran.{Chr(10)}Veuillez réessayer."),
-                                   Funcs.ChooseLang("Screenshot error", "Erreur de capture"), MessageBoxButton.OK, MessageBoxImage.Error)
+                        NewMessage(Funcs.ChooseLang("ScreenshotErrorDescStr"),
+                                   Funcs.ChooseLang("ScreenshotErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
                     End Try
                 End If
@@ -3702,9 +3644,8 @@ Class MainWindow
                                  cht.XAxisTxt.Text, cht.YAxisTxt.Text, cht.TitleTxt.Text, CurrentSlide - 1)
 
                     Catch ex As Exception
-                        NewMessage(Funcs.ChooseLang($"An error occurred when inserting your chart.{Chr(10)}Please try again.",
-                                                    $"Une erreur s'est produite lors de l'insertion de votre graphique.{Chr(10)}Veuillez réessayer."),
-                                   Funcs.ChooseLang("Chart error", "Erreur de graphique"), MessageBoxButton.OK, MessageBoxImage.Error)
+                        NewMessage(Funcs.ChooseLang("ChartErrorDescStr"),
+                                   Funcs.ChooseLang("ChartErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
                     End Try
                 End If
@@ -3716,9 +3657,8 @@ Class MainWindow
                         AddSlide(dra.Canvas.Strokes, CurrentSlide - 1)
 
                     Catch ex As Exception
-                        NewMessage(Funcs.ChooseLang($"An error occurred when inserting your drawing.{Chr(10)}Please try again.",
-                                                    $"Une erreur s'est produite lors de l'insertion de votre dessin.{Chr(10)}Veuillez réessayer."),
-                                   Funcs.ChooseLang("Drawing error", "Erreur de dessin"), MessageBoxButton.OK, MessageBoxImage.Error)
+                        NewMessage(Funcs.ChooseLang("DrawingErrorDescStr"),
+                                   Funcs.ChooseLang("DrawingErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
                     End Try
                 End If
@@ -3777,9 +3717,8 @@ Class MainWindow
                         Next
 
                         If PictureError Then
-                            NewMessage(Funcs.ChooseLang("We couldn't edit this image. It may have exceeded the maximum allowed file size of 10MB.",
-                                                        "Nous n'avons pas pu modifier cette image. Elle peut avoir dépassé la taille de fichier maximale autorisée de 10 Mo."),
-                                       Funcs.ChooseLang("Image error", "Erreur d'image"), MessageBoxButton.OK, MessageBoxImage.Error)
+                            NewMessage(Funcs.ChooseLang("ImageErrorDescStr"),
+                                       Funcs.ChooseLang("ImageErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
                         End If
                     End If
                 Else
@@ -3810,9 +3749,8 @@ Class MainWindow
                         Next
 
                         If PictureError Then
-                            NewMessage(Funcs.ChooseLang("One or more errors occurred when inserting your images. They may have exceeded the maximum allowed file size of 10MB.",
-                                                    "Une ou plusieurs erreurs se sont produites lors de l'insertion de vos images. Elles peuvent avoir dépassé la taille de fichier maximale autorisée de 10 Mo."),
-                                    Funcs.ChooseLang("Image error", "Erreur d'image"), MessageBoxButton.OK, MessageBoxImage.Error)
+                            NewMessage(Funcs.ChooseLang("ImageMultipleErrorDescStr"),
+                                       Funcs.ChooseLang("ImageErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
                         End If
                     End If
                 End If
@@ -3843,9 +3781,8 @@ Class MainWindow
                         End If
 
                     Catch
-                        NewMessage(Funcs.ChooseLang($"An error occurred when inserting your image.{Chr(10)}Please try again.",
-                                                        $"Une erreur s'est produite lors de l'insertion de votre image.{Chr(10)}Veuillez réessayer."),
-                                       Funcs.ChooseLang("Image error", "Erreur d'image"), MessageBoxButton.OK, MessageBoxImage.Error)
+                        NewMessage(Funcs.ChooseLang($"ImageInsertErrorDescStr"),
+                                   Funcs.ChooseLang("ImageErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
                     End Try
                 End If
                 Exit While
@@ -4043,9 +3980,8 @@ Class MainWindow
                 SelectSlide(SlideStack.Children.Count)
 
             Catch
-                NewMessage(Funcs.ChooseLang($"An error occurred when inserting your text.{Chr(10)}Please try again.",
-                                            $"Une erreur s'est produite lors de l'insertion de votre texte.{Chr(10)}Veuillez réessayer."),
-                           Funcs.ChooseLang("Text error", "Erreur de texte"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("TextErrorDescStr"),
+                           Funcs.ChooseLang("TextErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             End Try
         End If
 
@@ -4064,9 +4000,8 @@ Class MainWindow
                 SelectSlide(SlideStack.Children.Count)
 
             Catch ex As Exception
-                NewMessage(Funcs.ChooseLang($"An error occurred when inserting your screenshot.{Chr(10)}Please try again.",
-                                            $"Une erreur s'est produite lors de l'insertion de votre capture d'écran.{Chr(10)}Veuillez réessayer."),
-                           Funcs.ChooseLang("Screenshot error", "Erreur de capture"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("ScreenshotErrorDescStr"),
+                           Funcs.ChooseLang("ScreenshotErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
             End Try
         End If
@@ -4088,9 +4023,8 @@ Class MainWindow
                 SelectSlide(SlideStack.Children.Count)
 
             Catch ex As Exception
-                NewMessage(Funcs.ChooseLang($"An error occurred when inserting your chart.{Chr(10)}Please try again.",
-                                            $"Une erreur s'est produite lors de l'insertion de votre graphique.{Chr(10)}Veuillez réessayer."),
-                           Funcs.ChooseLang("Chart error", "Erreur de graphique"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("ChartErrorDescStr"),
+                           Funcs.ChooseLang("ChartErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
             End Try
         End If
@@ -4110,9 +4044,8 @@ Class MainWindow
                 SelectSlide(SlideStack.Children.Count)
 
             Catch ex As Exception
-                NewMessage(Funcs.ChooseLang($"An error occurred when inserting your drawing.{Chr(10)}Please try again.",
-                                            $"Une erreur s'est produite lors de l'insertion de votre dessin.{Chr(10)}Veuillez réessayer."),
-                           Funcs.ChooseLang("Drawing error", "Erreur de dessin"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("DrawingErrorDescStr"),
+                           Funcs.ChooseLang("DrawingErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
             End Try
         End If
@@ -4277,7 +4210,7 @@ Class MainWindow
             i("timing") = DefaultTiming
         Next
 
-        CreateTempLabel(Funcs.ChooseLang("Updated timings for all slides", "Minutages mis à jour pour toutes les diapositives"))
+        CreateTempLabel(Funcs.ChooseLang("TimingsUpdatedStr"))
 
     End Sub
 
@@ -4289,8 +4222,8 @@ Class MainWindow
     Private Sub RunBtn_Click(sender As Object, e As RoutedEventArgs) Handles RunBtn.Click
 
         If AllSlides.Count = 0 Then
-            NewMessage(Funcs.ChooseLang("Please add a slide first.", "Veuillez d'abord ajouter une diapositive."),
-                       Funcs.ChooseLang("No slides", "Pas de diapositives"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+            NewMessage(Funcs.ChooseLang("NoSlidesDescStr"),
+                       Funcs.ChooseLang("NoSlidesStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
         Else
             Dim sld As New Slideshow(AllSlides, FindResource("SlideBackColour"), FindResource("ImageWidth"), FindResource("ImageHeight"),
                                      FindResource("FitStretch"), LoopBtn.IsChecked, UseTimingsBtn.IsChecked, CurrentMonitor)
@@ -4314,7 +4247,7 @@ Class MainWindow
         MonitorPnl.Children.Clear()
         For Each i In s
             Dim btn As ExpressControls.AppRadioButton = XamlReader.Parse("<ex:AppRadioButton xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:ex='clr-namespace:ExpressControls;assembly=ExpressControls' CornerRadius='0' HorizontalContentAlignment='Stretch' GroupName='DisplayMonitorOptions' Content='" +
-                                                        Funcs.ChooseLang("Display ", "Affichage ") + count.ToString() + "'/>")
+                                                        Funcs.ChooseLang("DisplayStr") + " " + count.ToString() + "'/>")
 
             MonitorPnl.Children.Add(btn)
             AddHandler btn.Checked, AddressOf MonitorBtns_Click
@@ -4367,15 +4300,15 @@ Class MainWindow
         Help3Btn.Visibility = Visibility.Visible
 
         Help1Btn.Icon = FindResource("BlankIcon")
-        Help1Btn.Text = Funcs.ChooseLang("Getting started", "Prise en main")
+        Help1Btn.Text = Funcs.ChooseLang("GettingStartedStr")
         Help1Btn.Tag = 1
 
         Help2Btn.Icon = FindResource("PresentExpressIcon")
-        Help2Btn.Text = Funcs.ChooseLang("What's new and still to come", "Nouvelles fonctions et autres à venir")
+        Help2Btn.Text = Funcs.ChooseLang("NewComingSoonStr")
         Help2Btn.Tag = 24
 
         Help3Btn.Icon = FindResource("FeedbackIcon")
-        Help3Btn.Text = Funcs.ChooseLang("Troubleshooting and feedback", "Dépannage et commentaires")
+        Help3Btn.Text = Funcs.ChooseLang("TroubleshootingStr")
         Help3Btn.Tag = 25
 
     End Sub
@@ -4411,79 +4344,79 @@ Class MainWindow
         ' 25 Troubleshooting and feedback
 
 
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("start new creat template", "prise démar nouveau cré modèle")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP1Str")) Then
             results.Add(1)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("open brows", "ouvrir ouverture parcourir")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP2Str")) Then
             results.Add(3)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("recent favourite", "récent favori")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP3Str")) Then
             results.Add(2)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("sav brows", "enregistre parcourir")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP4Str")) Then
             results.Add(4)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("sav pin", "enregistre épingl")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP5Str")) Then
             results.Add(5)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("print page", "imprim impression page")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP6Str")) Then
             results.Add(6)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("video image export", "vidéo image export")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP7Str")) Then
             results.Add(7)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("html code web", "html cod web")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP8Str")) Then
             results.Add(8)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("info analys propert clos about", "info analyse propriété ferme propos")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP9Str")) Then
             results.Add(13)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("picture photo image slide", "image photo diapo")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP10Str")) Then
             results.Add(14)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("text font title slide", "texte police titre diapo")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP11Str")) Then
             results.Add(15)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("screen capture", "écran capture")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP12Str")) Then
             results.Add(16)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("chart graph", "graphique diagramme histogramme courbe")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP13Str")) Then
             results.Add(17)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("draw canvas", "dessin toile")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP14Str")) Then
             results.Add(18)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("design tim background colour size fit", "design conception minut arrière couleur taille ajuste")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP15Str")) Then
             results.Add(19)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("slide play view loop monitor tim", "diapositive lecture lire montre boucle affichage minut")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP16Str")) Then
             results.Add(20)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("start import export", "allumage démarr import export")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP17Str")) Then
             results.Add(12)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("default setting option", "paramètre option défaut")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP18Str")) Then
             results.Add(9)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("general language sound prompt change control setting option", "paramètre langue généra option son invite modifi commande")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP19Str")) Then
             results.Add(10)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("appearance recent sav setting option dark", "paramètre option apparence enregistre récent noir sombre")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP20Str")) Then
             results.Add(11)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("notification updat", "notification jour")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP21Str")) Then
             results.Add(21)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("pane bar slide", "panneau barre diapo")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP22Str")) Then
             results.Add(22)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("keyboard shortcut", "raccourci clavier")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP23Str")) Then
             results.Add(23)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("new coming feature tip", "nouvelle nouveau bientôt prochainement fonction conseil")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP24Str")) Then
             results.Add(24)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("help feedback comment trouble problem error suggest mail contact", "aide remarque réaction impression comment mail contact erreur")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideP25Str")) Then
             results.Add(25)
         End If
 
@@ -4530,79 +4463,79 @@ Class MainWindow
         Select Case topic
             Case 1
                 icon = "BlankIcon"
-                title = Funcs.ChooseLang("Creating a slideshow with templates", "Créer un diaporama avec des modèles")
+                title = Funcs.ChooseLang("HelpTitleP1Str")
             Case 2
                 icon = "FavouriteIcon"
-                title = Funcs.ChooseLang("Recent files and favourites", "Fichiers récents et favoris")
+                title = Funcs.ChooseLang("HelpTitleP2Str")
             Case 3
                 icon = "OpenIcon"
-                title = Funcs.ChooseLang("Browsing your PC for files", "Parcourir votre PC pour les fichiers")
+                title = Funcs.ChooseLang("HelpTitleP3Str")
             Case 4
                 icon = "SaveIcon"
-                title = Funcs.ChooseLang("Saving files", "Enregistrer les fichiers")
+                title = Funcs.ChooseLang("HelpTitleP4Str")
             Case 5
                 icon = "FolderIcon"
-                title = Funcs.ChooseLang("Pinned folders", "Dossiers épinglés")
+                title = Funcs.ChooseLang("HelpTitleP5Str")
             Case 6
                 icon = "PrintIcon"
-                title = Funcs.ChooseLang("Printing and page setup", "Impression et mise en page")
+                title = Funcs.ChooseLang("HelpTitleP6Str")
             Case 7
                 icon = "VideoIcon"
-                title = Funcs.ChooseLang("Exporting your slideshow", "Exporter votre diaporama")
+                title = Funcs.ChooseLang("HelpTitleP7Str")
             Case 8
                 icon = "HtmlIcon"
-                title = Funcs.ChooseLang("Converting your slideshow to HTML", "Convertir votre diaporama en HTML")
+                title = Funcs.ChooseLang("HelpTitleP8Str")
             Case 9
                 icon = "DefaultsIcon"
-                title = Funcs.ChooseLang("Default options", "Paramètres par défaut")
+                title = Funcs.ChooseLang("HelpTitleP9Str")
             Case 10
                 icon = "GearsIcon"
-                title = Funcs.ChooseLang("General options", "Paramètres généraux")
+                title = Funcs.ChooseLang("HelpTitleP10Str")
             Case 11
                 icon = "ColoursIcon"
-                title = Funcs.ChooseLang("Appearance options", "Paramètres d'apparence")
+                title = Funcs.ChooseLang("HelpTitleP11Str")
             Case 12
                 icon = "StartupIcon"
-                title = Funcs.ChooseLang("Other options", "Autres paramètres")
+                title = Funcs.ChooseLang("HelpTitleP12Str")
             Case 13
                 icon = "InfoIcon"
-                title = Funcs.ChooseLang("The Info tab", "L'onglet Info")
+                title = Funcs.ChooseLang("HelpTitleP13Str")
             Case 14
                 icon = "PictureIcon"
-                title = Funcs.ChooseLang("Picture slides", "Diapositives d'images")
+                title = Funcs.ChooseLang("HelpTitleP14Str")
             Case 15
                 icon = "TextIcon"
-                title = Funcs.ChooseLang("Text slides", "Diapositives de texte")
+                title = Funcs.ChooseLang("HelpTitleP15Str")
             Case 16
                 icon = "ScreenshotIcon"
-                title = Funcs.ChooseLang("Screenshot slides", "Diapositives de captures d'écran")
+                title = Funcs.ChooseLang("HelpTitleP16Str")
             Case 17
                 icon = "ColumnChartIcon"
-                title = Funcs.ChooseLang("Chart slides", "Diapositives de graphiques")
+                title = Funcs.ChooseLang("HelpTitleP17Str")
             Case 18
                 icon = "EditIcon"
-                title = Funcs.ChooseLang("Drawing slides", "Diapositives de dessins")
+                title = Funcs.ChooseLang("HelpTitleP18Str")
             Case 19
                 icon = "ExpandIcon"
-                title = Funcs.ChooseLang("Design options and slide timings", "Paramètres de design et minutages")
+                title = Funcs.ChooseLang("HelpTitleP19Str")
             Case 20
                 icon = "PlayIcon"
-                title = Funcs.ChooseLang("Viewing a slideshow", "Affichage d'un diaporama")
+                title = Funcs.ChooseLang("HelpTitleP20Str")
             Case 21
                 icon = "NotificationIcon"
-                title = "Notifications"
+                title = Funcs.ChooseLang("HelpTitleP21Str")
             Case 22
                 icon = "PaneIcon"
-                title = Funcs.ChooseLang("Using the side pane and status bar", "Utiliser le panneau à côté et la barre d'état")
+                title = Funcs.ChooseLang("HelpTitleP22Str")
             Case 23
                 icon = "CtrlIcon"
-                title = Funcs.ChooseLang("Keyboard shortcuts", "Raccourcis clavier")
+                title = Funcs.ChooseLang("HelpTitleP23Str")
             Case 24
                 icon = "PresentExpressIcon"
-                title = Funcs.ChooseLang("What's new and still to come", "Nouvelles fonctions et autres à venir")
+                title = Funcs.ChooseLang("NewComingSoonStr")
             Case 25
                 icon = "FeedbackIcon"
-                title = Funcs.ChooseLang("Troubleshooting and feedback", "Dépannage et commentaires")
+                title = Funcs.ChooseLang("TroubleshootingStr")
         End Select
 
         Select Case btn

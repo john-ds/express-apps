@@ -24,21 +24,9 @@ Public Class Options
 
     ReadOnly TempLblTimer As New Timer With {.Interval = 4000}
 
-    ReadOnly folderBrowser As New Forms.FolderBrowserDialog With {
-        .Description = "Choose a folder below...",
-        .ShowNewFolderButton = True
-    }
-
-    ReadOnly importDialog As New OpenFileDialog With {
-        .Title = "Select a file to import - Quota Express",
-        .Filter = "XML files (.xml)|*.xml",
-        .Multiselect = False
-    }
-
-    ReadOnly exportDialog As New SaveFileDialog With {
-        .Title = "Select an export location - Quota Express",
-        .Filter = "XML files (.xml)|*.xml"
-    }
+    ReadOnly folderBrowser As Forms.FolderBrowserDialog
+    ReadOnly importDialog As OpenFileDialog
+    ReadOnly exportDialog As SaveFileDialog
 
     Public Sub New()
 
@@ -52,47 +40,52 @@ Public Class Options
 
         Select Case My.Settings.defaultsort
             Case "az"
-                SortBtn.Text = Funcs.ChooseLang("Name A-Z", "Nom A-Z")
+                SortBtn.Text = Funcs.ChooseLang("NameAZStr")
             Case "za"
-                SortBtn.Text = Funcs.ChooseLang("Name Z-A", "Nom Z-A")
+                SortBtn.Text = Funcs.ChooseLang("NameZAStr")
             Case "sa"
-                SortBtn.Text = Funcs.ChooseLang("Size ascending", "Taille croissante")
+                SortBtn.Text = Funcs.ChooseLang("SizeAscStr")
             Case "sd"
-                SortBtn.Text = Funcs.ChooseLang("Size descending", "Taille décroissante")
+                SortBtn.Text = Funcs.ChooseLang("SizeDescStr")
             Case "nf"
-                SortBtn.Text = Funcs.ChooseLang("Newest first", "Plus récent en premier")
+                SortBtn.Text = Funcs.ChooseLang("NewestStr")
             Case "of"
-                SortBtn.Text = Funcs.ChooseLang("Oldest first", "Moins récent en premier")
+                SortBtn.Text = Funcs.ChooseLang("OldestStr")
         End Select
 
         Select Case My.Settings.chclrscheme
             Case 0
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Basic", "Basique")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("ChBasicStr")
             Case 1
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Berry", "Baie")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("ChBerryStr")
             Case 2
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Chocolate", "Chocolat")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("ChChocolateStr")
             Case 3
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Earth", "Terre")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("ChEarthStr")
             Case 4
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Fire", "Feu")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("ChFireStr")
             Case 5
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Grayscale", "Échelle de Gris")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("ChGreyStr")
             Case 6
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Light", "Clair")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("ChLightStr")
             Case 7
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Pastel", "Pastels")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("ChPastelStr")
             Case 8
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Sea Green", "Vert")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("ChGreenStr")
             Case 9
-                ClrSchemeBtn.Text = "Semi-transparent"
+                ClrSchemeBtn.Text = Funcs.ChooseLang("ChTransStr")
         End Select
 
-        If My.Settings.language = "fr-FR" Then
-            FrenchRadio1.IsChecked = True
-        Else
-            EnglishRadio1.IsChecked = True
-        End If
+        Select Case Funcs.GetCurrentLang()
+            Case "fr-FR"
+                FrenchRadio1.IsChecked = True
+            Case "es-ES"
+                SpanishRadio1.IsChecked = True
+            Case "it-IT"
+                ItalianRadio1.IsChecked = True
+            Case Else
+                EnglishRadio1.IsChecked = True
+        End Select
 
         SoundBtn.IsChecked = My.Settings.audio
 
@@ -110,17 +103,26 @@ Public Class Options
         NotificationBtn.IsChecked = My.Settings.notificationcheck
 
         If My.Settings.startupfolder = "" Then
-            StartupLocationTxt.Text = "Documents"
+            StartupLocationTxt.Text = Funcs.ChooseLang("DocumentFolderStr")
         Else
             StartupLocationTxt.Text = IO.Path.GetFileNameWithoutExtension(My.Settings.startupfolder)
         End If
 
-        If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then
-            folderBrowser.Description = "Choisissez un dossier ci-dessous..."
-            exportDialog.Title = "Sélectionner un emplacement d'exportation - Quota Express"
-            importDialog.Title = "Choisissez un fichier à importer - Quota Express"
+        folderBrowser = New Forms.FolderBrowserDialog With {
+            .Description = Funcs.ChooseLang("ChooseFolderDialogStr"),
+            .ShowNewFolderButton = True
+        }
 
-        End If
+        importDialog = New OpenFileDialog With {
+            .Title = Funcs.ChooseLang("OpImportDialogStr") + " - Quota Express",
+            .Filter = Funcs.ChooseLang("XMLFilesFilterStr"),
+            .Multiselect = False
+        }
+
+        exportDialog = New SaveFileDialog With {
+            .Title = Funcs.ChooseLang("OpExportDialogStr") + " - Quota Express",
+            .Filter = Funcs.ChooseLang("XMLFilesFilterStr")
+        }
 
     End Sub
 
@@ -208,17 +210,17 @@ Public Class Options
 
         Select Case My.Settings.defaultsort
             Case "az"
-                SortBtn.Text = Funcs.ChooseLang("Name A-Z", "Nom A-Z")
+                SortBtn.Text = Funcs.ChooseLang("NameAZStr")
             Case "za"
-                SortBtn.Text = Funcs.ChooseLang("Name Z-A", "Nom Z-A")
+                SortBtn.Text = Funcs.ChooseLang("NameZAStr")
             Case "sa"
-                SortBtn.Text = Funcs.ChooseLang("Size ascending", "Taille croissante")
+                SortBtn.Text = Funcs.ChooseLang("SizeAscStr")
             Case "sd"
-                SortBtn.Text = Funcs.ChooseLang("Size descending", "Taille décroissante")
+                SortBtn.Text = Funcs.ChooseLang("SizeDescStr")
             Case "nf"
-                SortBtn.Text = Funcs.ChooseLang("Newest first", "Plus récent en premier")
+                SortBtn.Text = Funcs.ChooseLang("NewestStr")
             Case "of"
-                SortBtn.Text = Funcs.ChooseLang("Oldest first", "Moins récent en premier")
+                SortBtn.Text = Funcs.ChooseLang("OldestStr")
         End Select
 
         SaveAll()
@@ -238,25 +240,25 @@ Public Class Options
 
         Select Case My.Settings.chclrscheme
             Case 0
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Basic", "Basique")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("ChBasicStr")
             Case 1
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Berry", "Baie")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("ChBerryStr")
             Case 2
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Chocolate", "Chocolat")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("ChChocolateStr")
             Case 3
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Earth", "Terre")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("ChEarthStr")
             Case 4
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Fire", "Feu")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("ChFireStr")
             Case 5
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Grayscale", "Échelle de Gris")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("ChGreyStr")
             Case 6
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Light", "Clair")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("ChLightStr")
             Case 7
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Pastel", "Pastels")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("ChPastelStr")
             Case 8
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Sea Green", "Vert")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("ChGreenStr")
             Case 9
-                ClrSchemeBtn.Text = "Semi-transparent"
+                ClrSchemeBtn.Text = Funcs.ChooseLang("ChTransStr")
         End Select
 
         SaveAll()
@@ -268,31 +270,32 @@ Public Class Options
     ' GENERAL > INTERFACE
     ' --
 
-    Private Sub InterfaceRadios_Click(sender As ExpressControls.AppRadioButton, e As RoutedEventArgs) Handles EnglishRadio1.Click, FrenchRadio1.Click
+    Private Sub InterfaceRadios_Click(sender As ExpressControls.AppRadioButton, e As RoutedEventArgs) Handles EnglishRadio1.Click, FrenchRadio1.Click,
+        SpanishRadio1.Click, ItalianRadio1.Click
 
-        If (sender.Name = "EnglishRadio1" And Not My.Settings.language = "en-GB") Or (sender.Name = "FrenchRadio1" And Not My.Settings.language = "fr-FR") Then
-            If MainWindow.NewMessage(Funcs.ChooseLang("Changing the interface language requires an application restart. Do you wish to continue?",
-                                                      "Pour changer la langue de l'interface, un redémarrage de l'application est nécessaire. Vous souhaitez continuer ?"),
-                                     Funcs.ChooseLang("Language warning", "Avertissement de langue"),
+        If sender.Tag.ToString() <> Funcs.GetCurrentLang() Then
+            If MainWindow.NewMessage(Funcs.ChooseLang("LangWarningDescStr"),
+                                     Funcs.ChooseLang("LangWarningStr"),
                                      MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
-                If sender.Name = "EnglishRadio1" Then
-                    My.Settings.language = "en-GB"
-                Else
-                    My.Settings.language = "fr-FR"
-                End If
-
+                My.Settings.language = sender.Tag.ToString()
                 SaveAll()
 
                 Forms.Application.Restart()
                 Windows.Application.Current.Shutdown()
 
             Else
-                If sender.Name = "EnglishRadio1" Then
-                    FrenchRadio1.IsChecked = True
-                Else
-                    EnglishRadio1.IsChecked = True
-                End If
+                Select Case Funcs.GetCurrentLang()
+                    Case "fr-FR"
+                        FrenchRadio1.IsChecked = True
+                    Case "es-ES"
+                        SpanishRadio1.IsChecked = True
+                    Case "it-IT"
+                        ItalianRadio1.IsChecked = True
+                    Case Else
+                        EnglishRadio1.IsChecked = True
+                End Select
+
             End If
         End If
 
@@ -599,8 +602,8 @@ Public Class Options
                         End If
                     Next
 
-                    MainWindow.NewMessage(count.ToString() + Funcs.ChooseLang(" settings imported", " paramètres importés"),
-                                          Funcs.ChooseLang("Import Settings", "Importation des Paramètres"), MessageBoxButton.OK, MessageBoxImage.Information)
+                    MainWindow.NewMessage(Funcs.ChooseLang("ImportSettingsDescStr").Replace("{0}", count.ToString()),
+                                          Funcs.ChooseLang("ImportSettingsStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
                     My.Settings.Save()
 
@@ -615,9 +618,8 @@ Public Class Options
 
                 End If
             Catch
-                MainWindow.NewMessage(Funcs.ChooseLang("We're having trouble importing these settings. Please make sure this file was generated by Quota Express and hasn't been edited.",
-                                                       "Nous avons du mal à importer ces paramètres. Veuillez vous assurer que ce fichier a été généré par Quota Express et n'a pas été modifié."),
-                                      Funcs.ChooseLang("Import Error", "Erreur d'Importation"), MessageBoxButton.OK, MessageBoxImage.Error)
+                MainWindow.NewMessage(Funcs.ChooseLang("ImportErrorDescStr").Replace("{0}", "Quota Express"),
+                                      Funcs.ChooseLang("ImportSettingsErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             End Try
         End If
 
@@ -625,9 +627,8 @@ Public Class Options
 
     Private Sub ExportSettingsBtn_Click(sender As Object, e As RoutedEventArgs) Handles ExportSettingsBtn.Click
 
-        If MainWindow.NewMessage(Funcs.ChooseLang("Save this file in a safe space and import it every time you update Quota Express. Click OK to continue.",
-                                                  "Enregistrez ce fichier dans un espace sûr et importez-le chaque fois que vous mettez à jour Quota Express. Cliquez sur OK pour continuer."),
-                                 Funcs.ChooseLang("Export settings", "Exportation des paramètres"),
+        If MainWindow.NewMessage(Funcs.ChooseLang("ExportSettingsDescStr").Replace("{0}", "Quota Express"),
+                                 Funcs.ChooseLang("ExportSettingsStr"),
                                  MessageBoxButton.OKCancel, MessageBoxImage.Information) = MessageBoxResult.OK Then
 
             If exportDialog.ShowDialog() Then

@@ -185,13 +185,13 @@ Public Class Compare
     Private Sub UpdateSelectedLbl()
 
         If Font1 = "" And Font2 = "" Then
-            SelectedLbl.Text = Funcs.ChooseLang("No fonts selected.", "Aucune police sélectionnée.")
+            SelectedLbl.Text = Funcs.ChooseLang("NoFontSelectedStr")
         ElseIf Font1 = "" Or Font2 = "" Then
             Dim onlyfont As String
             If Font1 = "" Then onlyfont = Font2 Else onlyfont = Font1
-            SelectedLbl.Text = Funcs.ChooseLang("Selected font: ", "Police sélectionnée : ") + onlyfont + Funcs.ChooseLang(". Select one more.", ". Sélectionnez une autre.")
+            SelectedLbl.Text = Funcs.ChooseLang("SelectedFontStr") + " " + onlyfont + ". " + Funcs.ChooseLang("SelectOneMoreStr")
         Else
-            SelectedLbl.Text = Funcs.ChooseLang("Selected fonts: ", "Polices sélectionnées : ") + Font1 + " / " + Font2
+            SelectedLbl.Text = Funcs.ChooseLang("SelectedFontsStr") + " " + Font1 + " / " + Font2
         End If
 
     End Sub
@@ -200,12 +200,11 @@ Public Class Compare
 
         If Font1Txt.FontSize = 22 Then
             Font1Txt.FontSize = 14
-            Font1Txt.Text = Funcs.ChooseLang("A peep at some distant orb has power to raise and purify our thoughts like a strain of sacred music, or a noble picture, or a passage from the grander poets. It always does one good.",
-                                             "Un coup d'œil sur un orbe lointain a le pouvoir d'élever et de purifier nos pensées comme une sorte de musique sacrée, ou une image noble, ou un passage des plus grands poètes. Cela fait toujours le bien.")
+            Font1Txt.Text = Funcs.ChooseLang("FnDisplayStr")
 
         Else
             Font1Txt.FontSize = 22
-            Font1Txt.Text = Funcs.ChooseLang("The quick brown fox jumps over the lazy dog", "Portez ce vieux whisky au juge blond qui fume")
+            Font1Txt.Text = Funcs.ChooseLang("PalindromeStr")
 
         End If
 
@@ -215,12 +214,11 @@ Public Class Compare
 
         If Font2Txt.FontSize = 22 Then
             Font2Txt.FontSize = 14
-            Font2Txt.Text = Funcs.ChooseLang("A peep at some distant orb has power to raise and purify our thoughts like a strain of sacred music, or a noble picture, or a passage from the grander poets. It always does one good.",
-                                             "Un coup d'œil sur un orbe lointain a le pouvoir d'élever et de purifier nos pensées comme une sorte de musique sacrée, ou une image noble, ou un passage des plus grands poètes. Cela fait toujours le bien.")
+            Font2Txt.Text = Funcs.ChooseLang("FnDisplayStr")
 
         Else
             Font2Txt.FontSize = 22
-            Font2Txt.Text = Funcs.ChooseLang("The quick brown fox jumps over the lazy dog", "Portez ce vieux whisky au juge blond qui fume")
+            Font2Txt.Text = Funcs.ChooseLang("PalindromeStr")
 
         End If
 

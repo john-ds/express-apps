@@ -71,7 +71,7 @@
                         </DockPanel>
                         <DockPanel>
                             <DockPanel Background="{DynamicResource SecondaryColor}" DockPanel.Dock="Right">
-                                <ex:AppButton x:Name="AddBtn" Icon="{DynamicResource RightIcon}" CornerRadius="0" Text="{DynamicResource AddDocStr}" VerticalAlignment="Top" FontWeight="SemiBold" DockPanel.Dock="Bottom" HorizontalContentAlignment="Stretch"/>
+                                <ex:AppButton x:Name="AddBtn" Icon="{DynamicResource RightIcon}" CornerRadius="0" Text="{DynamicResource AddSlideshowStr}" VerticalAlignment="Top" FontWeight="SemiBold" DockPanel.Dock="Bottom" HorizontalContentAlignment="Stretch"/>
                                 <ScrollViewer Width="248" DockPanel.Dock="Right" VerticalScrollBarVisibility="Auto">
                                     <StackPanel Margin="0" UseLayoutRounding="True">
                                         <TextBlock TextWrapping="Wrap" FontSize="14" Margin="20,20,20,10" Text="{DynamicResource TextInfoStr}"></TextBlock>

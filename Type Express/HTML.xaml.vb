@@ -3,10 +3,7 @@
     Public Property HTMLCode As String = ""
     Public Property Filename As String = ""
 
-    ReadOnly saveDialog As New Forms.SaveFileDialog With {
-        .Title = "Type Express",
-        .Filter = "HTML files (.html)|*.html"
-    }
+    ReadOnly saveDialog As Forms.SaveFileDialog
 
     Public Sub New()
 
@@ -14,25 +11,20 @@
         InitializeComponent()
 
         ' Add any initialization after the InitializeComponent() call.
-        MaxHeight = SystemParameters.WorkArea.Height + 13
-        MaxWidth = SystemParameters.WorkArea.Width + 13
-        AddHandler SystemParameters.StaticPropertyChanged, AddressOf WorkAreaChanged
-
-    End Sub
-
-    Private Sub WorkAreaChanged(sender As Object, e As EventArgs)
-        MaxHeight = SystemParameters.WorkArea.Height + 12
-        MaxWidth = SystemParameters.WorkArea.Width + 12
+        saveDialog = New Forms.SaveFileDialog With {
+            .Title = "Type Express",
+            .Filter = Funcs.ChooseLang("HTMLFilesFilterStr")
+        }
 
     End Sub
 
     Private Sub MaxBtn_Click(sender As Object, e As RoutedEventArgs) Handles MaxBtn.Click
 
         If WindowState = WindowState.Maximized Then
-            WindowState = WindowState.Normal
+            SystemCommands.RestoreWindow(Me)
 
         Else
-            WindowState = WindowState.Maximized
+            SystemCommands.MaximizeWindow(Me)
 
         End If
 
@@ -55,9 +47,11 @@
     Private Sub TitleBtn_DoubleClick(sender As Object, e As RoutedEventArgs) Handles TitleBtn.MouseDoubleClick
 
         If WindowState = WindowState.Maximized Then
-            WindowState = WindowState.Normal
+            SystemCommands.RestoreWindow(Me)
+
         Else
-            WindowState = WindowState.Maximized
+            SystemCommands.MaximizeWindow(Me)
+
         End If
 
     End Sub
@@ -79,11 +73,6 @@
             HTMLPreview.NavigateToString("<html oncontextmenu='return false;'>" + HTMLCode + "</html>")
         Catch
         End Try
-
-        If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then
-            saveDialog.Filter = "Fichiers HTML (.html)|*.html"
-
-        End If
 
     End Sub
 

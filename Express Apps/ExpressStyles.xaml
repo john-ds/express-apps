@@ -44,6 +44,43 @@
         </Setter>
     </Style>
 
+    <Style x:Key="ChromeWindowStyle" TargetType="{x:Type Window}">
+        <Setter Property="WindowStyle" Value="SingleBorderWindow"/>
+        <Setter Property="WindowChrome.WindowChrome">
+            <Setter.Value>
+                <WindowChrome CaptionHeight="0" ResizeBorderThickness="2" UseAeroCaptionButtons="False"/>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type Window}">
+                    <Grid Background="{DynamicResource BackColor}">
+                        <Border BorderThickness="1" BorderBrush="{DynamicResource AppColor}">
+                            <Border.Style>
+                                <Style TargetType="{x:Type Border}">
+                                    <Style.Triggers>
+                                        <!-- Add to avoid border disappearing when window is maximised -->
+                                        <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType=Window}}" 
+                                                     Value="Maximized">
+                                            <Setter Property="Margin" Value="7"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding WindowState, RelativeSource={RelativeSource AncestorType=Window}}" 
+                                                     Value="Normal">
+                                            <Setter Property="Margin" Value="0"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Grid>
+                                <ContentPresenter Content="{TemplateBinding Content}" />
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="ExpressCheckBox" TargetType="{x:Type CheckBox}">
         <Setter Property="FocusVisualStyle" Value="{DynamicResource CheckBoxFocusVisual}"/>
         <Setter Property="Background" Value="Transparent" />

@@ -6,7 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Type_Express" xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Title="{DynamicResource PcHeaderStr}" Background="{x:Null}" Height="572" Width="869" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" UseLayoutRounding="True" AllowsTransparency="True" WindowStyle="None">
+        Title="{DynamicResource PcHeaderTStr}" Background="{x:Null}" Height="572" Width="869" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" UseLayoutRounding="True" AllowsTransparency="True" WindowStyle="None">
     <Window.Resources>
         <Storyboard x:Key="EntranceStoryboard">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" Storyboard.TargetName="grid">
@@ -87,7 +87,7 @@
                             </StackPanel>
                             <ScrollViewer x:Name="PictureScroll" Margin="0,80,0,42">
                                 <DockPanel Margin="0">
-                                    <ex:AppButton x:Name="LoadMoreBtn" LastChildFill="True" IconVisibility="Collapsed" GapMargin="0" Text="{DynamicResource PcMoreStr}" Margin="0,0,0,20" VerticalAlignment="Center" Height="32" HorizontalContentAlignment="Stretch" HorizontalAlignment="Center" MinWidth="125" DockPanel.Dock="Bottom" Visibility="Collapsed"/>
+                                    <ex:AppButton x:Name="LoadMoreBtn" LastChildFill="True" IconVisibility="Collapsed" GapMargin="0" Text="{DynamicResource LoadMoreStr}" Margin="0,0,0,20" VerticalAlignment="Center" Height="32" HorizontalContentAlignment="Stretch" HorizontalAlignment="Center" MinWidth="125" DockPanel.Dock="Bottom" Visibility="Collapsed"/>
                                     <WrapPanel x:Name="PhotoGrid" Margin="20" DockPanel.Dock="Top">
                                         <Button x:Name="PhotoSampleBtn" Height="130" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Margin="0" Style="{DynamicResource AppButton}" Foreground="{DynamicResource TextColor}" ToolTip="{DynamicResource OnlineTemplateStr}" Visibility="Collapsed">
                                             <Border Margin="3" BorderBrush="{DynamicResource AppColor}" BorderThickness="2" Background="{DynamicResource SecondaryColor}">
@@ -135,7 +135,7 @@
                         <Grid x:Name="LoadingGrid" Margin="0,30,0,0" Background="{DynamicResource AcryllicColor}" Visibility="Collapsed">
                             <ContentControl Content="{DynamicResource PhotoLoaderVector}" Height="260" VerticalAlignment="Top" Margin="0,90,0,0"/>
                             <TextBlock x:Name="CalculatingTxt" HorizontalAlignment="Center" Margin="0,200,0,0" TextWrapping="Wrap" VerticalAlignment="Center" FontFamily="Segoe UI Semibold" FontSize="24" Text="{DynamicResource PcLoadingStr}"/>
-                            <ex:AppButton x:Name="CancelBtn" LastChildFill="True" IconVisibility="Collapsed" GapMargin="0" Text="{DynamicResource QtCancelStr}" Margin="15,290,15,0" VerticalAlignment="Center" Height="32" HorizontalContentAlignment="Stretch" HorizontalAlignment="Center" MinWidth="100"/>
+                            <ex:AppButton x:Name="CancelBtn" LastChildFill="True" IconVisibility="Collapsed" GapMargin="0" Text="{DynamicResource CancelStr}" Margin="15,290,15,0" VerticalAlignment="Center" Height="32" HorizontalContentAlignment="Stretch" HorizontalAlignment="Center" MinWidth="100"/>
                         </Grid>
                         <Grid x:Name="PreviewGrid" Margin="0,30,0,0" Background="{DynamicResource BackColor}" Visibility="Collapsed">
                             <ex:AppButton x:Name="BackBtn" LastChildFill="True" IconVisibility="Collapsed" GapMargin="0" Text="{DynamicResource BackStr}" Margin="0,0,30,20" VerticalAlignment="Bottom" Height="32" HorizontalContentAlignment="Stretch" HorizontalAlignment="Right" MinWidth="100"/>

@@ -1,0 +1,1403 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:System="clr-namespace:System;assembly=mscorlib">
+
+    <System:String x:Key="CloseStr">Chiudi</System:String>
+    <System:String x:Key="MaxStr">Ingrandisci</System:String>
+    <System:String x:Key="MinStr">Riduci a icona</System:String>
+    <System:String x:Key="RestoreStr">Ripristina</System:String>
+    <System:String x:Key="ExpressAppsStr">Parte di Express Apps di John D</System:String>
+    <System:String x:Key="LoaderSubtitleStr">Non dovrebbe volerci molto.</System:String>
+    <System:String x:Key="LoadMoreStr">Carica di più</System:String>
+    <System:String x:Key="CancelStr">Annulla</System:String>
+    <System:String x:Key="NewStr">Nuovo</System:String>
+    <System:String x:Key="TitleStr">Senza titolo - Type Express</System:String>
+    <System:String x:Key="OnlineTempStr">Cerca di modelli online</System:String>
+    <System:String x:Key="SearchStr">Cerca</System:String>
+    <System:String x:Key="BackOnlineTempStr">Torna ai modelli offline</System:String>
+    <System:String x:Key="BlankStr">Documento vuoto</System:String>
+    <System:String x:Key="ModernStr">Moderno</System:String>
+    <System:String x:Key="CasualStr">Informale</System:String>
+    <System:String x:Key="FormalStr">Formale</System:String>
+    <System:String x:Key="ClassicStr">Classico</System:String>
+    <System:String x:Key="OpenStr">Apri</System:String>
+    <System:String x:Key="RecentFilesStr">File recenti</System:String>
+    <System:String x:Key="NoRecentStr">Non ci sono ancora file recenti.</System:String>
+    <System:String x:Key="ClearListStr">Cancella questo elenco</System:String>
+    <System:String x:Key="FavouriteStr">Preferiti</System:String>
+    <System:String x:Key="NoFavouriteStr" xml:space="preserve">Non hai ancora aggiunto
+alcun file preferito.</System:String>
+    <System:String x:Key="AddFavouriteStr">Aggiungi preferiti</System:String>
+    <System:String x:Key="OnlineStr">Fonti Online</System:String>
+    <System:String x:Key="DownloadInfoStr">Scarica online un file TXT o RTF pubblico.</System:String>
+    <System:String x:Key="WebAddressStr">Indirizzo web del file</System:String>
+    <System:String x:Key="DownloadLocationStr">Scegli un posto dove salvare il file scaricato...</System:String>
+    <System:String x:Key="NoFolderStr">Nessuna cartella scelta.</System:String>
+    <System:String x:Key="BrowseStr">Sfoglia</System:String>
+    <System:String x:Key="DownloadStr">Scarica</System:String>
+    <System:String x:Key="DownloadInfo2Str" xml:space="preserve">Una volta pronto/a, clicca su Scarica
+per aprire il file in Type Express.</System:String>
+    <System:String x:Key="RecentStr">Recenti</System:String>
+    <System:String x:Key="FavouritesStr">Preferiti</System:String>
+    <System:String x:Key="OnlineSourcesStr">Fonti online</System:String>
+    <System:String x:Key="BrowsePCStr">Sfoglia questo PC</System:String>
+    <System:String x:Key="SaveAsStr">Salva come</System:String>
+    <System:String x:Key="NoPinnedStr">Non ci sono ancora cartelle bloccate.</System:String>
+    <System:String x:Key="PinnedTitleStr">Cartelle bloccate</System:String>
+    <System:String x:Key="PinStr">Blocca una cartella</System:String>
+    <System:String x:Key="PrintStr">Stampa</System:String>
+    <System:String x:Key="PrintInfoStr">Per prima cosa, imposta le dimensioni e l'orientamento della pagina...</System:String>
+    <System:String x:Key="PageSetupStr">Imposta pagina</System:String>
+    <System:String x:Key="PrintInfo2Str">È possibile visualizzare l'anteprima del documento prima di stamparlo...</System:String>
+    <System:String x:Key="PrintPreviewStr">Anteprima di stampa</System:String>
+    <System:String x:Key="PrintInfo3Str">Clicca su Stampa per aprire la finestra di dialogo di stampa.</System:String>
+    <System:String x:Key="ShareStr">Condividi</System:String>
+    <System:String x:Key="EmailDocStr">Invia e-mail</System:String>
+    <System:String x:Key="EmailInfoStr">Invia il documento tramite l'applicazione di posta elettronica predefinita.</System:String>
+    <System:String x:Key="EmailAddressStr">Indirizzo e-mail del destinatario</System:String>
+    <System:String x:Key="SubjectStr">Oggetto</System:String>
+    <System:String x:Key="SendStr">Invia</System:String>
+    <System:String x:Key="EmailInfo2Str" xml:space="preserve">Clicca su Invia per trasferire il messaggio
+all'applicazione di posta predefinita, dove è
+possibile modificare qualsiasi informazione
+prima di inviare l'e-mail.
+
+Il documento verrà convertito in testo
+non formattato.</System:String>
+    <System:String x:Key="LockDocStr">Blocca i documenti</System:String>
+    <System:String x:Key="LockInfoStr">Proteggere i documenti con la password scelta. In questo modo verranno nascoste tutte le finestre aperte di Type Express. Per sbloccarle successivamente, inserire nuovamente la password.</System:String>
+    <System:String x:Key="LockInfo2Str" xml:space="preserve">Salva il tuo lavoro prima </System:String>
+    <System:String x:Key="LockInfo3Str">di bloccarlo, perché non è possibile recuperare la password se la si dimentica.</System:String>
+    <System:String x:Key="LockInfo4Str">La tua password:</System:String>
+    <System:String x:Key="EmailDoc2Str" xml:space="preserve">    Invia il documento via e-mail</System:String>
+    <System:String x:Key="LockDoc2Str">Blocca i documenti</System:String>
+    <System:String x:Key="HTMLStr">Crea HTML</System:String>
+    <System:String x:Key="NewMStr">Nuovo</System:String>
+    <System:String x:Key="OpenMStr">Apri</System:String>
+    <System:String x:Key="SaveMStr">Salva</System:String>
+    <System:String x:Key="SaveAsMStr">Salva come</System:String>
+    <System:String x:Key="PrintMStr">Stampa</System:String>
+    <System:String x:Key="ShareMStr">Condividi</System:String>
+    <System:String x:Key="OptionStr">Impostazioni</System:String>
+    <System:String x:Key="InfoStr">Info</System:String>
+    <System:String x:Key="UndoStr" xml:space="preserve">Annulla
+CTRL+Z</System:String>
+    <System:String x:Key="RedoStr" xml:space="preserve">Ripeti
+CTRL+Y</System:String>
+    <System:String x:Key="CutStr" xml:space="preserve">Taglia
+CTRL+X</System:String>
+    <System:String x:Key="CopyStr" xml:space="preserve">Copia
+CTRL+C</System:String>
+    <System:String x:Key="PasteStr" xml:space="preserve">Incolla
+CTRL+V</System:String>
+    <System:String x:Key="FontFaceStr">Seleziona il nome di un font</System:String>
+    <System:String x:Key="FontSizeStr">Imposta la dimensione del font</System:String>
+    <System:String x:Key="BoldStr" xml:space="preserve">Grassetto
+CTRL+B</System:String>
+    <System:String x:Key="ItalicStr" xml:space="preserve">Corsivo
+CTRL+I</System:String>
+    <System:String x:Key="UnderlineStr" xml:space="preserve">Sottolineato
+CTRL+U</System:String>
+    <System:String x:Key="StrikethroughStr" xml:space="preserve">Barrato
+CTRL+W</System:String>
+    <System:String x:Key="IncSizeStr" xml:space="preserve">Aumenta la dimensione del font
+CTRL+&gt;</System:String>
+    <System:String x:Key="DecSizeStr" xml:space="preserve">Diminuisci la dimensione del font
+CTRL+&lt;</System:String>
+    <System:String x:Key="LeftStr" xml:space="preserve">Allinea a sinistra
+CTRL+L</System:String>
+    <System:String x:Key="CentreStr" xml:space="preserve">Allinea al centro
+CTRL+E</System:String>
+    <System:String x:Key="RightStr" xml:space="preserve">Allinea a destra
+CTRL+R</System:String>
+    <System:String x:Key="DecIndentStr">Riduci rientro</System:String>
+    <System:String x:Key="IncIndentStr">Aumenta rientro</System:String>
+    <System:String x:Key="SubscriptStr" xml:space="preserve">Pedice
+CTRL+-</System:String>
+    <System:String x:Key="SuperscriptStr" xml:space="preserve">Apice
+CTRL++</System:String>
+    <System:String x:Key="TextColourStr">Modifica il colore del testo</System:String>
+    <System:String x:Key="HighlighterStr">Modifica il colore dell'evidenziazione del testo</System:String>
+    <System:String x:Key="BulletStr">Crea un elenco puntato</System:String>
+    <System:String x:Key="NumberStr">Crea un elenco numerato</System:String>
+    <System:String x:Key="TableStr" xml:space="preserve">Aggiungi una tabella al documento
+CTRL+Q</System:String>
+    <System:String x:Key="PictureToolStr">Aggiungi immagini e icone al documento</System:String>
+    <System:String x:Key="PictureStr">Immagine</System:String>
+    <System:String x:Key="ScreenToolStr">Fai uno screenshot da aggiungere al documento</System:String>
+    <System:String x:Key="ScreenStr">Screenshot</System:String>
+    <System:String x:Key="ShapeToolStr">Aggiungi una forma al documento</System:String>
+    <System:String x:Key="DrawingToolStr">Aggiungi un disegno personalizzato al documento</System:String>
+    <System:String x:Key="ShapeStr">Forma</System:String>
+    <System:String x:Key="SymbolToolStr" xml:space="preserve">Aggiungi un simbolo al documento
+CTRL+G</System:String>
+    <System:String x:Key="SymbolStr">Simbolo</System:String>
+    <System:String x:Key="EquationToolStr" xml:space="preserve">Aggiungi un'equazione preimpostata al documento
+CTRL+H</System:String>
+    <System:String x:Key="EquationStr">Equazione</System:String>
+    <System:String x:Key="ChartToolStr">Aggiungi un grafico al documento</System:String>
+    <System:String x:Key="ChartStr">Grafico</System:String>
+    <System:String x:Key="DateTimeStr" xml:space="preserve">Aggiungi la data di oggi o l'ora corrente
+CTRL+T</System:String>
+    <System:String x:Key="LinkStr" xml:space="preserve">Inserisci un collegamento a un documento
+CTRL+K</System:String>
+    <System:String x:Key="StylesToolStr" xml:space="preserve">Modifica lo stile del testo selezionato
+CTRL+D</System:String>
+    <System:String x:Key="StylesStr">Stili di Font</System:String>
+    <System:String x:Key="ColourSchemeToolStr">Modifica la gamma di colori della palette</System:String>
+    <System:String x:Key="ColourSchemeStr">Gamme di Colori</System:String>
+    <System:String x:Key="CaseToolStr">Cambia le maiuscole e minuscole del testo selezionato</System:String>
+    <System:String x:Key="CaseStr">Cambia Mai/Min</System:String>
+    <System:String x:Key="URLToolStr">Attiva questa opzione per evidenziare i collegamenti nel documento</System:String>
+    <System:String x:Key="URLStr">Formatta gli URL</System:String>
+    <System:String x:Key="WrapToolStr">Attiva questa opzione per andare automaticamente a capo</System:String>
+    <System:String x:Key="WrapStr">Per Andare a Capo</System:String>
+    <System:String x:Key="SelectAllToolStr" xml:space="preserve">Seleziona l'intero documento
+CTRL+A</System:String>
+    <System:String x:Key="SelectAllStr">Seleziona Tutto</System:String>
+    <System:String x:Key="ClearToolStr">Cancella l'intero documento</System:String>
+    <System:String x:Key="ClearStr">Cancella</System:String>
+    <System:String x:Key="FindReplaceToolStr" xml:space="preserve">Trova o sostituisci il testo nel documento
+CTRL+F</System:String>
+    <System:String x:Key="FindReplaceStr">Trova e Sostituisci</System:String>
+    <System:String x:Key="WordCountToolStr">Visualizza le statistiche sul testo del documento</System:String>
+    <System:String x:Key="WordCountStr">Conteggio Parole</System:String>
+    <System:String x:Key="ReadAloudToolStr">Ascolta il tuo documento</System:String>
+    <System:String x:Key="ReadAloudStr">Leggi ad Alta Voce</System:String>
+    <System:String x:Key="SpellcheckToolStr" xml:space="preserve">Verifica la presenza di errori ortografici nel documento
+F7</System:String>
+    <System:String x:Key="SpellcheckStr">Controllo Ortografico</System:String>
+    <System:String x:Key="ZoomInStr">Ingrandisci</System:String>
+    <System:String x:Key="ZoomOutStr">Riduci</System:String>
+    <System:String x:Key="SaveStr" xml:space="preserve">Salva
+CTRL+S</System:String>
+    <System:String x:Key="OpenCountStr">Apri il conteggio parole</System:String>
+    <System:String x:Key="CounterStr">0 parole</System:String>
+    <System:String x:Key="ColumnStr">Colonne</System:String>
+    <System:String x:Key="RowStr">Righe</System:String>
+    <System:String x:Key="CellWidthStr">Larghezza cella</System:String>
+    <System:String x:Key="PixelStr">px</System:String>
+    <System:String x:Key="InsertStr">Inserisci</System:String>
+    <System:String x:Key="SideInfoStr">Scegli un'opzione sotto.</System:String>
+    <System:String x:Key="RectangleStr">Rettangolo</System:String>
+    <System:String x:Key="EllipseStr">Ellisse</System:String>
+    <System:String x:Key="LineStr">Linea</System:String>
+    <System:String x:Key="TriangleStr">Triangolo</System:String>
+    <System:String x:Key="DrawingStr">Disegno</System:String>
+    <System:String x:Key="LetteringStr">Lettere</System:String>
+    <System:String x:Key="ArrowStr">Frecce</System:String>
+    <System:String x:Key="StandardStr">Standard</System:String>
+    <System:String x:Key="GreekStr">Greco</System:String>
+    <System:String x:Key="PunctuationStr">Punteggiatura</System:String>
+    <System:String x:Key="MathsStr">Matematica</System:String>
+    <System:String x:Key="EmojiStr">Emoji</System:String>
+    <System:String x:Key="BackStr">Indietro</System:String>
+    <System:String x:Key="EquationInfoStr">Scegli un'equazione sotto.</System:String>
+    <System:String x:Key="Eq1Str">Teorema di Pitagora</System:String>
+    <System:String x:Key="Eq2Str">Area di un Cerchio</System:String>
+    <System:String x:Key="Eq3Str">Seconda Legge di Newton</System:String>
+    <System:String x:Key="Eq4Str">Area di una Sfera</System:String>
+    <System:String x:Key="Eq5Str">Legge Distributiva</System:String>
+    <System:String x:Key="Eq6Str">Differenza di Due Quadrati</System:String>
+    <System:String x:Key="Eq7Str">Area di un Triangolo</System:String>
+    <System:String x:Key="Eq8Str">Volume di una Sfera</System:String>
+    <System:String x:Key="DateTimeInfoStr">Scegli un formato sotto.</System:String>
+    <System:String x:Key="DateTimeCkStr">Mostra l'elenco completo dei formati</System:String>
+    <System:String x:Key="StylesInfoStr">Scegli uno stile di font sotto.</System:String>
+    <System:String x:Key="H1Str">Titulo 1</System:String>
+    <System:String x:Key="H1ApplyStr">Aggiorna Titulo 1 in modo che corrisponda alla selezione</System:String>
+    <System:String x:Key="H2Str">Titulo 2</System:String>
+    <System:String x:Key="H2ApplyStr">Aggiorna Titulo 2 in modo che corrisponda alla selezione</System:String>
+    <System:String x:Key="H3Str">Titolo 3</System:String>
+    <System:String x:Key="H3ApplyStr">Aggiorna Titolo 3 in modo che corrisponda alla selezione</System:String>
+    <System:String x:Key="B1Str">Corpo 1</System:String>
+    <System:String x:Key="B1ApplyStr">Aggiorna Corpo 1 in modo che corrisponda alla selezione</System:String>
+    <System:String x:Key="B2Str">Corpo 2</System:String>
+    <System:String x:Key="B2ApplyStr">Aggiorna Corpo 2 in modo che corrisponda alla selezione</System:String>
+    <System:String x:Key="B3Str">Citazione</System:String>
+    <System:String x:Key="B3ApplyStr">Aggiorna Citazione in modo che corrisponda alla selezione</System:String>
+    <System:String x:Key="ColourSchemeInfoStr">Scegli una gamma di colori.</System:String>
+    <System:String x:Key="BasicStr">Basico</System:String>
+    <System:String x:Key="BlueStr">Blu</System:String>
+    <System:String x:Key="GreenStr">Verde</System:String>
+    <System:String x:Key="RedOrangeStr">Rosso Arancio</System:String>
+    <System:String x:Key="VioletStr">Viola</System:String>
+    <System:String x:Key="OfficeStr">Office</System:String>
+    <System:String x:Key="GreyscaleStr">Scala di Grigi</System:String>
+    <System:String x:Key="CustomSchemeStr">Gamma personalizzata</System:String>
+    <System:String x:Key="CustomSchemeToolStr">Crea la tua gamma di colori.</System:String>
+    <System:String x:Key="FindStr">Trova cosa?</System:String>
+    <System:String x:Key="CaseCkStr">Maiuscole/minuscole</System:String>
+    <System:String x:Key="WholeWordStr">Parola</System:String>
+    <System:String x:Key="FindSearchStr">Cerca testo...</System:String>
+    <System:String x:Key="AfterStr">dopo del cursore</System:String>
+    <System:String x:Key="BeforeStr">prima del cursore</System:String>
+    <System:String x:Key="SearchOptionsStr">Opzioni di ricerca</System:String>
+    <System:String x:Key="FindNextStr">Prossimo</System:String>
+    <System:String x:Key="ReplaceStr">Sostituisci con...</System:String>
+    <System:String x:Key="ReplaceBtnStr">Sostituisci il prossimo</System:String>
+    <System:String x:Key="ReplaceAllStr">Sostituisci tutto</System:String>
+    <System:String x:Key="SpellInfoStr">Controlla gli errori di ortografia (italiano non ancora disponibile).</System:String>
+    <System:String x:Key="LangOptionsStr">Opzioni di lingua</System:String>
+    <System:String x:Key="StartCheckingStr">Inizia a controllare</System:String>
+    <System:String x:Key="SpellLangStr">Lingua per il controllo ortografico</System:String>
+    <System:String x:Key="EnglishStr">Inglese</System:String>
+    <System:String x:Key="FrenchStr">Francese</System:String>
+    <System:String x:Key="SpanishStr">Spagnolo</System:String>
+    <System:String x:Key="SpellErrorStr">Errore di ortografia trovato</System:String>
+    <System:String x:Key="SpellErrorInfoStr">Forse volevi dire..?</System:String>
+    <System:String x:Key="IgnoreOnceStr">Ignora una volta</System:String>
+    <System:String x:Key="IgnoreAllStr">Ignora tutto</System:String>
+    <System:String x:Key="AddDictStr">Aggiungi al dizionario</System:String>
+    <System:String x:Key="ClosePaneStr">Chiudi pannello</System:String>
+    <System:String x:Key="CutCmStr">Taglia</System:String>
+    <System:String x:Key="CopyCmStr">Copia</System:String>
+    <System:String x:Key="PasteCmStr">Incolla</System:String>
+    <System:String x:Key="SelectAllCmStr">Seleziona tutto</System:String>
+    <System:String x:Key="OpenCmStr">Apri file</System:String>
+    <System:String x:Key="OpenLocationCmStr">Apri la posizione del file</System:String>
+    <System:String x:Key="CopyPathCmStr">Copia il percorso negli Appunti</System:String>
+    <System:String x:Key="RemoveFileCmStr">Rimuovi file dall'elenco</System:String>
+    <System:String x:Key="SaveCmStr">Salva il file in questa cartella</System:String>
+    <System:String x:Key="RemoveFolderCmStr">Rimuovi cartella dall'elenco</System:String>
+    <System:String x:Key="SearchHelpStr">Ricerca di argomenti di aiuto</System:String>
+    <System:String x:Key="NotificationStr">Notifiche</System:String>
+    <System:String x:Key="MenuStr">Menu</System:String>
+    <System:String x:Key="HomeStr">Home</System:String>
+    <System:String x:Key="ToolsStr">Inserisci</System:String>
+    <System:String x:Key="DesignStr">Disegno</System:String>
+    <System:String x:Key="ReviewStr">Revisione</System:String>
+    <System:String x:Key="PleaseWaitStr">Attendere prego...</System:String>
+    <System:String x:Key="NoNotificationStr">Nessuna notifica al momento.</System:String>
+    <System:String x:Key="ThemeColoursStr">Colori del tema</System:String>
+    <System:String x:Key="CustomColourStr">Colore personalizzato</System:String>
+    <System:String x:Key="ApplyColourStr">Applica colore personalizzato</System:String>
+    <System:String x:Key="ChooseColourStr">Scegli il colore personalizzato</System:String>
+    <System:String x:Key="HighlightersStr">Evidenziatori</System:String>
+    <System:String x:Key="NoColourStr">Nessun colore</System:String>
+    <System:String x:Key="YellowStr">Giallo</System:String>
+    <System:String x:Key="BrightGreenStr">Verde brillante</System:String>
+    <System:String x:Key="CyanStr">Ciano</System:String>
+    <System:String x:Key="MagentaStr">Magenta</System:String>
+    <System:String x:Key="BlueHighlightStr">Blu</System:String>
+    <System:String x:Key="RedStr">Rosso</System:String>
+    <System:String x:Key="LightGreyStr">Grigio chiaro</System:String>
+    <System:String x:Key="DarkGreyStr">Grigio scuro</System:String>
+    <System:String x:Key="BlackStr">Nero</System:String>
+    <System:String x:Key="LowerExStr">questo è un esempio</System:String>
+    <System:String x:Key="UpperExStr">QUESTO È UN ESEMPIO</System:String>
+    <System:String x:Key="TitleExStr">Questo È Un Esempio</System:String>
+    <System:String x:Key="LowercaseStr">Minuscolo</System:String>
+    <System:String x:Key="UppercaseStr">Maiuscolo</System:String>
+    <System:String x:Key="TitleCaseStr">Titolo</System:String>
+    <System:String x:Key="AboutTStr">Chi Siamo - Type Express</System:String>
+    <System:String x:Key="WebsiteStr">Visita il nostro sito web</System:String>
+    <System:String x:Key="ChartTitleTStr">Grafico - Type Express</System:String>
+    <System:String x:Key="AddDocStr">Aggiungi al documento</System:String>
+    <System:String x:Key="ChartInfoTStr">Personalizza il tuo grafico sotto, quindi clicca su "Aggiungi al documento".</System:String>
+    <System:String x:Key="ChTypeStr">Tipo di grafico</System:String>
+    <System:String x:Key="ChColumnStr">Colonne</System:String>
+    <System:String x:Key="ChBarStr">Barre</System:String>
+    <System:String x:Key="ChLineStr">Linee</System:String>
+    <System:String x:Key="ChPieStr">Torta</System:String>
+    <System:String x:Key="ChDataStr">Dati del grafico</System:String>
+    <System:String x:Key="ChEditDataStr">Modifica/importa</System:String>
+    <System:String x:Key="ChLabelsStr">Etichette di valore</System:String>
+    <System:String x:Key="ChTitleStr">Titolo del grafico</System:String>
+    <System:String x:Key="ChAxisTitleStr">Titoli degli assi</System:String>
+    <System:String x:Key="ChDoughnutStr">Grafico a ciambella</System:String>
+    <System:String x:Key="ChColourStr">Tema dei colori</System:String>
+    <System:String x:Key="ChBasicStr">Basico</System:String>
+    <System:String x:Key="ChGreenStr">Verde</System:String>
+    <System:String x:Key="ChChocolateStr">Cioccolato</System:String>
+    <System:String x:Key="ChBerryStr">Bacca</System:String>
+    <System:String x:Key="ChTransStr">Semitrasparente</System:String>
+    <System:String x:Key="ChEarthStr">Terra</System:String>
+    <System:String x:Key="ChLightStr">Chiaro</System:String>
+    <System:String x:Key="ChGreyStr">Scala di Grigi</System:String>
+    <System:String x:Key="ChOutputSizeStr">Dimensione di uscita</System:String>
+    <System:String x:Key="ChSmallStr">Piccolo</System:String>
+    <System:String x:Key="ChLargeStr">Grande</System:String>
+    <System:String x:Key="ChartDataTStr">Dati del Grafico - Type Express</System:String>
+    <System:String x:Key="ChDataInfoStr">Inserisci i punti dati sotto e clicca su OK...</System:String>
+    <System:String x:Key="ChDataInfo2Str" xml:space="preserve">Etichetta                                    Valore</System:String>
+    <System:String x:Key="DtRowBelowStr">Aggiungi riga sotto</System:String>
+    <System:String x:Key="DtRowAboveStr">Aggiungi riga sopra</System:String>
+    <System:String x:Key="DtClearStr">Cancella riga</System:String>
+    <System:String x:Key="DtRemoveStr">Rimuovi riga</System:String>
+    <System:String x:Key="CustomClrStr">Gamma di Colori Personalizzata - Type Express</System:String>
+    <System:String x:Key="CustomClrInfoStr">Crea la tua gamma di colori.</System:String>
+    <System:String x:Key="AdvancedStr">Avanzato</System:String>
+    <System:String x:Key="CurrentThemeStr">Colori attuali del tema</System:String>
+    <System:String x:Key="StandardColourStr">Colori standard</System:String>
+    <System:String x:Key="RecentColoursStr">Colori recenti</System:String>
+    <System:String x:Key="Clr1Str">Colore 1</System:String>
+    <System:String x:Key="Clr2Str">Colore 2</System:String>
+    <System:String x:Key="Clr3Str">Colore 3</System:String>
+    <System:String x:Key="Clr4Str">Colore 4</System:String>
+    <System:String x:Key="Clr5Str">Colore 5</System:String>
+    <System:String x:Key="Clr6Str">Colore 6</System:String>
+    <System:String x:Key="Clr7Str">Colore 7</System:String>
+    <System:String x:Key="Clr8Str">Colore 8</System:String>
+    <System:String x:Key="CustomDictStr">Dizionari Personalizzati - Type Express</System:String>
+    <System:String x:Key="CustomDictInfoStr">Le parole nei dizionari personalizzati non vengono controllate dal controllo ortografico.</System:String>
+    <System:String x:Key="LanguageStr">Lingua:</System:String>
+    <System:String x:Key="AddStr">Aggiungi</System:String>
+    <System:String x:Key="AddWordStr">Aggiungi una nuova parola</System:String>
+    <System:String x:Key="RemoveSelectedStr">Rimuovi selezionato</System:String>
+    <System:String x:Key="DrawingTitleTStr">Disegno Personalizzato - Type Express</System:String>
+    <System:String x:Key="DrawingInfoStr">Disegna sulla tela a sinistra, quindi clicca su "Aggiungi al documento".</System:String>
+    <System:String x:Key="DrEditingStr">Modalità di modifica</System:String>
+    <System:String x:Key="DrSelectStr">Selezione</System:String>
+    <System:String x:Key="DrPenStr">Penna</System:String>
+    <System:String x:Key="DrHighlightStr">Evidenziatore</System:String>
+    <System:String x:Key="DrEraserStr">Gomma</System:String>
+    <System:String x:Key="DrPenClrStr">Colore penna</System:String>
+    <System:String x:Key="ThemeColourStr">Colori del Tema</System:String>
+    <System:String x:Key="DrChoosePenStr">Scegli il colore della penna</System:String>
+    <System:String x:Key="DrThicknessStr">Spessore della penna</System:String>
+    <System:String x:Key="ThinStr">Sottile</System:String>
+    <System:String x:Key="ThickStr">Spesso</System:String>
+    <System:String x:Key="HTMLTitleStr">Editor HTML - Type Express</System:String>
+    <System:String x:Key="RunPreviewStr">Esegui l'Anteprima HTML</System:String>
+    <System:String x:Key="ExportHTMLStr">Esporta HTML</System:String>
+    <System:String x:Key="OptionsTStr">Impostazioni - Type Express</System:String>
+    <System:String x:Key="DefaultStr">Predefiniti</System:String>
+    <System:String x:Key="DefFontStr">Imposta il font predefinito</System:String>
+    <System:String x:Key="OpBoldStr">Grassetto</System:String>
+    <System:String x:Key="OpItalicStr">Corsivo</System:String>
+    <System:String x:Key="OpUnderlineStr">Sottolineato</System:String>
+    <System:String x:Key="DefTextClrStr">Imposta il colore predefinito del testo</System:String>
+    <System:String x:Key="SetClrStr">Imposta colore</System:String>
+    <System:String x:Key="DefSaveLocationStr">Imposta la posizione di salvataggio predefinita</System:String>
+    <System:String x:Key="ChooseStr">Scegli</System:String>
+    <System:String x:Key="DefFileTypeStr">Imposta il tipo di file di salvataggio predefinito</System:String>
+    <System:String x:Key="RTFStr">RTF (Rich text)</System:String>
+    <System:String x:Key="TXTStr">TXT (Testo non formattato)</System:String>
+    <System:String x:Key="DefClrSchemeStr">Imposta la gamma di colori predefinita</System:String>
+    <System:String x:Key="DefSpellStr">Imposta la lingua predefinita del controllo ortografico</System:String>
+    <System:String x:Key="GeneralStr">Generale</System:String>
+    <System:String x:Key="GnLangStr">Cambia lingua dell'interfaccia</System:String>
+    <System:String x:Key="EnglishUKStr">Inglese (Regno Unito)</System:String>
+    <System:String x:Key="FrenchFRStr">Francese (Francia)</System:String>
+    <System:String x:Key="GnRecentStr">File recenti</System:String>
+    <System:String x:Key="GnRecentInfoStr">Mostra fino a</System:String>
+    <System:String x:Key="GnRecentInfo2Str">file recenti</System:String>
+    <System:String x:Key="GnSoundsStr">Suoni</System:String>
+    <System:String x:Key="GnSoundsCkStr">Riproduci un suono quando appare una casella di messaggio</System:String>
+    <System:String x:Key="GnCloseStr">Alla chiusura</System:String>
+    <System:String x:Key="GnCloseCkStr">Mostra richiesta per salvare le modifiche al documento</System:String>
+    <System:String x:Key="GnLockStr">Blocco dei documenti</System:String>
+    <System:String x:Key="GnLockCkStr">Blocca i documenti con la scorciatoia Alt+L</System:String>
+    <System:String x:Key="GnPasswordStr">Imposta la password predefinita:</System:String>
+    <System:String x:Key="GnSetPasswordStr">Imposta password</System:String>
+    <System:String x:Key="GnDictionariesStr">Visualizza o modifica i dizionari personalizzati</System:String>
+    <System:String x:Key="GnDictOpenStr">Apri</System:String>
+    <System:String x:Key="AppearanceStr">Apparenza</System:String>
+    <System:String x:Key="ApWordStr">Conteggio parole</System:String>
+    <System:String x:Key="ApWordCkStr">Mostra la scorciatoia del conteggio parole nella barra di stato</System:String>
+    <System:String x:Key="ApWordFigureStr">Scegli la cifra da mostrare:</System:String>
+    <System:String x:Key="ApWordsStr">Parole</System:String>
+    <System:String x:Key="ApCharsStr">Carattere</System:String>
+    <System:String x:Key="ApLinesStr">Righe</System:String>
+    <System:String x:Key="ApSaveStr">Scorciatoia di salvataggio</System:String>
+    <System:String x:Key="ApSaveCkStr">Mostra la scorciatoia di salvataggio nella barra di stato</System:String>
+    <System:String x:Key="StartupStr">Avvio</System:String>
+    <System:String x:Key="StartupInfoStr">All'avvio...</System:String>
+    <System:String x:Key="StMenuTStr">Apri il Menu Type</System:String>
+    <System:String x:Key="StNotificationStr">Verifica delle notifiche</System:String>
+    <System:String x:Key="StRecentStr">Apri il file più recente</System:String>
+    <System:String x:Key="OpDefaultsStr">Predefiniti</System:String>
+    <System:String x:Key="OpGeneralStr" xml:space="preserve">Generale    </System:String>
+    <System:String x:Key="OpAppearanceStr" xml:space="preserve">Apparenza    </System:String>
+    <System:String x:Key="OpStartupStr" xml:space="preserve">Avvio    </System:String>
+    <System:String x:Key="SavedStr" xml:space="preserve">Salvato    </System:String>
+    <System:String x:Key="CaptureStr">Cattura</System:String>
+    <System:String x:Key="RegionInfoStr">Ridimensionami e trascinami sulla regione dello screenshot desiderata.</System:String>
+    <System:String x:Key="RegionTitleTStr">Selettore Regione - Type Express</System:String>
+    <System:String x:Key="ScTitleTStr">Screenshot - Type Express</System:String>
+    <System:String x:Key="ScDelayStr">Ritardo:</System:String>
+    <System:String x:Key="ScRegionStr">Regione:</System:String>
+    <System:String x:Key="ScSelectStr">seleziona</System:String>
+    <System:String x:Key="ScFullStr">Schermo intero</System:String>
+    <System:String x:Key="ShapeTitleStr">Forme - Type Express</System:String>
+    <System:String x:Key="ShapeInfoStr">Personalizza la forma sotto, quindi clicca su "Aggiungi al documento".</System:String>
+    <System:String x:Key="ShWidthStr">Larghezza</System:String>
+    <System:String x:Key="ShSmallStr">Piccolo</System:String>
+    <System:String x:Key="ShLargeStr">Grande</System:String>
+    <System:String x:Key="ShHeightStr">Altezza</System:String>
+    <System:String x:Key="ShNoFillStr">Nessun riempimento</System:String>
+    <System:String x:Key="ShFillStr">Colore riempimento</System:String>
+    <System:String x:Key="ShFillToolStr">Scegli il colore di riempimento</System:String>
+    <System:String x:Key="ShNoOutlineStr">Nessun contorno</System:String>
+    <System:String x:Key="ShOutlineStr">Colore del contorno</System:String>
+    <System:String x:Key="ShOutlineToolStr">Scegli il colore del contorno</System:String>
+    <System:String x:Key="ShThicknessStr">Spessore del contorno</System:String>
+    <System:String x:Key="ShDashCkStr">Contorno tratteggiato</System:String>
+    <System:String x:Key="ShDashesStr">Linee tratteggiate</System:String>
+    <System:String x:Key="ShDottedStr">Linee punteggiate</System:String>
+    <System:String x:Key="ShDashDotStr">Linee tratteggiate e punteggiate</System:String>
+    <System:String x:Key="ShJoinStr">Giunzione di linee</System:String>
+    <System:String x:Key="ShRoundedStr">Arrotondato</System:String>
+    <System:String x:Key="ShBevelStr">Smussato</System:String>
+    <System:String x:Key="ShRotationStr">Rotazione</System:String>
+    <System:String x:Key="ShAnticlockwiseStr">Ruota di 90° in senso antiorario</System:String>
+    <System:String x:Key="ShClockwiseStr">Ruota di 90° in senso orario</System:String>
+    <System:String x:Key="UnlockStr">Inserisci la tua password per sbloccare tutti i documenti...</System:String>
+    <System:String x:Key="WordTitleStr">Conteggio Parole - Type Express</System:String>
+    <System:String x:Key="WrWordsStr">Parole:</System:String>
+    <System:String x:Key="WrCharsStr">Carattere</System:String>
+    <System:String x:Key="WrNoSpaceStr">senza spazi:</System:String>
+    <System:String x:Key="WrSpaceStr">con spazi:</System:String>
+    <System:String x:Key="WrLinesStr">Righe:</System:String>
+    <System:String x:Key="TextBlockStr">Blocco di Testo</System:String>
+    <System:String x:Key="DateAndTimeStr">Data e Ora</System:String>
+    <System:String x:Key="FromFileStr">Testo dal File</System:String>
+    <System:String x:Key="PropertyStr">Proprietà</System:String>
+    <System:String x:Key="PropertyInfoStr">Inserisci il conteggio attuale delle parole, il nome del file, ecc.</System:String>
+    <System:String x:Key="FromFileInfoStr">Inserisci il testo da un file TXT o RTF</System:String>
+    <System:String x:Key="TextBlockInfoStr">Inserisci la data e l'ora, il testo da un file e molto altro</System:String>
+    <System:String x:Key="ItalianStr">Italiano</System:String>
+    <System:String x:Key="PropertySideStr">Scegli una proprietà sotto.</System:String>
+    <System:String x:Key="FnHeaderStr">Scegli un font sotto.</System:String>
+    <System:String x:Key="FnExitSearchStr">Esci dalla ricerca</System:String>
+    <System:String x:Key="FnOptionsStr">Impostazioni</System:String>
+    <System:String x:Key="FnTopStr">Torna all'inizio</System:String>
+    <System:String x:Key="FnAllStr">Tutto</System:String>
+    <System:String x:Key="FnLoadingStr">Caricamento dei font...</System:String>
+    <System:String x:Key="FontPickerStr">Apri selezione font</System:String>
+    <System:String x:Key="FnCopyStr">Copia il nome del font</System:String>
+    <System:String x:Key="FnFavouriteStr">Aggiungi ai preferiti</System:String>
+    <System:String x:Key="FnItalicStr">Corsivo</System:String>
+    <System:String x:Key="FnUnderlineStr">Sottolineato</System:String>
+    <System:String x:Key="FnBoldStr">Grassetto</System:String>
+    <System:String x:Key="FnSizeStr">Dimensione del font</System:String>
+    <System:String x:Key="FnDisplayStr">Uno sguardo a qualche sfera lontana ha il potere di elevare e purificare i nostri pensieri come un brano di musica sacra, un quadro nobile o un passaggio dei poeti più grandi. Fa sempre bene.</System:String>
+    <System:String x:Key="OpFontsStr" xml:space="preserve">Font    </System:String>
+    <System:String x:Key="FontsStr">Font</System:String>
+    <System:String x:Key="FnManageFavStr">Gestisci i preferiti</System:String>
+    <System:String x:Key="FnExportStr">Esporta i font come file di testo</System:String>
+    <System:String x:Key="FnExportFavStr">Esporta preferiti</System:String>
+    <System:String x:Key="FnExportAllStr">Esporta tutto</System:String>
+    <System:String x:Key="FnGetMoreStr">Ottieni più font</System:String>
+    <System:String x:Key="FnBrowseStr">Sfoglia la nostra collezione online</System:String>
+    <System:String x:Key="FnImportInfoStr">Importa i preferiti dal file di testo</System:String>
+    <System:String x:Key="FnImportStr">Importa</System:String>
+    <System:String x:Key="QtHeaderStr">Per scoprire cosa occupa spazio sul tuo PC...</System:String>
+    <System:String x:Key="QtFolderStr">Cartelle</System:String>
+    <System:String x:Key="QtFileStr">File</System:String>
+    <System:String x:Key="QtFileFolderStr">File e cartelle</System:String>
+    <System:String x:Key="QtSizeDescStr">Ordina per dimensione disc.</System:String>
+    <System:String x:Key="QtSizeAscStr">Ordina per dimensione asc.</System:String>
+    <System:String x:Key="QtNameAZStr">Ordina per nome A-Z</System:String>
+    <System:String x:Key="QtNameZAStr">Ordina per nome Z-A</System:String>
+    <System:String x:Key="QtNavigateStr">Passa alla cartella</System:String>
+    <System:String x:Key="QtCopyPathStr">Copia percorso</System:String>
+    <System:String x:Key="QtCopySizeStr">Copia dimensione</System:String>
+    <System:String x:Key="QtCopySizeBytesStr">Copia dimensione in byte</System:String>
+    <System:String x:Key="QtCalculatingStr">Calcolo...</System:String>
+    <System:String x:Key="QtExportStr">Esporta i dati</System:String>
+    <System:String x:Key="InfoTitleStr">Scegli un'opzione a sinistra.</System:String>
+    <System:String x:Key="CopyInfoPathStr">Copia percorso file</System:String>
+    <System:String x:Key="OpenInfoLocationStr">Apri percorso del file</System:String>
+    <System:String x:Key="FileLocationStr">Percorso del file</System:String>
+    <System:String x:Key="ShowMoreStr">Mostra di più</System:String>
+    <System:String x:Key="PropertiesStr">Proprietà</System:String>
+    <System:String x:Key="SizeStr">Dimensione</System:String>
+    <System:String x:Key="CreatedStr">Data creazione</System:String>
+    <System:String x:Key="ModifiedStr">Data ultima modifica</System:String>
+    <System:String x:Key="AccessedStr">Data ultimo accesso</System:String>
+    <System:String x:Key="EditingStr">Tempo di modifica</System:String>
+    <System:String x:Key="CloseDocStr">Chiudi documento</System:String>
+    <System:String x:Key="StorageTitleStr">Scopri cosa sta occupando spazio sul tuo PC</System:String>
+    <System:String x:Key="AnalyseStr">Analizza</System:String>
+    <System:String x:Key="AboutTypeStr">Informazioni su Type Express</System:String>
+    <System:String x:Key="OnlineTemplateStr">Scegli tra una selezione di modelli online</System:String>
+    <System:String x:Key="OnlineTemplateTxtStr">Modelli online</System:String>
+    <System:String x:Key="TtTitleStr">Leggi ad Alta Voce - Type Express</System:String>
+    <System:String x:Key="TtSaveWAVStr">Salva come file WAV</System:String>
+    <System:String x:Key="TtVoiceStr">Voce:</System:String>
+    <System:String x:Key="TtPlayStr">Riproduci</System:String>
+    <System:String x:Key="TtStopStr">Arresto</System:String>
+    <System:String x:Key="TtVolumeStr">Regola il volume</System:String>
+    <System:String x:Key="TtSlowStr">Lento</System:String>
+    <System:String x:Key="TtFastStr">Veloce</System:String>
+    <System:String x:Key="FavFontsStr">Font preferiti</System:String>
+    <System:String x:Key="AllFontsStr">Tutti i font</System:String>
+    <System:String x:Key="DateLangStr">Lingua: Inglese</System:String>
+    <System:String x:Key="DictionaryToolStr">Trova definizioni e sinonimi per le parole</System:String>
+    <System:String x:Key="DictionaryStr">Dizionario</System:String>
+    <System:String x:Key="DcHeaderStr">Cerca una parola...</System:String>
+    <System:String x:Key="SearchingStr">Ricerca. Attendere prego...</System:String>
+    <System:String x:Key="LookupDictStr">Cerca nel dizionario</System:String>
+    <System:String x:Key="PcHeaderTStr">Immagini Online - Type Express</System:String>
+    <System:String x:Key="PcSearchStr">Ricerca su Unsplash di foto royalty-free:</System:String>
+    <System:String x:Key="PcOfflineStr">Sfoglia offline</System:String>
+    <System:String x:Key="OrStr">o</System:String>
+    <System:String x:Key="PcPreviewStr">Anteprima foto</System:String>
+    <System:String x:Key="PcPhotoStr" xml:space="preserve">Foto di </System:String>
+    <System:String x:Key="OnStr" xml:space="preserve"> su </System:String>
+    <System:String x:Key="PcLoadingStr">Ricerca di foto...</System:String>
+    <System:String x:Key="PcLoadImageStr">Caricamento immagine...</System:String>
+    <System:String x:Key="PcSizeStr">Dimensione dell'immagine</System:String>
+    <System:String x:Key="PcLargeStr">Grande</System:String>
+    <System:String x:Key="PcRegStr">Regolare</System:String>
+    <System:String x:Key="PcSmallStr">Piccolo</System:String>
+    <System:String x:Key="PcCustomStr">Larghezza personalizzata</System:String>
+    <System:String x:Key="PcAttrStr">Attribuzione</System:String>
+    <System:String x:Key="NumWordsStr">Numero di parole</System:String>
+    <System:String x:Key="NumCharsStr">Numero di caratteri</System:String>
+    <System:String x:Key="NumLinesStr">Numero di righe</System:String>
+    <System:String x:Key="FilenameStr">Nome file</System:String>
+    <System:String x:Key="FilepathStr">Percorso del file</System:String>
+    <System:String x:Key="AppNameStr">Nome dell'applicazione</System:String>
+    <System:String x:Key="ChPastelStr">Pastello</System:String>
+    <System:String x:Key="ChFireStr">Fuoco</System:String>
+    <System:String x:Key="OnlineHelpStr">Vedi la guida in linea</System:String>
+    <System:String x:Key="AppThemeStr">Tema dell'applicazione</System:String>
+    <System:String x:Key="DarkModeStr">Modalità scura</System:String>
+    <System:String x:Key="AutoDarkModeStr">Attiva la modalità scura di notte</System:String>
+    <System:String x:Key="FromStr">Dalle</System:String>
+    <System:String x:Key="UntilStr">alle</System:String>
+    <System:String x:Key="IconTitleStr">Icone - Type Express</System:String>
+    <System:String x:Key="BrowsePCImagesStr">Sfoglia questo PC</System:String>
+    <System:String x:Key="IconsStr">Icone</System:String>
+    <System:String x:Key="OnlinePicturesStr">Immagini Online</System:String>
+    <System:String x:Key="BrowsePCImagesToolShortcutStr" xml:space="preserve">Sfoglia il tuo dispositivo alla ricerca di immagini
+CTRL+M</System:String>
+    <System:String x:Key="OnlinePicturesToolStr">Aggiungi immagini royalty-free al tuo documento</System:String>
+    <System:String x:Key="IconsToolStr">Aggiungi icone royalty-free in un'ampia gamma di stili</System:String>
+    <System:String x:Key="IconsStartStr">Ricerca icone in un'ampia gamma di stili</System:String>
+    <System:String x:Key="IconsStartSearchStr">Usa la barra di ricerca sopra per iniziare</System:String>
+    <System:String x:Key="PictureStartStr">Sfoglia migliaia di immagini di alta qualità</System:String>
+    <System:String x:Key="IcLoadingStr">Ricerca di icone...</System:String>
+    <System:String x:Key="RandomiseStr">Randomizza</System:String>
+    <System:String x:Key="FontExpressStr">Scarica Font Express</System:String>
+    <System:String x:Key="FontExpressToolStr">Ottieni questo selettore di font come applicazione indipendente</System:String>
+    <System:String x:Key="FnTitleStr">Selettore Font - Type Express</System:String>
+    <System:String x:Key="FnViewerStr">Visualizzatore Font - Type Express</System:String>
+    <System:String x:Key="IcHeaderStr">Ricerca su Iconfinder di icone royalty-free:</System:String>
+    <System:String x:Key="IcFiltersStr">Imposta filtri:</System:String>
+    <System:String x:Key="IcStyleStr">Stile icona</System:String>
+    <System:String x:Key="IcSizeStr">Dimensione dell'icona</System:String>
+    <System:String x:Key="IcAllStr">Tutti gli stili</System:String>
+    <System:String x:Key="IcGlyphStr">Glifo</System:String>
+    <System:String x:Key="IcOutlineStr">Contorno</System:String>
+    <System:String x:Key="IcFlatStr">Piano</System:String>
+    <System:String x:Key="IcFilledStr">Contorno riempito</System:String>
+    <System:String x:Key="IcHanddrawnStr">Disegnato a mano</System:String>
+    <System:String x:Key="ExpressAppsAdTStr">Type Express fa parte di Express Apps. Perché non esplorare la collezione completa sul nostro sito web?</System:String>
+    <System:String x:Key="FindOutMoreStr">Per saperne di più</System:String>
+    <System:String x:Key="OpImportStr">Importa impostazioni</System:String>
+    <System:String x:Key="OpExportStr">Esporta impostazioni</System:String>
+    <System:String x:Key="UpdateStr">Aggiorna</System:String>
+    <System:String x:Key="TemplateLoadingStr">Ricerca di modelli</System:String>
+    <System:String x:Key="FontLoaderStr">Caricamento dei font</System:String>
+    <System:String x:Key="ImportDataStr">Importa dati</System:String>
+    <System:String x:Key="NewChartStr">Nuovo grafico</System:String>
+    <System:String x:Key="PrevChartStr">Aggiunto in precedenza</System:String>
+    <System:String x:Key="RemoveFromListStr">Rimuovi da questo elenco</System:String>
+    <System:String x:Key="SavedDataStr">Dati salvati</System:String>
+    <System:String x:Key="SavePrevChartsStr">Salva i grafici aggiunti in precedenza</System:String>
+    <System:String x:Key="SavePrevShapesStr">Salva le forme aggiunte in precedenza</System:String>
+    <System:String x:Key="SaveFontStylesStr">Salva le scelte di stile dei font</System:String>
+    <System:String x:Key="ResetAllStr">Ripristina tutto</System:String>
+    <System:String x:Key="ResetStyleStr">Ripristina il valore predefinito</System:String>
+    <System:String x:Key="ClearMenuStr">Cancella il testo o la formattazione dal documento</System:String>
+    <System:String x:Key="ClearFormattingStr">Cancella formattazione</System:String>
+    <System:String x:Key="ClearAllTextStr">Cancella tutto il testo</System:String>
+    <System:String x:Key="DefinitionsStr">Definizioni</System:String>
+    <System:String x:Key="SynonymsStr">Sinonimi</System:String>
+    <System:String x:Key="HelpStr" xml:space="preserve">Guida
+F1</System:String>
+    <System:String x:Key="ExportMStr">Esporta</System:String>
+    <System:String x:Key="PrintInfo2SlideshowStr">È possibile visualizzare l'anteprima della presentazione prima di stamparla...</System:String>
+    <System:String x:Key="ExportStr">Esporta</System:String>
+    <System:String x:Key="AboutPresentStr">Informazioni su Present Express</System:String>
+    <System:String x:Key="ExpressAppsAdPStr">Present Express fa parte di Express Apps. Perché non esplorare la collezione completa sul nostro sito web?</System:String>
+    <System:String x:Key="OnlinePicturesPStr">Immagini online</System:String>
+    <System:String x:Key="BrowsePCImagesToolStr">Sfoglia il tuo dispositivo alla ricerca di immagini</System:String>
+    <System:String x:Key="OnlinePicturesToolVariantStr">Sfoglia migliaia di immagini royalty-free</System:String>
+    <System:String x:Key="PcHeaderPStr">Immagini Online - Present Express</System:String>
+    <System:String x:Key="AddSlideshowStr">Aggiungi alla presentazione</System:String>
+    <System:String x:Key="RegionTitlePStr">Selettore Regione - Present Express</System:String>
+    <System:String x:Key="ScTitlePStr">Screenshot - Present Express</System:String>
+    <System:String x:Key="ChartTitlePStr">Grafico - Present Express</System:String>
+    <System:String x:Key="ChartInfoPStr">Personalizza il tuo grafico sotto, quindi clicca su "Aggiungi alla presentazione".</System:String>
+    <System:String x:Key="ChartDataPStr">Dati del Grafico - Present Express</System:String>
+    <System:String x:Key="DrawingTitlePStr">Disegno Personalizzato - Present Express</System:String>
+    <System:String x:Key="DrawingInfoSlideshowStr">Disegna sulla tela a sinistra, quindi clicca su "Aggiungi alla presentazione".</System:String>
+    <System:String x:Key="AboutPStr">Chi Siamo - Present Express</System:String>
+    <System:String x:Key="OptionsPStr">Impostazioni - Present Express</System:String>
+    <System:String x:Key="StMenuPStr">Apri il Menu Present</System:String>
+    <System:String x:Key="OpSlideshowStr">Presentazione</System:String>
+    <System:String x:Key="OpSlideshowInfoStr">Nascondi automaticamente i controlli della presentazione</System:String>
+    <System:String x:Key="OpTimingsStr">Imposta le tempistiche predefinite delle diapositive</System:String>
+    <System:String x:Key="OpTimingsInfoStr">Avanza alla diapositiva successiva dopo</System:String>
+    <System:String x:Key="OpSecondsStr">secondi</System:String>
+    <System:String x:Key="OpSizeStr">Imposta le dimensioni predefinite delle diapositive</System:String>
+    <System:String x:Key="BlankSlideshowStr">Presentazione vuota</System:String>
+    <System:String x:Key="PhotoTemplateStr">Modelli di foto</System:String>
+    <System:String x:Key="ChartTemplateStr">Modelli di grafico</System:String>
+    <System:String x:Key="PhotoMoreStr">Trova altre foto</System:String>
+    <System:String x:Key="ExportVideoInfoStr">Esporta la tua presentazione come video. Inizia a scegliere la risoluzione qui sotto.</System:String>
+    <System:String x:Key="ExportVideoStr">Video</System:String>
+    <System:String x:Key="VideoLoadingStr">Stiamo esportando il tuo video.</System:String>
+    <System:String x:Key="ExportImagesInfoStr">Esporta la presentazione come un insieme di immagini. Inizia a scegliere il formato di file qui sotto.</System:String>
+    <System:String x:Key="DefStr">Predefinito</System:String>
+    <System:String x:Key="ExportImagesStr">Immagini</System:String>
+    <System:String x:Key="VideoStr">Video</System:String>
+    <System:String x:Key="ImagesStr">Immagini</System:String>
+    <System:String x:Key="SlidesStr">Diapositive</System:String>
+    <System:String x:Key="SlidesToolStr">Apri il pannello laterale</System:String>
+    <System:String x:Key="NewSlideStr">Nuova diapositiva:</System:String>
+    <System:String x:Key="PictureToolSlideshowStr" xml:space="preserve">Aggiungi un'immagine online o offline alla presentazione.
+CTRL+M</System:String>
+    <System:String x:Key="TextStr">Testo</System:String>
+    <System:String x:Key="TextToolStr" xml:space="preserve">Aggiungi del testo alla presentazione.
+CTRL+T</System:String>
+    <System:String x:Key="ScreenshotStr">Screenshot</System:String>
+    <System:String x:Key="ScreenshotToolStr" xml:space="preserve">Aggiungi uno screenshot alla presentazione.
+CTRL+B</System:String>
+    <System:String x:Key="ChartToolSlideshowStr" xml:space="preserve">Aggiungi un grafico alla presentazione.
+CTRL+R</System:String>
+    <System:String x:Key="DrawingToolSlideshowStr" xml:space="preserve">Aggiungi un disegno alla presentazione.
+CTRL+D</System:String>
+    <System:String x:Key="BackColorStr">Colore di sfondo</System:String>
+    <System:String x:Key="BackColorToolStr">Modifica il colore di sfondo di tutte le diapositive.</System:String>
+    <System:String x:Key="SlideSizeStr">Dimensione diapositiva</System:String>
+    <System:String x:Key="FitSlideStr">Adatta alla diapositiva</System:String>
+    <System:String x:Key="FitSlideToolStr">Per allungare l'immagine, disattiva questa opzione.</System:String>
+    <System:String x:Key="TimingsStr">Tempistica (sec):</System:String>
+    <System:String x:Key="ApplyAllTimingsStr">Applica a tutti</System:String>
+    <System:String x:Key="RunStr">Esegui la presentazione</System:String>
+    <System:String x:Key="RunToolStr" xml:space="preserve">Esegui la presentazione dalla prima diapositiva.
+F5</System:String>
+    <System:String x:Key="ApplyTimingsToolStr">Applica le tempistiche a tutte le diapositive.</System:String>
+    <System:String x:Key="LoopStr">Loop</System:String>
+    <System:String x:Key="LoopToolStr">Riproduci continuamente la presentazione finché non si preme ESC.</System:String>
+    <System:String x:Key="ChooseMonitorStr">Scegli monitor</System:String>
+    <System:String x:Key="ChooseMonitorToolStr">Scegli il monitor su cui visualizzare la presentazione.</System:String>
+    <System:String x:Key="SlideTimingsStr">Usa le tempistiche delle diapositive</System:String>
+    <System:String x:Key="SlideTimingsToolStr">Se questa opzione è disattivata, sarà possibile passare alla diapositiva successiva facendo clic.</System:String>
+    <System:String x:Key="SaveToolStr" xml:space="preserve">Salva
+CTRL+S</System:String>
+    <System:String x:Key="SlideCountStr">Diapositiva 0 di 0</System:String>
+    <System:String x:Key="EditStr">Modifica</System:String>
+    <System:String x:Key="DuplicateStr">Duplica</System:String>
+    <System:String x:Key="MoveUpStr">Sposta in alto</System:String>
+    <System:String x:Key="MoveDownStr">Sposta in basso</System:String>
+    <System:String x:Key="DeleteStr">Elimina</System:String>
+    <System:String x:Key="StartStr">Iniziamo</System:String>
+    <System:String x:Key="StartInfoStr">Scegli un'opzione dalla scheda Home sopra</System:String>
+    <System:String x:Key="HomeMStr">Home</System:String>
+    <System:String x:Key="DesignMStr">Disegno</System:String>
+    <System:String x:Key="ShowMStr">Mostra</System:String>
+    <System:String x:Key="ProgressStr">Presentazione in corso</System:String>
+    <System:String x:Key="ProgressInfoStr">Premi ESC nella finestra della presentazione per terminare</System:String>
+    <System:String x:Key="ChooseColorStr">Scegli un colore</System:String>
+    <System:String x:Key="WhiteStr">Bianco</System:String>
+    <System:String x:Key="LightGreyBackStr">Grigio Chiaro</System:String>
+    <System:String x:Key="DarkGreyBackStr">Grigio Scuro</System:String>
+    <System:String x:Key="PurpleStr">Porpora</System:String>
+    <System:String x:Key="WidescreenStr">Schermo panoramico</System:String>
+    <System:String x:Key="StandardScreenStr">Schermi standard</System:String>
+    <System:String x:Key="TextTitleStr">Testo - Present Express</System:String>
+    <System:String x:Key="TextInfoStr">Inserisci il tuo testo sotto.</System:String>
+    <System:String x:Key="FontStr">Font</System:String>
+    <System:String x:Key="TextColorStr">Colore del testo</System:String>
+    <System:String x:Key="RecentColourStr">Colori Recenti</System:String>
+    <System:String x:Key="TextFontSizeStr">Dimensione del font</System:String>
+    <System:String x:Key="SlideshowTitleStr">Presentazione - Present Express</System:String>
+    <System:String x:Key="SlideshowEndStr">Fine della presentazione</System:String>
+    <System:String x:Key="SlideshowESCStr">Premi ESC per uscire</System:String>
+    <System:String x:Key="PreviousStr">Diapositiva precedente</System:String>
+    <System:String x:Key="NextStr">Diapositiva successiva</System:String>
+    <System:String x:Key="BackToStartStr">Torna all'inizio</System:String>
+    <System:String x:Key="EndStr">Termina la presentazione</System:String>
+    <System:String x:Key="PhotoEditorStr">Editor di foto</System:String>
+    <System:String x:Key="PhotoEditorToolStr">Modifica la tua immagine con l'aggiunta di filtri e altro ancora</System:String>
+    <System:String x:Key="PhotoEditorTitleStr">Editor di Foto - Present Express</System:String>
+    <System:String x:Key="PhotoEditorIntroStr">Inizia a fare modifiche, quindi clicca su "Aggiungi alla presentazione" in basso.</System:String>
+    <System:String x:Key="FiltersStr">Filtri</System:String>
+    <System:String x:Key="SepiaStr">Seppia</System:String>
+    <System:String x:Key="BlackWhiteStr">Bianco e Nero</System:String>
+    <System:String x:Key="RedTintStr">Tinta Rossa</System:String>
+    <System:String x:Key="GreenTintStr">Tinta Verde</System:String>
+    <System:String x:Key="BlueTintStr">Tinta Blu</System:String>
+    <System:String x:Key="BrightnessStr">Luminosità</System:String>
+    <System:String x:Key="ContrastStr">Contrasto</System:String>
+    <System:String x:Key="RotationStr">Rotazione</System:String>
+    <System:String x:Key="RotateLeftStr">Ruota di 90° in senso antiorario</System:String>
+    <System:String x:Key="RotateRightStr">Ruota di 90° in senso orario</System:String>
+    <System:String x:Key="TransformStr">Capovolgi</System:String>
+    <System:String x:Key="FlipHorizontalStr">Orizzontalmente</System:String>
+    <System:String x:Key="FlipVerticalStr">Verticalmente</System:String>
+    <System:String x:Key="ResetStr">Ripristina</System:String>
+    <System:String x:Key="FnClearSearchStr">Cancella ricerca</System:String>
+    <System:String x:Key="AboutFStr">Chi Siamo - Font Express</System:String>
+    <System:String x:Key="FnViewerFontStr">Visualizzatore - Font Express</System:String>
+    <System:String x:Key="FnCategoryStr">Aggiungi alla categoria</System:String>
+    <System:String x:Key="FnManageCatStr">Gestisci i font nella categoria...</System:String>
+    <System:String x:Key="FnExportAllFontsStr">Esporta tutti i font come file di testo</System:String>
+    <System:String x:Key="FnExportFontsStr">Esporta i font</System:String>
+    <System:String x:Key="FnAboutStr">Informazioni</System:String>
+    <System:String x:Key="FnImportFontsStr">Importa i font</System:String>
+    <System:String x:Key="OpCatStr" xml:space="preserve">Categorie    </System:String>
+    <System:String x:Key="LoadingStr">Caricamento dei font</System:String>
+    <System:String x:Key="AllToolStr" xml:space="preserve">Mostra tutti i font
+CTRL+A</System:String>
+    <System:String x:Key="FavToolStr" xml:space="preserve">Mostra i tuoi font preferiti
+CTRL+F</System:String>
+    <System:String x:Key="CompareToolStr" xml:space="preserve">Crea abbinamenti di font
+CTRL+P</System:String>
+    <System:String x:Key="CompareStr">Confronta</System:String>
+    <System:String x:Key="EditCatStr">Modifica categoria</System:String>
+    <System:String x:Key="RemoveCatStr">Rimuovi</System:String>
+    <System:String x:Key="AddCatStr">Aggiungi Categoria</System:String>
+    <System:String x:Key="RefreshFontsStr" xml:space="preserve">Aggiorna tutti i font
+CTRL+R</System:String>
+    <System:String x:Key="RefreshTxtStr">0 font</System:String>
+    <System:String x:Key="FilterStr">Filtro</System:String>
+    <System:String x:Key="CategoryStr">Categoria</System:String>
+    <System:String x:Key="NewCatStr">Nuova categoria</System:String>
+    <System:String x:Key="CategoryTitleStr">Categoria - Font Express</System:String>
+    <System:String x:Key="CategoryHeaderStr">Inserisci un nome per la tua categoria.</System:String>
+    <System:String x:Key="IconStr">Scegli un'icona</System:String>
+    <System:String x:Key="CompareTitleStr">Confronta Font - Font Express</System:String>
+    <System:String x:Key="ToggleSizeStr">Alterna la dimensione dei font</System:String>
+    <System:String x:Key="PalindromeStr">Pranzo d'acqua fa volti sghembi</System:String>
+    <System:String x:Key="SwapStr">Scambia font</System:String>
+    <System:String x:Key="ClearSelectionStr">Cancella selezione</System:String>
+    <System:String x:Key="NoFontsStr">Nessun font selezionato.</System:String>
+    <System:String x:Key="CompareHeaderStr">Seleziona 2 font da confrontare.</System:String>
+    <System:String x:Key="OptionsTitleStr">Impostazioni - Font Express</System:String>
+    <System:String x:Key="CategoriesStr">Categorie</System:String>
+    <System:String x:Key="ViewStr">Visualizzazione predefinita</System:String>
+    <System:String x:Key="NextPageStr">Pagina successiva</System:String>
+    <System:String x:Key="PrevPageStr">Pagina precedente</System:String>
+    <System:String x:Key="GlyphsStr">Glifi</System:String>
+    <System:String x:Key="QtAboutStr">Informazioni</System:String>
+    <System:String x:Key="QtOptionsStr">Impostazioni</System:String>
+    <System:String x:Key="AboutQStr">Chi Siamo - Quota Express</System:String>
+    <System:String x:Key="OpDefStr" xml:space="preserve">Predefiniti    </System:String>
+    <System:String x:Key="ViewMStr">Vista</System:String>
+    <System:String x:Key="DefaultsStr">Predefiniti</System:String>
+    <System:String x:Key="ChartTitleQStr">Grafici - Quota Express</System:String>
+    <System:String x:Key="ExportPNGStr">Esporta come PNG</System:String>
+    <System:String x:Key="ChartInfoQStr">Personalizza il grafico sotto, quindi clicca su "Esporta come PNG".</System:String>
+    <System:String x:Key="ChSizeStr">Dimensioni nel documento</System:String>
+    <System:String x:Key="ErrorDriveStr">Impossibile recuperare le informazioni sull'unità corrente.</System:String>
+    <System:String x:Key="SelectionFolderStr">Selezione / Dimensione cartella</System:String>
+    <System:String x:Key="SelectionSizeStr">Dimensione di selezione</System:String>
+    <System:String x:Key="ThisFolderStr">Questa cartella</System:String>
+    <System:String x:Key="TotalFolderSizeStr">Dimensione totale della cartella</System:String>
+    <System:String x:Key="CopyDetailsStr">Copia dettagli</System:String>
+    <System:String x:Key="TotalUsageStr">Utilizzo totale</System:String>
+    <System:String x:Key="SpaceTakenStr">Spazio occupato</System:String>
+    <System:String x:Key="RemainingStr">Spazio rimanente</System:String>
+    <System:String x:Key="TotalDriveStr">Dimensione totale dell'unità</System:String>
+    <System:String x:Key="OtherDrivesStr">Altre unità</System:String>
+    <System:String x:Key="TopBtnStr">Sali una cartella</System:String>
+    <System:String x:Key="ChooseFolderStr">Scegli cartella</System:String>
+    <System:String x:Key="FolderAnalysisStr">Analisi delle cartelle</System:String>
+    <System:String x:Key="DriveAnalysisStr">Analisi dell'unità</System:String>
+    <System:String x:Key="PercentageStr">Barre percentuali</System:String>
+    <System:String x:Key="PercentageToolStr">Evidenzia lo spazio occupato da file e cartelle.</System:String>
+    <System:String x:Key="FilterTypeStr">Filtra per tipo:</System:String>
+    <System:String x:Key="NoneStr">Nessun</System:String>
+    <System:String x:Key="SortStr">Ordina per:</System:String>
+    <System:String x:Key="ChartsStr">Grafici</System:String>
+    <System:String x:Key="ExportTXTStr">Esporta come TXT</System:String>
+    <System:String x:Key="ExportCSVStr">Esporta come CSV</System:String>
+    <System:String x:Key="ExportRTFStr">Esporta come RTF</System:String>
+    <System:String x:Key="SelectAllQuotaStr">Seleziona tutto</System:String>
+    <System:String x:Key="RefreshStr" xml:space="preserve">Aggiorna
+CTRL+R</System:String>
+    <System:String x:Key="ItemCountStr">0 articoli</System:String>
+    <System:String x:Key="FlImgStr">Immagini</System:String>
+    <System:String x:Key="FlAudStr">Audio</System:String>
+    <System:String x:Key="FlVidStr">Video</System:String>
+    <System:String x:Key="FlDocStr">Documenti</System:String>
+    <System:String x:Key="FlCdeStr">File di codice</System:String>
+    <System:String x:Key="FlFntStr">Font</System:String>
+    <System:String x:Key="FlArcStr">Archivi</System:String>
+    <System:String x:Key="FlNoneStr">Nessun filtro</System:String>
+    <System:String x:Key="NameAZStr">Nome A-Z</System:String>
+    <System:String x:Key="NameZAStr">Nome Z-A</System:String>
+    <System:String x:Key="SizeAscStr">Dimensione ascendente</System:String>
+    <System:String x:Key="SizeDescStr">Dimensione discendente</System:String>
+    <System:String x:Key="NewestStr">Prima il più recente</System:String>
+    <System:String x:Key="OldestStr">Prima il più vecchio</System:String>
+    <System:String x:Key="NavigateToolStr" xml:space="preserve">Naviga a una cartella del PC.
+CTRL+F</System:String>
+    <System:String x:Key="FolderToolStr" xml:space="preserve">Analizza i file e le sottocartelle di questa cartella.
+CTRL+E</System:String>
+    <System:String x:Key="DriveToolStr" xml:space="preserve">Analizza lo spazio di archiviazione su tutte le unità disponibili.
+CTRL+D</System:String>
+    <System:String x:Key="ChartToolQuotaStr" xml:space="preserve">Crea grafici dai dati contenuti in questa cartella.
+CTRL+H</System:String>
+    <System:String x:Key="PercentageDescStr">Mostra barre percentuali per impostazione predefinita</System:String>
+    <System:String x:Key="DefSortStr">Ordinamento predefinito</System:String>
+    <System:String x:Key="StartupFolderStr">Cartella di avvio</System:String>
+    <System:String x:Key="BreakdownStr">Scomposizione dei file</System:String>
+    <System:String x:Key="AboutDescFStr" xml:space="preserve">Grazie per aver installato Font Express.
+
+Scegli i font con facilità organizzandoli in categorie e impostando i tuoi preferiti, per accedere rapidamente ai font di cui hai bisogno.
+
+Per sapere come utilizzare le funzioni disponibili, visita la sezione Guida. Puoi anche lasciare il tuo feedback: è molto apprezzato!
+
+L'applicazione e il logo Font Express sono copyright di John D. I disegni delle icone dell'applicazione provengono da icons8.com. Illustrazioni da stories.freepik.com.</System:String>
+    <System:String x:Key="VersionStr">Versione</System:String>
+    <System:String x:Key="NoCategoryNameStr">Inserisci prima il nome di una categoria.</System:String>
+    <System:String x:Key="CategoryErrorStr">Errore di Categoria</System:String>
+    <System:String x:Key="CategorySlashErrorStr">I nomi delle categorie non possono contenere due barre (//).</System:String>
+    <System:String x:Key="CategoryTakenStr">Questo nome di categoria è già stato assegnato. Prova a scegliere un altro nome.</System:String>
+    <System:String x:Key="CriticalErrorStr">Errore Critico</System:String>
+    <System:String x:Key="CriticalErrorDescStr" xml:space="preserve">Si è verificato un errore che ha causato l'interruzione del funzionamento di questa applicazione.
+
+Segnalaci questo problema inviando un'e-mail a express@johnjds.co.uk e cercheremo di risolverlo.</System:String>
+    <System:String x:Key="NoFontSelectedStr">Nessun font selezionato.</System:String>
+    <System:String x:Key="SelectedFontStr">Font selezionato:</System:String>
+    <System:String x:Key="SelectedFontsStr">Font selezionati:</System:String>
+    <System:String x:Key="SelectOneMoreStr">Selezionane un altro.</System:String>
+    <System:String x:Key="CategoryLimitReachedStr">Limite di Categoria Raggiunto</System:String>
+    <System:String x:Key="CategoryLimitStr">Hai raggiunto il numero massimo di categorie.</System:String>
+    <System:String x:Key="FreeTextStr">Testo libero</System:String>
+    <System:String x:Key="PageStr">Pagina {0} di {1}</System:String>
+    <System:String x:Key="YesStr">Sì</System:String>
+    <System:String x:Key="NoStr">No</System:String>
+    <System:String x:Key="UpdateAvailableStr">È disponibile un aggiornamento.</System:String>
+    <System:String x:Key="UpToDateStr">Sei aggiornato!</System:String>
+    <System:String x:Key="NotificationErrorStr">Sembra che al momento non sia possibile ricevere notifiche. Verifica di essere connesso a Internet e riprova.</System:String>
+    <System:String x:Key="NoInternetStr">Nessuna Connessione Internet</System:String>
+    <System:String x:Key="WhatsNewStr">Cosa c'è di nuovo in questa versione?</System:String>
+    <System:String x:Key="ImportantUpdateStr">È disponibile un importante aggiornamento!</System:String>
+    <System:String x:Key="VisitDownloadPageStr">Vuoi visitare la pagina di download?</System:String>
+    <System:String x:Key="UpdatesFStr">Aggiornamenti di Font Express</System:String>
+    <System:String x:Key="CategoryNotFoundStr">Impossibile individuare la categoria. Si prega di riprovare.</System:String>
+    <System:String x:Key="CategoryRemovalStr">Rimozione della Categoria</System:String>
+    <System:String x:Key="CategoryRemovalDescStr" xml:space="preserve">Sei sicuro/a di voler rimuovere questa categoria e tutti i suoi font?
+
+I font di questa categoria rimarranno comunque installati sul tuo computer.</System:String>
+    <System:String x:Key="NoFontsFoundStr">Nessun font trovato</System:String>
+    <System:String x:Key="NoFavouritesFoundStr">Non hai nessun font preferito. Perché non aggiungerne uno?</System:String>
+    <System:String x:Key="NoFontsInCategoryStr">Non ci sono font in questa categoria. Perché non aggiungerne uno?</System:String>
+    <System:String x:Key="NoFontsHereStr">Non ci sono font qui. Prova una ricerca o un filtro diverso.</System:String>
+    <System:String x:Key="ShowingMatchedFontsStr">Visualizzazione dei font che corrispondono alla vostra ricerca</System:String>
+    <System:String x:Key="ShowingCategoryFontsStr">Visualizzazione dei font nella categoria "{0}"</System:String>
+    <System:String x:Key="ShowingFavFontsStr">Visualizzazione dei tuoi font preferiti</System:String>
+    <System:String x:Key="ShowingAllFontsStr">Visualizzazione di tutti i font</System:String>
+    <System:String x:Key="ShowingNumSymFontsStr">Visualizzazione dei font che iniziano con un numero o un simbolo</System:String>
+    <System:String x:Key="ShowingLetterFontsStr">Visualizzazione dei font che iniziano con {0}</System:String>
+    <System:String x:Key="ExpandStr">Espandi</System:String>
+    <System:String x:Key="CopyFontNameStr">Copia il nome del font</System:String>
+    <System:String x:Key="GettingStartedStr">Come iniziare</System:String>
+    <System:String x:Key="NewComingSoonStr">Funzioni nuove e in arrivo</System:String>
+    <System:String x:Key="TroubleshootingStr">Risoluzione problemi e feedback</System:String>
+    <System:String x:Key="HelpGuideF1Str">inizi cominci sfogli grass corsiv dim</System:String>
+    <System:String x:Key="HelpGuideF2Str">filtr categori organiz ordin preferit favorit</System:String>
+    <System:String x:Key="HelpGuideF3Str">confron compar appaia abbinam font caratter</System:String>
+    <System:String x:Key="HelpGuideF4Str">inizi cominci import esport opzion imposta</System:String>
+    <System:String x:Key="HelpGuideF5Str">categori organiz ordin font import esport opzion imposta preferit favorit</System:String>
+    <System:String x:Key="HelpGuideF6Str">general lingua suon rumor scur apparenz opzion imposta</System:String>
+    <System:String x:Key="HelpGuideF7Str">notific aggiorna notiz</System:String>
+    <System:String x:Key="HelpGuideF8Str">scorciatoi tastier</System:String>
+    <System:String x:Key="HelpGuideF9Str">nuov novità arrivo prossima funzion suggerimen</System:String>
+    <System:String x:Key="HelpGuideF10Str">guid aiut feedback comment opinion problem guai error suggerimen propost mail post contatt</System:String>
+    <System:String x:Key="HelpTitleF1Str">Ricerca dei font</System:String>
+    <System:String x:Key="HelpTitleF2Str">Filtri e categorie</System:String>
+    <System:String x:Key="HelpTitleF3Str">Confronto dei font</System:String>
+    <System:String x:Key="HelpTitleF4Str">Impostazioni di categoria</System:String>
+    <System:String x:Key="HelpTitleF5Str">Impostazioni generali</System:String>
+    <System:String x:Key="HelpTitleF6Str">Altre impostazioni</System:String>
+    <System:String x:Key="HelpTitleF7Str">Notifiche</System:String>
+    <System:String x:Key="HelpTitleF8Str">Scorciatoie da tastiera</System:String>
+    <System:String x:Key="TextFilesFilterStr">File di testo (.txt)|*.txt</System:String>
+    <System:String x:Key="XMLFilesFilterStr">File XML (.xml)|*.xml</System:String>
+    <System:String x:Key="OpImportDialogStr">Seleziona un file da importare</System:String>
+    <System:String x:Key="OpExportDialogStr">Seleziona una posizione di esportazione</System:String>
+    <System:String x:Key="ImportFontsTitleStr">Importazione di font</System:String>
+    <System:String x:Key="ImportFontsDescStr" xml:space="preserve">Seleziona un file di testo che contiene un elenco di font, ciascuno separato da una nuova riga.
+
+L'importazione di font in questa categoria eliminerà tutti i font esistenti. Vuoi continuare?</System:String>
+    <System:String x:Key="ImportedFontsStr">0 font importati.</System:String>
+    <System:String x:Key="LangWarningStr">Avvertenza sulla Lingua</System:String>
+    <System:String x:Key="LangWarningDescStr">La modifica della lingua dell'interfaccia richiede il riavvio dell'applicazione. Vuoi continuare?</System:String>
+    <System:String x:Key="ImportSettingsStr">Importazione delle Impostazioni</System:String>
+    <System:String x:Key="ImportSettingsFDescStr">{0} impostazioni e {1} categorie importate.</System:String>
+    <System:String x:Key="ImportSettingsErrorStr">Errore di Importazione</System:String>
+    <System:String x:Key="ImportErrorDescStr">Si verificano problemi nell'importazione di queste impostazioni. Si prega di verificare che il file sia stato generato da {0} e non sia stato modificato.</System:String>
+    <System:String x:Key="ExportSettingsStr">Esportazione delle Impostazioni</System:String>
+    <System:String x:Key="ExportSettingsDescStr">Salva questo file in uno spazio sicuro e importalo ogni volta che aggiorni {0}. Clicca su OK per continuare.</System:String>
+    <System:String x:Key="AboutDescPStr" xml:space="preserve">Grazie per aver installato Present Express.
+
+Crea splendide presentazioni aggiungendo immagini, testo, grafici, screenshot e disegni. Puoi personalizzare la presentazione con una gamma di opzioni e persino esportarla come video.
+
+Per sapere come utilizzare le funzioni disponibili, visita la sezione Guida. Puoi anche lasciare il tuo feedback: è molto apprezzato!
+
+L'applicazione e il logo Present Express sono copyright di John D. I disegni delle icone dell'applicazione provengono da icons8.com. Illustrazioni da stories.freepik.com.</System:String>
+    <System:String x:Key="ApplyChangesStr">Applica modifiche</System:String>
+    <System:String x:Key="NoTextStr">Nessun testo</System:String>
+    <System:String x:Key="NoTextDescStr">Inserisci prima del testo.</System:String>
+    <System:String x:Key="AddSomeDataStr">Aggiungi alcuni dati</System:String>
+    <System:String x:Key="CSVFilesFilterStr">File CSV (.csv)|*.csv</System:String>
+    <System:String x:Key="ChooseFileStr">Scegli un file</System:String>
+    <System:String x:Key="NoDataStr">Nessun dato</System:String>
+    <System:String x:Key="NoDataDescStr">Aggiungi prima alcuni dati.</System:String>
+    <System:String x:Key="AddRowErrorStr">Impossibile aggiungere la riga</System:String>
+    <System:String x:Key="AddRowErrorDescStr">Non è possibile aggiungere altre righe. Hai raggiunto il limite massimo di 15 righe.</System:String>
+    <System:String x:Key="RemoveRowErrorDescStr">Non è possibile eliminare quella riga. Almeno un punto dati richiesto.</System:String>
+    <System:String x:Key="RemoveRowErrorStr">Impossibile rimuovere la riga</System:String>
+    <System:String x:Key="ImportDataWarningStr">Importazione di dati</System:String>
+    <System:String x:Key="ImportDataWarningDescStr" xml:space="preserve">Seleziona un file CSV che contenga un'etichetta e un valore separati da virgole su ogni nuova riga, come ad esempio:
+
+Etichetta,1
+Un'altra etichetta,"2,5"
+
+L'importazione dei dati cancellerà tutti i punti dati esistenti. Vuoi continuare?</System:String>
+    <System:String x:Key="NoValidDataErrorStr">Non è stato possibile trovare dati validi nel file CSV.</System:String>
+    <System:String x:Key="ImportDataErrorStr">Errore di importazione dei dati</System:String>
+    <System:String x:Key="ImportDataErrorDescStr">Non è stato possibile importare i dati da quel file. Si prega di verificare che sia possibile accedere al file e che il formato etichetta-valore sia corretto.</System:String>
+    <System:String x:Key="PicturesDialogStr">Scegli le immagini</System:String>
+    <System:String x:Key="PicturesFilterStr">Immagini|*.jpg;*.jpeg;*.png;*.bmp;*.gif|File JPEG|*.jpg;*.jpeg|File PNG|*.png|File BMP|*.bmp|File GIF|*.gif</System:String>
+    <System:String x:Key="PresentFilterStr">File PRESENT (.present)|*.present</System:String>
+    <System:String x:Key="VideosFilterStr">File MP4 (.mp4)|*.mp4|File WMV (.wmv)|*.wmv|File AVI (.avi)|*.avi</System:String>
+    <System:String x:Key="ChooseFolderDialogStr">Scegli una cartella sotto...</System:String>
+    <System:String x:Key="UpdatesPStr">Aggiornamenti di Present Express</System:String>
+    <System:String x:Key="CloseMenuStr">Chiudi menu</System:String>
+    <System:String x:Key="OnExitStr">Prima di andare...</System:String>
+    <System:String x:Key="OnExitDescPStr">Vuoi salvare tutte le modifiche apportate alla tua presentazione?</System:String>
+    <System:String x:Key="TemplateErrorStr">Sembra che al momento non sia possibile accedere ai modelli. Verifica di essere connesso a Internet e riprova.</System:String>
+    <System:String x:Key="OpenFileErrorStr">Errore nell'apertura del file</System:String>
+    <System:String x:Key="OpenFileErrorDescStr">Si è verificato un problema durante l'apertura di questo file:</System:String>
+    <System:String x:Key="TryAgainStr">Riprova, prego.</System:String>
+    <System:String x:Key="FileNotFoundStr">File non trovato</System:String>
+    <System:String x:Key="FileNotFoundDescStr">Il file che stai cercando di aprire non esiste più. Vuoi rimuoverlo dall'elenco?</System:String>
+    <System:String x:Key="DirNotFoundStr">Directory non trovata</System:String>
+    <System:String x:Key="DirNotFoundDescStr">La posizione del file che stai cercando di aprire non esiste più. Vuoi rimuoverla dall'elenco?</System:String>
+    <System:String x:Key="AreYouSureStr">Sei sicuro/a?</System:String>
+    <System:String x:Key="ConfirmRecentsDeleteStr">Sei sicuro/a di voler rimuovere tutti i file presenti nell'elenco dei recenti? Non è possibile annullare questa operazione.</System:String>
+    <System:String x:Key="ConfirmFavsDeleteStr">Sei sicuro/a di voler rimuovere tutti i file presenti nell'elenco dei preferiti? Non è possibile annullare questa operazione.</System:String>
+    <System:String x:Key="NoSlidesStr">Nessuna diapositiva</System:String>
+    <System:String x:Key="NoSlidesDescStr">Aggiungi prima una diapositiva.</System:String>
+    <System:String x:Key="SavingErrorStr">Errore nel salvataggio del file</System:String>
+    <System:String x:Key="SavingErrorDescStr" xml:space="preserve">Impossibile salvare il file:
+{0}
+
+Verifica di avere i permessi per modificare il file.</System:String>
+    <System:String x:Key="SentToPrinterStr">Inviato alla stampante</System:String>
+    <System:String x:Key="SuccessStr">Successo</System:String>
+    <System:String x:Key="ImagesExportedStr">Immagini esportate con successo in:</System:String>
+    <System:String x:Key="ExportErrorStr">Errore di esportazione</System:String>
+    <System:String x:Key="ExportErrorDescStr">Impossibile esportare le immagini. Si prega di verificare che sia possibile accedere alla cartella selezionata.</System:String>
+    <System:String x:Key="HTMLSlidesStr">Diapositive realizzate con{0}Present Express</System:String>
+    <System:String x:Key="SlideshowExportedStr">Presentazione esportata con successo in:</System:String>
+    <System:String x:Key="SlideshowExportErrorStr">Impossibile esportare la presentazione. Si prega di verificare che sia possibile accedere alla cartella selezionata.</System:String>
+    <System:String x:Key="MinuteStr">minuto</System:String>
+    <System:String x:Key="OptionFromLeftStr">Scegli un'opzione da sinistra.</System:String>
+    <System:String x:Key="TBStr">TB</System:String>
+    <System:String x:Key="GBStr">GB</System:String>
+    <System:String x:Key="MBStr">MB</System:String>
+    <System:String x:Key="KBStr">KB</System:String>
+    <System:String x:Key="BStr">b</System:String>
+    <System:String x:Key="MinutesStr">minuti</System:String>
+    <System:String x:Key="HourStr">ora</System:String>
+    <System:String x:Key="HoursStr">ore</System:String>
+    <System:String x:Key="AccessDeniedStr">Accesso negato</System:String>
+    <System:String x:Key="AccessDeniedDescStr">Impossibile aprire il file. Verifica di avere i permessi per aprirlo.</System:String>
+    <System:String x:Key="NoFilesToOpenStr">Nessun file da aprire in questa cartella.</System:String>
+    <System:String x:Key="ShowLessStr">Mostra meno</System:String>
+    <System:String x:Key="SlideCounterStr">Diapositiva {0} di {1}</System:String>
+    <System:String x:Key="EditThisImageStr">Modifica/sostituisci questa immagine</System:String>
+    <System:String x:Key="EditThisTextStr">Modifica questo testo</System:String>
+    <System:String x:Key="EditThisScreenshotStr">Sostituisci questo screenshot</System:String>
+    <System:String x:Key="EditThisChartStr">Modifica questo grafico</System:String>
+    <System:String x:Key="EditThisDrawingStr">Modifica questo disegno</System:String>
+    <System:String x:Key="TextErrorStr">Errore di testo</System:String>
+    <System:String x:Key="TextErrorDescStr">Si è verificato un errore durante l'inserimento del testo. Riprova, prego.</System:String>
+    <System:String x:Key="ScreenshotErrorDescStr">Si è verificato un errore durante l'inserimento dello screenshot. Riprova, prego.</System:String>
+    <System:String x:Key="ScreenshotErrorStr">Errore di screenshot</System:String>
+    <System:String x:Key="ChartErrorStr">Errore di grafico</System:String>
+    <System:String x:Key="ChartErrorDescStr">Si è verificato un errore durante l'inserimento del grafico. Riprova, prego.</System:String>
+    <System:String x:Key="DrawingErrorDescStr">Si è verificato un errore durante l'inserimento del disegno. Riprova, prego.</System:String>
+    <System:String x:Key="DrawingErrorStr">Errore di disegno</System:String>
+    <System:String x:Key="ImageErrorStr">Errore di immagine</System:String>
+    <System:String x:Key="ImageErrorDescStr">Non è stato possibile modificare questa immagine. Potrebbe aver superato la dimensione massima consentita di 10 MB.</System:String>
+    <System:String x:Key="ImageMultipleErrorDescStr">Si sono verificati uno o più errori durante l'inserimento delle immagini. È possibile che le immagini abbiano superato la dimensione massima consentita di 10 MB.</System:String>
+    <System:String x:Key="ImageInsertErrorDescStr">Si è verificato un errore durante l'inserimento dell'immagine. Riprova, prego.</System:String>
+    <System:String x:Key="TimingsUpdatedStr">Tempistiche aggiornate per tutte le diapositive</System:String>
+    <System:String x:Key="DisplayStr">Monitor</System:String>
+    <System:String x:Key="HelpGuideP1Str">inizi cominci nuov crea modell template</System:String>
+    <System:String x:Key="HelpGuideP2Str">apr aper sfogli</System:String>
+    <System:String x:Key="HelpGuideP3Str">recent preferit favorit</System:String>
+    <System:String x:Key="HelpGuideP4Str">salv sfogli</System:String>
+    <System:String x:Key="HelpGuideP5Str">salv blocc</System:String>
+    <System:String x:Key="HelpGuideP6Str">stampa pagin</System:String>
+    <System:String x:Key="HelpGuideP7Str">video immagin esport</System:String>
+    <System:String x:Key="HelpGuideP8Str">html codic web rete internet</System:String>
+    <System:String x:Key="HelpGuideP9Str">info anali propriet chiud chi</System:String>
+    <System:String x:Key="HelpGuideP10Str">immagin foto slide diapositiv</System:String>
+    <System:String x:Key="HelpGuideP11Str">test font caratter titol slide diapositiv</System:String>
+    <System:String x:Key="HelpGuideP12Str">cattur screen schermat</System:String>
+    <System:String x:Key="HelpGuideP13Str">grafic diagram</System:String>
+    <System:String x:Key="HelpGuideP14Str">disegn tel</System:String>
+    <System:String x:Key="HelpGuideP15Str">disegn temp fond color dim adat</System:String>
+    <System:String x:Key="HelpGuideP16Str">slide diapositiv vist loop monitor temp display</System:String>
+    <System:String x:Key="HelpGuideP17Str">inizi cominci import esport</System:String>
+    <System:String x:Key="HelpGuideP18Str">opzion imposta predefin</System:String>
+    <System:String x:Key="HelpGuideP19Str">general lingua suon rumor avvis cambi control opzion imposta</System:String>
+    <System:String x:Key="HelpGuideP20Str">apparenz opzion imposta scur recent salv</System:String>
+    <System:String x:Key="HelpGuideP21Str">notific aggiorna notiz</System:String>
+    <System:String x:Key="HelpGuideP22Str">pannel barra slide diapositiv</System:String>
+    <System:String x:Key="HelpGuideP23Str">scorciatoi tastier</System:String>
+    <System:String x:Key="HelpGuideP24Str">nuov novità arrivo prossima funzion suggerimen</System:String>
+    <System:String x:Key="HelpGuideP25Str">guid aiut feedback comment opinion problem guai error suggerimen propost mail post contatt</System:String>
+    <System:String x:Key="HelpTitleP1Str">Creazione di una presentazione con i modelli</System:String>
+    <System:String x:Key="HelpTitleP2Str">File recenti e preferiti</System:String>
+    <System:String x:Key="HelpTitleP3Str">Ricerca di file sul PC</System:String>
+    <System:String x:Key="HelpTitleP4Str">Salvataggio dei file</System:String>
+    <System:String x:Key="HelpTitleP5Str">Cartelle bloccate</System:String>
+    <System:String x:Key="HelpTitleP6Str">Stampa e imposta pagina</System:String>
+    <System:String x:Key="HelpTitleP7Str">Esportazione della presentazione</System:String>
+    <System:String x:Key="HelpTitleP8Str">Conversione della presentazione in HTML</System:String>
+    <System:String x:Key="HelpTitleP9Str">Impostazioni predefinite</System:String>
+    <System:String x:Key="HelpTitleP10Str">Impostazioni generali</System:String>
+    <System:String x:Key="HelpTitleP11Str">Impostazioni di apparenza</System:String>
+    <System:String x:Key="HelpTitleP12Str">Altre impostazioni</System:String>
+    <System:String x:Key="HelpTitleP13Str">La scheda Info</System:String>
+    <System:String x:Key="HelpTitleP14Str">Diapositive di immagini</System:String>
+    <System:String x:Key="HelpTitleP15Str">Diapositive di testo</System:String>
+    <System:String x:Key="HelpTitleP16Str">Diapositive di screenshot</System:String>
+    <System:String x:Key="HelpTitleP17Str">Diapositive di grafico</System:String>
+    <System:String x:Key="HelpTitleP18Str">Diapositive di disegno</System:String>
+    <System:String x:Key="HelpTitleP19Str">Impostazioni di disegno e tempistiche delle diapositive</System:String>
+    <System:String x:Key="HelpTitleP20Str">Visualizzazione di una presentazione</System:String>
+    <System:String x:Key="HelpTitleP21Str">Notifiche</System:String>
+    <System:String x:Key="HelpTitleP22Str">Utilizzo del pannello laterale e della barra di stato</System:String>
+    <System:String x:Key="HelpTitleP23Str">Scorciatoie da tastiera</System:String>
+    <System:String x:Key="InvalidFontStr">Font non valido</System:String>
+    <System:String x:Key="InvalidFontDescStr">Non è stato possibile trovare il font inserito.</System:String>
+    <System:String x:Key="ImportSettingsDescStr">{0} impostazioni importate.</System:String>
+    <System:String x:Key="PhotoAPIKeyNotFoundStr" xml:space="preserve">Impossibile recuperare la chiave API della foto.
+Contatta l'assistenza.</System:String>
+    <System:String x:Key="PictureErrorDescStr" xml:space="preserve">Non siamo riusciti a trovare nessuna immagine. Si prega di provare con un'altra query di ricerca.
+
+Se il problema persiste, è possibile che si siano verificati dei problemi. Riprova più tardi e controlla gli aggiornamenti dell'app.</System:String>
+    <System:String x:Key="PictureErrorStr">Errore di Immagine</System:String>
+    <System:String x:Key="NoDescStr">Nessuna descrizione</System:String>
+    <System:String x:Key="ImageRetrievalErrorStr">Abbiamo problemi con l'immagine. Si prega di riprovare più tardi.</System:String>
+    <System:String x:Key="CaptureProgressStr">Cattura in corso...</System:String>
+    <System:String x:Key="CaptureNewStr">Cattura nuovo</System:String>
+    <System:String x:Key="AboutDescQStr" xml:space="preserve">Grazie per aver installato Quota Express.
+
+Scopri cosa occupa spazio sul tuo PC con le funzioni di ordinamento e filtro, e analizza ed esporta i dati creando grafici.
+
+Per sapere come utilizzare le funzioni disponibili, visita la sezione Guida. Puoi anche lasciare il tuo feedback: è molto apprezzato!
+
+L'applicazione e il logo Quota Express sono copyright di John D. I disegni delle icone dell'applicazione provengono da icons8.com. Illustrazioni da stories.freepik.com.</System:String>
+    <System:String x:Key="PNGFilesFilterStr">File PNG (.png)|*.png</System:String>
+    <System:String x:Key="SizeAxisTitleStr">Dimensioni (MB)</System:String>
+    <System:String x:Key="FileSavedStr">File salvato con successo.</System:String>
+    <System:String x:Key="FileSaveErrorStr">Si è verificato un errore nel salvataggio del file. Riprova, prego.</System:String>
+    <System:String x:Key="UpdatesQStr">Aggiornamenti di Quota Express</System:String>
+    <System:String x:Key="WorkingFastStr">Lavoriamo il più velocemente possibile...</System:String>
+    <System:String x:Key="StillAtItStr">Ancora un po'...</System:String>
+    <System:String x:Key="OpenFileErrorQStr" xml:space="preserve">Impossibile aprire {0}.
+
+Verifica di avere i permessi per aprirlo.</System:String>
+    <System:String x:Key="DocumentFolderStr">Documenti</System:String>
+    <System:String x:Key="PictureFolderStr">Immagini</System:String>
+    <System:String x:Key="VideoFolderStr">Video</System:String>
+    <System:String x:Key="ItemSelectedStr">1 articolo selezionato.</System:String>
+    <System:String x:Key="ItemsSelectedStr">{0} articoli selezionati.</System:String>
+    <System:String x:Key="ItemStr">articolo</System:String>
+    <System:String x:Key="ItemsStr">articoli</System:String>
+    <System:String x:Key="OtherFilesStr">Altri file</System:String>
+    <System:String x:Key="DriveErrorStr">Errore dell'unità</System:String>
+    <System:String x:Key="DriveErrorDescStr">Impossibile recuperare le informazioni sull'unità. È possibile che l'unità non sia ancora pronta o che non sia accessibile.</System:String>
+    <System:String x:Key="DriveErrorShortDescStr">Impossibile recuperare le informazioni sull'unità. Forse i diritti di accesso non sono sufficienti.</System:String>
+    <System:String x:Key="DriveStr">Unità</System:String>
+    <System:String x:Key="FilterErrorStr">Errore di filtro</System:String>
+    <System:String x:Key="FilterErrorDescStr">Prima di utilizzare un filtro, verifica che la casella di spunta "File" sia selezionata.</System:String>
+    <System:String x:Key="NoDataErrorDescStr">Scegli una cartella che contiene alcune cartelle o file.</System:String>
+    <System:String x:Key="DocumentSaveErrorStr">Impossibile salvare il documento. Riprova, prego.</System:String>
+    <System:String x:Key="RTFFilesFilterStr">File RTF (.rtf)|*.rtf</System:String>
+    <System:String x:Key="HelpGuideQ1Str">cartel directory unità anali memori spazi percentua file</System:String>
+    <System:String x:Key="HelpGuideQ2Str">file cartel directory ordin filtr</System:String>
+    <System:String x:Key="HelpGuideQ3Str">esport grafic diagram rtf txt test csv</System:String>
+    <System:String x:Key="HelpGuideQ4Str">avvi cartel directory import esport opzion imposta</System:String>
+    <System:String x:Key="HelpGuideQ5Str">percentua predefin opzion imposta color tema ordin</System:String>
+    <System:String x:Key="HelpGuideQ6Str">general lingua suon rumor scur apparenz opzion imposta</System:String>
+    <System:String x:Key="HelpGuideQ7Str">notific aggiorna notiz</System:String>
+    <System:String x:Key="HelpGuideQ8Str">scorciatoi tastier</System:String>
+    <System:String x:Key="HelpGuideQ9Str">nuov novità arrivo prossima funzion suggerimen</System:String>
+    <System:String x:Key="HelpGuideQ10Str">guid aiut feedback comment opinion problem guai error suggerimen propost mail post contatt</System:String>
+    <System:String x:Key="HelpTitleQ1Str">Analisi dell'archiviazione</System:String>
+    <System:String x:Key="HelpTitleQ2Str">La scheda Vista</System:String>
+    <System:String x:Key="HelpTitleQ3Str">Esportazione dei dati</System:String>
+    <System:String x:Key="HelpTitleQ4Str">Impostazioni predefinite</System:String>
+    <System:String x:Key="HelpTitleQ5Str">Impostazioni generali</System:String>
+    <System:String x:Key="HelpTitleQ6Str">Altre impostazioni</System:String>
+    <System:String x:Key="HelpTitleQ7Str">Notifiche</System:String>
+    <System:String x:Key="HelpTitleQ8Str">Scorciatoie da tastiera</System:String>
+    <System:String x:Key="AboutDescTStr" xml:space="preserve">Grazie per aver installato Type Express.
+
+Modifica documenti TXT e RTF con facilità e stile, esprimendo la tua personalità con molte funzioni diverse, che ti permettono di personalizzare il tuo documento come desideri.
+
+Per sapere come utilizzare le funzioni disponibili, visita la sezione Guida. Puoi anche lasciare il tuo feedback: è molto apprezzato!
+
+L'applicazione e il logo Type Express sono copyright di John D. I disegni delle icone dell'applicazione provengono da icons8.com. Illustrazioni da stories.freepik.com.</System:String>
+    <System:String x:Key="ColoursMissingStr">Colori mancanti</System:String>
+    <System:String x:Key="ColoursMissingDescStr">Seleziona tutti gli 8 colori.</System:String>
+    <System:String x:Key="LanguageFRStr">Lingua: Francese</System:String>
+    <System:String x:Key="LanguageESStr">Lingua: Spagnolo</System:String>
+    <System:String x:Key="LanguageENStr">Lingua: Inglese</System:String>
+    <System:String x:Key="EmptyDictStr">Dizionario vuoto</System:String>
+    <System:String x:Key="EmptyDictDescStr">Non ci sono articoli in questo dizionario personalizzato.</System:String>
+    <System:String x:Key="WordAddErrorStr">Impossibile aggiungere parola</System:String>
+    <System:String x:Key="EnterWordErrorStr">Inserisci prima una parola.</System:String>
+    <System:String x:Key="WordTooLongStr">La parola è troppo lunga.</System:String>
+    <System:String x:Key="ExistingWordErrorStr">Parola esistente</System:String>
+    <System:String x:Key="ExistingWordErrorDescStr">La parola che hai inserito è già inclusa nel dizionario.</System:String>
+    <System:String x:Key="NoWordSelectionStr">Nessuna selezione</System:String>
+    <System:String x:Key="NoWordSelectionDescStr">Seleziona prima una parola.</System:String>
+    <System:String x:Key="RemoveFromFavsStr">Rimuovi dai preferiti</System:String>
+    <System:String x:Key="AddToFavsStr">Aggiungi ai preferiti</System:String>
+    <System:String x:Key="TypeFontPickerStr">Selettore Font di Type Express</System:String>
+    <System:String x:Key="HTMLFilesFilterStr">File HTML (.html)|*.html</System:String>
+    <System:String x:Key="IconAPIKeyNotFoundStr" xml:space="preserve">Impossibile recuperare la chiave API dell'icona.
+Contatta l'assistenza.</System:String>
+    <System:String x:Key="IconErrorStr">Errore di icona</System:String>
+    <System:String x:Key="IconErrorDescStr" xml:space="preserve">Non siamo riusciti a trovare alcuna icona. Si prega di provare con un'altra query di ricerca.
+
+Si prega di notare che sono supportate solo le query di ricerca in inglese.
+
+Se il problema persiste, è possibile che si siano verificati dei problemi. Riprova più tardi e controlla gli aggiornamenti dell'app.</System:String>
+    <System:String x:Key="IconRetrievalErrorStr">Abbiamo problemi a ricevere questa icona. Si prega di riprovare più tardi.</System:String>
+    <System:String x:Key="TypeFilesFilterStr">File supportati (.rtf, .txt)|*.txt;*.rtf|File di testo (.txt)|*.txt|File RTF (.rtf)|*.rtf</System:String>
+    <System:String x:Key="TypeFilesShortFilterStr">File RTF (.rtf)|*.rtf|File di testo (.txt)|*.txt</System:String>
+    <System:String x:Key="ChoosePictureStr">Scegli un'immagine</System:String>
+    <System:String x:Key="TypeFilesShortInvFilterStr">File di testo (.txt)|*.txt|File RTF (.rtf)|*.rtf</System:String>
+    <System:String x:Key="OnExitDescTStr">Vuoi salvare tutte le modifiche apportate al tuo documento?</System:String>
+    <System:String x:Key="CharacterStr">1 carattere</System:String>
+    <System:String x:Key="CharactersStr">{0} caratteri</System:String>
+    <System:String x:Key="CharactersOfStr">{0} di {1} caratteri</System:String>
+    <System:String x:Key="LineCountStr">1 riga</System:String>
+    <System:String x:Key="LinesCountStr">{0} righe</System:String>
+    <System:String x:Key="WordStr">1 parola</System:String>
+    <System:String x:Key="WordsStr">{0} parole</System:String>
+    <System:String x:Key="WordsOfStr">{0} di {1} parole</System:String>
+    <System:String x:Key="UpdatesTStr">Aggiornamenti di Type Express</System:String>
+    <System:String x:Key="NoTemplatesFoundStr">Nessun Modello Trovato</System:String>
+    <System:String x:Key="NoTemplatesFoundDescStr">Non abbiamo trovato alcun modello che corrisponda ai criteri di ricerca. Prova qualcosa come "CV" o "blu".</System:String>
+    <System:String x:Key="EnterTitleStr">Inserisci qui il titolo</System:String>
+    <System:String x:Key="DocContentStr">Il contenuto del documento va qui.</System:String>
+    <System:String x:Key="DownloadErrorStr">Errore di scaricamento</System:String>
+    <System:String x:Key="DownloadErrorFileExtStr">L'indirizzo web deve terminare con .txt o .rtf. Riprova, prego.</System:String>
+    <System:String x:Key="DownloadErrorDescStr" xml:space="preserve">Non è stato possibile scaricare quel file. Forse prova:
+  - verificare che l'indirizzo web sia corretto
+  - verificare la connessione a Internet
+  - verificare che il file sia disponibile pubblicamente</System:String>
+    <System:String x:Key="SavingCompleteStr">Salvato</System:String>
+    <System:String x:Key="ConfirmPinnedDeleteStr">Sei sicuro/a di voler eliminare tutte le cartelle dell'elenco delle cartelle bloccate? Non è possibile annullare questa operazione.</System:String>
+    <System:String x:Key="InvalidEmailStr">Email non valida</System:String>
+    <System:String x:Key="InvalidEmailDescStr">Assicurati di aver inserito un indirizzo email valido.</System:String>
+    <System:String x:Key="InvalidPasswordStr">Password non valida</System:String>
+    <System:String x:Key="InvalidPasswordDescStr">La password è troppo corta. Riprova, prego.</System:String>
+    <System:String x:Key="NoTextDocStr">Nessun testo nel documento</System:String>
+    <System:String x:Key="NoTextDocDescStr">Inserisci prima del testo nel tuo documento.</System:String>
+    <System:String x:Key="HTMLExportedStr">Esportato in HTML</System:String>
+    <System:String x:Key="ExportFileErrorStr">Errore nell'esportazione del file</System:String>
+    <System:String x:Key="ExportFileErrorDescStr" xml:space="preserve">Impossibile esportare il documento:
+{0}
+
+Riprova, prego. Se il problema persiste, contattaci per ricevere assistenza.</System:String>
+    <System:String x:Key="TableTitleStr">Tabella</System:String>
+    <System:String x:Key="TextPropertyStr">Proprietà di Testo</System:String>
+    <System:String x:Key="ClipCopiedStr">Copiato negli Appunti</System:String>
+    <System:String x:Key="InvalidFontSizeStr">Dimensione di font non valida</System:String>
+    <System:String x:Key="InvalidFontSizeDescStr">La dimensione del font inserita non è valida.</System:String>
+    <System:String x:Key="NoColourSelectedStr">Nessun colore selezionato</System:String>
+    <System:String x:Key="NoColourSelectedDescStr">Si prega di scegliere prima un colore personalizzato.</System:String>
+    <System:String x:Key="InvalidColourStr">Colore non valido</System:String>
+    <System:String x:Key="InvalidColourDescStr">Non è stato possibile modificare il colore del testo. Riprova, prego.</System:String>
+    <System:String x:Key="IconInsertErrorDescStr">Si è verificato un errore durante l'inserimento dell'icona. Riprova, prego.</System:String>
+    <System:String x:Key="ShapeErrorDescStr">Si è verificato un errore durante l'inserimento della forma. Riprova, prego.</System:String>
+    <System:String x:Key="ShapeErrorStr">Errore di forma</System:String>
+    <System:String x:Key="PrevAddedShapesStr">Forme aggiunte in precedenza</System:String>
+    <System:String x:Key="PrevAddedShapesOffStr">Il salvataggio delle forme è stato disattivato. Per visualizzare le forme aggiunte in precedenza, vai a Impostazioni » Generale.</System:String>
+    <System:String x:Key="NoPrevAddedShapesStr">Nessuna forma aggiunta in precedenza</System:String>
+    <System:String x:Key="NoPrevAddedShapesDescStr">Non ci sono forme aggiunte in precedenza. Si prega di aggiungere prima una forma.</System:String>
+    <System:String x:Key="LanguageITStr">Lingua: Italiano</System:String>
+    <System:String x:Key="ImportFileErrorStr">Errore nell'importazione del file</System:String>
+    <System:String x:Key="ImportFileErrorDescStr">Si è verificato un problema durante l'importazione di testo da un file. Riprova, prego.</System:String>
+    <System:String x:Key="NoFilenameStr">Nessun nome file</System:String>
+    <System:String x:Key="NoFilenameDescStr">Salva prima il tuo documento.</System:String>
+    <System:String x:Key="NoFilePathStr">Nessun percorso di file</System:String>
+    <System:String x:Key="PrevAddedChartsStr">Grafici aggiunti in precedenza</System:String>
+    <System:String x:Key="NoPrevAddedChartsStr">Nessun grafico aggiunto in precedenza</System:String>
+    <System:String x:Key="NoPrevAddedChartsDescStr">Non ci sono grafici aggiunti in precedenza. Aggiungi prima un grafico.</System:String>
+    <System:String x:Key="PrevAddedChartsOffStr">Il salvataggio dei grafici è stato disattivato. Per visualizzare i grafici aggiunti in precedenza, vai a Impostazioni » Generale.</System:String>
+    <System:String x:Key="TooManyFontsStr">Troppi font selezionati</System:String>
+    <System:String x:Key="TooManyFontsDescStr">Si prega di selezionare il testo che contiene solo un font, quindi riprovare.</System:String>
+    <System:String x:Key="StyleAppliedHeadStr">Stile di font applicato al Titolo {0}</System:String>
+    <System:String x:Key="StyleAppliedBodyStr">Stile di font applicato al Corpo {0}</System:String>
+    <System:String x:Key="StyleAppliedQuoteStr">Stile di font applicato a Citazione</System:String>
+    <System:String x:Key="CurrentStr">(attuale)</System:String>
+    <System:String x:Key="ColourSchemeAppliedStr">Gamma di colori {0} applicata</System:String>
+    <System:String x:Key="CustomColourSchemeAppliedStr">Gamma di colori personalizzata applicata</System:String>
+    <System:String x:Key="SearchFinishedStr">Ricerca terminata</System:String>
+    <System:String x:Key="SearchFinishedDescStr">Terminata la ricerca nel documento.</System:String>
+    <System:String x:Key="OccurrenceFoundStr">Occorrenza trovata</System:String>
+    <System:String x:Key="ReplacedTextStr">Testo sostituito</System:String>
+    <System:String x:Key="ContinueStr">Continua</System:String>
+    <System:String x:Key="NoSuggestionsStr">Nessun suggerimento</System:String>
+    <System:String x:Key="DidYouMeanStr">Forse volevi dire..?</System:String>
+    <System:String x:Key="SpellcheckCompleteStr">Controllo ortografico completato</System:String>
+    <System:String x:Key="SpellcheckCompleteDescStr">Terminata la ricerca di errori.</System:String>
+    <System:String x:Key="NoVoicesStr">Nessuna voce installata</System:String>
+    <System:String x:Key="NoVoicesDescStr">Non hai installato alcuna voce text-to-speech in questa lingua. Vuoi aprire le Impostazioni per ottenerne qualcuna?</System:String>
+    <System:String x:Key="OpenSettingsErrorStr">Impossibile aprire Impostazioni</System:String>
+    <System:String x:Key="OpenSettingsErrorDescStr">Per installare altre voci, apri le Impostazioni di Windows e cerca "voce".</System:String>
+    <System:String x:Key="NoDefinitionsStr">Non siamo riusciti a trovare definizioni per questa parola.</System:String>
+    <System:String x:Key="NoSynonymsStr">Non siamo riusciti a trovare sinonimi per questa parola.</System:String>
+    <System:String x:Key="DictErrorStr">Errore del Dizionario</System:String>
+    <System:String x:Key="DictErrorDescStr" xml:space="preserve">{0} Assicurati di:
+— controllare che l'ortografia sia corretta
+— provare a usare parole come "nuotare" invece di "nuotato"
+
+Se il problema persiste, è possibile che si siano verificati dei problemi. Si prega di riprovare più tardi e di controllare gli aggiornamenti dell'app.</System:String>
+    <System:String x:Key="DictAPIKeyNotFoundStr" xml:space="preserve">Impossibile recuperare la chiave API del dizionario.
+Contatta l'assistenza.</System:String>
+    <System:String x:Key="HelpGuideT1Str">inizi cominci nuov crea modell template</System:String>
+    <System:String x:Key="HelpGuideT2Str">apr aper sfogli</System:String>
+    <System:String x:Key="HelpGuideT3Str">recent preferit favorit</System:String>
+    <System:String x:Key="HelpGuideT4Str">apr aper web internet scarica down rete online linea</System:String>
+    <System:String x:Key="HelpGuideT5Str">salv sfogli</System:String>
+    <System:String x:Key="HelpGuideT6Str">salv blocc</System:String>
+    <System:String x:Key="HelpGuideT7Str">stampa pagin</System:String>
+    <System:String x:Key="HelpGuideT8Str">mail post invi sped</System:String>
+    <System:String x:Key="HelpGuideT9Str">blocca nascond protegg</System:String>
+    <System:String x:Key="HelpGuideT10Str">html codic</System:String>
+    <System:String x:Key="HelpGuideT11Str">info anali propriet chiud</System:String>
+    <System:String x:Key="HelpGuideT12Str">font caratter format grass corsiv sottolinea barra tira</System:String>
+    <System:String x:Key="HelpGuideT13Str">font caratter stil color palette</System:String>
+    <System:String x:Key="HelpGuideT14Str">color evidenz</System:String>
+    <System:String x:Key="HelpGuideT15Str">allinea rientr pedic apic</System:String>
+    <System:String x:Key="HelpGuideT16Str">immagin foto monitor scherm</System:String>
+    <System:String x:Key="HelpGuideT17Str">form rettangol quadrat line cerchi elliss triangol</System:String>
+    <System:String x:Key="HelpGuideT18Str">disegn tel</System:String>
+    <System:String x:Key="HelpGuideT19Str">grafic diagram</System:String>
+    <System:String x:Key="HelpGuideT20Str">simbol equazion mate caratter emoji</System:String>
+    <System:String x:Key="HelpGuideT21Str">elenc puntat numerat tabell grigl</System:String>
+    <System:String x:Key="HelpGuideT22Str">blocc test link collega inseri import dat ora temp proprietà</System:String>
+    <System:String x:Key="HelpGuideT23Str">disegn mai min url link collega capo</System:String>
+    <System:String x:Key="HelpGuideT24Str">legg speech voc ascolt detta</System:String>
+    <System:String x:Key="HelpGuideT25Str">annula ripet appunt tagli copi incoll</System:String>
+    <System:String x:Key="HelpGuideT26Str">contegg parol rig caratter selezion cancella elimin</System:String>
+    <System:String x:Key="HelpGuideT27Str">trov sostitui cerca</System:String>
+    <System:String x:Key="HelpGuideT28Str">dizionar definizio sinonim signifi</System:String>
+    <System:String x:Key="HelpGuideT29Str">ortograf controll error dizionar</System:String>
+    <System:String x:Key="HelpGuideT30Str">font caratter inizi cominci import esport</System:String>
+    <System:String x:Key="HelpGuideT31Str">opzion imposta predefin</System:String>
+    <System:String x:Key="HelpGuideT32Str">general lingua suon rumor avvis cambi opzion imposta blocc dizionar</System:String>
+    <System:String x:Key="HelpGuideT33Str">apparenz opzion imposta scur recent salv parol</System:String>
+    <System:String x:Key="HelpGuideT34Str">notific aggiorna notiz</System:String>
+    <System:String x:Key="HelpGuideT35Str">pannel barra zoom ingrand riduc</System:String>
+    <System:String x:Key="HelpGuideT36Str">scorciatoi tastier</System:String>
+    <System:String x:Key="HelpGuideT37Str">nuov novità arrivo prossima funzion suggerimen</System:String>
+    <System:String x:Key="HelpGuideT38Str">guid aiut feedback comment opinion problem guai error suggerimen propost mail post contatt</System:String>
+    <System:String x:Key="HelpTitleT1Str">Creazione di un documento con modelli</System:String>
+    <System:String x:Key="HelpTitleT2Str">File recenti e preferiti</System:String>
+    <System:String x:Key="HelpTitleT3Str">Apertura di file dal web</System:String>
+    <System:String x:Key="HelpTitleT4Str">Ricerca di file sul PC</System:String>
+    <System:String x:Key="HelpTitleT5Str">Salvataggio dei file</System:String>
+    <System:String x:Key="HelpTitleT6Str">Cartelle bloccate</System:String>
+    <System:String x:Key="HelpTitleT7Str">Stampa e imposta pagina</System:String>
+    <System:String x:Key="HelpTitleT8Str">Invio di documenti via e-mail</System:String>
+    <System:String x:Key="HelpTitleT9Str">Blocco dei documenti</System:String>
+    <System:String x:Key="HelpTitleT10Str">Conversione del documento in HTML</System:String>
+    <System:String x:Key="HelpTitleT11Str">Impostazioni predefinite</System:String>
+    <System:String x:Key="HelpTitleT12Str">Impostazioni generali</System:String>
+    <System:String x:Key="HelpTitleT13Str">Impostazioni di apparenza</System:String>
+    <System:String x:Key="HelpTitleT14Str">Altre impostazioni</System:String>
+    <System:String x:Key="HelpTitleT15Str">La scheda Info</System:String>
+    <System:String x:Key="HelpTitleT16Str">Annulla, ripeti e gli Appunti</System:String>
+    <System:String x:Key="HelpTitleT17Str">Font e formattazione</System:String>
+    <System:String x:Key="HelpTitleT18Str">Allineamento e rientro del testo</System:String>
+    <System:String x:Key="HelpTitleT19Str">Colore del testo ed evidenziazione</System:String>
+    <System:String x:Key="HelpTitleT20Str">Elenchi e tabelle</System:String>
+    <System:String x:Key="HelpTitleT21Str">Immagini e screenshot</System:String>
+    <System:String x:Key="HelpTitleT22Str">Forme</System:String>
+    <System:String x:Key="HelpTitleT23Str">Disegni</System:String>
+    <System:String x:Key="HelpTitleT24Str">Simboli ed equazioni</System:String>
+    <System:String x:Key="HelpTitleT25Str">Grafici</System:String>
+    <System:String x:Key="HelpTitleT26Str">Blocchi di testo e collegamenti</System:String>
+    <System:String x:Key="HelpTitleT27Str">Stili di font e gamme di colori</System:String>
+    <System:String x:Key="HelpTitleT28Str">Impostazioni di design</System:String>
+    <System:String x:Key="HelpTitleT29Str">Lettura ad alta voce</System:String>
+    <System:String x:Key="HelpTitleT30Str">Conteggio parole, selezione e cancellazione del testo</System:String>
+    <System:String x:Key="HelpTitleT31Str">Trova e sostituisci</System:String>
+    <System:String x:Key="HelpTitleT32Str">Controllo ortografico</System:String>
+    <System:String x:Key="HelpTitleT33Str">Dizionario</System:String>
+    <System:String x:Key="HelpTitleT34Str">Notifiche</System:String>
+    <System:String x:Key="HelpTitleT35Str">Utilizzo del pannello laterale e della barra di stato</System:String>
+    <System:String x:Key="HelpTitleT36Str">Scorciatoie da tastiera</System:String>
+    <System:String x:Key="NoPasswordStr">Nessuna password</System:String>
+    <System:String x:Key="NoPasswordDescStr">Password cancellata. La password viene richiesta ogni volta che utilizzi la scorciatoia Alt+L.</System:String>
+    <System:String x:Key="PasswordStr">Password</System:String>
+    <System:String x:Key="PasswordSavedStr">Password salvata.</System:String>
+    <System:String x:Key="PrevAddedChartsTurnOffStr">Se questa impostazione viene disattivata, l'elenco dei grafici aggiunti in precedenza viene cancellato. Vuoi continuare?</System:String>
+    <System:String x:Key="PrevAddedShapesTurnOffStr">Se questa impostazione viene disattivata, l'elenco delle forme aggiunte in precedenza viene cancellato. Vuoi continuare?</System:String>
+    <System:String x:Key="FontStylesTurnOffStr">Se questa impostazione viene disattivata, le modifiche apportate alla scheda Stili di Font vengono ripristinate. Vuoi continuare?</System:String>
+    <System:String x:Key="FontStyleChoicesStr">Scelta dello stile di font</System:String>
+    <System:String x:Key="ImportFavsStr">Importazione dei preferiti</System:String>
+    <System:String x:Key="ImportFavsWarningStr" xml:space="preserve">Seleziona un file di testo contenente un elenco di font, ciascuno separato da una nuova riga.
+
+L'importazione dei font cancellerà tutti i preferiti esistenti. Vuoi continuare?</System:String>
+    <System:String x:Key="ImportFavsSuccessStr">I font sono stati importati con successo. Vai al selettore di font per visualizzarli.</System:String>
+    <System:String x:Key="PhotoAttributionStr">Foto di {0} su Unsplash</System:String>
+    <System:String x:Key="PrevAddedChartsTitleStr">Grafici Aggiunti in Precedenza - Type Express</System:String>
+    <System:String x:Key="PrevAddedChartsSubStr">Scegli un grafico sotto per aprire l'editor dei grafici, prima di aggiungerlo al documento.</System:String>
+    <System:String x:Key="ColChartStr">Grafico a colonne:</System:String>
+    <System:String x:Key="BarChartStr">Grafico a barre:</System:String>
+    <System:String x:Key="LineChartStr">Grafico a linee:</System:String>
+    <System:String x:Key="PieChartStr">Grafico a torta:</System:String>
+    <System:String x:Key="DoughnutChartStr">Grafico a ciambella:</System:String>
+    <System:String x:Key="NoTitleStr">(Senza titolo)</System:String>
+    <System:String x:Key="ThemeTitleStr">Tema:</System:String>
+    <System:String x:Key="DataTitleStr">Dati:</System:String>
+    <System:String x:Key="ChartImportErrorStr" xml:space="preserve">Si è verificato un problema nell'importazione dei dati dei grafici salvati. Consigliamo di eliminare tutti i grafici salvati. Vuoi continuare?
+
+Se il problema persiste, contattaci.</System:String>
+    <System:String x:Key="PrevAddedShapesTitleStr">Forme Aggiunte in Precedenza - Type Express</System:String>
+    <System:String x:Key="PrevAddedShapesSubStr">Scegli una forma sotto per aprire l'editor di forme, prima di aggiungerla al documento.</System:String>
+    <System:String x:Key="ColourTitleStr">Colore:</System:String>
+    <System:String x:Key="ThicknessTitleStr">Spessore:</System:String>
+    <System:String x:Key="FillTitleStr">Colore riempimento:</System:String>
+    <System:String x:Key="NoneColourStr">(Nessun)</System:String>
+    <System:String x:Key="OutlineTitleStr">Colore contorno:</System:String>
+    <System:String x:Key="ShapeImportErrorStr" xml:space="preserve">Si è verificato un problema nell'importazione dei dati delle forme salvate. Consigliamo di eliminare tutte le forme salvate. Vuoi continuare?
+
+Se il problema persiste, contattaci.</System:String>
+    <System:String x:Key="RemovePrevAddedStr">Rimuovi articolo</System:String>
+    <System:String x:Key="RemovePrevAddedDescStr">Sei sicuro/a di voler rimuovere questo articolo aggiunto in precedenza? Questa azione non può essere annullata.</System:String>
+    <System:String x:Key="RemoveAllPrevAddedDescStr">Sei sicuro/a di voler rimuovere tutti gli articoli aggiunti in precedenza? Questa azione non può essere annullata.</System:String>
+    <System:String x:Key="RemoveAllPrevAddedStr">Rimuovi tutti gli articoli</System:String>
+    <System:String x:Key="DashedLineStr">Linea tratteggiata</System:String>
+    <System:String x:Key="LineColourStr">Colore della linea</System:String>
+    <System:String x:Key="LineThicknessStr">Spessore della linea</System:String>
+    <System:String x:Key="LengthStr">Lunghezza</System:String>
+    <System:String x:Key="WAVFilesFilterStr">File WAV (.wav)|*.wav</System:String>
+    <System:String x:Key="GetMoreVoicesStr">Ottieni più voci...</System:String>
+    <System:String x:Key="VoiceTitleStr">Voce:</System:String>
+    <System:String x:Key="TtPauseStr">Pausa</System:String>
+    <System:String x:Key="IncorrectPasswordStr">Password non corretta. Riprova, prego.</System:String>
+    <System:String x:Key="ChooseThisFontStr">Scegli questo font</System:String>
+    <System:String x:Key="SpanishESStr">Spagnolo (Spagna)</System:String>
+    <System:String x:Key="ItalianITStr">Italiano (Italia)</System:String>
+    <System:String x:Key="SymbolInfoStr">Scegli un'opzione o cerca.</System:String>
+    <System:String x:Key="LnColStr">Linea {0}, colonna {1}</System:String>
+    
+</ResourceDictionary>

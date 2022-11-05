@@ -6,13 +6,7 @@ Public Class ChartData
 
     Public Property Data As New List(Of KeyValuePair(Of String, Double))
     Private counter As Integer = 1
-
-    ReadOnly openDialog As New Microsoft.Win32.OpenFileDialog With {
-        .Title = "Choose a file - Type Express",
-        .Filter = "CSV files (.csv)|*.csv",
-        .FilterIndex = 0,
-        .Multiselect = False
-    }
+    ReadOnly openDialog As Microsoft.Win32.OpenFileDialog
 
     Public Sub New()
 
@@ -23,6 +17,13 @@ Public Class ChartData
         LabelStack.Children.Clear()
         ValueStack.Children.Clear()
         ButtonStack.Children.Clear()
+
+        openDialog = New Microsoft.Win32.OpenFileDialog With {
+            .Title = Funcs.ChooseLang("ChooseFileStr") + " - Present Express",
+            .Filter = Funcs.ChooseLang("CSVFilesFilterStr"),
+            .FilterIndex = 0,
+            .Multiselect = False
+        }
 
     End Sub
 
@@ -37,12 +38,6 @@ Public Class ChartData
     End Sub
 
     Private Sub ChartData_Loaded(sender As Object, e As RoutedEventArgs) Handles Me.Loaded
-
-        If My.Settings.language = "fr-FR" Then
-            openDialog.Filter = "Fichiers CSV (.csv)|*.csv"
-            openDialog.Title = "Choisir un fichier - Type Express"
-        End If
-
         UpdateData()
 
     End Sub
@@ -88,8 +83,8 @@ Public Class ChartData
         Next
 
         If NewData.Count = 0 Then
-            MainWindow.NewMessage(Funcs.ChooseLang("Please add some data first.", "Veuillez ajouter des données d'abord."),
-                                  Funcs.ChooseLang("No data", "Pas de données"), MessageBoxButton.OK, MessageBoxImage.Error)
+            MainWindow.NewMessage(Funcs.ChooseLang("NoDataDescStr"),
+                                  Funcs.ChooseLang("NoDataStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         Else
             Data = NewData
@@ -152,9 +147,8 @@ Public Class ChartData
             AddRow(item)
 
         Else
-            MainWindow.NewMessage(Funcs.ChooseLang("You can't add any more rows. You've reached the maximum of 15 rows.",
-                                                        "Vous ne pouvez plus ajouter de lignes. Vous avez atteint le maximum de 15 lignes."),
-                                  Funcs.ChooseLang("Unable to add row", "Impossible d'ajouter une ligne"), MessageBoxButton.OK, MessageBoxImage.Error)
+            MainWindow.NewMessage(Funcs.ChooseLang("AddRowErrorDescStr"),
+                                  Funcs.ChooseLang("AddRowErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         End If
 
@@ -167,9 +161,8 @@ Public Class ChartData
             AddRow(item + 1)
 
         Else
-            MainWindow.NewMessage(Funcs.ChooseLang("You can't add any more rows. You've reached the maximum of 15 rows.",
-                                                        "Vous ne pouvez plus ajouter de lignes. Vous avez atteint le maximum de 15 lignes."),
-                                  Funcs.ChooseLang("Unable to add row", "Impossible d'ajouter une ligne"), MessageBoxButton.OK, MessageBoxImage.Error)
+            MainWindow.NewMessage(Funcs.ChooseLang("AddRowErrorDescStr"),
+                                  Funcs.ChooseLang("AddRowErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
         End If
 
     End Sub
@@ -195,9 +188,8 @@ Public Class ChartData
             ButtonStack.Children.RemoveAt(item)
 
         Else
-            MainWindow.NewMessage(Funcs.ChooseLang("You can't delete that row. At least one data point required.",
-                                                        "Vous ne pouvez pas supprimer cette ligne. Au moins un point de données requis."),
-                                  Funcs.ChooseLang("Unable to remove row", "Impossible de supprimer la ligne"), MessageBoxButton.OK, MessageBoxImage.Error)
+            MainWindow.NewMessage(Funcs.ChooseLang("RemoveRowErrorDescStr"),
+                                  Funcs.ChooseLang("RemoveRowErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         End If
 
@@ -206,9 +198,8 @@ Public Class ChartData
 
     Private Sub ImportBtn_Click(sender As Object, e As RoutedEventArgs) Handles ImportBtn.Click
 
-        If MainWindow.NewMessage(Funcs.ChooseLang($"Select a CSV file that that contains a comma-separated label and value on each new line, such as:{Chr(10)}{Chr(10)}Label,1{Chr(10)}Another label,2.5{Chr(10)}{Chr(10)}Importing data will clear all existing data points. Do you wish to continue?",
-                                                  $"Sélectionnez un fichier CSV qui contient une étiquette et une valeur séparées par des virgules sur chaque nouvelle ligne, par exemple :{Chr(10)}{Chr(10)}Étiquette,1{Chr(10)}Un autre étiquette,""2,5""{Chr(10)}{Chr(10)}L'importation de données effacera tous les points de données existants. Souhaitez-vous continuer ?"),
-                                 Funcs.ChooseLang("Import data", "Importation de données"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+        If MainWindow.NewMessage(Funcs.ChooseLang("ImportDataWarningDescStr"),
+                                 Funcs.ChooseLang("ImportDataWarningStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
             If openDialog.ShowDialog() = True Then
                 Try
@@ -239,15 +230,13 @@ Public Class ChartData
                     UpdateData()
 
                     If Data.Count = 0 Then
-                        MainWindow.NewMessage(Funcs.ChooseLang("No valid data could be found in the CSV file.",
-                                                               "Aucune donnée valide n'a pu être trouvée dans le fichier CSV."),
-                                              Funcs.ChooseLang("No data", "Aucune donnée"), MessageBoxButton.OK, MessageBoxImage.Information)
+                        MainWindow.NewMessage(Funcs.ChooseLang("NoValidDataErrorStr"),
+                                              Funcs.ChooseLang("NoDataStr"), MessageBoxButton.OK, MessageBoxImage.Information)
                     End If
 
                 Catch
-                    MainWindow.NewMessage(Funcs.ChooseLang("We couldn't import data from that file. Please make sure it can be accessed, and that it is in the correct label-value format.",
-                                                           "Impossible d'importer les données de ce fichier. Veuillez vous assurer qu'il est accessible et qu'il est dans le bon format d'étiquette-valeur."),
-                                          Funcs.ChooseLang("Import data error", "Erreur d'importation de données"), MessageBoxButton.OK, MessageBoxImage.Error)
+                    MainWindow.NewMessage(Funcs.ChooseLang("ImportDataErrorDescStr"),
+                                          Funcs.ChooseLang("ImportDataErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
                 End Try
             End If
         End If

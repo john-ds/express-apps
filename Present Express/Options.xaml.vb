@@ -37,21 +37,9 @@ Public Class Options
 
     ReadOnly TempLblTimer As New Timer With {.Interval = 4000}
 
-    ReadOnly folderBrowser As New Forms.FolderBrowserDialog With {
-        .Description = "Choose a folder below...",
-        .ShowNewFolderButton = True
-    }
-
-    ReadOnly importDialog As New OpenFileDialog With {
-        .Title = "Select a file to import - Present Express",
-        .Filter = "XML files (.xml)|*.xml",
-        .Multiselect = False
-    }
-
-    ReadOnly exportDialog As New SaveFileDialog With {
-        .Title = "Select an export location - Present Express",
-        .Filter = "XML files (.xml)|*.xml"
-    }
+    ReadOnly folderBrowser As Forms.FolderBrowserDialog
+    ReadOnly importDialog As New OpenFileDialog
+    ReadOnly exportDialog As New SaveFileDialog
 
     Public Sub New()
 
@@ -70,7 +58,7 @@ Public Class Options
         ColourPicker.SelectedColor = Color.FromRgb(My.Settings.textcolour.R, My.Settings.textcolour.G, My.Settings.textcolour.B)
 
         If My.Settings.savelocation = "" Then
-            SaveLocationTxt.Text = "Documents"
+            SaveLocationTxt.Text = Funcs.ChooseLang("FlDocStr")
 
         Else
             SaveLocationTxt.Text = IO.Path.GetFileNameWithoutExtension(My.Settings.savelocation)
@@ -85,11 +73,16 @@ Public Class Options
             Size43Radio.IsChecked = True
         End If
 
-        If My.Settings.language = "fr-FR" Then
-            FrenchRadio1.IsChecked = True
-        Else
-            EnglishRadio1.IsChecked = True
-        End If
+        Select Case Funcs.GetCurrentLang()
+            Case "fr-FR"
+                FrenchRadio1.IsChecked = True
+            Case "es-ES"
+                SpanishRadio1.IsChecked = True
+            Case "it-IT"
+                ItalianRadio1.IsChecked = True
+            Case Else
+                EnglishRadio1.IsChecked = True
+        End Select
 
         RecentUpDown.Value = My.Settings.recentcount
 
@@ -113,15 +106,25 @@ Public Class Options
         NotificationBtn.IsChecked = My.Settings.notificationcheck
         RecentBtn.IsChecked = My.Settings.openrecent
 
-        If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then
-            folderBrowser.Description = "Choisissez un dossier ci-dessous..."
-            exportDialog.Title = "Sélectionner un emplacement d'exportation - Present Express"
-            importDialog.Title = "Choisissez un fichier à importer - Present Express"
+        BoldBtn.Icon = TryFindResource(Funcs.ChooseIcon("BoldIcon"))
+        ItalicBtn.Icon = TryFindResource(Funcs.ChooseIcon("ItalicIcon"))
+        UnderlineBtn.Icon = TryFindResource(Funcs.ChooseIcon("UnderlineIcon"))
 
-            BoldBtn.Icon = FindResource("GrasIcon")
-            UnderlineBtn.Icon = FindResource("SousligneIcon")
+        folderBrowser = New Forms.FolderBrowserDialog With {
+            .Description = Funcs.ChooseLang("ChooseFolderDialogStr"),
+            .ShowNewFolderButton = True
+        }
 
-        End If
+        importDialog = New OpenFileDialog With {
+            .Title = Funcs.ChooseLang("OpImportDialogStr") + " - Present Express",
+            .Filter = Funcs.ChooseLang("XMLFilesFilterStr"),
+            .Multiselect = False
+        }
+
+        exportDialog = New SaveFileDialog With {
+            .Title = Funcs.ChooseLang("OpExportDialogStr") + " - Present Express",
+            .Filter = Funcs.ChooseLang("XMLFilesFilterStr")
+        }
 
     End Sub
 
@@ -225,8 +228,8 @@ Public Class Options
                 ChangeFont()
 
             Catch
-                MainWindow.NewMessage(Funcs.ChooseLang("The font you entered could not be found.", "La police que vous avez entrée est introuvable."),
-                                      Funcs.ChooseLang("Invalid font", "Police invalide"), MessageBoxButton.OK, MessageBoxImage.Error)
+                MainWindow.NewMessage(Funcs.ChooseLang("InvalidFontDescStr"),
+                                      Funcs.ChooseLang("InvalidFontStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
                 FontStyleTxt.Text = ""
 
@@ -346,31 +349,32 @@ Public Class Options
     ' GENERAL > INTERFACE
     ' --
 
-    Private Sub InterfaceRadios_Click(sender As ExpressControls.AppRadioButton, e As RoutedEventArgs) Handles EnglishRadio1.Click, FrenchRadio1.Click
+    Private Sub InterfaceRadios_Click(sender As ExpressControls.AppRadioButton, e As RoutedEventArgs) Handles EnglishRadio1.Click, FrenchRadio1.Click,
+        SpanishRadio1.Click, ItalianRadio1.Click
 
-        If (sender.Name = "EnglishRadio1" And Not My.Settings.language = "en-GB") Or (sender.Name = "FrenchRadio1" And Not My.Settings.language = "fr-FR") Then
-            If MainWindow.NewMessage(Funcs.ChooseLang("Changing the interface language requires an application restart. All unsaved work will be lost. Do you wish to continue?",
-                                                           "Pour changer la langue de l'interface, un redémarrage de l'application est nécessaire. Tout le travail non enregistré sera perdu. Vous souhaitez continuer ?"),
-                                     Funcs.ChooseLang("Language warning", "Avertissement de langue"),
+        If sender.Tag.ToString() <> Funcs.GetCurrentLang() Then
+            If MainWindow.NewMessage(Funcs.ChooseLang("LangWarningDescStr"),
+                                     Funcs.ChooseLang("LangWarningStr"),
                                      MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
-                If sender.Name = "EnglishRadio1" Then
-                    My.Settings.language = "en-GB"
-                Else
-                    My.Settings.language = "fr-FR"
-                End If
-
+                My.Settings.language = sender.Tag.ToString()
                 SaveAll()
 
                 Forms.Application.Restart()
                 Windows.Application.Current.Shutdown()
 
             Else
-                If sender.Name = "EnglishRadio1" Then
-                    FrenchRadio1.IsChecked = True
-                Else
-                    EnglishRadio1.IsChecked = True
-                End If
+                Select Case Funcs.GetCurrentLang()
+                    Case "fr-FR"
+                        FrenchRadio1.IsChecked = True
+                    Case "es-ES"
+                        SpanishRadio1.IsChecked = True
+                    Case "it-IT"
+                        ItalianRadio1.IsChecked = True
+                    Case Else
+                        EnglishRadio1.IsChecked = True
+                End Select
+
             End If
         End If
 
@@ -640,7 +644,7 @@ Public Class Options
     ' </settings>
 
     ReadOnly defsettings As New List(Of String) From {"font-family", "bold", "italic", "underline", "text-colour", "save-location", "timings", "slide-size"}
-    ReadOnly gensettings As New List(Of String) From {"sounds", "save-prompt", "controls"}
+    ReadOnly gensettings As New List(Of String) From {"sounds", "save-prompt", "controls", "fav-files", "pinned-folders"}
     ReadOnly appsettings As New List(Of String) From {"dark-mode", "auto-dark", "dark-on", "dark-off", "recent-files", "save-shortcut"}
     ReadOnly strsettings As New List(Of String) From {"present-menu", "notifications", "open-recent"}
 
@@ -774,6 +778,23 @@ Public Class Options
                                             count += 1
                                         End If
 
+                                    ElseIf j.OuterXml.StartsWith("<fav-files>") Then
+                                        For Each k As Xml.XmlNode In j.ChildNodes
+                                            If k.OuterXml.StartsWith("<data>") Then
+                                                If (Not k.InnerText = "") And My.Settings.favourites.Contains(Funcs.EscapeChars(k.InnerText, True)) = False Then
+                                                    My.Settings.favourites.Add(Funcs.EscapeChars(k.InnerText, True))
+                                                End If
+                                            End If
+                                        Next
+
+                                    ElseIf j.OuterXml.StartsWith("<pinned-folders>") Then
+                                        For Each k As Xml.XmlNode In j.ChildNodes
+                                            If k.OuterXml.StartsWith("<data>") Then
+                                                If (Not k.InnerText = "") And My.Settings.pinned.Contains(Funcs.EscapeChars(k.InnerText, True)) = False Then
+                                                    My.Settings.pinned.Add(Funcs.EscapeChars(k.InnerText, True))
+                                                End If
+                                            End If
+                                        Next
                                     End If
                                 End If
                             Next
@@ -868,8 +889,8 @@ Public Class Options
                         End If
                     Next
 
-                    MainWindow.NewMessage(count.ToString() + Funcs.ChooseLang(" settings imported", " paramètres importés"),
-                                          Funcs.ChooseLang("Import Settings", "Importation des Paramètres"), MessageBoxButton.OK, MessageBoxImage.Information)
+                    MainWindow.NewMessage(Funcs.ChooseLang("ImportSettingsDescStr").Replace("{0}", count.ToString()),
+                                          Funcs.ChooseLang("ImportSettingsStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
                     My.Settings.Save()
 
@@ -892,9 +913,8 @@ Public Class Options
 
                 End If
             Catch
-                MainWindow.NewMessage(Funcs.ChooseLang("We're having trouble importing these settings. Please make sure this file was generated by Present Express and hasn't been edited.",
-                                                       "Nous avons du mal à importer ces paramètres. Veuillez vous assurer que ce fichier a été généré par Present Express et n'a pas été modifié."),
-                                      Funcs.ChooseLang("Import Error", "Erreur d'Importation"), MessageBoxButton.OK, MessageBoxImage.Error)
+                MainWindow.NewMessage(Funcs.ChooseLang("ImportErrorDescStr").Replace("{0}", "Present Express"),
+                                      Funcs.ChooseLang("ImportSettingsErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             End Try
         End If
 
@@ -902,9 +922,8 @@ Public Class Options
 
     Private Sub ExportSettingsBtn_Click(sender As Object, e As RoutedEventArgs) Handles ExportSettingsBtn.Click
 
-        If MainWindow.NewMessage(Funcs.ChooseLang("Save this file in a safe space and import it every time you update Present Express. Click OK to continue.",
-                                                  "Enregistrez ce fichier dans un espace sûr et importez-le chaque fois que vous mettez à jour Present Express. Cliquez sur OK pour continuer."),
-                                 Funcs.ChooseLang("Export settings", "Exportation des paramètres"),
+        If MainWindow.NewMessage(Funcs.ChooseLang("ExportSettingsDescStr").Replace("{0}", "Present Express"),
+                                 Funcs.ChooseLang("ExportSettingsStr"),
                                  MessageBoxButton.OKCancel, MessageBoxImage.Information) = MessageBoxResult.OK Then
 
             If exportDialog.ShowDialog() Then
@@ -948,6 +967,14 @@ Public Class Options
                             result = My.Settings.showprompt.ToString()
                         Case "controls"
                             result = My.Settings.hidecontrols.ToString()
+                        Case "fav-files"
+                            For Each j In My.Settings.favourites
+                                result += "<data>" + Funcs.EscapeChars(j) + "</data>"
+                            Next
+                        Case "pinned-folders"
+                            For Each j In My.Settings.pinned
+                                result += "<data>" + Funcs.EscapeChars(j) + "</data>"
+                            Next
                     End Select
 
                     xml += "<" + i + ">" + result + "</" + i + ">"

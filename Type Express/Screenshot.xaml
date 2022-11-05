@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:Type_Express"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" x:Class="Screenshot"
         mc:Ignorable="d"
-        Title="{DynamicResource ScTitleStr}" Background="{DynamicResource BackColor}" UseLayoutRounding="True" Height="400" Width="600" WindowStartupLocation="CenterScreen" MinWidth="470" MinHeight="340" WindowStyle="None">
+        Title="{DynamicResource ScTitleTStr}" Background="{DynamicResource BackColor}" UseLayoutRounding="True" Height="400" Width="600" WindowStartupLocation="CenterScreen" MinWidth="470" MinHeight="340" Style="{DynamicResource ChromeWindowStyle}">
 
     <DockPanel>
         <StackPanel Height="40" Margin="0" VerticalAlignment="Top" Orientation="Horizontal" DockPanel.Dock="Bottom" Background="{DynamicResource SecondaryColor}">
@@ -35,7 +35,7 @@
                 </DockPanel>
             </Button>
         </DockPanel>
-        <DockPanel Height="40" Margin="0,20,0,0" VerticalAlignment="Top" DockPanel.Dock="Top" HorizontalAlignment="Center" Background="{DynamicResource SecondaryColor}">
+        <DockPanel Height="40" Margin="0,20,0,0" VerticalAlignment="Top" DockPanel.Dock="Top" HorizontalAlignment="Center" Background="Transparent">
             <ex:AppButton x:Name="CaptureBtn" GapMargin="5,0,0,0" Background="{DynamicResource SecondaryColor}" Icon="{DynamicResource ScreenshotIcon}" Text="{DynamicResource CaptureStr}" Margin="0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
             <ex:AppButton x:Name="AddBtn" GapMargin="5,0,0,0" FontWeight="SemiBold" Visibility="Collapsed" Background="{DynamicResource SecondaryColor}" Icon="{DynamicResource PlusIcon}" Text="{DynamicResource AddDocStr}" Margin="10,0,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
         </DockPanel>

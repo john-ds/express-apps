@@ -20,7 +20,7 @@
         <StackPanel x:Name="ButtonStack" Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="20,0,0,20" Opacity="0.4" Background="#00000000">
             <ex:AppButton x:Name="PrevBtn" GapMargin="0" Background="{DynamicResource BackColor}" Icon="{DynamicResource LeftIcon}" ToolTip="{DynamicResource PreviousStr}" TextVisibility="Collapsed" Margin="0,0,5,0" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="8,0"/>
             <ex:AppButton x:Name="NextBtn" GapMargin="0" Background="{DynamicResource BackColor}" Icon="{DynamicResource RightIcon}" ToolTip="{DynamicResource NextStr}" TextVisibility="Collapsed" Margin="0,0,5,0" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="8,0"/>
-            <ex:AppButton x:Name="HomeBtn" GapMargin="0" Background="{DynamicResource BackColor}" Icon="{DynamicResource UndoIcon}" ToolTip="{DynamicResource HomeStr}" TextVisibility="Collapsed" Margin="0,0,5,0" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="8,0"/>
+            <ex:AppButton x:Name="HomeBtn" GapMargin="0" Background="{DynamicResource BackColor}" Icon="{DynamicResource UndoIcon}" ToolTip="{DynamicResource BackToStartStr}" TextVisibility="Collapsed" Margin="0,0,5,0" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="8,0"/>
             <ex:AppButton x:Name="EndBtn" GapMargin="0" Background="{DynamicResource BackColor}" Icon="{DynamicResource CloseIcon}" ToolTip="{DynamicResource EndStr}" TextVisibility="Collapsed" Margin="0" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="8,0"/>
         </StackPanel>
     </Grid>

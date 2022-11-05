@@ -5,7 +5,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="{DynamicResource RegionTitleStr}" UseLayoutRounding="True" Height="200" Width="400" MinWidth="220" MinHeight="160" AllowsTransparency="True" WindowStyle="None" ResizeMode="CanResizeWithGrip" Cursor="SizeAll" WindowStartupLocation="CenterScreen">
+        Title="{DynamicResource RegionTitlePStr}" UseLayoutRounding="True" Height="200" Width="400" MinWidth="220" MinHeight="160" AllowsTransparency="True" WindowStyle="None" ResizeMode="CanResizeWithGrip" Cursor="SizeAll" WindowStartupLocation="CenterScreen">
     <Window.Background>
         <SolidColorBrush Color="White" Opacity="0.2"/>
     </Window.Background>

@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:Type_Express"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Title="{DynamicResource DrawingTitleStr}" Height="500" Width="750" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" AllowsTransparency="True" WindowStyle="None" Background="{x:Null}">
+        Title="{DynamicResource DrawingTitleTStr}" Height="500" Width="750" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" AllowsTransparency="True" WindowStyle="None" Background="{x:Null}">
     <Window.Resources>
         <Storyboard x:Key="InfoBoxStoryboard">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" Storyboard.TargetName="grid">

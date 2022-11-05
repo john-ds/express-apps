@@ -8,7 +8,7 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:wf1="clr-namespace:System.Windows.Forms.DataVisualization.Charting;assembly=System.Windows.Forms.DataVisualization"
         mc:Ignorable="d"
-        Title="{DynamicResource ChartTitleStr}" Height="530" Width="820" WindowStartupLocation="CenterScreen" WindowStyle="None" MinWidth="750" MinHeight="450">
+        Title="{DynamicResource ChartTitleQStr}" Height="530" Width="820" WindowStartupLocation="CenterScreen" Style="{DynamicResource ChromeWindowStyle}"  MinWidth="750" MinHeight="450">
 
     <Grid x:Name="grid1">
         <DockPanel>
@@ -37,12 +37,12 @@
                     </Button.Effect>
                     <StackPanel Orientation="Horizontal" Height="36">
                         <ContentControl x:Name="HelpBtnImg7" Content="{DynamicResource RightIcon}" Width="24" HorizontalAlignment="Left" Margin="12,0,3,0" Height="24" />
-                        <TextBlock x:Name="HomeBtnTxt_Copy3" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Margin="0,7.69,10,7" Height="21.31" Padding="5,0,0,0" Text="{DynamicResource AddDocStr}"/>
+                        <TextBlock x:Name="HomeBtnTxt_Copy3" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold" FontSize="14" Margin="0,7.69,10,7" Height="21.31" Padding="5,0,0,0" Text="{DynamicResource ExportPNGStr}"/>
                     </StackPanel>
                 </Button>
                 <ScrollViewer Width="248" DockPanel.Dock="Right" VerticalScrollBarVisibility="Auto" UseLayoutRounding="True">
                     <StackPanel Margin="0">
-                        <TextBlock TextWrapping="Wrap" FontSize="14" Margin="20" Text="{DynamicResource ChartInfoStr}"></TextBlock>
+                        <TextBlock TextWrapping="Wrap" FontSize="14" Margin="20" Text="{DynamicResource ChartInfoQStr}"></TextBlock>
                         <DockPanel x:Name="ChartPanel" Margin="20,0,20,20">
                             <StackPanel VerticalAlignment="Top" Margin="34,0,0,0">
                                 <TextBlock x:Name="ThicknessTxt1" TextWrapping="Wrap" FontSize="14" Margin="0,2,0,5" Text="{DynamicResource ChTypeStr}"/>
@@ -150,7 +150,7 @@
                         <DockPanel x:Name="SizePanel" Margin="20,0,20,20">
                             <ContentControl x:Name="HelpBtnImg47_Copy1" Content="{DynamicResource ExpandIcon}" Width="24" HorizontalAlignment="Left" Margin="0,0,10,0" Height="24" VerticalAlignment="Top" />
                             <StackPanel VerticalAlignment="Top">
-                                <TextBlock TextWrapping="Wrap" FontSize="14" Margin="0,2,0,10" Text="{DynamicResource ChSizeStr}"/>
+                                <TextBlock TextWrapping="Wrap" FontSize="14" Margin="0,2,0,10" Text="{DynamicResource ChOutputSizeStr}"/>
                                 <Slider x:Name="SizeSlider" Style="{StaticResource SimpleSlider}" VerticalAlignment="Top" Value="1" IsSnapToTickEnabled="True" Minimum="0.5" TickFrequency="0.1" Maximum="1.5"/>
                                 <DockPanel LastChildFill="False" Margin="5,0">
                                     <TextBlock TextWrapping="Wrap" Margin="0,5" Text="{DynamicResource ChSmallStr}"/>

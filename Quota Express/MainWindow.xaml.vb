@@ -32,10 +32,7 @@ Class MainWindow
     Private IncludeFiles As Boolean = True
     Private IncludeFolders As Boolean = True
 
-    ReadOnly folderBrowser As New Forms.FolderBrowserDialog With {
-        .Description = "Choose a folder below...",
-        .ShowNewFolderButton = True
-    }
+    ReadOnly folderBrowser As Forms.FolderBrowserDialog
 
     ReadOnly types As New Dictionary(Of String, String) From {{"img", ".ai,.bmp,.gif,.ico,.jpeg,.jpg,.png,.psd,.svg,.tif,.tiff"},
                                                               {"aud", ".aif,.cda,.mid,.midi,.mp3,.mpa,.ogg,.wav,.wma,.wpl"},
@@ -67,23 +64,7 @@ Class MainWindow
 
         End If
 
-        If My.Settings.language = "fr-FR" Then
-            Threading.Thread.CurrentThread.CurrentCulture = New Globalization.CultureInfo("fr-FR")
-            Threading.Thread.CurrentThread.CurrentUICulture = New Globalization.CultureInfo("fr-FR")
-
-            Dim resdict As New ResourceDictionary() With {.Source = New Uri("/DictionaryFR.xaml", UriKind.Relative)}
-            Windows.Application.Current.Resources.MergedDictionaries.Add(resdict)
-
-            Dim commonresdict As New ResourceDictionary() With {.Source = New Uri("/CommonDictionaryFR.xaml", UriKind.Relative)}
-            Windows.Application.Current.Resources.MergedDictionaries.Add(commonresdict)
-
-            folderBrowser.Description = "Choisissez un dossier ci-dessous..."
-
-        ElseIf My.Settings.language = "en-GB" Then
-            Threading.Thread.CurrentThread.CurrentCulture = New Globalization.CultureInfo("en-GB")
-            Threading.Thread.CurrentThread.CurrentUICulture = New Globalization.CultureInfo("en-GB")
-
-        End If
+        Funcs.SetLang(My.Settings.language)
 
         If My.Settings.maximised Then
             WindowState = WindowState.Maximized
@@ -103,10 +84,6 @@ Class MainWindow
         HomeMnStoryboard = TryFindResource("HomeMnStoryboard")
         ViewMnStoryboard = TryFindResource("ViewMnStoryboard")
         ExportMnStoryboard = TryFindResource("ExportMnStoryboard")
-
-        MaxHeight = SystemParameters.WorkArea.Height + 13
-        MaxWidth = SystemParameters.WorkArea.Width + 13
-        AddHandler SystemParameters.StaticPropertyChanged, AddressOf WorkAreaChanged
 
         LoaderStartStoryboard = TryFindResource("LoaderStartStoryboard")
         LoaderEndStoryboard = TryFindResource("LoaderEndStoryboard")
@@ -134,21 +111,26 @@ Class MainWindow
         Sorter = My.Settings.defaultsort
         Select Case Sorter
             Case "az"
-                SortBtn.Text = Funcs.ChooseLang("Name A-Z", "Nom A-Z")
+                SortBtn.Text = Funcs.ChooseLang("NameAZStr")
             Case "za"
-                SortBtn.Text = Funcs.ChooseLang("Name Z-A", "Nom Z-A")
+                SortBtn.Text = Funcs.ChooseLang("NameZAStr")
             Case "sa"
-                SortBtn.Text = Funcs.ChooseLang("Size ascending", "Taille croissante")
+                SortBtn.Text = Funcs.ChooseLang("SizeAscStr")
             Case "sd"
-                SortBtn.Text = Funcs.ChooseLang("Size descending", "Taille décroissante")
+                SortBtn.Text = Funcs.ChooseLang("SizeDescStr")
             Case "nf"
-                SortBtn.Text = Funcs.ChooseLang("Newest first", "Plus récent en premier")
+                SortBtn.Text = Funcs.ChooseLang("NewestStr")
             Case "of"
-                SortBtn.Text = Funcs.ChooseLang("Oldest first", "Moins récent en premier")
+                SortBtn.Text = Funcs.ChooseLang("OldestStr")
         End Select
 
         TopMenu.PlacementTarget = CopyDetailsBtn
-        CancelBtn.IsEnabled = False
+        FileStack.Children.Clear()
+
+        folderBrowser = New Forms.FolderBrowserDialog With {
+            .Description = Funcs.ChooseLang("ChooseFolderDialogStr"),
+            .ShowNewFolderButton = True
+        }
 
     End Sub
 
@@ -184,21 +166,21 @@ Class MainWindow
                 .Button3.IsEnabled = False
 
             ElseIf buttons = MessageBoxButton.YesNo Then
-                .Button1.Text = Funcs.ChooseLang("Yes", "Oui")
+                .Button1.Text = Funcs.ChooseLang("YesStr")
                 .Button2.Visibility = Visibility.Collapsed
                 .Button2.IsEnabled = False
-                .Button3.Content = Funcs.ChooseLang("No", "Non")
+                .Button3.Text = Funcs.ChooseLang("NoStr")
 
             ElseIf buttons = MessageBoxButton.YesNoCancel Then
-                .Button1.Text = Funcs.ChooseLang("Yes", "Oui")
-                .Button2.Text = Funcs.ChooseLang("No", "Non")
-                .Button3.Text = Funcs.ChooseLang("Cancel", "Annuler")
+                .Button1.Text = Funcs.ChooseLang("YesStr")
+                .Button2.Text = Funcs.ChooseLang("NoStr")
+                .Button3.Text = Funcs.ChooseLang("CancelStr")
 
             Else ' buttons = MessageBoxButtons.OKCancel
                 .Button1.Text = "OK"
                 .Button2.Visibility = Visibility.Collapsed
                 .Button2.IsEnabled = False
-                .Button3.Text = Funcs.ChooseLang("Cancel", "Annuler")
+                .Button3.Text = Funcs.ChooseLang("CancelStr")
 
             End If
 
@@ -223,19 +205,13 @@ Class MainWindow
 
     End Function
 
-    Private Sub WorkAreaChanged(sender As Object, e As EventArgs)
-        MaxHeight = SystemParameters.WorkArea.Height + 12
-        MaxWidth = SystemParameters.WorkArea.Width + 12
-
-    End Sub
-
     Private Sub MaxBtn_Click(sender As Object, e As RoutedEventArgs) Handles MaxBtn.Click
 
         If WindowState = WindowState.Maximized Then
-            WindowState = WindowState.Normal
+            SystemCommands.RestoreWindow(Me)
 
         Else
-            WindowState = WindowState.Maximized
+            SystemCommands.MaximizeWindow(Me)
 
         End If
 
@@ -256,16 +232,18 @@ Class MainWindow
     End Sub
 
     Private Sub MinBtn_Click(sender As Object, e As RoutedEventArgs) Handles MinBtn.Click
-        WindowState = WindowState.Minimized
+        SystemCommands.MinimizeWindow(Me)
 
     End Sub
 
     Private Sub TitleBtn_DoubleClick(sender As Object, e As RoutedEventArgs) Handles TitleBtn.MouseDoubleClick
 
         If WindowState = WindowState.Maximized Then
-            WindowState = WindowState.Normal
+            SystemCommands.RestoreWindow(Me)
+
         Else
-            WindowState = WindowState.Maximized
+            SystemCommands.MaximizeWindow(Me)
+
         End If
 
     End Sub
@@ -303,6 +281,16 @@ Class MainWindow
 
     End Sub
 
+    Private Sub MainWindow_Activated(sender As Object, e As EventArgs) Handles Me.Activated
+        MainRect.Fill = TryFindResource("AppColor")
+
+    End Sub
+
+    Private Sub MainWindow_Deactivated(sender As Object, e As EventArgs) Handles Me.Deactivated
+        MainRect.Fill = TryFindResource("AppLightColor")
+
+    End Sub
+
 
 
     ' NOTIFICATIONS
@@ -327,7 +315,7 @@ Class MainWindow
             Dim info As String() = Funcs.GetNotificationInfo("Quota")
 
             If Not info(0) = My.Application.Info.Version.ToString(3) Then
-                NotificationsTxt.Content = Funcs.ChooseLang("An update is available.", "Une mise à jour est disponible.")
+                NotificationsTxt.Content = Funcs.ChooseLang("UpdateAvailableStr")
                 NotifyBtnStack.Visibility = Visibility.Visible
 
                 If NotificationsPopup.IsOpen = False Then
@@ -339,7 +327,7 @@ Class MainWindow
                 If forcedialog Then CreateNotifyMsg(info)
 
             Else
-                NotificationsTxt.Content = Funcs.ChooseLang("You're up to date!", "Vous êtes à jour !")
+                NotificationsTxt.Content = Funcs.ChooseLang("UpToDateStr")
 
             End If
 
@@ -349,9 +337,8 @@ Class MainWindow
         Catch
             If NotificationsPopup.IsOpen Then
                 NotificationsPopup.IsOpen = False
-                NewMessage(Funcs.ChooseLang("It looks like we can't get notifications at the moment. Please check that you are connected to the Internet and try again.",
-                                            "On dirait que nous ne pouvons pas recevoir de notifications pour le moment. Vérifiez votre connexion Internet et réessayez."),
-                           Funcs.ChooseLang("No Internet", "Pas d'Internet"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("NotificationErrorStr"),
+                           Funcs.ChooseLang("NoInternetStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             End If
         End Try
 
@@ -365,33 +352,32 @@ Class MainWindow
             Dim features As String = ""
 
             If featurelist.Length <> 0 Then
-                features = Chr(10) + Chr(10) + Funcs.ChooseLang("What's new in this release?", "Quoi de neuf dans cette version ?") + Chr(10)
+                features = Chr(10) + Chr(10) + Funcs.ChooseLang("WhatsNewStr") + Chr(10)
 
                 For Each i In featurelist
                     features += "— " + i + Chr(10)
                 Next
             End If
 
-            Dim start As String = Funcs.ChooseLang("An update is available.", "Une mise à jour est disponible.")
+            Dim start As String = Funcs.ChooseLang("UpdateAvailableStr")
             Dim icon As MessageBoxImage = MessageBoxImage.Information
 
             If info(1) = "High" Then
-                start = Funcs.ChooseLang("An important update is available!", "Une mise à jour importante est disponible !")
+                start = Funcs.ChooseLang("ImportantUpdateStr")
                 icon = MessageBoxImage.Exclamation
             End If
 
-            If NewMessage(start + Chr(10) + "Version " + version + features + Chr(10) + Chr(10) +
-                          Funcs.ChooseLang("Would you like to visit the download page?", "Vous souhaitez visiter la page de téléchargement ?"),
-                          Funcs.ChooseLang("Quota Express Updates", "Mises à Jour Quota Express"), MessageBoxButton.YesNoCancel, icon) = MessageBoxResult.Yes Then
+            If NewMessage(start + Chr(10) + Funcs.ChooseLang("VersionStr") + " " + version + features + Chr(10) + Chr(10) +
+                          Funcs.ChooseLang("VisitDownloadPageStr"),
+                          Funcs.ChooseLang("UpdatesQStr"), MessageBoxButton.YesNoCancel, icon) = MessageBoxResult.Yes Then
 
                 Process.Start("https://express.johnjds.co.uk/update?app=quota")
 
             End If
 
         Catch
-            NewMessage(Funcs.ChooseLang("We can't get update information at the moment. Please check that you are connected to the Internet and try again.",
-                                        "Nous ne pouvons pas obtenir les informations de mise à jour pour le moment. Vérifiez votre connexion Internet et réessayez."),
-                       Funcs.ChooseLang("No Internet", "Pas d'Internet"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("NotificationErrorStr"),
+                       Funcs.ChooseLang("NoInternetStr"), MessageBoxButton.OK, MessageBoxImage.Error)
         End Try
 
     End Sub
@@ -731,38 +717,6 @@ Class MainWindow
         End If
     End Sub
 
-    Public Function FormatBytes(BytesCaller As Long) As String
-        Dim DoubleBytes As Double
-
-        Try
-            Select Case BytesCaller
-                Case Is >= 1125899906842625
-                    Return Funcs.ChooseLang("1000+ TB", "1000+ To")
-                Case 1099511627776 To 1125899906842624
-                    DoubleBytes = BytesCaller / 1099511627776 'TB
-                    Return Math.Round(DoubleBytes, 2).ToString() & Funcs.ChooseLang(" TB", " To")
-                Case 1073741824 To 1099511627775
-                    DoubleBytes = BytesCaller / 1073741824 'GB
-                    Return Math.Round(DoubleBytes, 2).ToString() & Funcs.ChooseLang(" GB", " Go")
-                Case 1048576 To 1073741823
-                    DoubleBytes = BytesCaller / 1048576 'MB
-                    Return Math.Round(DoubleBytes, 2).ToString() & Funcs.ChooseLang(" MB", " Mo")
-                Case 1024 To 1048575
-                    DoubleBytes = BytesCaller / 1024 'KB
-                    Return Math.Round(DoubleBytes, 2).ToString() & Funcs.ChooseLang(" KB", " Ko")
-                Case 1 To 1023
-                    DoubleBytes = BytesCaller ' bytes
-                    Return Math.Round(DoubleBytes, 2).ToString() & Funcs.ChooseLang(" b", " o")
-                Case Else
-                    Return "—"
-            End Select
-
-        Catch
-            Return "—"
-        End Try
-
-    End Function
-
     Private Function DirSize(d As DirectoryInfo) As Long
         Dim size As Long = 0L
         If FileWorker.CancellationPending Then Return 0L
@@ -796,13 +750,13 @@ Class MainWindow
 
         Select Case WaitCount
             Case 1
-                CalculatingTxt.Text = Funcs.ChooseLang("Working as fast as we can...", "Nous travaillons aussi vite que possible...")
+                CalculatingTxt.Text = Funcs.ChooseLang("WorkingFastStr")
             Case 2
-                CalculatingTxt.Text = Funcs.ChooseLang("Still at it...", "Juste un peu plus...")
+                CalculatingTxt.Text = Funcs.ChooseLang("StillAtItStr")
             Case 3
-                CalculatingTxt.Text = Funcs.ChooseLang("Working as fast as we can...", "Nous travaillons aussi vite que possible...")
+                CalculatingTxt.Text = Funcs.ChooseLang("WorkingFastStr")
             Case 4
-                CalculatingTxt.Text = Funcs.ChooseLang("Please wait...", "Merci de patienter...")
+                CalculatingTxt.Text = Funcs.ChooseLang("PleaseWaitStr")
                 LoadingTimer.Stop()
         End Select
 
@@ -827,16 +781,15 @@ Class MainWindow
             LoadingGrid.Visibility = Visibility.Visible
             SetLoadingAttr(False)
 
-            CalculatingTxt.Text = Funcs.ChooseLang("This shouldn't take too long.", "Cela ne prendra pas trop de temps.")
+            CalculatingTxt.Text = Funcs.ChooseLang("LoaderSubtitleStr")
             LoadingProgress.Value = 0
             FileWorker.RunWorkerAsync()
 
             Return True
 
         Catch
-            NewMessage(Funcs.ChooseLang($"Can't open {root_buffer}.{Chr(10)}Check that you have permission to access it.",
-                                        $"Impossible d'ouvrir {root_buffer}.{Chr(10)}Vérifiez que vous avez la permission d'y accéder."),
-                       Funcs.ChooseLang("Access denied", "Accès refusé"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("OpenFileErrorQStr").Replace("{0}", root_buffer),
+                       Funcs.ChooseLang("AccessDeniedStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             Return False
 
         End Try
@@ -850,7 +803,7 @@ Class MainWindow
         fdsizes = fdsizes_buffer
         root = root_buffer
 
-        FilterBtn.Text = Funcs.ChooseLang("None", "Aucun")
+        FilterBtn.Text = Funcs.ChooseLang("NoneStr")
         FileStack.Children.Clear()
         SelectedBtns.Clear()
 
@@ -868,7 +821,7 @@ Class MainWindow
 
         Dim total As Long = TotalSize()
         CopyDetailsBtn.Tag = "folder/" + total.ToString()
-        TotalSizeTxt.Text = FormatBytes(total)
+        TotalSizeTxt.Text = Funcs.FormatBytes(total)
 
         If IncludeFolders Then
             Dim count As Integer = 0
@@ -879,7 +832,7 @@ Class MainWindow
                                                            Math.Round(fdsizes(count) / total * 100).ToString() + "*'/><ColumnDefinition Width='" +
                                                            (100 - Math.Round(fdsizes(count) / total * 100)).ToString() + "*'/></Grid.ColumnDefinitions><Grid Name='HighlighterGrid' Background='{DynamicResource AppHoverColor}'/><Grid Grid.Column='1'></Grid></Grid><DockPanel Height='30'><ContentControl Name='CheckImg' Content='{DynamicResource UntickIcon}' Width='24' Visibility='Hidden' HorizontalAlignment='Left' Margin='3,0' Height='24' Tag='0' /><ContentControl Content='{DynamicResource " +
                                                            GetFolderImg(i) + "}' Name='ItemBtnImg' Width='24' Height='24' Margin='3,0,3,0' HorizontalAlignment='Left' /><TextBlock x:Name='SizeTxt' VerticalAlignment='Center' FontSize='14' Margin='0,7.69,10,7' Height='21.31' Text='" +
-                                                           FormatBytes(fdsizes(count)) + "' Padding='5,0,0,0' TextTrimming='CharacterEllipsis' DockPanel.Dock='Right' Width='90'/><TextBlock Text='" +
+                                                           Funcs.FormatBytes(fdsizes(count)) + "' Padding='5,0,0,0' TextTrimming='CharacterEllipsis' DockPanel.Dock='Right' Width='90'/><TextBlock Text='" +
                                                            Funcs.EscapeChars(Path.GetFileName(i)) + "' FontSize='14' Padding='5,0,0,0' TextTrimming='CharacterEllipsis' Name='ItemBtnTxt' Height='21.31' Margin='0,7.69,10,7' VerticalAlignment='Center' /></DockPanel></Grid></Button>")
 
                     item.ToolTip = i
@@ -910,7 +863,7 @@ Class MainWindow
                                                            Math.Round(flsizes(count) / total * 100).ToString() + "*'/><ColumnDefinition Width='" +
                                                            (100 - Math.Round(flsizes(count) / total * 100)).ToString() + "*'/></Grid.ColumnDefinitions><Grid Name='HighlighterGrid' Background='{DynamicResource AppHoverColor}'/><Grid Grid.Column='1'></Grid></Grid><DockPanel Height='30'><ContentControl Name='CheckImg' Content='{DynamicResource UntickIcon}' Width='24' Visibility='Hidden' HorizontalAlignment='Left' Margin='3,0' Height='24' Tag='0' /><ContentControl Content='{DynamicResource " +
                                                            GetFileImg(i) + "}' Name='ItemBtnImg' Width='24' Height='24' Margin='3,0,3,0' HorizontalAlignment='Left' /><TextBlock x:Name='SizeTxt' VerticalAlignment='Center' FontSize='14' Margin='0,7.69,10,7' Height='21.31' Text='" +
-                                                           FormatBytes(flsizes(count)) + "' Padding='5,0,0,0' TextTrimming='CharacterEllipsis' DockPanel.Dock='Right' Width='90'/><TextBlock Text='" +
+                                                           Funcs.FormatBytes(flsizes(count)) + "' Padding='5,0,0,0' TextTrimming='CharacterEllipsis' DockPanel.Dock='Right' Width='90'/><TextBlock Text='" +
                                                            Funcs.EscapeChars(Path.GetFileName(i)) + "' FontSize='14' Padding='5,0,0,0' TextTrimming='CharacterEllipsis' Name='ItemBtnTxt' Height='21.31' Margin='0,7.69,10,7' VerticalAlignment='Center' /></DockPanel></Grid></Button>")
 
                     item.ToolTip = i
@@ -939,7 +892,6 @@ Class MainWindow
 
         If startup Then
             GetDriveInfo()
-            CancelBtn.IsEnabled = True
             startup = False
         End If
 
@@ -969,13 +921,13 @@ Class MainWindow
     Private Function GetFolderImg(path As String) As String
 
         Try
-            If path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) Or IO.Path.GetFileName(path) = "Documents" Then
+            If path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) Or IO.Path.GetFileName(path) = Funcs.ChooseLang("DocumentFolderStr") Then
                 Return "DocumentFolderIcon"
-            ElseIf path = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic) Or IO.Path.GetFileName(path) = Funcs.ChooseLang("Music", "Musique") Then
+            ElseIf path = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic) Or IO.Path.GetFileName(path) = Funcs.ChooseLang("MusicFolderStr") Then
                 Return "MusicFolderIcon"
-            ElseIf path = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures) Or IO.Path.GetFileName(path) = Funcs.ChooseLang("Pictures", "Images") Then
+            ElseIf path = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures) Or IO.Path.GetFileName(path) = Funcs.ChooseLang("PictureFolderStr") Then
                 Return "ImageFolderIcon"
-            ElseIf path = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos) Or IO.Path.GetFileName(path) = Funcs.ChooseLang("Videos", "Vidéos") Then
+            ElseIf path = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos) Or IO.Path.GetFileName(path) = Funcs.ChooseLang("VideoFolderStr") Then
                 Return "VideoFolderIcon"
             Else
                 Return "FolderIcon"
@@ -1032,9 +984,8 @@ Class MainWindow
             Try
                 Process.Start(sender.ToolTip)
             Catch
-                NewMessage(Funcs.ChooseLang($"Can't open {sender.ToolTip}.{Chr(10)}Check that you have permission to access it.",
-                                      $"Impossible d'ouvrir {sender.ToolTip}.{Chr(10)}Vérifiez que vous avez la permission d'y accéder."),
-                           Funcs.ChooseLang("Access denied", "Accès refusé"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("OpenFileErrorQStr").Replace("{0}", sender.ToolTip.ToString()),
+                           Funcs.ChooseLang("AccessDeniedStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             End Try
         End If
 
@@ -1072,9 +1023,9 @@ Class MainWindow
             ClearBtn.Visibility = Visibility.Visible
 
             If count = 1 Then
-                StatusLbl.Text = count.ToString() + Funcs.ChooseLang(" item selected.", " élément sélectionné.")
+                StatusLbl.Text = Funcs.ChooseLang("ItemSelectedStr")
             Else
-                StatusLbl.Text = count.ToString() + Funcs.ChooseLang(" items selected.", " éléments sélectionnés.")
+                StatusLbl.Text = Funcs.ChooseLang("ItemsSelectedStr").Replace("{0}", count.ToString())
             End If
 
             If SelectedBtns.Count = FileStack.Children.Count Then
@@ -1093,9 +1044,9 @@ Class MainWindow
         Dim count = FileStack.Children.OfType(Of Button).Where(Function(x) x.Visibility = Visibility.Visible).ToList().Count
 
         If count = 1 Then
-            RefreshBtn.Text = count.ToString() + Funcs.ChooseLang(" item", " élément")
+            RefreshBtn.Text = count.ToString() + " " + Funcs.ChooseLang("ItemStr")
         Else
-            RefreshBtn.Text = count.ToString() + Funcs.ChooseLang(" items", " éléments")
+            RefreshBtn.Text = count.ToString() + " " + Funcs.ChooseLang("ItemsStr")
         End If
 
     End Sub
@@ -1133,7 +1084,7 @@ Class MainWindow
     End Sub
 
     Private Sub GetFolderInfo()
-        SideHeaderLbl.Text = Funcs.ChooseLang("Folder analysis", "Analyse de dossier")
+        SideHeaderLbl.Text = Funcs.ChooseLang("FolderAnalysisStr")
         DriveStack.Visibility = Visibility.Collapsed
         FolderStack.Visibility = Visibility.Visible
         BreakdownStack.Visibility = Visibility.Collapsed
@@ -1144,7 +1095,7 @@ Class MainWindow
             SelectionTxt.Visibility = Visibility.Collapsed
             CircleProgress.Visibility = Visibility.Collapsed
 
-            If IncludeFiles And FilterBtn.Text = Funcs.ChooseLang("None", "Aucun") Then
+            If IncludeFiles And FilterBtn.Text = Funcs.ChooseLang("NoneStr") Then
                 Dim extcounts As New Dictionary(Of String, Long) From
                     {{"img", 0}, {"aud", 0}, {"arc", 0}, {"fnt", 0}, {"cde", 0}, {"vid", 0}, {"doc", 0}, {"oth", 0}}
 
@@ -1177,25 +1128,25 @@ Class MainWindow
 
                         Select Case i.Key
                             Case "img"
-                                d.Name = "Images"
+                                d.Name = Funcs.ChooseLang("FlImgStr")
                             Case "aud"
-                                d.Name = "Audio"
+                                d.Name = Funcs.ChooseLang("FlAudStr")
                             Case "arc"
-                                d.Name = "Archives"
+                                d.Name = Funcs.ChooseLang("FlArcStr")
                             Case "fnt"
-                                d.Name = Funcs.ChooseLang("Fonts", "Polices")
+                                d.Name = Funcs.ChooseLang("FlFntStr")
                             Case "cde"
-                                d.Name = Funcs.ChooseLang("Code files", "Fichiers de code")
+                                d.Name = Funcs.ChooseLang("FlCdeStr")
                             Case "vid"
-                                d.Name = Funcs.ChooseLang("Video", "Vidéo")
+                                d.Name = Funcs.ChooseLang("FlVidStr")
                             Case "doc"
-                                d.Name = "Documents"
+                                d.Name = Funcs.ChooseLang("FlDocStr")
                             Case Else
-                                d.Name = Funcs.ChooseLang("Other files", "Autres fichiers")
+                                d.Name = Funcs.ChooseLang("OtherFilesStr")
                         End Select
 
                         d.Size = i.Value
-                        d.Tag = FormatBytes(d.Size)
+                        d.Tag = Funcs.FormatBytes(d.Size)
                         d.Icon = FindResource(GetFileImg("", i.Key))
                         items.Add(d)
                     Next
@@ -1221,7 +1172,7 @@ Class MainWindow
             CircleProgress.Visibility = Visibility.Visible
             ErrorDriveTxt.Visibility = Visibility.Collapsed
 
-            SelectionTxt.Text = FormatBytes(count)
+            SelectionTxt.Text = Funcs.FormatBytes(count)
 
             Try
                 CircleProgress.Value = Math.Round(count / Convert.ToInt64(CopyDetailsBtn.Tag.ToString().Split("/")(1)) * 100, 0)
@@ -1245,7 +1196,7 @@ Class MainWindow
     End Sub
 
     Private Sub GetDriveInfo(Optional name As String = "")
-        SideHeaderLbl.Text = Funcs.ChooseLang("Drive analysis", "Analyse de lecteur")
+        SideHeaderLbl.Text = Funcs.ChooseLang("DriveAnalysisStr")
         Try
             CircleProgress.Visibility = Visibility.Visible
             DriveStack.Visibility = Visibility.Visible
@@ -1263,9 +1214,9 @@ Class MainWindow
 
             CircleProgress.Value = Math.Round((d.TotalSize - d.TotalFreeSpace) / d.TotalSize * 100, 0)
 
-            DriveTakenTxt.Text = FormatBytes(d.TotalSize - d.TotalFreeSpace)
-            DriveRemainingTxt.Text = FormatBytes(d.TotalFreeSpace)
-            DriveTotalTxt.Text = FormatBytes(d.TotalSize)
+            DriveTakenTxt.Text = Funcs.FormatBytes(d.TotalSize - d.TotalFreeSpace)
+            DriveRemainingTxt.Text = Funcs.FormatBytes(d.TotalFreeSpace)
+            DriveTotalTxt.Text = Funcs.FormatBytes(d.TotalSize)
 
         Catch
             CircleProgress.Value = 0
@@ -1274,9 +1225,8 @@ Class MainWindow
             ErrorDriveTxt.Visibility = Visibility.Visible
 
             If Not name = "" Then
-                NewMessage(Funcs.ChooseLang("Unable to retrieve drive info. The drive might not be ready yet or you may not have access to it.",
-                                            "Impossible de récupérer les informations sur le lecteur. Le lecteur n'est peut-être pas encore prêt ou vous n'y avez pas accès."),
-                           Funcs.ChooseLang("Drive error", "Erreur de lecteur"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("DriveErrorDescStr"),
+                           Funcs.ChooseLang("DriveErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
                 GetDriveInfo()
             End If
         End Try
@@ -1288,15 +1238,14 @@ Class MainWindow
         Dim DriveList As New List(Of DriveItem) From {}
 
         For Each d In AllDrives
-            DriveList.Add(New DriveItem() With {.Name = Funcs.ChooseLang("Drive ", "Lecteur ") + d.Name,
+            DriveList.Add(New DriveItem() With {.Name = Funcs.ChooseLang("DriveStr") + " " + d.Name,
                                                 .Icon = FindResource(GetDriveIcon(d.DriveType)),
                                                 .Tag = d.Name})
         Next
 
         If DriveList.Count = 0 Then
-            NewMessage(Funcs.ChooseLang("Unable to retrieve drive info. You may not have sufficient access rights.",
-                                        "Impossible de récupérer les informations sur les lecteurs. Vous ne disposez peut-être pas de droits d'accès suffisants."),
-                       Funcs.ChooseLang("Drive error", "Erreur de lecteur"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("DriveErrorShortDescStr"),
+                       Funcs.ChooseLang("DriveErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
         Else
             DrivePopupPnl.ItemsSource = DriveList
             DrivePopup.IsOpen = True
@@ -1396,9 +1345,8 @@ Class MainWindow
     Private Sub FilterBtn_Click(sender As Object, e As RoutedEventArgs) Handles FilterBtn.Click
 
         If IncludeFiles = False Then
-            NewMessage(Funcs.ChooseLang("Please ensure the 'Files' checkbox is ticked before using a filter.",
-                                        "Veuillez vous assurer que la case 'Fichiers' est cochée avant d'utiliser un filtre."),
-                       Funcs.ChooseLang("Filter error", "Erreur de filtre"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+            NewMessage(Funcs.ChooseLang("FilterErrorDescStr"),
+                       Funcs.ChooseLang("FilterErrorStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
         Else
             FilterPopup.IsOpen = True
         End If
@@ -1409,7 +1357,7 @@ Class MainWindow
         FilterFntBtn.Click, FilterImgBtn.Click, FilterVidBtn.Click, FilterNoneBtn.Click
 
         If sender.Tag = "None" Then
-            FilterBtn.Text = Funcs.ChooseLang("None", "Aucun")
+            FilterBtn.Text = Funcs.ChooseLang("NoneStr")
             For Each i In FileStack.Children.OfType(Of Button)
                 i.Visibility = Visibility.Visible
             Next
@@ -1426,19 +1374,19 @@ Class MainWindow
 
             Select Case sender.Tag
                 Case "img"
-                    FilterBtn.Text = "Images"
+                    FilterBtn.Text = Funcs.ChooseLang("FlImgStr")
                 Case "aud"
-                    FilterBtn.Text = "Audio"
+                    FilterBtn.Text = Funcs.ChooseLang("FlAudStr")
                 Case "arc"
-                    FilterBtn.Text = "Archives"
+                    FilterBtn.Text = Funcs.ChooseLang("FlArcStr")
                 Case "fnt"
-                    FilterBtn.Text = Funcs.ChooseLang("Fonts", "Polices")
+                    FilterBtn.Text = Funcs.ChooseLang("FlFntStr")
                 Case "cde"
-                    FilterBtn.Text = Funcs.ChooseLang("Code files", "Fichiers de code")
+                    FilterBtn.Text = Funcs.ChooseLang("FlCdeStr")
                 Case "vid"
-                    FilterBtn.Text = Funcs.ChooseLang("Video", "Vidéo")
+                    FilterBtn.Text = Funcs.ChooseLang("FlVidStr")
                 Case "doc"
-                    FilterBtn.Text = "Documents"
+                    FilterBtn.Text = Funcs.ChooseLang("FlDocStr")
             End Select
         End If
 
@@ -1483,17 +1431,17 @@ Class MainWindow
 
         Select Case Sorter
             Case "az"
-                SortBtn.Text = Funcs.ChooseLang("Name A-Z", "Nom A-Z")
+                SortBtn.Text = Funcs.ChooseLang("NameAZStr")
             Case "za"
-                SortBtn.Text = Funcs.ChooseLang("Name Z-A", "Nom Z-A")
+                SortBtn.Text = Funcs.ChooseLang("NameZAStr")
             Case "sa"
-                SortBtn.Text = Funcs.ChooseLang("Size ascending", "Taille croissante")
+                SortBtn.Text = Funcs.ChooseLang("SizeAscStr")
             Case "sd"
-                SortBtn.Text = Funcs.ChooseLang("Size descending", "Taille décroissante")
+                SortBtn.Text = Funcs.ChooseLang("SizeDescStr")
             Case "nf"
-                SortBtn.Text = Funcs.ChooseLang("Newest first", "Plus récent en premier")
+                SortBtn.Text = Funcs.ChooseLang("NewestStr")
             Case "of"
-                SortBtn.Text = Funcs.ChooseLang("Oldest first", "Moins récent en premier")
+                SortBtn.Text = Funcs.ChooseLang("OldestStr")
         End Select
 
     End Sub
@@ -1556,7 +1504,7 @@ Class MainWindow
         If Sorter <> "nf" And Sorter <> "of" Then
             For Each i In sorteditems
                 Dim txt As TextBlock = i.FindName("SizeTxt")
-                txt.Text = FormatBytes(i.Tag.ToString().Split("/")(1))
+                txt.Text = Funcs.FormatBytes(i.Tag.ToString().Split("/")(1))
             Next
         End If
 
@@ -1576,9 +1524,8 @@ Class MainWindow
     Private Sub ChartBtn_Click(sender As Object, e As RoutedEventArgs) Handles ChartBtn.Click
         If ChartBtn.IsEnabled = False Then Exit Sub
         If FileStack.Children.OfType(Of Button).Where(Function(x) x.Visibility = Visibility.Visible).ToList().Count = 0 Then
-            NewMessage(Funcs.ChooseLang("Please choose a folder that has some folders or files in it.",
-                                        "Veuillez choisir un dossier contenant des dossiers ou des fichiers."),
-                       Funcs.ChooseLang("No data", "Pas de données"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("NoDataErrorDescStr"),
+                       Funcs.ChooseLang("NoDataStr"), MessageBoxButton.OK, MessageBoxImage.Error)
         Else
             Dim cht As New Chart(FileStack.Children.OfType(Of Button).Where(Function(x) x.Visibility = Visibility.Visible).ToList())
             cht.ShowDialog()
@@ -1589,13 +1536,12 @@ Class MainWindow
     Private Sub ExportTXTBtn_Click(sender As Object, e As RoutedEventArgs) Handles ExportTXTBtn.Click
         Dim saveDialog As New Microsoft.Win32.SaveFileDialog With {
             .Title = "Quota Express",
-            .Filter = Funcs.ChooseLang("TXT files (.txt)|*.txt", "Fichiers TXT (.txt)|*.txt")
+            .Filter = Funcs.ChooseLang("TextFilesFilterStr")
         }
 
         If FileStack.Children.OfType(Of Button).Where(Function(x) x.Visibility = Visibility.Visible).ToList().Count = 0 Then
-            NewMessage(Funcs.ChooseLang("Please choose a folder that has some folders or files in it.",
-                                        "Veuillez choisir un dossier contenant des dossiers ou des fichiers."),
-                       Funcs.ChooseLang("No data", "Pas de données"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("NoDataErrorDescStr"),
+                       Funcs.ChooseLang("NoDataStr"), MessageBoxButton.OK, MessageBoxImage.Error)
         Else
             If saveDialog.ShowDialog() = True Then
                 Dim rtf As New Text.StringBuilder
@@ -1604,7 +1550,7 @@ Class MainWindow
                 Try
                     rtf.Append(root)
                     rtf.AppendLine()
-                    rtf.Append(FormatBytes(Convert.ToInt64(CopyDetailsBtn.Tag.ToString().Split("/")(1))))
+                    rtf.Append(Funcs.FormatBytes(Convert.ToInt64(CopyDetailsBtn.Tag.ToString().Split("/")(1))))
                     rtf.AppendLine()
                     rtf.Append("-------------------")
                     rtf.AppendLine()
@@ -1613,20 +1559,19 @@ Class MainWindow
                     For Each i In btns
                         rtf.Append(Path.GetFileName(i.ToolTip))
                         rtf.AppendLine()
-                        rtf.Append(FormatBytes(Convert.ToInt64(i.Tag.ToString().Split("/")(1))))
+                        rtf.Append(Funcs.FormatBytes(Convert.ToInt64(i.Tag.ToString().Split("/")(1))))
                         rtf.AppendLine()
                         rtf.AppendLine()
                     Next
 
                     IO.File.WriteAllText(saveDialog.FileName, rtf.ToString(), Text.Encoding.UTF8)
 
-                    NewMessage(Funcs.ChooseLang("File successfully saved.", "Fichier enregistré avec succès."),
-                                   Funcs.ChooseLang("Success", "Succès"), MessageBoxButton.OK, MessageBoxImage.Information)
+                    NewMessage(Funcs.ChooseLang("FileSavedStr"),
+                               Funcs.ChooseLang("SuccessStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
                 Catch
-                    NewMessage(Funcs.ChooseLang("We couldn't save your document. Please try again.",
-                                                "Nous n'arrivions pas à enregistrer votre document. Veuillez réessayer."),
-                               Funcs.ChooseLang("Error saving file", "Erreur d'enregistrement du fichier"), MessageBoxButton.OK, MessageBoxImage.Error)
+                    NewMessage(Funcs.ChooseLang("DocumentSaveErrorStr"),
+                               Funcs.ChooseLang("SavingErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
                 End Try
             End If
@@ -1637,13 +1582,12 @@ Class MainWindow
     Private Sub ExportRTFBtn_Click(sender As Object, e As RoutedEventArgs) Handles ExportRTFBtn.Click
         Dim saveDialog As New Microsoft.Win32.SaveFileDialog With {
             .Title = "Quota Express",
-            .Filter = Funcs.ChooseLang("RTF files (.rtf)|*.rtf", "Fichiers RTF (.rtf)|*.rtf")
+            .Filter = Funcs.ChooseLang("RTFFilesFilterStr")
         }
 
         If FileStack.Children.OfType(Of Button).Where(Function(x) x.Visibility = Visibility.Visible).ToList().Count = 0 Then
-            NewMessage(Funcs.ChooseLang("Please choose a folder that has some folders or files in it.",
-                                        "Veuillez choisir un dossier contenant des dossiers ou des fichiers."),
-                       Funcs.ChooseLang("No data", "Pas de données"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("NoDataErrorDescStr"),
+                       Funcs.ChooseLang("NoDataStr"), MessageBoxButton.OK, MessageBoxImage.Error)
         Else
             If saveDialog.ShowDialog() = True Then
                 Dim TableRtf As New Text.StringBuilder
@@ -1656,7 +1600,7 @@ Class MainWindow
                         .Append("\cellx6000")
                         .Append("\cellx7500")
 
-                        .Append($"\pard\intbl\f1  {root.Replace("\", "\\")}\f0\cell\f1  {FormatBytes(Convert.ToInt64(CopyDetailsBtn.Tag.ToString().Split("/")(1)))}\f0\cell\row ")
+                        .Append($"\pard\intbl\f1  {root.Replace("\", "\\")}\f0\cell\f1  {Funcs.FormatBytes(Convert.ToInt64(CopyDetailsBtn.Tag.ToString().Split("/")(1)))}\f0\cell\row ")
 
                         .Append("\trowd")
                         .Append("\cellx6000")
@@ -1673,7 +1617,7 @@ Class MainWindow
                             .Append("\cellx7500")
 
                             ' Append ending string
-                            .Append($"\pard\intbl\f1  {Path.GetFileName(btns(rows).ToolTip)}\f0\cell\f1  {FormatBytes(Convert.ToInt64(btns(rows).Tag.ToString().Split("/")(1)))}\f0\cell\row ")
+                            .Append($"\pard\intbl\f1  {Path.GetFileName(btns(rows).ToolTip)}\f0\cell\f1  {Funcs.FormatBytes(Convert.ToInt64(btns(rows).Tag.ToString().Split("/")(1)))}\f0\cell\row ")
 
                         Next
 
@@ -1686,13 +1630,12 @@ Class MainWindow
                         DocTxt.Rtf = .ToString()
                         DocTxt.SaveFile(saveDialog.FileName, Forms.RichTextBoxStreamType.RichText)
 
-                        NewMessage(Funcs.ChooseLang("File successfully saved.", "Fichier enregistré avec succès."),
-                               Funcs.ChooseLang("Success", "Succès"), MessageBoxButton.OK, MessageBoxImage.Information)
+                        NewMessage(Funcs.ChooseLang("FileSavedStr"),
+                                   Funcs.ChooseLang("SuccessStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
                     Catch
-                        NewMessage(Funcs.ChooseLang("We couldn't save your document. Please try again.",
-                                                "Nous n'arrivions pas à enregistrer votre document. Veuillez réessayer."),
-                               Funcs.ChooseLang("Error saving file", "Erreur d'enregistrement du fichier"), MessageBoxButton.OK, MessageBoxImage.Error)
+                        NewMessage(Funcs.ChooseLang("DocumentSaveErrorStr"),
+                                   Funcs.ChooseLang("SavingErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
                     End Try
 
@@ -1705,13 +1648,12 @@ Class MainWindow
     Private Sub ExportCSVBtn_Click(sender As Object, e As RoutedEventArgs) Handles ExportCSVBtn.Click
         Dim saveDialog As New Microsoft.Win32.SaveFileDialog With {
            .Title = "Quota Express",
-           .Filter = Funcs.ChooseLang("CSV files (.csv)|*.csv", "Fichiers CSV (.csv)|*.csv")
+           .Filter = Funcs.ChooseLang("CSVFilesFilterStr")
        }
 
         If FileStack.Children.OfType(Of Button).Where(Function(x) x.Visibility = Visibility.Visible).ToList().Count = 0 Then
-            NewMessage(Funcs.ChooseLang("Please choose a folder that has some folders or files in it.",
-                                        "Veuillez choisir un dossier contenant des dossiers ou des fichiers."),
-                       Funcs.ChooseLang("No data", "Pas de données"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("NoDataErrorDescStr"),
+                       Funcs.ChooseLang("NoDataStr"), MessageBoxButton.OK, MessageBoxImage.Error)
         Else
             If saveDialog.ShowDialog() = True Then
                 Dim rtf As New Text.StringBuilder
@@ -1719,25 +1661,24 @@ Class MainWindow
 
                 Try
                     rtf.Append(If(root.Contains(","), """" + root + """,", root + ","))
-                    rtf.Append(FormatBytes(Convert.ToInt64(CopyDetailsBtn.Tag.ToString().Split("/")(1))))
+                    rtf.Append(Funcs.FormatBytes(Convert.ToInt64(CopyDetailsBtn.Tag.ToString().Split("/")(1)), True))
                     rtf.AppendLine()
 
                     For Each i In btns
                         Dim rootpath = Path.GetFileName(i.ToolTip.ToString())
                         rtf.Append(If(rootpath.Contains(","), """" + rootpath + """,", rootpath + ","))
-                        rtf.Append(FormatBytes(Convert.ToInt64(i.Tag.ToString().Split("/")(1))))
+                        rtf.Append(Funcs.FormatBytes(Convert.ToInt64(i.Tag.ToString().Split("/")(1)), True))
                         rtf.AppendLine()
                     Next
 
                     IO.File.WriteAllText(saveDialog.FileName, rtf.ToString(), Text.Encoding.UTF8)
 
-                    NewMessage(Funcs.ChooseLang("File successfully saved.", "Fichier enregistré avec succès."),
-                                   Funcs.ChooseLang("Success", "Succès"), MessageBoxButton.OK, MessageBoxImage.Information)
+                    NewMessage(Funcs.ChooseLang("FileSavedStr"),
+                               Funcs.ChooseLang("SuccessStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
                 Catch
-                    NewMessage(Funcs.ChooseLang("We couldn't save your document. Please try again.",
-                                                "Nous n'arrivions pas à enregistrer votre document. Veuillez réessayer."),
-                               Funcs.ChooseLang("Error saving file", "Erreur d'enregistrement du fichier"), MessageBoxButton.OK, MessageBoxImage.Error)
+                    NewMessage(Funcs.ChooseLang("DocumentSaveErrorStr"),
+                               Funcs.ChooseLang("SavingErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
                 End Try
             End If
@@ -1761,9 +1702,8 @@ Class MainWindow
             Try
                 Process.Start(bt.ToolTip)
             Catch
-                NewMessage(Funcs.ChooseLang($"Can't open {bt.ToolTip}.{Chr(10)}Check that you have permission to access it.",
-                                      $"Impossible d'ouvrir {bt.ToolTip}.{Chr(10)}Vérifiez que vous avez la permission d'y accéder."),
-                           Funcs.ChooseLang("Access denied", "Accès refusé"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("OpenFileErrorQStr").Replace("{0}", bt.ToolTip.ToString()),
+                           Funcs.ChooseLang("AccessDeniedStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             End Try
         End If
 
@@ -1785,7 +1725,7 @@ Class MainWindow
         Dim parent As ContextMenu = sender.Parent
         Dim bt As Button = parent.PlacementTarget
 
-        Clipboard.SetText(FormatBytes(Convert.ToInt64(bt.Tag.ToString().Split("/")(1))))
+        Clipboard.SetText(Funcs.FormatBytes(Convert.ToInt64(bt.Tag.ToString().Split("/")(1))))
 
     End Sub
 
@@ -1893,15 +1833,15 @@ Class MainWindow
         Help3Btn.Visibility = Visibility.Visible
 
         Help1Btn.Icon = FindResource("DriveIcon")
-        Help1Btn.Text = Funcs.ChooseLang("Getting started", "Prise en main")
+        Help1Btn.Text = Funcs.ChooseLang("GettingStartedStr")
         Help1Btn.Tag = 1
 
         Help2Btn.Icon = FindResource("QuotaExpressIcon")
-        Help2Btn.Text = Funcs.ChooseLang("What's new and still to come", "Nouvelles fonctions et autres à venir")
+        Help2Btn.Text = Funcs.ChooseLang("NewComingSoonStr")
         Help2Btn.Tag = 9
 
         Help3Btn.Icon = FindResource("FeedbackIcon")
-        Help3Btn.Text = Funcs.ChooseLang("Troubleshooting and feedback", "Dépannage et commentaires")
+        Help3Btn.Text = Funcs.ChooseLang("TroubleshootingStr")
         Help3Btn.Tag = 10
 
     End Sub
@@ -1921,34 +1861,34 @@ Class MainWindow
         ' 9  What's new and still to come
         ' 10 Troubleshooting and feedback
 
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("folder drive analys storage percentage file", "dossier lecteur analyse stockage pourcentage fichier")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideQ1Str")) Then
             results.Add(1)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("file folder sort filter", "dossier fichier tri filtre")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideQ2Str")) Then
             results.Add(2)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("export chart rtf txt text csv", "export graphique rtf txt texte csv")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideQ3Str")) Then
             results.Add(3)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("start folder import export option setting", "démarr dossier import export paramètre option")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideQ4Str")) Then
             results.Add(6)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("percentage default sort colour scheme option setting", "pourcentage défaut tri couleur palette paramètre option")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideQ5Str")) Then
             results.Add(4)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("general language sound dark appearance option setting", "généra langue son noir sombre paramètre option")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideQ6Str")) Then
             results.Add(5)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("notification updat", "notification jour")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideQ7Str")) Then
             results.Add(7)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("keyboard shortcut", "raccourci clavier")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideQ8Str")) Then
             results.Add(8)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("new coming feature tip", "nouvelle nouveau bientôt prochainement fonction conseil")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideQ9Str")) Then
             results.Add(9)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("help feedback comment trouble problem error suggest mail contact", "aide remarque réaction impression comment mail contact erreur")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideQ10Str")) Then
             results.Add(10)
         End If
 
@@ -1995,34 +1935,34 @@ Class MainWindow
         Select Case topic
             Case 1
                 icon = "DriveIcon"
-                title = Funcs.ChooseLang("Analysing your storage", "Analyser votre stockage")
+                title = Funcs.ChooseLang("HelpTitleQ1Str")
             Case 2
                 icon = "PaneIcon"
-                title = Funcs.ChooseLang("The View tab", "L'onglet Affichage")
+                title = Funcs.ChooseLang("HelpTitleQ2Str")
             Case 3
                 icon = "DoughnutIcon"
-                title = Funcs.ChooseLang("Exporting data", "Exportation de données")
+                title = Funcs.ChooseLang("HelpTitleQ3Str")
             Case 4
                 icon = "DefaultsIcon"
-                title = Funcs.ChooseLang("Default options", "Paramètres par défaut")
+                title = Funcs.ChooseLang("HelpTitleQ4Str")
             Case 5
                 icon = "GearsIcon"
-                title = Funcs.ChooseLang("General options", "Paramètres généraux")
+                title = Funcs.ChooseLang("HelpTitleQ5Str")
             Case 6
                 icon = "StartupIcon"
-                title = Funcs.ChooseLang("Other options", "Autres paramètres")
+                title = Funcs.ChooseLang("HelpTitleQ6Str")
             Case 7
                 icon = "NotificationIcon"
-                title = "Notifications"
+                title = Funcs.ChooseLang("HelpTitleQ7Str")
             Case 8
                 icon = "CtrlIcon"
-                title = Funcs.ChooseLang("Keyboard shortcuts", "Raccourcis clavier")
+                title = Funcs.ChooseLang("HelpTitleQ8Str")
             Case 9
                 icon = "QuotaExpressIcon"
-                title = Funcs.ChooseLang("What's new and still to come", "Nouvelles fonctions et autres à venir")
+                title = Funcs.ChooseLang("NewComingSoonStr")
             Case 10
                 icon = "FeedbackIcon"
-                title = Funcs.ChooseLang("Troubleshooting and feedback", "Dépannage et commentaires")
+                title = Funcs.ChooseLang("TroubleshootingStr")
         End Select
 
         Select Case btn
@@ -2066,7 +2006,6 @@ Class MainWindow
         End If
 
     End Sub
-
 End Class
 
 Public Class DriveItem

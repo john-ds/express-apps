@@ -43,8 +43,8 @@
         Next
 
         If all = False Then
-            MainWindow.NewMessage(Funcs.ChooseLang("Please select all 8 colours.", "Veuillez sélectionner toutes les 8 couleurs."),
-                                  Funcs.ChooseLang("Colours missing", "Couleurs manquantes"), MessageBoxButton.OK, MessageBoxImage.Error)
+            MainWindow.NewMessage(Funcs.ChooseLang("ColoursMissingDescStr"),
+                                  Funcs.ChooseLang("ColoursMissingStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         Else
             DialogResult = True

@@ -88,7 +88,7 @@
                             </DockPanel>
                             <ScrollViewer x:Name="PictureScroll" Margin="0,80,0,42">
                                 <DockPanel Margin="0">
-                                    <ex:AppButton x:Name="LoadMoreBtn" LastChildFill="True" IconVisibility="Collapsed" GapMargin="0" Text="{DynamicResource PcMoreStr}" Margin="0,0,0,20" VerticalAlignment="Center" Height="32" HorizontalContentAlignment="Stretch" HorizontalAlignment="Center" MinWidth="125" DockPanel.Dock="Bottom" Visibility="Collapsed"/>
+                                    <ex:AppButton x:Name="LoadMoreBtn" LastChildFill="True" IconVisibility="Collapsed" GapMargin="0" Text="{DynamicResource LoadMoreStr}" Margin="0,0,0,20" VerticalAlignment="Center" Height="32" HorizontalContentAlignment="Stretch" HorizontalAlignment="Center" MinWidth="125" DockPanel.Dock="Bottom" Visibility="Collapsed"/>
                                     <WrapPanel x:Name="PhotoGrid" Margin="20" DockPanel.Dock="Top">
                                         <Button x:Name="PhotoSampleBtn" Height="130" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Margin="0" Style="{DynamicResource AppButton}" Foreground="{DynamicResource TextColor}" ToolTip="{DynamicResource OnlineTemplateStr}" Visibility="Collapsed">
                                             <Border Margin="3" BorderBrush="{DynamicResource AppColor}" BorderThickness="2" Background="{DynamicResource SecondaryColor}">
@@ -122,7 +122,7 @@
                         <Grid x:Name="LoadingGrid" Background="{DynamicResource AcryllicColor}" Visibility="Collapsed">
                             <ContentControl Content="{DynamicResource IconLoaderVector}" Height="160" VerticalAlignment="Top" Margin="0,60,0,0"/>
                             <TextBlock x:Name="CalculatingTxt" HorizontalAlignment="Center" Margin="0,110,0,0" TextWrapping="Wrap" VerticalAlignment="Center" FontFamily="Segoe UI Semibold" FontSize="24" Text="{DynamicResource IcLoadingStr}"/>
-                            <ex:AppButton x:Name="CancelBtn" LastChildFill="True" IconVisibility="Collapsed" GapMargin="0" Text="{DynamicResource QtCancelStr}" Margin="15,210,15,0" VerticalAlignment="Center" Height="32" HorizontalContentAlignment="Stretch" HorizontalAlignment="Center" MinWidth="100"/>
+                            <ex:AppButton x:Name="CancelBtn" LastChildFill="True" IconVisibility="Collapsed" GapMargin="0" Text="{DynamicResource CancelStr}" Margin="15,210,15,0" VerticalAlignment="Center" Height="32" HorizontalContentAlignment="Stretch" HorizontalAlignment="Center" MinWidth="100"/>
                         </Grid>
                         <Popup x:Name="StylePopup" Placement="Top" PlacementTarget="{Binding ElementName=StyleBtn}" AllowsTransparency="True" PopupAnimation="Slide" StaysOpen="False" Margin="0">
                             <Grid>

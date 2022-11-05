@@ -11,7 +11,7 @@
         xmlns:controls="clr-namespace:System.Windows.Controls;assembly=DotNetProjects.Input.Toolkit"
         x:Name="Main" x:Class="MainWindow"
         mc:Ignorable="d"
-        Title="{DynamicResource TitleStr}" Height="680" Width="1180" MinWidth="600" MinHeight="415" BorderThickness="0" UseLayoutRounding="False" WindowStyle="None">
+        Title="{DynamicResource TitleStr}" Height="680" Width="1180" MinWidth="600" MinHeight="415" BorderThickness="0" UseLayoutRounding="False" Style="{DynamicResource ChromeWindowStyle}">
     <Window.Resources>
         <ex:FontItems x:Key="NameListData"/>
         <xctk:SolidColorBrushToColorConverter x:Key="SolidColorBrushToColorConverter"/>
@@ -690,7 +690,7 @@
                                             </StackPanel>
                                             <ex:AppButton x:Name="CloseDocBtn" Icon="{DynamicResource CrossIcon}" Text="{DynamicResource CloseDocStr}" Margin="0,20,0,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch"/>
                                         </StackPanel>
-                                        <TextBlock x:Name="FolderTxt_Copy55" MaxWidth="300" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,30,0,10" Padding="0" Text="{DynamicResource ExpressAppsAdStr}" Background="{DynamicResource BackColor}" FontSize="14" TextWrapping="Wrap"/>
+                                        <TextBlock x:Name="FolderTxt_Copy55" MaxWidth="300" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,30,0,10" Padding="0" Text="{DynamicResource ExpressAppsAdTStr}" Background="{DynamicResource BackColor}" FontSize="14" TextWrapping="Wrap"/>
                                         <ex:AppButton x:Name="AboutBtn" Icon="{DynamicResource InfoIcon}" Text="{DynamicResource AboutTypeStr}" Margin="0,5,0,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch"/>
                                         <ex:AppButton x:Name="StorageBtn" Icon="{DynamicResource GlobeIcon}" Text="{DynamicResource WebsiteStr}" Margin="0,10,0,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch"/>
                                     </StackPanel>
@@ -1095,9 +1095,17 @@
                                     </TabItem>
                                     <TabItem x:Name="SymbolTab" Header="" Focusable="False" Margin="0,0,-4.001,-2">
                                         <ScrollViewer Margin="0,5,0,0" VerticalScrollBarVisibility="Auto">
-                                            <Grid x:Name="grid7" Margin="0,-4,0,0">
-                                                <TextBlock x:Name="SymbolLbl" Margin="15,20,0,0" FontSize="14" VerticalAlignment="Top" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="{DynamicResource SideInfoStr}"/>
-                                                <StackPanel Margin="15,50,15,10">
+                                            <StackPanel x:Name="grid7" Margin="0,-4,0,0">
+                                                <TextBlock x:Name="SymbolLbl" Margin="15,20,15,-5" FontSize="14" VerticalAlignment="Top" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="{DynamicResource SymbolInfoStr}" TextWrapping="Wrap"/>
+                                                <DockPanel Margin="15,15,15,0" VerticalAlignment="Top">
+                                                    <ex:AppButton x:Name="SymbolSearchBtn" Icon="{DynamicResource SearchIcon}" Height="26" GapMargin="0" IconSize="18" TextVisibility="Collapsed" VerticalAlignment="Top" HorizontalAlignment="Left" DockPanel.Dock="Right" ToolTip="{DynamicResource SearchStr}" Padding="5,0"/>
+                                                    <TextBox x:Name="SymbolSearchTxt" Margin="0,0,10,0" Text="" UseLayoutRounding="False" VerticalContentAlignment="Center" VerticalAlignment="Top" Height="26" UndoLimit="0" Foreground="{DynamicResource TextColor}" Background="{DynamicResource BackColor}" Template="{DynamicResource RoundedTextBox}" MaxLines="1">
+                                                        <TextBox.ContextMenu>
+                                                            <ContextMenu Visibility="Collapsed"/>
+                                                        </TextBox.ContextMenu>
+                                                    </TextBox>
+                                                </DockPanel>
+                                                <StackPanel x:Name="SymbolList" Margin="15,15,15,10">
                                                     <ex:AppButton x:Name="LetteringBtn" Icon="{DynamicResource AlphabeticalIcon}" Text="{DynamicResource LetteringStr}" CornerRadius="0" NoShadow="True" Margin="0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch"/>
                                                     <ex:AppButton x:Name="ArrowsBtn" Icon="{DynamicResource ArrowIcon}" Text="{DynamicResource ArrowStr}" CornerRadius="0" NoShadow="True" Margin="0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch"/>
                                                     <ex:AppButton x:Name="StandardBtn" Icon="{DynamicResource CopyrightIcon}" Text="{DynamicResource StandardStr}" CornerRadius="0" NoShadow="True" Margin="0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch"/>
@@ -1106,8 +1114,8 @@
                                                     <ex:AppButton x:Name="MathematicsBtn" Icon="{DynamicResource ApproximateIcon}" Text="{DynamicResource MathsStr}" CornerRadius="0" NoShadow="True" Margin="0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch"/>
                                                     <ex:AppButton x:Name="EmojiBtn" Icon="{DynamicResource EmojiIcon}" Text="{DynamicResource EmojiStr}" CornerRadius="0" NoShadow="True" Margin="0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch"/>
                                                 </StackPanel>
-                                                <ex:AppButton x:Name="SymbolBackBtn" Icon="{DynamicResource LeftIcon}" Text="{DynamicResource BackStr}" Margin="15,20,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Visibility="Collapsed"/>
-                                                <ItemsControl x:Name="SymbolPanel" Margin="15,75,5,10" Background="{DynamicResource BackColor}" Visibility="Collapsed">
+                                                <ex:AppButton x:Name="SymbolBackBtn" Icon="{DynamicResource LeftIcon}" Text="{DynamicResource BackStr}" Margin="15,20,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" FontSize="12" IconSize="16" Height="32" Visibility="Collapsed"/>
+                                                <ItemsControl x:Name="SymbolPanel" Margin="15,20,5,10" Background="{DynamicResource BackColor}" Visibility="Collapsed">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
                                                             <WrapPanel/>
@@ -1115,11 +1123,11 @@
                                                     </ItemsControl.ItemsPanel>
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <Button Click="SymbolBtns_Click" Content="{Binding Symbol}" ToolTip="{Binding Info}" Tag="{Binding Symbol}" HorizontalAlignment="Left" Height="32" Margin="0" Style="{DynamicResource AppButton}" VerticalAlignment="Top" Width="38" Background="{DynamicResource BackColor}" FontSize="14" BorderThickness="0"/>
+                                                            <Button Click="SymbolBtns_Click" Content="{Binding Symbol}" ToolTip="{Binding Info}" Tag="{Binding Tag}" HorizontalAlignment="Left" Height="32" Margin="0" Style="{DynamicResource AppButton}" VerticalAlignment="Top" Width="38" Background="{DynamicResource BackColor}" FontSize="14" BorderThickness="0"/>
                                                         </DataTemplate>
                                                     </ItemsControl.ItemTemplate>
                                                 </ItemsControl>
-                                            </Grid>
+                                            </StackPanel>
                                         </ScrollViewer>
 
                                     </TabItem>
@@ -1369,7 +1377,7 @@
                                         <ScrollViewer Margin="0,5,0,0" VerticalScrollBarVisibility="Auto">
                                             <Grid x:Name="grid13" Margin="0,-4,0,0">
                                                 <StackPanel>
-                                                    <TextBlock x:Name="SpellcheckLbl" Margin="15,20,0,0" FontSize="14" VerticalAlignment="Top" HorizontalAlignment="Left" Text="{DynamicResource SpellInfoStr}"/>
+                                                    <TextBlock x:Name="SpellcheckLbl" Margin="15,20,0,0" FontSize="14" VerticalAlignment="Top" HorizontalAlignment="Left" Text="{DynamicResource SpellInfoStr}" TextWrapping="Wrap"/>
                                                     <DockPanel Margin="0,5,0,0" UseLayoutRounding="True">
                                                         <ex:AppButton x:Name="SpellOptionsBtn" Icon="{DynamicResource DownIcon}" GapMargin="0" TextVisibility="Collapsed" Margin="0,5,15,0" VerticalAlignment="Top" HorizontalAlignment="Center" Height="32" DockPanel.Dock="Right" CornerRadius="0,5,5,0"/>
                                                         <ex:AppButton x:Name="CheckSpellBtn" LastChildFill="True" IconVisibility="Collapsed" GapMargin="0" Text="{DynamicResource StartCheckingStr}" Margin="15,5,0,0" VerticalAlignment="Top" Height="32" HorizontalContentAlignment="Stretch" CornerRadius="5,0,0,5"/>
@@ -1810,7 +1818,7 @@
                                 <WrapPanel Height="50" Margin="15,0">
                                     <Button x:Name="Colour11Btn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0" Height="25" ToolTip="{DynamicResource NoColourStr}">
                                         <StackPanel Orientation="Horizontal" Height="25">
-                                            <Rectangle RadiusX="5" RadiusY="5" x:Name="Colour11" Width="21" Fill="{DynamicResource BackColor}" Margin="2,0" Height="21" Stroke="#FFABADB3"/>
+                                            <Rectangle RadiusX="5" RadiusY="5" x:Name="Colour11" Width="21" Fill="White" Margin="2,0" Height="21" Stroke="#FFABADB3"/>
                                         </StackPanel>
                                     </Button>
                                     <Button x:Name="Colour12Btn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0" Height="25" ToolTip="{DynamicResource YellowStr}">
@@ -1855,7 +1863,7 @@
                                     </Button>
                                     <Button x:Name="Colour20Btn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0" Height="25" ToolTip="{DynamicResource BlackStr}">
                                         <StackPanel Orientation="Horizontal" Height="25">
-                                            <Rectangle RadiusX="5" RadiusY="5" x:Name="Colour20" Width="21" Fill="{DynamicResource TextColor}" Margin="2,0" Height="21" Stroke="#FFABADB3"/>
+                                            <Rectangle RadiusX="5" RadiusY="5" x:Name="Colour20" Width="21" Fill="Black" Margin="2,0" Height="21" Stroke="#FFABADB3"/>
                                         </StackPanel>
                                     </Button>
                                 </WrapPanel>
@@ -1956,7 +1964,7 @@
                                 <ex:AppButton x:Name="IconsBtn" Text="{DynamicResource IconsStr}" HorizontalContentAlignment="Stretch" CornerRadius="0" Icon="{DynamicResource IconIcon}" NoShadow="True" Background="Transparent" ToolTip="{DynamicResource IconsToolStr}"/>
                                 <ex:AppButton x:Name="OnlinePicturesBtn" Text="{DynamicResource OnlinePicturesStr}" HorizontalContentAlignment="Stretch" CornerRadius="0" Icon="{DynamicResource GlobeIcon}" NoShadow="True" Background="Transparent" ToolTip="{DynamicResource OnlinePicturesToolStr}"/>
                                 <Rectangle Fill="{DynamicResource AppColor}" Height="2"/>
-                                <ex:AppButton x:Name="OfflinePicturesBtn" Text="{DynamicResource BrowsePCImagesStr}" HorizontalContentAlignment="Stretch" CornerRadius="0" Icon="{DynamicResource ImageFolderIcon}" NoShadow="True" Background="Transparent" ToolTip="{DynamicResource BrowsePCImagesToolStr}"/>
+                                <ex:AppButton x:Name="OfflinePicturesBtn" Text="{DynamicResource BrowsePCImagesStr}" HorizontalContentAlignment="Stretch" CornerRadius="0" Icon="{DynamicResource ImageFolderIcon}" NoShadow="True" Background="Transparent" ToolTip="{DynamicResource BrowsePCImagesToolShortcutStr}"/>
                             </StackPanel>
                         </ScrollViewer>
                     </ex:ClippedBorder>

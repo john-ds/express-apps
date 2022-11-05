@@ -113,6 +113,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="CommonDictionaryES.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="CommonDictionaryFR.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -127,6 +131,10 @@
     </Compile>
     <Compile Include="FontItems.vb" />
     <Compile Include="Funcs.vb" />
+    <Page Include="CommonDictionaryIT.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Experimental.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

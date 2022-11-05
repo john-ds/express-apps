@@ -6,7 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" xmlns:System="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="{DynamicResource OptionsStr}" Background="{x:Null}" UseLayoutRounding="True" Height="500" Width="650" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" WindowStyle="None" AllowsTransparency="True">
+        Title="{DynamicResource OptionsPStr}" Background="{x:Null}" UseLayoutRounding="True" Height="500" Width="650" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" WindowStyle="None" AllowsTransparency="True">
     <Window.Resources>
         <ex:FontItems x:Key="NameListData"/>
         <Storyboard x:Key="EntranceStoryboard">
@@ -140,8 +140,10 @@
                                     <Label x:Name="MenuHeaderLbl_Copy" Height="50"  VerticalContentAlignment="Bottom" Margin="0" Padding="30,5,5,5" FontSize="20" Content="{DynamicResource GeneralStr}" Background="{x:Null}" Foreground="{DynamicResource TextColor}"/>
                                     <DockPanel x:Name="InterfacePnl" LastChildFill="False">
                                         <TextBlock FontSize="14" Padding="30,15,0,0" DockPanel.Dock="Top" Text="{DynamicResource GnLangStr}"/>
-                                        <ex:AppRadioButton x:Name="EnglishRadio1" DockPanel.Dock="Top" Content="{DynamicResource EnglishUKStr}" CornerRadius="0" HorizontalContentAlignment="Stretch" IsChecked="True" GroupName="InterfaceLangOptions" IconSize="20" FontSize="12" HorizontalAlignment="Left" MinWidth="200" Margin="30,5,0,0"/>
-                                        <ex:AppRadioButton x:Name="FrenchRadio1" DockPanel.Dock="Top" Content="{DynamicResource FrenchFRStr}" CornerRadius="0" HorizontalContentAlignment="Stretch" GroupName="InterfaceLangOptions" IconSize="20" FontSize="12" HorizontalAlignment="Left" MinWidth="200" Margin="30,0,0,0"/>
+                                        <ex:AppRadioButton Tag="en-GB" x:Name="EnglishRadio1" DockPanel.Dock="Top" Content="{DynamicResource EnglishUKStr}" CornerRadius="0" HorizontalContentAlignment="Stretch" IsChecked="True" GroupName="InterfaceLangOptions" IconSize="20" FontSize="12" HorizontalAlignment="Left" MinWidth="200" Margin="30,5,0,0"/>
+                                        <ex:AppRadioButton Tag="fr-FR" x:Name="FrenchRadio1" DockPanel.Dock="Top" Content="{DynamicResource FrenchFRStr}" CornerRadius="0" HorizontalContentAlignment="Stretch" GroupName="InterfaceLangOptions" IconSize="20" FontSize="12" HorizontalAlignment="Left" MinWidth="200" Margin="30,0,0,0"/>
+                                        <ex:AppRadioButton Tag="es-ES" x:Name="SpanishRadio1" DockPanel.Dock="Top" Content="{DynamicResource SpanishESStr}" CornerRadius="0" HorizontalContentAlignment="Stretch" GroupName="InterfaceLangOptions" IconSize="20" FontSize="12" HorizontalAlignment="Left" MinWidth="200" Margin="30,0,0,0"/>
+                                        <ex:AppRadioButton Tag="it-IT" x:Name="ItalianRadio1" DockPanel.Dock="Top" Content="{DynamicResource ItalianITStr}" CornerRadius="0" HorizontalContentAlignment="Stretch" GroupName="InterfaceLangOptions" IconSize="20" FontSize="12" HorizontalAlignment="Left" MinWidth="200" Margin="30,0,0,0"/>
                                     </DockPanel>
                                     <DockPanel x:Name="SoundsPnl" LastChildFill="False">
                                         <TextBlock FontSize="14" Padding="30,15,0,0" DockPanel.Dock="Top" Text="{DynamicResource GnSoundsStr}"/>
@@ -180,7 +182,7 @@
                                     <Label x:Name="MenuHeaderLbl_Copy2" Height="50"  VerticalContentAlignment="Bottom" Margin="0" Padding="30,5,5,5" FontSize="20" Content="{DynamicResource StartupStr}" Background="{x:Null}" Foreground="{DynamicResource TextColor}"/>
                                     <DockPanel x:Name="StartupPnl" LastChildFill="False" Margin="0,0,0,20">
                                         <TextBlock FontSize="14" Padding="30,15,0,0" DockPanel.Dock="Top" Text="{DynamicResource StartupInfoStr}"/>
-                                        <ex:AppCheckBox x:Name="MenuBtn" DockPanel.Dock="Top" Content="{DynamicResource StMenuStr}" IsChecked="True" CornerRadius="0" HorizontalContentAlignment="Stretch" IconSize="20" FontSize="12" HorizontalAlignment="Left" MinWidth="200" Margin="30,5,0,0"/>
+                                        <ex:AppCheckBox x:Name="MenuBtn" DockPanel.Dock="Top" Content="{DynamicResource StMenuPStr}" IsChecked="True" CornerRadius="0" HorizontalContentAlignment="Stretch" IconSize="20" FontSize="12" HorizontalAlignment="Left" MinWidth="200" Margin="30,5,0,0"/>
                                         <ex:AppCheckBox x:Name="NotificationBtn" DockPanel.Dock="Top" Content="{DynamicResource StNotificationStr}" IsChecked="True" CornerRadius="0" HorizontalContentAlignment="Stretch" IconSize="20" FontSize="12" HorizontalAlignment="Left" MinWidth="200" Margin="30,0,0,0"/>
                                         <ex:AppCheckBox x:Name="RecentBtn" DockPanel.Dock="Top" Content="{DynamicResource StRecentStr}" CornerRadius="0" HorizontalContentAlignment="Stretch" IconSize="20" FontSize="12" HorizontalAlignment="Left" MinWidth="200" Margin="30,0,0,0"/>
                                     </DockPanel>

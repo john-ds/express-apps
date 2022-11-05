@@ -5,7 +5,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="{DynamicResource AboutStr}" Width="450" Background="{x:Null}" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" UseLayoutRounding="True" SizeToContent="Height" AllowsTransparency="True" WindowStyle="None">
+        Title="{DynamicResource AboutQStr}" Width="450" Background="{x:Null}" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" UseLayoutRounding="True" SizeToContent="Height" AllowsTransparency="True" WindowStyle="None">
     <Window.Resources>
         <Storyboard x:Key="EntranceStoryboard">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" Storyboard.TargetName="grid">

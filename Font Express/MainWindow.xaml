@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Font_Express"
         xmlns:ex="clr-namespace:ExpressControls;assembly=ExpressControls"
         mc:Ignorable="d"
-        Title="Font Express" Background="{DynamicResource BackColor}" Height="620" Width="880" WindowStartupLocation="CenterScreen" MinWidth="520" MinHeight="350" WindowStyle="None">
+        Title="Font Express" Background="{DynamicResource BackColor}" Height="620" Width="880" WindowStartupLocation="CenterScreen" MinWidth="520" MinHeight="350" Style="{DynamicResource ChromeWindowStyle}">
     <Window.Resources>
         <Storyboard x:Key="LoadingStoryboard"/>
         <Storyboard x:Key="MenuStoryboard"/>
@@ -198,13 +198,13 @@
                                     <ex:MenuButton x:Name="FavBtn" Text="{DynamicResource FavouriteStr}" Icon="{DynamicResource FavouriteIcon}" ToolTip="{DynamicResource FavToolStr}"/>
                                     <ex:MenuButton x:Name="CompareBtn" Text="{DynamicResource CompareStr}" Icon="{DynamicResource TitleCaseIcon}" ToolTip="{DynamicResource CompareToolStr}"/>
                                     <Separator Style="{StaticResource VerticalSeparator}"/>
-                                    <TextBox x:Name="SearchTxt" Margin="6,0,5,0" Text="{DynamicResource FnSearchStr}" Width="115" UseLayoutRounding="False" VerticalAlignment="Center" UndoLimit="0" Foreground="#FF818181" Tag="{DynamicResource FnSearchStr}" Padding="0,4" Background="{DynamicResource BackColor}" DockPanel.Dock="Right" Template="{DynamicResource RoundedTextBox}">
+                                    <TextBox x:Name="SearchTxt" Margin="6,0,5,0" Text="{DynamicResource SearchStr}" Width="115" UseLayoutRounding="False" VerticalAlignment="Center" UndoLimit="0" Foreground="#FF818181" Tag="{DynamicResource SearchStr}" Padding="0,4" Background="{DynamicResource BackColor}" DockPanel.Dock="Right" Template="{DynamicResource RoundedTextBox}">
                                         <TextBox.ContextMenu>
                                             <ContextMenu Visibility="Collapsed"/>
                                         </TextBox.ContextMenu>
                                     </TextBox>
-                                    <ex:MenuButton x:Name="SearchBtn" TextVisibility="Collapsed" Icon="{DynamicResource SearchIcon}" ToolTip="{DynamicResource FnSearchStr}"/>
-                                    <ex:MenuButton x:Name="ExitSearchBtn" TextVisibility="Collapsed" Icon="{DynamicResource CrossIcon}" ToolTip="{DynamicResource FnExitSearchStr}"  Visibility="Collapsed"/>
+                                    <ex:MenuButton x:Name="SearchBtn" TextVisibility="Collapsed" Icon="{DynamicResource SearchIcon}" ToolTip="{DynamicResource SearchStr}"/>
+                                    <ex:MenuButton x:Name="ExitSearchBtn" TextVisibility="Collapsed" Icon="{DynamicResource CrossIcon}" ToolTip="{DynamicResource FnClearSearchStr}"  Visibility="Collapsed"/>
                                 </StackPanel>
                             </ScrollViewer>
                             <Grid x:Name="HomeScroll" HorizontalAlignment="Right" Background="{DynamicResource SecondaryColor}">
@@ -338,7 +338,7 @@
                 <DockPanel Margin="0" DockPanel.Dock="Bottom" Height="28" Background="{DynamicResource SecondaryColor}" VerticalAlignment="Bottom">
                     <ex:AppButton x:Name="TopBtn" Text="{DynamicResource FnTopStr}" FontSize="12" Background="Transparent" IconSize="20" Icon="{DynamicResource UpIcon}" CornerRadius="0" NoShadow="True" Margin="0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" Height="28" DockPanel.Dock="Right" GapMargin="5,0,0,0"/>
                     <ex:AppButton x:Name="NotificationsBtn" TextVisibility="Collapsed" Background="Transparent" GapMargin="0" IconSize="20" Icon="{DynamicResource NotificationIcon}" CornerRadius="0" NoShadow="True" Margin="0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" Height="28" Padding="5,0" ToolTip="{DynamicResource NotificationStr}"/>
-                    <ex:AppButton x:Name="RefreshBtn" Text="{DynamicResource RefreshTxtStr}" FontSize="12" Background="Transparent" IconSize="20" Icon="{DynamicResource RotateLeftIcon}" CornerRadius="0" NoShadow="True" Margin="0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" Height="28" ToolTip="{DynamicResource RefreshStr}" GapMargin="5,0,0,0"/>
+                    <ex:AppButton x:Name="RefreshBtn" Text="{DynamicResource RefreshTxtStr}" FontSize="12" Background="Transparent" IconSize="20" Icon="{DynamicResource RotateLeftIcon}" CornerRadius="0" NoShadow="True" Margin="0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" Height="28" ToolTip="{DynamicResource RefreshFontsStr}" GapMargin="5,0,0,0"/>
                     <TextBlock x:Name="StatusLbl" Text="Font Express" Margin="5,0,0,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                 </DockPanel>
                 <Rectangle Fill="{DynamicResource AppColor}" Height="2" VerticalAlignment="Bottom" DockPanel.Dock="Bottom" Margin="0,0,0,28"/>

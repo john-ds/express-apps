@@ -25,10 +25,6 @@ Public Class FontPicker
         AddHandler FontWorker.DoWork, AddressOf FontWorker_DoWork
         AddHandler FontWorker.RunWorkerCompleted, AddressOf FontWorker_RunWorkerCompleted
 
-        MaxHeight = SystemParameters.WorkArea.Height + 13
-        MaxWidth = SystemParameters.WorkArea.Width + 13
-        AddHandler SystemParameters.StaticPropertyChanged, AddressOf WorkAreaChanged
-
         LoaderStartStoryboard = TryFindResource("LoaderStartStoryboard")
         LoaderEndStoryboard = TryFindResource("LoaderEndStoryboard")
         AddHandler LoaderEndStoryboard.Completed, AddressOf LoaderEnd_Completed
@@ -54,19 +50,13 @@ Public Class FontPicker
 
     End Sub
 
-    Private Sub WorkAreaChanged(sender As Object, e As EventArgs)
-        MaxHeight = SystemParameters.WorkArea.Height + 12
-        MaxWidth = SystemParameters.WorkArea.Width + 12
-
-    End Sub
-
     Private Sub MaxBtn_Click(sender As Object, e As RoutedEventArgs) Handles MaxBtn.Click
 
         If WindowState = WindowState.Maximized Then
-            WindowState = WindowState.Normal
+            SystemCommands.RestoreWindow(Me)
 
         Else
-            WindowState = WindowState.Maximized
+            SystemCommands.MaximizeWindow(Me)
 
         End If
 
@@ -89,9 +79,11 @@ Public Class FontPicker
     Private Sub TitleBtn_DoubleClick(sender As Object, e As RoutedEventArgs) Handles TitleBtn.MouseDoubleClick
 
         If WindowState = WindowState.Maximized Then
-            WindowState = WindowState.Normal
+            SystemCommands.RestoreWindow(Me)
+
         Else
-            WindowState = WindowState.Maximized
+            SystemCommands.MaximizeWindow(Me)
+
         End If
 
     End Sub
@@ -471,12 +463,12 @@ Public Class FontPicker
         Dim mdck As DockPanel = dckp.Parent
         Dim txtb As TextBlock = mdck.FindName("FontNameTxt")
 
-        If sender.ToolTip = Funcs.ChooseLang("Remove from favourites", "Supprimer des favoris") Then
+        If sender.ToolTip = Funcs.ChooseLang("RemoveFromFavsStr") Then
             My.Settings.favouritefonts.Remove(txtb.Text)
             My.Settings.Save()
 
             sender.Icon = FindResource("AddFavouriteIcon")
-            sender.ToolTip = Funcs.ChooseLang("Add to favourites", "Ajouter aux favoris")
+            sender.ToolTip = Funcs.ChooseLang("AddToFavsStr")
 
             If Parameter = "fav" Then
                 RemoveFromCurrentCategory(mdck.Parent, txtb.Text)
@@ -487,7 +479,7 @@ Public Class FontPicker
             My.Settings.Save()
 
             sender.Icon = FindResource("FavouriteIcon")
-            sender.ToolTip = Funcs.ChooseLang("Remove from favourites", "Supprimer des favoris")
+            sender.ToolTip = Funcs.ChooseLang("RemoveFromFavsStr")
 
         End If
 
@@ -547,14 +539,12 @@ Public Class FontPicker
             IsEnabled = True
 
             If Parameter = "fav" Then
-                MainWindow.NewMessage(Funcs.ChooseLang("You don't have any favourite fonts. Why not add one?",
-                                            "Vous n'avez aucune police favorite. Pourquoi ne pas en ajouter un ?"),
-                           Funcs.ChooseLang("No fonts found", "Aucune police trouvée"), MessageBoxButton.OK, MessageBoxImage.Information)
+                MainWindow.NewMessage(Funcs.ChooseLang("NoFavouritesFoundStr"),
+                                      Funcs.ChooseLang("NoFontsFoundStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
             Else
-                MainWindow.NewMessage(Funcs.ChooseLang("There are no fonts here. Try a different search or filter.",
-                                            "Il n'y a pas de polices ici. Essayez une recherche ou un filtre différent."),
-                           Funcs.ChooseLang("No fonts found", "Aucune police trouvée"), MessageBoxButton.OK, MessageBoxImage.Information)
+                MainWindow.NewMessage(Funcs.ChooseLang("NoFontsHereStr"),
+                                      Funcs.ChooseLang("NoFontsFoundStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
             End If
 
@@ -631,15 +621,16 @@ Public Class FontPicker
     Private Sub AddFontBox(name As String)
 
         Dim fontbox As Grid = XamlReader.Parse("<Grid Background='{DynamicResource BackColor}' Name='FontView' Width='235' Height='175' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:ex='clr-namespace:ExpressControls;assembly=ExpressControls' UseLayoutRounding='True'><ContentControl Content='{StaticResource PopupShadow}'/><Border Margin='10' CornerRadius='5' Background='{DynamicResource BackColor}'><ex:ClippedBorder CornerRadius='5'><DockPanel><Button Name='ChooseBtn' DockPanel.Dock='Bottom' Style='{DynamicResource AppButton}' Background='{DynamicResource BackColor}' BorderThickness='0' HorizontalContentAlignment='Center' ToolTip='" +
-                                                     Funcs.ChooseLang("Choose this font", "Choisir cette police") + "'><TextBlock Text='" +
+                                                     Funcs.ChooseLang("ChooseThisFontStr") + "'><TextBlock Text='" +
                                                      name + "' FontSize='14' TextTrimming='CharacterEllipsis' Name='FontNameTxt' Margin='5,7,5,8' VerticalAlignment='Top' DockPanel.Dock='Bottom' /></Button><Rectangle Fill='{DynamicResource AppColor}' Height='2' DockPanel.Dock='Bottom' /><DockPanel Name='OptionsPnl' Visibility='Hidden' DockPanel.Dock='Bottom'><ex:AppButton ToolTip='" +
-                                                     Funcs.ChooseLang("Expand", "Agrandir") + "' Name='ExpandBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource ExpandIcon}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/><ex:AppButton ToolTip='" +
-                                                     Funcs.ChooseLang("Copy font name", "Copier le nom de la police") + "' Name='CopyBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource CopyIcon}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/><ex:AppButton ToolTip='" +
-                                                     Funcs.ChooseLang("Add to favourites", "Ajouter aux favoris") + "' Name='FavouriteBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource AddFavouriteIcon}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/><ex:AppButton ToolTip='" +
-                                                     Funcs.ChooseLang("Italic", "Italique") + "' Name='ItalicBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource ItalicIcon}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/><ex:AppButton ToolTip='" +
-                                                     Funcs.ChooseLang("Bold", "Gras") + "' Name='BoldBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource " +
-                                                     Funcs.ChooseLang("BoldIcon", "GrasIcon") + "}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/><Slider Style='{StaticResource SimpleSlider}' VerticalAlignment='Center' IsSnapToTickEnabled='True' Minimum='10' Maximum='70' Value='22' LargeChange='10' SmallChange='1' Name='SizeSlider' Margin='5,2,5,0' /></DockPanel><TextBlock Text='" +
-                                                     Funcs.ChooseLang("The quick brown fox jumps over the lazy dog", "Portez ce vieux whisky au juge blond qui fume") + "' FontFamily='" +
+                                                     Funcs.ChooseLang("ExpandStr") + "' Name='ExpandBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource ExpandIcon}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/><ex:AppButton ToolTip='" +
+                                                     Funcs.ChooseLang("CopyFontNameStr") + "' Name='CopyBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource CopyIcon}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/><ex:AppButton ToolTip='" +
+                                                     Funcs.ChooseLang("AddToFavsStr") + "' Name='FavouriteBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource AddFavouriteIcon}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/><ex:AppButton ToolTip='" +
+                                                     Funcs.ChooseLang("FnItalicStr") + "' Name='ItalicBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource " +
+                                                     Funcs.ChooseIcon("ItalicIcon") + "}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/><ex:AppButton ToolTip='" +
+                                                     Funcs.ChooseLang("FnBoldStr") + "' Name='BoldBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource " +
+                                                     Funcs.ChooseIcon("BoldIcon") + "}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/><Slider Style='{StaticResource SimpleSlider}' VerticalAlignment='Center' IsSnapToTickEnabled='True' Minimum='10' Maximum='70' Value='22' LargeChange='10' SmallChange='1' Name='SizeSlider' Margin='5,2,5,0' /></DockPanel><TextBlock Text='" +
+                                                     Funcs.EscapeChars(Funcs.ChooseLang("PalindromeStr")) + "' FontFamily='" +
                                                      name + "' FontSize='22' TextTrimming='CharacterEllipsis' TextWrapping='Wrap' Name='DisplayTxt' Margin='10,10,10,5' DockPanel.Dock='Top' /></DockPanel></ex:ClippedBorder></Border></Grid>")
 
         FontGrid.Children.Add(fontbox)
@@ -665,7 +656,7 @@ Public Class FontPicker
 
         If My.Settings.favouritefonts.Contains(name) Then
             fav.Icon = FindResource("FavouriteIcon")
-            fav.ToolTip = Funcs.ChooseLang("Remove from favourites", "Supprimer des favoris")
+            fav.ToolTip = Funcs.ChooseLang("RemoveFromFavsStr")
 
         End If
 

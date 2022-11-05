@@ -6,7 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Title="{DynamicResource DrawingTitleStr}" Height="502" Width="886" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" AllowsTransparency="True" WindowStyle="None" Background="{x:Null}">
+        Title="{DynamicResource DrawingTitlePStr}" Height="502" Width="886" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" AllowsTransparency="True" WindowStyle="None" Background="{x:Null}">
     <Window.Resources>
         <Storyboard x:Key="InfoBoxStoryboard">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" Storyboard.TargetName="grid">
@@ -69,10 +69,10 @@
                         </DockPanel>
                         <DockPanel Margin="0,30,0,0">
                             <DockPanel Background="{DynamicResource SecondaryColor}" DockPanel.Dock="Right">
-                                <ex:AppButton x:Name="AddBtn" Icon="{DynamicResource RightIcon}" CornerRadius="0" Text="{DynamicResource AddDocStr}" VerticalAlignment="Top" FontWeight="SemiBold" DockPanel.Dock="Bottom" HorizontalContentAlignment="Stretch"/>
+                                <ex:AppButton x:Name="AddBtn" Icon="{DynamicResource RightIcon}" CornerRadius="0" Text="{DynamicResource AddSlideshowStr}" VerticalAlignment="Top" FontWeight="SemiBold" DockPanel.Dock="Bottom" HorizontalContentAlignment="Stretch"/>
                                 <ScrollViewer Width="248" DockPanel.Dock="Right" VerticalScrollBarVisibility="Auto">
                                     <StackPanel Margin="0">
-                                        <TextBlock TextWrapping="Wrap" FontSize="14" Margin="20" Text="{DynamicResource DrawingInfoStr}"></TextBlock>
+                                        <TextBlock TextWrapping="Wrap" FontSize="14" Margin="20" Text="{DynamicResource DrawingInfoSlideshowStr}"></TextBlock>
                                         <DockPanel x:Name="EditingPanel" Margin="20,0,10,20">
                                             <StackPanel VerticalAlignment="Top" Margin="34,0,0,0">
                                                 <TextBlock x:Name="ThicknessTxt2" TextWrapping="Wrap" FontSize="14" Margin="0,2,0,5" Text="{DynamicResource DrEditingStr}"/>

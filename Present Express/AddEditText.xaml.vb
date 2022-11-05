@@ -15,11 +15,9 @@ Public Class AddEditText
         LoadFonts()
         PhotoGrid.Background = br
 
-        If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then
-            BoldBtn.Icon = FindResource("GrasIcon")
-            UnderlineBtn.Icon = FindResource("SousligneIcon")
-
-        End If
+        BoldBtn.Icon = FindResource(Funcs.ChooseIcon("BoldIcon"))
+        ItalicBtn.Icon = FindResource(Funcs.ChooseIcon("ItalicIcon"))
+        UnderlineBtn.Icon = FindResource(Funcs.ChooseIcon("UnderlineIcon"))
 
     End Sub
 
@@ -32,11 +30,8 @@ Public Class AddEditText
         LoadFonts()
         PhotoGrid.Background = br
 
-        If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then
-            BoldBtn.Icon = FindResource("GrasIcon")
-            UnderlineBtn.Icon = FindResource("SousligneIcon")
-
-        End If
+        BoldBtn.Icon = FindResource(Funcs.ChooseIcon("BoldIcon"))
+        UnderlineBtn.Icon = FindResource(Funcs.ChooseIcon("UnderlineIcon"))
 
         SlideTxt.Text = text
         FontBtn.Text = fontname
@@ -49,7 +44,7 @@ Public Class AddEditText
         If ChosenStyle.HasFlag(WinDrawing.FontStyle.Italic) Then ItalicSelector.Visibility = Visibility.Visible
         If ChosenStyle.HasFlag(WinDrawing.FontStyle.Underline) Then UnderlineSelector.Visibility = Visibility.Visible
 
-        AddBtn.Text = Funcs.ChooseLang("Apply changes", "Appliquer les modifications")
+        AddBtn.Text = Funcs.ChooseLang("ApplyChangesStr")
         DrawBitmap()
 
     End Sub
@@ -202,8 +197,8 @@ Public Class AddEditText
     Private Sub AddBtn_Click(sender As Object, e As RoutedEventArgs) Handles AddBtn.Click
 
         If SlideTxt.Text = "" Then
-            MainWindow.NewMessage(Funcs.ChooseLang("Please enter some text first.", "Veuillez d'abord saisir du texte."),
-                                  Funcs.ChooseLang("No text", "Pas de texte"), MessageBoxButton.OK, MessageBoxImage.Error)
+            MainWindow.NewMessage(Funcs.ChooseLang("NoTextDescStr"),
+                                  Funcs.ChooseLang("NoTextStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         Else
             DialogResult = True

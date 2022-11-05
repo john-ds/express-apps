@@ -36,23 +36,7 @@ Class MainWindow
 
         End If
 
-
-        If My.Settings.language = "fr-FR" Then
-            Threading.Thread.CurrentThread.CurrentCulture = New Globalization.CultureInfo("fr-FR")
-            Threading.Thread.CurrentThread.CurrentUICulture = New Globalization.CultureInfo("fr-FR")
-
-            Dim resdict As New ResourceDictionary() With {.Source = New Uri("/DictionaryFR.xaml", UriKind.Relative)}
-            Windows.Application.Current.Resources.MergedDictionaries.Add(resdict)
-
-            Dim commonresdict As New ResourceDictionary() With {.Source = New Uri("/CommonDictionaryFR.xaml", UriKind.Relative)}
-            Windows.Application.Current.Resources.MergedDictionaries.Add(commonresdict)
-
-
-        ElseIf My.Settings.language = "en-GB" Then
-            Threading.Thread.CurrentThread.CurrentCulture = New Globalization.CultureInfo("en-GB")
-            Threading.Thread.CurrentThread.CurrentUICulture = New Globalization.CultureInfo("en-GB")
-
-        End If
+        Funcs.SetLang(My.Settings.language)
 
         If My.Settings.maximised Then
             WindowState = WindowState.Maximized
@@ -74,10 +58,6 @@ Class MainWindow
         HomeMnStoryboard = TryFindResource("HomeMnStoryboard")
         FilterMnStoryboard = TryFindResource("FilterMnStoryboard")
         CategoryMnStoryboard = TryFindResource("CategoryMnStoryboard")
-
-        MaxHeight = SystemParameters.WorkArea.Height + 13
-        MaxWidth = SystemParameters.WorkArea.Width + 13
-        AddHandler SystemParameters.StaticPropertyChanged, AddressOf WorkAreaChanged
 
         LoaderStartStoryboard = TryFindResource("LoaderStartStoryboard")
         LoaderEndStoryboard = TryFindResource("LoaderEndStoryboard")
@@ -131,21 +111,21 @@ Class MainWindow
                 .Button3.IsEnabled = False
 
             ElseIf buttons = MessageBoxButton.YesNo Then
-                .Button1.Text = Funcs.ChooseLang("Yes", "Oui")
+                .Button1.Text = Funcs.ChooseLang("YesStr")
                 .Button2.Visibility = Visibility.Collapsed
                 .Button2.IsEnabled = False
-                .Button3.Text = Funcs.ChooseLang("No", "Non")
+                .Button3.Text = Funcs.ChooseLang("NoStr")
 
             ElseIf buttons = MessageBoxButton.YesNoCancel Then
-                .Button1.Text = Funcs.ChooseLang("Yes", "Oui")
-                .Button2.Text = Funcs.ChooseLang("No", "Non")
-                .Button3.Text = Funcs.ChooseLang("Cancel", "Annuler")
+                .Button1.Text = Funcs.ChooseLang("YesStr")
+                .Button2.Text = Funcs.ChooseLang("NoStr")
+                .Button3.Text = Funcs.ChooseLang("CancelStr")
 
             Else ' buttons = MessageBoxButtons.OKCancel
                 .Button1.Text = "OK"
                 .Button2.Visibility = Visibility.Collapsed
                 .Button2.IsEnabled = False
-                .Button3.Text = Funcs.ChooseLang("Cancel", "Annuler")
+                .Button3.Text = Funcs.ChooseLang("CancelStr")
 
             End If
 
@@ -170,19 +150,13 @@ Class MainWindow
 
     End Function
 
-    Private Sub WorkAreaChanged(sender As Object, e As EventArgs)
-        MaxHeight = SystemParameters.WorkArea.Height + 12
-        MaxWidth = SystemParameters.WorkArea.Width + 12
-
-    End Sub
-
     Private Sub MaxBtn_Click(sender As Object, e As RoutedEventArgs) Handles MaxBtn.Click
 
         If WindowState = WindowState.Maximized Then
-            WindowState = WindowState.Normal
+            SystemCommands.RestoreWindow(Me)
 
         Else
-            WindowState = WindowState.Maximized
+            SystemCommands.MaximizeWindow(Me)
 
         End If
 
@@ -203,16 +177,18 @@ Class MainWindow
     End Sub
 
     Private Sub MinBtn_Click(sender As Object, e As RoutedEventArgs) Handles MinBtn.Click
-        WindowState = WindowState.Minimized
+        SystemCommands.MinimizeWindow(Me)
 
     End Sub
 
     Private Sub TitleBtn_DoubleClick(sender As Object, e As RoutedEventArgs) Handles TitleBtn.MouseDoubleClick
 
         If WindowState = WindowState.Maximized Then
-            WindowState = WindowState.Normal
+            SystemCommands.RestoreWindow(Me)
+
         Else
-            WindowState = WindowState.Maximized
+            SystemCommands.MaximizeWindow(Me)
+
         End If
 
     End Sub
@@ -235,6 +211,16 @@ Class MainWindow
             NotificationCheckerWorker.RunWorkerAsync()
 
         End If
+
+    End Sub
+
+    Private Sub MainWindow_Activated(sender As Object, e As EventArgs) Handles Me.Activated
+        MainRect.Fill = TryFindResource("AppColor")
+
+    End Sub
+
+    Private Sub MainWindow_Deactivated(sender As Object, e As EventArgs) Handles Me.Deactivated
+        MainRect.Fill = TryFindResource("AppLightColor")
 
     End Sub
 
@@ -262,7 +248,7 @@ Class MainWindow
             Dim info As String() = Funcs.GetNotificationInfo("Font")
 
             If Not info(0) = My.Application.Info.Version.ToString(3) Then
-                NotificationsTxt.Content = Funcs.ChooseLang("An update is available.", "Une mise à jour est disponible.")
+                NotificationsTxt.Content = Funcs.ChooseLang("UpdateAvailableStr")
                 NotifyBtnStack.Visibility = Visibility.Visible
 
                 If NotificationsPopup.IsOpen = False Then
@@ -274,7 +260,7 @@ Class MainWindow
                 If forcedialog Then CreateNotifyMsg(info)
 
             Else
-                NotificationsTxt.Content = Funcs.ChooseLang("You're up to date!", "Vous êtes à jour !")
+                NotificationsTxt.Content = Funcs.ChooseLang("UpToDateStr")
 
             End If
 
@@ -284,9 +270,8 @@ Class MainWindow
         Catch
             If NotificationsPopup.IsOpen Then
                 NotificationsPopup.IsOpen = False
-                NewMessage(Funcs.ChooseLang("It looks like we can't get notifications at the moment. Please check that you are connected to the Internet and try again.",
-                                            "On dirait que nous ne pouvons pas recevoir de notifications pour le moment. Vérifiez votre connexion Internet et réessayez."),
-                           Funcs.ChooseLang("No Internet", "Pas d'Internet"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("NotificationErrorStr"),
+                           Funcs.ChooseLang("NoInternetStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             End If
         End Try
 
@@ -300,33 +285,32 @@ Class MainWindow
             Dim features As String = ""
 
             If featurelist.Length <> 0 Then
-                features = Chr(10) + Chr(10) + Funcs.ChooseLang("What's new in this release?", "Quoi de neuf dans cette version ?") + Chr(10)
+                features = Chr(10) + Chr(10) + Funcs.ChooseLang("WhatsNewStr") + Chr(10)
 
                 For Each i In featurelist
                     features += "— " + i + Chr(10)
                 Next
             End If
 
-            Dim start As String = Funcs.ChooseLang("An update is available.", "Une mise à jour est disponible.")
+            Dim start As String = Funcs.ChooseLang("UpdateAvailableStr")
             Dim icon As MessageBoxImage = MessageBoxImage.Information
 
             If info(1) = "High" Then
-                start = Funcs.ChooseLang("An important update is available!", "Une mise à jour importante est disponible !")
+                start = Funcs.ChooseLang("ImportantUpdateStr")
                 icon = MessageBoxImage.Exclamation
             End If
 
-            If NewMessage(start + Chr(10) + "Version " + version + features + Chr(10) + Chr(10) +
-                          Funcs.ChooseLang("Would you like to visit the download page?", "Vous souhaitez visiter la page de téléchargement ?"),
-                          Funcs.ChooseLang("Font Express Updates", "Mises à Jour Font Express"), MessageBoxButton.YesNoCancel, icon) = MessageBoxResult.Yes Then
+            If NewMessage(start + Chr(10) + Funcs.ChooseLang("VersionStr") + " " + version + features + Chr(10) + Chr(10) +
+                          Funcs.ChooseLang("VisitDownloadPageStr"),
+                          Funcs.ChooseLang("UpdatesFStr"), MessageBoxButton.YesNoCancel, icon) = MessageBoxResult.Yes Then
 
                 Process.Start("https://express.johnjds.co.uk/update?app=font")
 
             End If
 
         Catch
-            NewMessage(Funcs.ChooseLang("We can't get update information at the moment. Please check that you are connected to the Internet and try again.",
-                                        "Nous ne pouvons pas obtenir les informations de mise à jour pour le moment. Vérifiez votre connexion Internet et réessayez."),
-                       Funcs.ChooseLang("No Internet", "Pas d'Internet"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("NotificationErrorStr"),
+                       Funcs.ChooseLang("NoInternetStr"), MessageBoxButton.OK, MessageBoxImage.Error)
         End Try
 
     End Sub
@@ -822,8 +806,8 @@ Class MainWindow
         End While
 
         If txtb.Text = "" Then
-            NewMessage(Funcs.ChooseLang("Unable to locate category. Please try again.", "Impossible de localiser la catégorie. Veuillez réessayer."),
-                       Funcs.ChooseLang("Critical Error", "Erreur Critique"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("CategoryNotFoundStr"),
+                       Funcs.ChooseLang("CriticalErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         Else
             If sender.IsChecked Then
@@ -885,8 +869,8 @@ Class MainWindow
     Private Sub AddCategoryBtn_Click(sender As Button, e As RoutedEventArgs) Handles AddCategoryBtn.Click, NewCategoryBtn.Click
 
         If My.Settings.categories.Count >= 10 Then
-            NewMessage(Funcs.ChooseLang("You've reached the maximum number of categories.", "Vous avez atteint le nombre maximum de catégories."),
-                       Funcs.ChooseLang("Category Limit Reached", "Limite de Catégorie Atteinte"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("CategoryLimitStr"),
+                       Funcs.ChooseLang("CategoryLimitReachedStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         Else
             Dim cat As New AddEditCategory()
@@ -913,9 +897,8 @@ Class MainWindow
         Dim ctm As ContextMenu = sender.Parent
         Dim bt As Button = ctm.PlacementTarget
 
-        If NewMessage(Funcs.ChooseLang("Are you sure you want to remove this category and all its fonts?" + Chr(10) + Chr(10) + "Note that the fonts in this category will still be installed on your computer.",
-                                       "Vous voulez vraiment supprimer cette catégorie et toutes ses polices ?" + Chr(10) + Chr(10) + "Notez que les polices de cette catégorie seront toujours installées sur votre ordinateur."),
-                      Funcs.ChooseLang("Category Removal", "Suppression de Catégorie"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+        If NewMessage(Funcs.ChooseLang("CategoryRemovalDescStr"),
+                      Funcs.ChooseLang("CategoryRemovalStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
             For Each i In My.Settings.categories
                 If i.Split("//")(0) = bt.Tag.ToString() Then
@@ -1049,7 +1032,7 @@ Class MainWindow
     Private Sub RemoveFromCurrentCategory(bdr As Border, txt As String)
         QueriedFonts.Remove(txt)
         FontGrid.Children.Remove(bdr.Parent)
-        RefreshBtn.Text = QueriedFonts.Count.ToString() + Funcs.ChooseLang(" fonts", " polices")
+        RefreshBtn.Text = QueriedFonts.Count.ToString() + " " + Funcs.ChooseLang("FontsStr").ToLower()
 
         If LoadMoreBtn.Visibility = Visibility.Visible Then
             AddFontBox(Funcs.EscapeChars(QueriedFonts.Item(FontGrid.Children.Count)))
@@ -1083,7 +1066,7 @@ Class MainWindow
         End If
 
         IsEnabled = False
-        StatusLbl.Text = Funcs.ChooseLang("Loading fonts...", "Chargement des polices..")
+        StatusLbl.Text = Funcs.ChooseLang("LoadingStr") + "..."
 
         StartLoader()
         FontWorker.RunWorkerAsync()
@@ -1115,19 +1098,16 @@ Class MainWindow
             StatusLbl.Text = "Font Express"
 
             If Parameter = "fav" Then
-                NewMessage(Funcs.ChooseLang("You don't have any favourite fonts. Why not add one?",
-                                            "Vous n'avez aucune police favorite. Pourquoi ne pas en ajouter un ?"),
-                           Funcs.ChooseLang("No fonts found", "Aucune police trouvée"), MessageBoxButton.OK, MessageBoxImage.Information)
+                NewMessage(Funcs.ChooseLang("NoFavouritesFoundStr"),
+                           Funcs.ChooseLang("NoFontsFoundStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
             ElseIf Parameter.StartsWith("category:") Then
-                NewMessage(Funcs.ChooseLang("There are no fonts in this category. Why not add one?",
-                                            "Il n'y a pas de polices dans cette catégorie. Pourquoi ne pas en ajouter un ?"),
-                           Funcs.ChooseLang("No fonts found", "Aucune police trouvée"), MessageBoxButton.OK, MessageBoxImage.Information)
+                NewMessage(Funcs.ChooseLang("NoFontsInCategoryStr"),
+                           Funcs.ChooseLang("NoFontsFoundStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
             Else
-                NewMessage(Funcs.ChooseLang("There are no fonts here. Try a different search or filter.",
-                                            "Il n'y a pas de polices ici. Essayez une recherche ou un filtre différent."),
-                           Funcs.ChooseLang("No fonts found", "Aucune police trouvée"), MessageBoxButton.OK, MessageBoxImage.Information)
+                NewMessage(Funcs.ChooseLang("NoFontsHereStr"),
+                           Funcs.ChooseLang("NoFontsFoundStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
             End If
 
@@ -1191,22 +1171,22 @@ Class MainWindow
             End If
 
             If Parameter.StartsWith("search:") Then
-                StatusLbl.Text = Funcs.ChooseLang("Showing fonts that match your search", "Affichage des polices correspondant à votre recherche")
+                StatusLbl.Text = Funcs.ChooseLang("ShowingMatchedFontsStr")
 
             ElseIf Parameter.StartsWith("category:") Then
-                StatusLbl.Text = Funcs.ChooseLang("Showing fonts in """ + Parameter.Substring(9) + """ category", "Affichage des polices dans la catégorie """ + Parameter.Substring(9) + """")
+                StatusLbl.Text = Funcs.ChooseLang("ShowingCategoryFontsStr").Replace("{0}", Parameter.Substring(9))
 
             ElseIf Parameter = "fav" Then
-                StatusLbl.Text = Funcs.ChooseLang("Showing your favourite fonts", "Affichage de vos polices favorites")
+                StatusLbl.Text = Funcs.ChooseLang("ShowingFavFontsStr")
 
             Else
                 Select Case Parameter
                     Case "all"
-                        StatusLbl.Text = Funcs.ChooseLang("Showing all fonts", "Affichage de toutes les polices")
+                        StatusLbl.Text = Funcs.ChooseLang("ShowingAllFontsStr")
                     Case "other"
-                        StatusLbl.Text = Funcs.ChooseLang("Showing fonts starting with a number or symbol", "Affichage des polices qui commencent par un chiffre ou un symbole")
+                        StatusLbl.Text = Funcs.ChooseLang("ShowingNumSymFontsStr")
                     Case Else
-                        StatusLbl.Text = Funcs.ChooseLang("Showing fonts starting with ", "Affichage des polices qui commencent par ") + Parameter.ToUpper()
+                        StatusLbl.Text = Funcs.ChooseLang("ShowingLetterFontsStr").Replace("{0}", Parameter.ToUpper())
                 End Select
             End If
 
@@ -1214,7 +1194,7 @@ Class MainWindow
 
         End If
 
-        RefreshBtn.Text = QueriedFonts.Count.ToString() + Funcs.ChooseLang(" fonts", " polices")
+        RefreshBtn.Text = QueriedFonts.Count.ToString() + " " + Funcs.ChooseLang("FontsStr").ToLower()
 
     End Sub
 
@@ -1227,14 +1207,15 @@ Class MainWindow
 
         Dim fontbox As Grid = XamlReader.Parse("<Grid Background='{DynamicResource BackColor}' Name='FontView' Width='235' Height='175' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:ex='clr-namespace:ExpressControls;assembly=ExpressControls' UseLayoutRounding='True'><ContentControl Content='{StaticResource PopupShadow}'/><Border Margin='10' CornerRadius='5' Background='{DynamicResource BackColor}'><ex:ClippedBorder CornerRadius='5'><DockPanel><TextBlock Text='" +
                                                      name + "' FontSize='14' TextTrimming='CharacterEllipsis' Name='FontNameTxt' Margin='5,7,5,8' VerticalAlignment='Top' DockPanel.Dock='Bottom' HorizontalAlignment='Center'/><Rectangle Fill='{DynamicResource AppColor}' Height='2' DockPanel.Dock='Bottom' /><DockPanel Name='OptionsPnl' Visibility='Hidden' DockPanel.Dock='Bottom'><ex:AppButton ToolTip='" +
-                                                     Funcs.ChooseLang("Expand", "Agrandir") + "' Name='ExpandBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource ExpandIcon}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/><ex:AppButton ToolTip='" +
-                                                     Funcs.ChooseLang("Copy font name", "Copier le nom de la police") + "' Name='CopyBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource CopyIcon}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/><ex:AppButton ToolTip='" +
-                                                     Funcs.ChooseLang("Add to category", "Ajouter à une catégorie") + "' Name='FavouriteBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource CategoryIcon}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/><ex:AppButton ToolTip='" +
-                                                     Funcs.ChooseLang("Italic", "Italique") + "' Name='ItalicBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource ItalicIcon}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/><ex:AppButton ToolTip='" +
-                                                     Funcs.ChooseLang("Bold", "Gras") + "' Name='BoldBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource " +
-                                                     Funcs.ChooseLang("BoldIcon", "GrasIcon") + "}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/>" +
+                                                     Funcs.ChooseLang("ExpandStr") + "' Name='ExpandBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource ExpandIcon}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/><ex:AppButton ToolTip='" +
+                                                     Funcs.ChooseLang("CopyFontNameStr") + "' Name='CopyBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource CopyIcon}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/><ex:AppButton ToolTip='" +
+                                                     Funcs.ChooseLang("FnCategoryStr") + "' Name='FavouriteBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource CategoryIcon}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/><ex:AppButton ToolTip='" +
+                                                     Funcs.ChooseLang("FnItalicStr") + "' Name='ItalicBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource " +
+                                                     Funcs.ChooseIcon("ItalicIcon") + "}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/><ex:AppButton ToolTip='" +
+                                                     Funcs.ChooseLang("FnBoldStr") + "' Name='BoldBtn' TextVisibility='Collapsed' Background='Transparent' GapMargin='0' IconSize='16' Icon='{DynamicResource " +
+                                                     Funcs.ChooseIcon("BoldIcon") + "}' CornerRadius='0' NoShadow='True' Margin='0' VerticalAlignment='Top' DockPanel.Dock='Right' HorizontalContentAlignment='Stretch' Height='25' Padding='4,0'/>" +
                                                      "<Slider Style='{StaticResource SimpleSlider}' VerticalAlignment='Center' IsSnapToTickEnabled='True' Minimum='10' Maximum='70' Value='20' LargeChange='10' SmallChange='1' Name='SizeSlider' Margin='5,2,5,0' /></DockPanel><TextBlock Text='" +
-                                                     Funcs.ChooseLang("The quick brown fox jumps over the lazy dog", "Portez ce vieux whisky au juge blond qui fume") + "' FontFamily='" +
+                                                     Funcs.EscapeChars(Funcs.ChooseLang("PalindromeStr")) + "' FontFamily='" +
                                                      name + "' FontSize='20' TextTrimming='CharacterEllipsis' TextWrapping='Wrap' Name='DisplayTxt' Margin='10,10,10,5' DockPanel.Dock='Top' /></DockPanel></ex:ClippedBorder></Border></Grid>")
 
         FontGrid.Children.Add(fontbox)
@@ -1331,15 +1312,15 @@ Class MainWindow
         Help3Btn.Visibility = Visibility.Visible
 
         Help1Btn.Icon = FindResource("FontIcon")
-        Help1Btn.Text = Funcs.ChooseLang("Getting started", "Prise en main")
+        Help1Btn.Text = Funcs.ChooseLang("GettingStartedStr")
         Help1Btn.Tag = 1
 
         Help2Btn.Icon = FindResource("FontExpressIcon")
-        Help2Btn.Text = Funcs.ChooseLang("What's new and still to come", "Nouvelles fonctions et autres à venir")
+        Help2Btn.Text = Funcs.ChooseLang("NewComingSoonStr")
         Help2Btn.Tag = 9
 
         Help3Btn.Icon = FindResource("FeedbackIcon")
-        Help3Btn.Text = Funcs.ChooseLang("Troubleshooting and feedback", "Dépannage et commentaires")
+        Help3Btn.Text = Funcs.ChooseLang("TroubleshootingStr")
         Help3Btn.Tag = 10
 
     End Sub
@@ -1359,34 +1340,34 @@ Class MainWindow
         ' 9  What's new and still to come
         ' 10 Troubleshooting and feedback
 
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("start font brows bold italic size", "prise démar police parcourir gras italique taille")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideF1Str")) Then
             results.Add(1)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("filter categor organis favourite", "filtre catégori organise favori")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideF2Str")) Then
             results.Add(2)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("compar pair font", "compar paire police")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideF3Str")) Then
             results.Add(3)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("start view import export option setting", "démarr vue import export paramètre option")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideF4Str")) Then
             results.Add(6)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("categor organis font import export favourite option setting", "catégori organise favori import export police paramètre option")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideF5Str")) Then
             results.Add(4)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("general language sound dark appearance option setting", "généra langue son noir sombre paramètre option")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideF6Str")) Then
             results.Add(5)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("notification updat", "notification jour")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideF7Str")) Then
             results.Add(7)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("keyboard shortcut", "raccourci clavier")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideF8Str")) Then
             results.Add(8)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("new coming feature tip", "nouvelle nouveau bientôt prochainement fonction conseil")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideF9Str")) Then
             results.Add(9)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("help feedback comment trouble problem error suggest mail contact", "aide remarque réaction impression comment mail contact erreur")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideF10Str")) Then
             results.Add(10)
         End If
 
@@ -1433,34 +1414,34 @@ Class MainWindow
         Select Case topic
             Case 1
                 icon = "FontIcon"
-                title = Funcs.ChooseLang("Browsing for fonts", "Recherche de polices")
+                title = Funcs.ChooseLang("HelpTitleF1Str")
             Case 2
                 icon = "FavouriteIcon"
-                title = Funcs.ChooseLang("Filters and categories", "Filtres et catégories")
+                title = Funcs.ChooseLang("HelpTitleF2Str")
             Case 3
                 icon = "TitleCaseIcon"
-                title = Funcs.ChooseLang("Comparing fonts", "Comparaison des polices")
+                title = Funcs.ChooseLang("HelpTitleF3Str")
             Case 4
                 icon = "BulletsIcon"
-                title = Funcs.ChooseLang("Category options", "Paramètres de catégorie")
+                title = Funcs.ChooseLang("HelpTitleF4Str")
             Case 5
                 icon = "GearsIcon"
-                title = Funcs.ChooseLang("General options", "Paramètres généraux")
+                title = Funcs.ChooseLang("HelpTitleF5Str")
             Case 6
                 icon = "StartupIcon"
-                title = Funcs.ChooseLang("Other options", "Autres paramètres")
+                title = Funcs.ChooseLang("HelpTitleF6Str")
             Case 7
                 icon = "NotificationIcon"
-                title = "Notifications"
+                title = Funcs.ChooseLang("HelpTitleF7Str")
             Case 8
                 icon = "CtrlIcon"
-                title = Funcs.ChooseLang("Keyboard shortcuts", "Raccourcis clavier")
+                title = Funcs.ChooseLang("HelpTitleF8Str")
             Case 9
                 icon = "FontExpressIcon"
-                title = Funcs.ChooseLang("What's new and still to come", "Nouvelles fonctions et autres à venir")
+                title = Funcs.ChooseLang("NewComingSoonStr")
             Case 10
                 icon = "FeedbackIcon"
-                title = Funcs.ChooseLang("Troubleshooting and feedback", "Dépannage et commentaires")
+                title = Funcs.ChooseLang("TroubleshootingStr")
         End Select
 
         Select Case btn

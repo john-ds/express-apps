@@ -51,9 +51,8 @@ Public Class Pictures
             SearchTxt.IsEnabled = False
             SearchBtn.IsEnabled = False
 
-            MainWindow.NewMessage(Funcs.ChooseLang($"Unable to retrieve photo API key.{Chr(10)}Please contact support.",
-                                                        $"Impossible de récupérer la clé API photo.{Chr(10)}Veuillez contacter l'assistance."),
-                                  Funcs.ChooseLang("Critical error", "Erreur critique"), MessageBoxButton.OK, MessageBoxImage.Error)
+            MainWindow.NewMessage(Funcs.ChooseLang("PhotoAPIKeyNotFoundStr"),
+                                  Funcs.ChooseLang("CriticalErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
         End Try
 
     End Sub
@@ -81,9 +80,8 @@ Public Class Pictures
     Private Sub StartPictureSearch(query As String)
 
         If query.Contains("&") Or query.Contains("?") Then
-            MainWindow.NewMessage(Funcs.ChooseLang($"We couldn't find any pictures. Please try a different search query.{Chr(10)}{Chr(10)}If this problem persists, we may be experiencing issues. Please try again later and check for app updates.",
-                                                        $"Nous n'arrivions pas à trouver des images. Veuillez essayer un requête different.{Chr(10)}{Chr(10)}Si ce problème persiste, il est possible que nous rencontrons des problèmes de réseau. Veuillez réessayer plus tard et vérifier les mises à jour de l'application."),
-                                  Funcs.ChooseLang("Picture Error", "Erreur d'Image"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+            MainWindow.NewMessage(Funcs.ChooseLang("PictureErrorDescStr"),
+                                  Funcs.ChooseLang("PictureErrorStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
 
         ElseIf Not SearchTxt.Text = "" Then
             BackGrid.IsEnabled = False
@@ -119,9 +117,8 @@ Public Class Pictures
         BackGrid.IsEnabled = True
 
         If PictureError Then
-            MainWindow.NewMessage(Funcs.ChooseLang($"We couldn't find any pictures. Please try a different search query.{Chr(10)}{Chr(10)}If this problem persists, we may be experiencing issues. Please try again later and check for app updates.",
-                                                        $"Nous n'arrivions pas à trouver des images. Veuillez essayer un requête different.{Chr(10)}{Chr(10)}Si ce problème persiste, il est possible que nous rencontrons des problèmes de réseau. Veuillez réessayer plus tard et vérifier les mises à jour de l'application."),
-                                  Funcs.ChooseLang("Picture Error", "Erreur d'Image"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+            MainWindow.NewMessage(Funcs.ChooseLang("PictureErrorDescStr"),
+                                  Funcs.ChooseLang("PictureErrorStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
 
             LoadMoreBtn.Visibility = Visibility.Collapsed
 
@@ -136,7 +133,7 @@ Public Class Pictures
                 Next
 
                 If Exists = False Then
-                    If dict(id).ContainsKey("description") = False Then dict(id).Add("description", Funcs.ChooseLang("No description", "Pas de description"))
+                    If dict(id).ContainsKey("description") = False Then dict(id).Add("description", Funcs.ChooseLang("NoDescStr"))
                     PhotoGrid.Children.Add(CreatePhotoBtn(dict(id)("thumb"), id, dict(id)("description"), dict(id)("color")))
                 End If
             Next
@@ -354,9 +351,8 @@ Public Class Pictures
                 PreviewGrid.Visibility = Visibility.Visible
 
             Catch
-                MainWindow.NewMessage(Funcs.ChooseLang("We're having trouble getting this image. Please try again later.",
-                                                            "Nous avons du mal à obtenir cette image. Veuillez réessayer plus tard."),
-                                      Funcs.ChooseLang("Image error", "Erreur d'image"), MessageBoxButton.OK, MessageBoxImage.Error)
+                MainWindow.NewMessage(Funcs.ChooseLang("ImageRetrievalErrorStr"),
+                                      Funcs.ChooseLang("PictureErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             End Try
 
         End If
@@ -392,16 +388,14 @@ Public Class Pictures
                     webc.DownloadStringAsync(New Uri("https://api.unsplash.com/photos/" + SelectedPhoto + "/download?client_id=" + ClientID))
                 End Using
 
-                If AttrBtn.IsChecked Then Credit = Funcs.ChooseLang("Photo by ", "Image par ") + dict(SelectedPhoto)("username") +
-                                                   Funcs.ChooseLang(" on", " sur") + " Unsplash"
+                If AttrBtn.IsChecked Then Credit = Funcs.ChooseLang("PhotoAttributionStr").Replace("{0}", dict(SelectedPhoto)("username"))
 
                 DialogResult = True
                 Close()
 
             Catch
-                MainWindow.NewMessage(Funcs.ChooseLang("We're having trouble getting this image. Please try again later.",
-                                                       "Nous avons du mal à obtenir cette image. Veuillez réessayer plus tard."),
-                                      Funcs.ChooseLang("Image error", "Erreur d'image"), MessageBoxButton.OK, MessageBoxImage.Error)
+                MainWindow.NewMessage(Funcs.ChooseLang("ImageRetrievalErrorStr"),
+                                      Funcs.ChooseLang("PictureErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             End Try
 
         End If

@@ -13,4 +13,16 @@
 
     End Sub
 
+    Private Sub SpanishBtn_Click(sender As Object, e As RoutedEventArgs) Handles SpanishBtn.Click
+        ChosenLang = "es-ES"
+        Close()
+
+    End Sub
+
+    Private Sub ItalianBtn_Click(sender As Object, e As RoutedEventArgs) Handles ItalianBtn.Click
+        ChosenLang = "it-IT"
+        Close()
+
+    End Sub
+
 End Class

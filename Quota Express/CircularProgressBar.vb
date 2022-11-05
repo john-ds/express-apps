@@ -11,7 +11,7 @@ Partial Public Class CircularProgressBar
         Dim bar As CircularProgressBar = TryCast(sender, CircularProgressBar)
         Dim currentAngle As Double = bar.Angle
         Dim targetAngle As Double = e.NewValue / bar.Maximum * 359.999
-        Dim anim As DoubleAnimation = New DoubleAnimation(currentAngle, targetAngle, TimeSpan.FromMilliseconds(500))
+        Dim anim = New DoubleAnimation(currentAngle, targetAngle, TimeSpan.FromMilliseconds(500))
         bar.BeginAnimation(CircularProgressBar.AngleProperty, anim, HandoffBehavior.SnapshotAndReplace)
     End Sub
 

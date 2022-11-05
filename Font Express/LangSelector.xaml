@@ -6,13 +6,17 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Font_Express"
         mc:Ignorable="d"
-        Title="Font Express" Height="180" Width="320" WindowStyle="None" ResizeMode="NoResize" Topmost="True" WindowStartupLocation="CenterScreen" UseLayoutRounding="True" BorderThickness="2" Background="{x:Null}" AllowsTransparency="True">
+        Title="Font Express" Height="255" Width="320" WindowStyle="None" ResizeMode="NoResize" Topmost="True" WindowStartupLocation="CenterScreen" UseLayoutRounding="True" BorderThickness="2" Background="{x:Null}" AllowsTransparency="True">
     <Grid>
         <ContentControl Content="{StaticResource WindowShadow}" Focusable="False"/>
         <Border Background="White" CornerRadius="5" Margin="10" UseLayoutRounding="True">
             <Grid>
-                <ex:AppButton x:Name="EnglishBtn" Text="Choose English (United Kingdom)" IconSize="30" GapMargin="10,0,0,0" HorizontalContentAlignment="Stretch" CornerRadius="0" Icon="{DynamicResource UkIcon}" NoShadow="True" Background="Transparent" VerticalAlignment="Top" Margin="0,66,0,0" Padding="18,0,10,0"/>
-                <ex:AppButton x:Name="FrenchBtn" Text="Choisir français (France)" IconSize="30" GapMargin="10,0,0,0" HorizontalContentAlignment="Stretch" CornerRadius="0" Icon="{DynamicResource FranceIcon}" NoShadow="True" Background="Transparent" VerticalAlignment="Top" Margin="0,104,0,0" Padding="18,0,10,0"/>
+                <StackPanel Margin="0,66,0,0">
+                    <ex:AppButton x:Name="EnglishBtn" Text="Choose English (United Kingdom)" IconSize="30" GapMargin="10,0,0,0" HorizontalContentAlignment="Stretch" CornerRadius="0" Icon="{DynamicResource UkIcon}" NoShadow="True" Background="Transparent" VerticalAlignment="Top" Padding="18,0,10,0"/>
+                    <ex:AppButton x:Name="FrenchBtn" Text="Choisir français (France)" IconSize="30" GapMargin="10,0,0,0" HorizontalContentAlignment="Stretch" CornerRadius="0" Icon="{DynamicResource FranceIcon}" NoShadow="True" Background="Transparent" VerticalAlignment="Top" Padding="18,0,10,0"/>
+                    <ex:AppButton x:Name="SpanishBtn" Text="Elegir español (España)" IconSize="30" GapMargin="10,0,0,0" HorizontalContentAlignment="Stretch" CornerRadius="0" Icon="{DynamicResource SpainIcon}" NoShadow="True" Background="Transparent" VerticalAlignment="Top" Padding="18,0,10,0"/>
+                    <ex:AppButton x:Name="ItalianBtn" Text="Scegli italiano (Italia)" IconSize="30" GapMargin="10,0,0,0" HorizontalContentAlignment="Stretch" CornerRadius="0" Icon="{DynamicResource ItalyIcon}" NoShadow="True" Background="Transparent" VerticalAlignment="Top" Padding="18,0,10,0"/>
+                </StackPanel>
                 <ContentControl x:Name="HelpBtnImg27_Copy" Content="{DynamicResource FontExpressIcon}" Width="30" HorizontalAlignment="Left" Margin="18,18,0,0" Height="30" VerticalAlignment="Top" />
                 <TextBlock x:Name="HomeBtnTxt_Copy" HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="18" Margin="48,20,0,0" Text="Font Express" Padding="12,0,0,0" FontWeight="SemiBold" Foreground="Black"/>
             </Grid>

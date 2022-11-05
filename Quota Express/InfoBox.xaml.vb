@@ -25,10 +25,10 @@
         If sender.Text = "OK" Then
             Result = MessageBoxResult.OK
 
-        ElseIf sender.Text = Funcs.ChooseLang("Yes", "Oui") Then
+        ElseIf sender.Text = Funcs.ChooseLang("YesStr") Then
             Result = MessageBoxResult.Yes
 
-        ElseIf sender.Text = Funcs.ChooseLang("No", "Non") Then
+        ElseIf sender.Text = Funcs.ChooseLang("NoStr") Then
             Result = MessageBoxResult.No
 
         Else

@@ -74,7 +74,7 @@
                                     <ex:AppButton x:Name="LangBtn" FontSize="12" IconVisibility="Collapsed" GapMargin="0" MoreVisibility="Visible" Text="{DynamicResource DateLangStr}" Margin="20,15,0,0" Height="32" VerticalAlignment="Top" HorizontalAlignment="Left"/>
                                 </StackPanel>
                                 <Grid Margin="0" DockPanel.Dock="Bottom" Height="92">
-                                    <ex:AppButton x:Name="AddBtn" LastChildFill="True" FontWeight="SemiBold" IconVisibility="Collapsed" GapMargin="0" Text="{DynamicResource AddStr}" Margin="240,41,0,0" Height="32" VerticalAlignment="Top" HorizontalAlignment="Left" Width="80"/>
+                                    <ex:AppButton x:Name="AddBtn" LastChildFill="True" FontWeight="SemiBold" IconVisibility="Collapsed" GapMargin="0" Text="{DynamicResource AddStr}" Margin="235,41,0,0" Height="32" VerticalAlignment="Top" HorizontalAlignment="Left" Width="85"/>
                                     <TextBlock TextWrapping="Wrap" FontSize="14" Margin="20,20,0,0" VerticalAlignment="Top" Text="{DynamicResource AddWordStr}" HorizontalAlignment="Left"/>
                                     <TextBox x:Name="AddWordTxt" HorizontalAlignment="Left" Height="26" Margin="20,44,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="205" VerticalContentAlignment="Center" Template="{DynamicResource RoundedTextBox}" Padding="0">
                                         <TextBox.ContextMenu>

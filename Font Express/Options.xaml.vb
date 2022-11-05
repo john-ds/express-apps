@@ -27,27 +27,10 @@ Public Class Options
     ReadOnly TempLblTimer As New Timer With {.Interval = 4000}
     Private CurrentCategory As String = "Favourites"
 
-    ReadOnly openDialog As New OpenFileDialog With {
-        .Title = "Font Express",
-        .Filter = "Text files (.txt)|*.txt",
-        .Multiselect = False
-    }
-
-    ReadOnly saveDialog As New SaveFileDialog With {
-        .Title = "Select an export location - Font Express",
-        .Filter = "Text files (.txt)|*.txt"
-    }
-
-    ReadOnly importDialog As New OpenFileDialog With {
-        .Title = "Select a file to import - Font Express",
-        .Filter = "XML files (.xml)|*.xml",
-        .Multiselect = False
-    }
-
-    ReadOnly exportDialog As New SaveFileDialog With {
-        .Title = "Select an export location - Font Express",
-        .Filter = "XML files (.xml)|*.xml"
-    }
+    ReadOnly openDialog As OpenFileDialog
+    ReadOnly saveDialog As SaveFileDialog
+    ReadOnly importDialog As OpenFileDialog
+    ReadOnly exportDialog As SaveFileDialog
 
     Public Sub New()
 
@@ -80,11 +63,16 @@ Public Class Options
 
         CategoriesPnl.ItemsSource = catlist
 
-        If My.Settings.language = "fr-FR" Then
-            FrenchRadio1.IsChecked = True
-        Else
-            EnglishRadio1.IsChecked = True
-        End If
+        Select Case Funcs.GetCurrentLang()
+            Case "fr-FR"
+                FrenchRadio1.IsChecked = True
+            Case "es-ES"
+                SpanishRadio1.IsChecked = True
+            Case "it-IT"
+                ItalianRadio1.IsChecked = True
+            Case Else
+                EnglishRadio1.IsChecked = True
+        End Select
 
         SoundBtn.IsChecked = My.Settings.audio
 
@@ -107,13 +95,27 @@ Public Class Options
             FavRadio.IsChecked = True
         End If
 
-        If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then
-            saveDialog.Filter = "Fichiers texte (.txt)|*.txt"
-            openDialog.Filter = "Fichiers texte (.txt)|*.txt"
-            exportDialog.Title = "Sélectionner un emplacement d'exportation - Font Express"
-            importDialog.Title = "Choisissez un fichier à importer - Font Express"
+        openDialog = New OpenFileDialog With {
+            .Title = Funcs.ChooseLang("OpImportDialogStr") + " - Font Express",
+            .Filter = Funcs.ChooseLang("TextFilesFilterStr"),
+            .Multiselect = False
+        }
 
-        End If
+        saveDialog = New SaveFileDialog With {
+            .Title = Funcs.ChooseLang("OpExportDialogStr") + " - Font Express",
+            .Filter = Funcs.ChooseLang("TextFilesFilterStr")
+        }
+
+        importDialog = New OpenFileDialog With {
+            .Title = Funcs.ChooseLang("OpImportDialogStr") + " - Font Express",
+            .Filter = Funcs.ChooseLang("XMLFilesFilterStr"),
+            .Multiselect = False
+        }
+
+        exportDialog = New SaveFileDialog With {
+            .Title = Funcs.ChooseLang("OpExportDialogStr") + " - Font Express",
+            .Filter = Funcs.ChooseLang("XMLFilesFilterStr")
+        }
 
     End Sub
 
@@ -206,7 +208,7 @@ Public Class Options
         CurrentCategory = sender.Tag.ToString()
 
         If CurrentCategory = "Favourites" Then
-            CategoryBtn.Text = Funcs.ChooseLang("Favourites", "Favoris")
+            CategoryBtn.Text = Funcs.ChooseLang("FavouritesStr")
             RefreshCategory(My.Settings.favouritefonts.Cast(Of String).ToList())
 
         Else
@@ -266,9 +268,8 @@ Public Class Options
 
     Private Sub ImportBtn_Click(sender As Object, e As RoutedEventArgs) Handles ImportBtn.Click
 
-        If MainWindow.NewMessage(Funcs.ChooseLang($"Select a text file that contains a list of fonts, each separated by a new line.{Chr(10)}{Chr(10)}Importing fonts to this category will delete all existing fonts. Do you wish to continue?",
-                                                  $"Sélectionnez un fichier texte contenant une liste de polices, séparées par une nouvelle ligne.{Chr(10)}{Chr(10)}L'importation de polices dans cette catégorie supprimera tous les polices existantes. Souhaitez-vous continuer ?"),
-                                 Funcs.ChooseLang("Import fonts", "Importation des polices"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+        If MainWindow.NewMessage(Funcs.ChooseLang("ImportFontsDescStr"),
+                                 Funcs.ChooseLang("ImportFontsTitleStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
             If openDialog.ShowDialog() = True Then
                 Dim count As Integer = 0
@@ -307,8 +308,8 @@ Public Class Options
                 End If
 
                 SaveAll()
-                MainWindow.NewMessage(Funcs.ChooseLang("Imported " + count.ToString() + " fonts.", count.ToString() + " polices importées."),
-                                      Funcs.ChooseLang("Import fonts", "Importation des polices"), MessageBoxButton.OK, MessageBoxImage.Information)
+                MainWindow.NewMessage(Funcs.ChooseLang("ImportedFontsStr").Replace("{0}", count.ToString()),
+                                      Funcs.ChooseLang("ImportFontsTitleStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
             End If
         End If
@@ -357,31 +358,32 @@ Public Class Options
     ' GENERAL > INTERFACE
     ' --
 
-    Private Sub InterfaceRadios_Click(sender As ExpressControls.AppRadioButton, e As RoutedEventArgs) Handles EnglishRadio1.Click, FrenchRadio1.Click
+    Private Sub InterfaceRadios_Click(sender As ExpressControls.AppRadioButton, e As RoutedEventArgs) Handles EnglishRadio1.Click, FrenchRadio1.Click,
+        SpanishRadio1.Click, ItalianRadio1.Click
 
-        If (sender.Name = "EnglishRadio1" And Not My.Settings.language = "en-GB") Or (sender.Name = "FrenchRadio1" And Not My.Settings.language = "fr-FR") Then
-            If MainWindow.NewMessage(Funcs.ChooseLang("Changing the interface language requires an application restart. Do you wish to continue?",
-                                                      "Pour changer la langue de l'interface, un redémarrage de l'application est nécessaire. Vous souhaitez continuer ?"),
-                                     Funcs.ChooseLang("Language warning", "Avertissement de langue"),
+        If sender.Tag.ToString() <> Funcs.GetCurrentLang() Then
+            If MainWindow.NewMessage(Funcs.ChooseLang("LangWarningDescStr"),
+                                     Funcs.ChooseLang("LangWarningStr"),
                                      MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
-                If sender.Name = "EnglishRadio1" Then
-                    My.Settings.language = "en-GB"
-                Else
-                    My.Settings.language = "fr-FR"
-                End If
-
+                My.Settings.language = sender.Tag.ToString()
                 SaveAll()
 
                 Forms.Application.Restart()
                 Windows.Application.Current.Shutdown()
 
             Else
-                If sender.Name = "EnglishRadio1" Then
-                    FrenchRadio1.IsChecked = True
-                Else
-                    EnglishRadio1.IsChecked = True
-                End If
+                Select Case Funcs.GetCurrentLang()
+                    Case "fr-FR"
+                        FrenchRadio1.IsChecked = True
+                    Case "es-ES"
+                        SpanishRadio1.IsChecked = True
+                    Case "it-IT"
+                        ItalianRadio1.IsChecked = True
+                    Case Else
+                        EnglishRadio1.IsChecked = True
+                End Select
+
             End If
         End If
 
@@ -690,7 +692,7 @@ Public Class Options
                                         Else
                                             Dim existing = -1
                                             For Each category In My.Settings.categories
-                                                If category.Split("//")(0) = catname Or catname = "Favoris" Then
+                                                If category.Split("//")(0) = catname Then
                                                     existing = My.Settings.categories.IndexOf(category)
                                                 End If
                                             Next
@@ -710,8 +712,8 @@ Public Class Options
                         End If
                     Next
 
-                    MainWindow.NewMessage(count.ToString() + Funcs.ChooseLang(" settings and ", " paramètres et ") + catcount.ToString() + Funcs.ChooseLang(" categories imported", " catégories importés"),
-                                          Funcs.ChooseLang("Import Settings", "Importation des Paramètres"), MessageBoxButton.OK, MessageBoxImage.Information)
+                    MainWindow.NewMessage(Funcs.ChooseLang("ImportSettingsFDescStr").Replace("{0}", count.ToString()).Replace("{1}", catcount.ToString()),
+                                          Funcs.ChooseLang("ImportSettingsStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
                     My.Settings.Save()
 
@@ -732,9 +734,8 @@ Public Class Options
 
                 End If
             Catch
-                MainWindow.NewMessage(Funcs.ChooseLang("We're having trouble importing these settings. Please make sure this file was generated by Font Express and hasn't been edited.",
-                                                       "Nous avons du mal à importer ces paramètres. Veuillez vous assurer que ce fichier a été généré par Font Express et n'a pas été modifié."),
-                                      Funcs.ChooseLang("Import Error", "Erreur d'Importation"), MessageBoxButton.OK, MessageBoxImage.Error)
+                MainWindow.NewMessage(Funcs.ChooseLang("ImportErrorDescStr").Replace("{0}", "Font Express"),
+                                      Funcs.ChooseLang("ImportSettingsErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             End Try
         End If
 
@@ -742,9 +743,8 @@ Public Class Options
 
     Private Sub ExportSettingsBtn_Click(sender As Object, e As RoutedEventArgs) Handles ExportSettingsBtn.Click
 
-        If MainWindow.NewMessage(Funcs.ChooseLang("Save this file in a safe space and import it every time you update Font Express. Click OK to continue.",
-                                                  "Enregistrez ce fichier dans un espace sûr et importez-le chaque fois que vous mettez à jour Font Express. Cliquez sur OK pour continuer."),
-                                 Funcs.ChooseLang("Export settings", "Exportation des paramètres"),
+        If MainWindow.NewMessage(Funcs.ChooseLang("ExportSettingsDescStr").Replace("{0}", "Font Express"),
+                                 Funcs.ChooseLang("ExportSettingsStr"),
                                  MessageBoxButton.OKCancel, MessageBoxImage.Information) = MessageBoxResult.OK Then
 
             If exportDialog.ShowDialog() Then

@@ -5,7 +5,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="{DynamicResource FnViewerStr}" Background="{x:Null}" Height="400" Width="500" MinWidth="250" MinHeight="250" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" WindowStyle="None" AllowsTransparency="True">
+        Title="{DynamicResource FnViewerFontStr}" Background="{x:Null}" Height="400" Width="500" MinWidth="250" MinHeight="250" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" WindowStyle="None" AllowsTransparency="True">
     <Window.Resources>
         <!--<ex:Glyphs x:Key="GlyphsData"/>-->
         <Storyboard x:Key="InfoBoxStoryboard">
@@ -70,7 +70,7 @@
                         <DockPanel Margin="0,30,0,0" UseLayoutRounding="True">
                             <DockPanel Margin="0" DockPanel.Dock="Top" Height="60">
                                 <ex:AppButton x:Name="CopyBtn" Icon="{DynamicResource CopyIcon}" TextVisibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="6,0" ToolTip="{DynamicResource FnCopyStr}" Height="36" DockPanel.Dock="Right" Margin="5,0,20,0"/>
-                                <ex:AppButton x:Name="CategoryBtn" Icon="{DynamicResource CategoryIcon}" TextVisibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="6,0" ToolTip="{DynamicResource FnFavouriteStr}" Height="36" DockPanel.Dock="Right" Margin="5,0,0,0"/>
+                                <ex:AppButton x:Name="CategoryBtn" Icon="{DynamicResource CategoryIcon}" TextVisibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="6,0" ToolTip="{DynamicResource FnCategoryStr}" Height="36" DockPanel.Dock="Right" Margin="5,0,0,0"/>
                                 <ex:AppButton x:Name="ToggleBtn" Icon="{DynamicResource TextIcon}" Text="{DynamicResource GlyphsStr}" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="6,0" Height="36" DockPanel.Dock="Right" Margin="5,0,0,0"/>
                                 <TextBlock x:Name="FontNameTxt" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" HorizontalAlignment="Left" FontSize="15" FontWeight="SemiBold" Margin="20,0,10,0" Text="Font name"/>
                             </DockPanel>

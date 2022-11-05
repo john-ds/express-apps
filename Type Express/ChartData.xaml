@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:Type_Express"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Title="{DynamicResource ChartDataStr}" Height="450" Background="{x:Null}" Width="400" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" WindowStyle="None" AllowsTransparency="True">
+        Title="{DynamicResource ChartDataTStr}" Height="450" Background="{x:Null}" Width="400" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" WindowStyle="None" AllowsTransparency="True">
     <Window.Resources>
         <Storyboard x:Key="EntranceStoryboard">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" Storyboard.TargetName="grid">

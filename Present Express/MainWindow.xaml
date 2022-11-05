@@ -7,7 +7,7 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d" xmlns:System="clr-namespace:System;assembly=mscorlib"
         xmlns:ex="clr-namespace:ExpressControls;assembly=ExpressControls"
-        Title="{DynamicResource TitleStr}" Height="680" Width="1060" MinWidth="600" MinHeight="415" BorderThickness="0" UseLayoutRounding="False" WindowStyle="None">
+        Title="Present Express" Height="680" Width="1060" MinWidth="600" MinHeight="415" BorderThickness="0" UseLayoutRounding="False" Style="{DynamicResource ChromeWindowStyle}">
     <Window.Resources>
         <SolidColorBrush x:Key="SlideBackColour" Color="White"/>
         <System:Double x:Key="ImageWidth">160</System:Double>
@@ -254,7 +254,7 @@
                                                     <Border Height="85" Margin="10,10,10,0" BorderBrush="#FFABADB3" BorderThickness="1" Background="White" CornerRadius="5">
                                                         <TextBlock x:Name="DisplayTxt1" Foreground="{DynamicResource TextColor}" FontSize="14" Margin="0" Padding="12,15,0,0"/>
                                                     </Border>
-                                                    <TextBlock x:Name="BlankBtnTxt" VerticalAlignment="Center" FontSize="14" Margin="15,0,10,0" Height="33.62" Padding="0,6,0,0" TextTrimming="CharacterEllipsis" Text="{DynamicResource BlankStr}"/>
+                                                    <TextBlock x:Name="BlankBtnTxt" VerticalAlignment="Center" FontSize="14" Margin="15,0,10,0" Height="33.62" Padding="0,6,0,0" TextTrimming="CharacterEllipsis" Text="{DynamicResource BlankSlideshowStr}"/>
                                                 </StackPanel>
                                             </Button>
                                             <Button x:Name="QuetzalBtn" Height="130" VerticalAlignment="Top" Width="170" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Center" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Margin="0" Style="{DynamicResource AppButton}" Foreground="{DynamicResource TextColor}">
@@ -395,7 +395,7 @@
                                     <Label VerticalAlignment="Top" Height="54.96"  VerticalContentAlignment="Bottom" Margin="0" Padding="30,5,5,5" FontSize="24" Content="{DynamicResource PrintStr}" Background="{x:Null}" Foreground="{DynamicResource TextColor}" FontFamily="Segoe UI Semibold"/>
                                     <Label x:Name="NoPinnedLbl1" VerticalAlignment="Top" Margin="30,63.96,0,0" Padding="0" Content="{DynamicResource PrintInfoStr}" Background="{DynamicResource BackColor}" FontSize="14" Height="25" HorizontalAlignment="Left"/>
                                     <ex:AppButton x:Name="PageSetupBtn" Icon="{DynamicResource PageSetupIcon}" Text="{DynamicResource PageSetupStr}" Margin="30,96,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
-                                    <Label x:Name="NoPinnedLbl1_Copy" VerticalAlignment="Top" Margin="30,158.96,0,0" Padding="0" Content="{DynamicResource PrintInfo2Str}" Background="{DynamicResource BackColor}" FontSize="14" Height="25" HorizontalAlignment="Left"/>
+                                    <Label x:Name="NoPinnedLbl1_Copy" VerticalAlignment="Top" Margin="30,158.96,0,0" Padding="0" Content="{DynamicResource PrintInfo2SlideshowStr}" Background="{DynamicResource BackColor}" FontSize="14" Height="25" HorizontalAlignment="Left"/>
                                     <ex:AppButton x:Name="PrintPreviewBtn" Icon="{DynamicResource EyeIcon}" Text="{DynamicResource PrintPreviewStr}" Margin="30,190,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
                                     <Label x:Name="NoPinnedLbl1_Copy1" VerticalAlignment="Top" Margin="30,253.96,0,0" Padding="0" Content="{DynamicResource PrintInfo3Str}" Background="{DynamicResource BackColor}" FontSize="14" Height="25" HorizontalAlignment="Left"/>
                                     <ex:AppButton x:Name="PrintDialogBtn" FontWeight="SemiBold" Icon="{DynamicResource PrintIcon}" Text="{DynamicResource PrintStr}" Margin="30,286,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
@@ -573,8 +573,8 @@
                                             </StackPanel>
                                             <ex:AppButton x:Name="CloseDocBtn" Icon="{DynamicResource CrossIcon}" Text="{DynamicResource CloseDocStr}" Margin="0,20,0,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch"/>
                                         </StackPanel>
-                                        <TextBlock x:Name="FolderTxt_Copy55" MaxWidth="300" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,30,0,10" Padding="0" Text="{DynamicResource ExpressAppsAdStr}" Background="{DynamicResource BackColor}" FontSize="14" TextWrapping="Wrap"/>
-                                        <ex:AppButton x:Name="AboutBtn" Icon="{DynamicResource InfoIcon}" Text="{DynamicResource AboutTypeStr}" Margin="0,5,0,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch"/>
+                                        <TextBlock x:Name="FolderTxt_Copy55" MaxWidth="300" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0,30,0,10" Padding="0" Text="{DynamicResource ExpressAppsAdPStr}" Background="{DynamicResource BackColor}" FontSize="14" TextWrapping="Wrap"/>
+                                        <ex:AppButton x:Name="AboutBtn" Icon="{DynamicResource InfoIcon}" Text="{DynamicResource AboutPresentStr}" Margin="0,5,0,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch"/>
                                         <ex:AppButton x:Name="StorageBtn" Icon="{DynamicResource GlobeIcon}" Text="{DynamicResource WebsiteStr}" Margin="0,10,0,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch"/>
                                     </StackPanel>
                                 </Grid>
@@ -673,11 +673,11 @@
                                             <ex:MenuButton x:Name="EditSlideBtn" Text="Edit this slide" Icon="{DynamicResource EditIcon}" Visibility="Collapsed"/>
                                             <Separator Style="{StaticResource VerticalSeparator}"/>
                                             <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="14" Margin="0,2,5,0" Height="21.31" Text="{DynamicResource NewSlideStr}" Padding="5,0,0,0"/>
-                                            <ex:MenuButton x:Name="PictureBtn" MoreVisibility="Visible" Text="{DynamicResource PictureStr}" Icon="{DynamicResource PictureIcon}" ToolTip="{DynamicResource PictureToolStr}"/>
+                                            <ex:MenuButton x:Name="PictureBtn" MoreVisibility="Visible" Text="{DynamicResource PictureStr}" Icon="{DynamicResource PictureIcon}" ToolTip="{DynamicResource PictureToolSlideshowStr}"/>
                                             <ex:MenuButton x:Name="TextBtn" Text="{DynamicResource TextStr}" Icon="{DynamicResource TextIcon}" ToolTip="{DynamicResource TextToolStr}"/>
                                             <ex:MenuButton x:Name="ScreenshotBtn" Text="{DynamicResource ScreenshotStr}" Icon="{DynamicResource ScreenshotIcon}" ToolTip="{DynamicResource ScreenshotToolStr}"/>
-                                            <ex:MenuButton x:Name="ChartBtn" Text="{DynamicResource ChartStr}" Icon="{DynamicResource ColumnChartIcon}" ToolTip="{DynamicResource ChartToolStr}"/>
-                                            <ex:MenuButton x:Name="DrawingsBtn" Text="{DynamicResource DrawingStr}" Icon="{DynamicResource BallpointPenIcon}" ToolTip="{DynamicResource DrawingToolStr}"/>
+                                            <ex:MenuButton x:Name="ChartBtn" Text="{DynamicResource ChartStr}" Icon="{DynamicResource ColumnChartIcon}" ToolTip="{DynamicResource ChartToolSlideshowStr}"/>
+                                            <ex:MenuButton x:Name="DrawingsBtn" Text="{DynamicResource DrawingStr}" Icon="{DynamicResource BallpointPenIcon}" ToolTip="{DynamicResource DrawingToolSlideshowStr}"/>
                                         </StackPanel>
                                     </ScrollViewer>
                                     <Grid x:Name="HomeScroll" HorizontalAlignment="Right" Background="{DynamicResource SecondaryColor}">
@@ -1096,7 +1096,7 @@
                     <ex:ClippedBorder CornerRadius="5">
                         <ScrollViewer VerticalScrollBarVisibility="Auto">
                             <StackPanel Margin="0">
-                                <ex:AppButton x:Name="OnlinePicturesBtn" Text="{DynamicResource OnlinePicturesStr}" HorizontalContentAlignment="Stretch" CornerRadius="0" Icon="{DynamicResource GlobeIcon}" NoShadow="True" Background="Transparent" ToolTip="{DynamicResource OnlinePicturesToolStr}"/>
+                                <ex:AppButton x:Name="OnlinePicturesBtn" Text="{DynamicResource OnlinePicturesPStr}" HorizontalContentAlignment="Stretch" CornerRadius="0" Icon="{DynamicResource GlobeIcon}" NoShadow="True" Background="Transparent" ToolTip="{DynamicResource OnlinePicturesToolVariantStr}"/>
                                 <ex:AppButton x:Name="OfflinePicturesBtn" Text="{DynamicResource BrowsePCImagesStr}" HorizontalContentAlignment="Stretch" CornerRadius="0" Icon="{DynamicResource ImageFolderIcon}" NoShadow="True" Background="Transparent" ToolTip="{DynamicResource BrowsePCImagesToolStr}"/>
                                 <Rectangle x:Name="PhotoEditorSeparator" Fill="{DynamicResource AppColor}" Height="2"/>
                                 <ex:AppButton x:Name="PhotoEditorBtn" Text="{DynamicResource PhotoEditorStr}" HorizontalContentAlignment="Stretch" CornerRadius="0" Icon="{DynamicResource EditIcon}" NoShadow="True" Background="Transparent" ToolTip="{DynamicResource PhotoEditorToolStr}"/>
@@ -1117,7 +1117,7 @@
                                 <WrapPanel Height="50" Margin="15,0">
                                     <Button x:Name="Colour1Btn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0" Height="25" ToolTip="{DynamicResource WhiteStr}">
                                         <StackPanel Orientation="Horizontal" Height="25">
-                                            <Ellipse x:Name="Colour1" Width="21" Fill="{DynamicResource BackColor}" Margin="2,0" Height="21" Stroke="#FFABADB3"/>
+                                            <Ellipse x:Name="Colour1" Width="21" Fill="White" Margin="2,0" Height="21" Stroke="#FFABADB3"/>
                                         </StackPanel>
                                     </Button>
                                     <Button x:Name="Colour2Btn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0" Height="25" ToolTip="{DynamicResource BlackStr}">
@@ -1125,12 +1125,12 @@
                                             <Ellipse x:Name="Colour2" Width="21" Fill="Black" Margin="2,0" Height="21" Stroke="#FFABADB3"/>
                                         </StackPanel>
                                     </Button>
-                                    <Button x:Name="Colour3Btn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0" Height="25" ToolTip="{DynamicResource LightGreyStr}">
+                                    <Button x:Name="Colour3Btn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0" Height="25" ToolTip="{DynamicResource LightGreyBackStr}">
                                         <StackPanel Orientation="Horizontal" Height="25">
                                             <Ellipse x:Name="Colour3" Width="21" Fill="LightGray" Margin="2,0" Height="21" Stroke="#FFABADB3"/>
                                         </StackPanel>
                                     </Button>
-                                    <Button x:Name="Colour4Btn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0" Height="25" ToolTip="{DynamicResource DarkGreyStr}">
+                                    <Button x:Name="Colour4Btn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Left" VerticalContentAlignment="Center" HorizontalAlignment="Left" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource AppButton}" Margin="0" Height="25" ToolTip="{DynamicResource DarkGreyBackStr}">
                                         <StackPanel Orientation="Horizontal" Height="25">
                                             <Ellipse x:Name="Colour4" Width="21" Fill="DarkGray" Margin="2,0" Height="21" Stroke="#FFABADB3"/>
                                         </StackPanel>

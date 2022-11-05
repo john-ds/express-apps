@@ -9,7 +9,7 @@
         Title="Type Express" Background="{x:Null}" Height="120" Width="480" ResizeMode="NoResize" WindowStyle="None" BorderThickness="1" AllowsTransparency="True">
     <Grid>
         <ContentControl Content="{StaticResource WindowShadow}" Focusable="False"/>
-        <Border Background="White" CornerRadius="5" Margin="10" UseLayoutRounding="True">
+        <Border Background="{DynamicResource BackColor}" CornerRadius="5" Margin="10" UseLayoutRounding="True">
             <Grid>
                 <ContentControl HorizontalAlignment="Left" Height="32" Margin="20,15,0,0" VerticalAlignment="Top" Width="32" Content="{DynamicResource TypeExpressIcon}"/>
                 <PasswordBox Background="{DynamicResource BackColor}" Template="{DynamicResource RoundedPassBox}" x:Name="PasswordTxt" HorizontalAlignment="Left" Margin="72,0,0,20" VerticalAlignment="Bottom" Width="292" FontSize="14" VerticalContentAlignment="Center" Padding="2,0,0,0" Foreground="#FF818181" Height="30">

@@ -1,9 +1,6 @@
 ﻿Public Class Chart
 
-    ReadOnly saveDialog As New Microsoft.Win32.SaveFileDialog With {
-        .Title = "Quota Express",
-        .Filter = "PNG files (.png)|*.png"
-    }
+    ReadOnly saveDialog As Microsoft.Win32.SaveFileDialog
 
     Public Sub New(data As List(Of Button))
 
@@ -11,10 +8,6 @@
         InitializeComponent()
 
         ' Add any initialization after the InitializeComponent() call.
-        MaxHeight = SystemParameters.WorkArea.Height + 13
-        MaxWidth = SystemParameters.WorkArea.Width + 13
-        AddHandler SystemParameters.StaticPropertyChanged, AddressOf WorkAreaChanged
-
         Dim count As Integer = 0
         For Each btn In data
             If count > 15 Then
@@ -34,27 +27,24 @@
         Chart1.ChartAreas.Item(0).AxisX.LabelStyle.Font = New System.Drawing.Font("Segoe UI", 10, System.Drawing.FontStyle.Bold)
         Chart1.ChartAreas.Item(0).AxisY.LabelStyle.Font = New System.Drawing.Font("Segoe UI", 10, System.Drawing.FontStyle.Bold)
 
-        YAxisTxt.Text = Funcs.ChooseLang("Size (MB)", "Taille (Mo)")
-        XAxisTxt.Text = Funcs.ChooseLang("Filename", "Nom du fichier")
+        YAxisTxt.Text = Funcs.ChooseLang("SizeAxisTitleStr")
+        XAxisTxt.Text = Funcs.ChooseLang("FilenameStr")
         SetClrScheme("Colour" + (My.Settings.chclrscheme + 1).ToString() + "Btn")
 
-        If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then saveDialog.Filter = "Fichiers PNG (.png)|*.png"
-
-    End Sub
-
-    Private Sub WorkAreaChanged(sender As Object, e As EventArgs)
-        MaxHeight = SystemParameters.WorkArea.Height + 12
-        MaxWidth = SystemParameters.WorkArea.Width + 12
+        saveDialog = New Microsoft.Win32.SaveFileDialog With {
+            .Title = "Quota Express",
+            .Filter = Funcs.ChooseLang("PNGFilesFilterStr")
+        }
 
     End Sub
 
     Private Sub MaxBtn_Click(sender As Object, e As RoutedEventArgs) Handles MaxBtn.Click
 
         If WindowState = WindowState.Maximized Then
-            WindowState = WindowState.Normal
+            SystemCommands.RestoreWindow(Me)
 
         Else
-            WindowState = WindowState.Maximized
+            SystemCommands.MaximizeWindow(Me)
 
         End If
 
@@ -77,9 +67,11 @@
     Private Sub TitleBtn_DoubleClick(sender As Object, e As RoutedEventArgs) Handles TitleBtn.MouseDoubleClick
 
         If WindowState = WindowState.Maximized Then
-            WindowState = WindowState.Normal
+            SystemCommands.RestoreWindow(Me)
+
         Else
-            WindowState = WindowState.Maximized
+            SystemCommands.MaximizeWindow(Me)
+
         End If
 
     End Sub
@@ -109,12 +101,11 @@
 
             Try
                 ChartBmp.Save(saveDialog.FileName, System.Drawing.Imaging.ImageFormat.Png)
-                MainWindow.NewMessage(Funcs.ChooseLang("File successfully saved.", "Fichier enregistré avec succès."),
-                                      Funcs.ChooseLang("Success", "Succès"), MessageBoxButton.OK, MessageBoxImage.Information)
+                MainWindow.NewMessage(Funcs.ChooseLang("FileSavedStr"),
+                                      Funcs.ChooseLang("SuccessStr"), MessageBoxButton.OK, MessageBoxImage.Information)
             Catch
-                MainWindow.NewMessage(Funcs.ChooseLang("There was an error saving your file. Please try again.",
-                                                       "Une erreur s'est produite lors de l'enregistrement de votre fichier. Veuillez réessayer."),
-                                      Funcs.ChooseLang("Export error", "Erreur d'exportation"), MessageBoxButton.OK, MessageBoxImage.Information)
+                MainWindow.NewMessage(Funcs.ChooseLang("FileSaveErrorStr"),
+                                      Funcs.ChooseLang("ExportErrorStr"), MessageBoxButton.OK, MessageBoxImage.Information)
             End Try
         End If
 

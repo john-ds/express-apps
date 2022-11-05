@@ -3,12 +3,74 @@ Imports Newtonsoft.Json
 
 Public Class Funcs
 
-    Public Shared Function ChooseLang(english As String, french As String) As String
+    Public Shared Sub SetLang(lang As String)
+        Dim available = {"en-GB", "fr-FR", "es-ES", "it-IT"}
+        If available.Contains(lang) = False Then lang = "en-GB"
 
-        If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then
-            Return french
-        Else
+        Threading.Thread.CurrentThread.CurrentCulture = New Globalization.CultureInfo(lang)
+        Threading.Thread.CurrentThread.CurrentUICulture = New Globalization.CultureInfo(lang)
+
+        If lang <> "en-GB" Then
+            Dim commonresdict As New ResourceDictionary() With {
+                .Source = New Uri("/CommonDictionary" + lang.Split("-")(1) + ".xaml", UriKind.Relative)
+            }
+            Windows.Application.Current.Resources.MergedDictionaries.Add(commonresdict)
+
+        End If
+
+    End Sub
+
+    Public Shared Function ChooseLang(key As String) As String
+
+        Try
+            Return Windows.Application.Current.Resources.Item(key)
+        Catch
+            Return ""
+        End Try
+
+    End Function
+
+    Public Shared Function ChooseLang(info As Dictionary(Of String, Object)) As Object
+
+        Try
+            Return info(GetCurrentLang(True))
+        Catch
+            Return Nothing
+        End Try
+
+    End Function
+
+    Public Shared Function ChooseIcon(english As String) As String
+
+        If GetCurrentLang(True) = "en" Then
             Return english
+
+        Else
+            Dim options As Dictionary(Of String, String)
+
+            Select Case english
+                Case "BoldIcon"
+                    options = New Dictionary(Of String, String) From {{"fr", "GrasIcon"}, {"es", "NegritaIcon"}, {"it", "GrasIcon"}}
+                Case "ItalicIcon"
+                    options = New Dictionary(Of String, String) From {{"fr", "ItalicIcon"}, {"es", "ItalicIcon"}, {"it", "CorsivoIcon"}}
+                Case "UnderlineIcon"
+                    options = New Dictionary(Of String, String) From {{"fr", "SousligneIcon"}, {"es", "SousligneIcon"}, {"it", "SousligneIcon"}}
+                Case Else
+                    Return "HelpIcon"
+            End Select
+
+            Return options(GetCurrentLang(True))
+
+        End If
+
+    End Function
+
+    Public Shared Function GetCurrentLang(Optional returnshort As Boolean = False) As String
+
+        If returnshort Then
+            Return Threading.Thread.CurrentThread.CurrentUICulture.Name.ToLower().Substring(0, 2)
+        Else
+            Return Threading.Thread.CurrentThread.CurrentUICulture.Name
         End If
 
     End Function
@@ -46,6 +108,45 @@ Public Class Funcs
         Else
             Return Single.TryParse(singlestr, Globalization.NumberStyles.Float, Globalization.CultureInfo.InvariantCulture, singleout)
         End If
+
+    End Function
+
+    Public Shared Function FormatBytes(BytesCaller As Long, Optional CsvFormat As Boolean = False) As String
+        Dim DoubleBytes As Double
+        Dim result As String = "—"
+
+        Try
+            Select Case BytesCaller
+                Case Is >= 1125899906842625
+                    result = "1000+ " + ChooseLang("TBStr")
+                Case 1099511627776 To 1125899906842624
+                    DoubleBytes = BytesCaller / 1099511627776 'TB
+                    result = Math.Round(DoubleBytes, 2).ToString() + " " + ChooseLang("TBStr")
+                Case 1073741824 To 1099511627775
+                    DoubleBytes = BytesCaller / 1073741824 'GB
+                    result = Math.Round(DoubleBytes, 2).ToString() + " " + ChooseLang("GBStr")
+                Case 1048576 To 1073741823
+                    DoubleBytes = BytesCaller / 1048576 'MB
+                    result = Math.Round(DoubleBytes, 2).ToString() + " " + ChooseLang("MBStr")
+                Case 1024 To 1048575
+                    DoubleBytes = BytesCaller / 1024 'KB
+                    result = Math.Round(DoubleBytes, 2).ToString() + " " + ChooseLang("KBStr")
+                Case 1 To 1023
+                    DoubleBytes = BytesCaller ' bytes
+                    result = Math.Round(DoubleBytes, 2).ToString() + " " + ChooseLang("BStr")
+                Case Else
+                    Return result
+            End Select
+
+            If CsvFormat And result.Contains(",") Then
+                Return """" + result + """"
+            Else
+                Return result
+            End If
+
+        Catch
+            Return result
+        End Try
 
     End Function
 
@@ -140,7 +241,7 @@ Public Class Funcs
 
     Public Shared Function GetXmlLocaleString(nodes As Xml.XmlNodeList) As String
 
-        If ChooseLang("en", "fr") = "en" Then
+        If GetCurrentLang(True) = "en" Then
             For Each i As Xml.XmlNode In nodes
                 If i.OuterXml.StartsWith("<en>") Then
                     Return i.InnerText
@@ -153,7 +254,7 @@ Public Class Funcs
             For Each i As Xml.XmlNode In nodes
                 If i.OuterXml.StartsWith("<en>") Then
                     en = i.InnerText
-                ElseIf i.OuterXml.StartsWith("<fr>") Then
+                ElseIf i.OuterXml.StartsWith("<" + GetCurrentLang(True) + ">") Then
                     Return i.InnerText
                 End If
             Next
@@ -189,7 +290,7 @@ Public Class Funcs
                     ElseIf i.OuterXml.StartsWith("<importance>") Then
                         notification(1) = i.InnerText
 
-                    ElseIf i.OuterXml.StartsWith(ChooseLang("<features_en>", "<features_fr>")) Then
+                    ElseIf i.OuterXml.StartsWith("<features_" + GetCurrentLang(True) + ">") Then
                         notification.Add(EscapeChars(i.InnerText, True))
 
                     End If

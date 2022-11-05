@@ -23,15 +23,14 @@ Public Class PreviouslyAdded
         ItemType = obj
 
         If obj = "chart" Then
-            Title = Funcs.ChooseLang("Previously Added Charts - Type Express", "Graphiques Précedemment Ajoutés - Type Express")
-            PrevAddLbl.Text = Funcs.ChooseLang("Choose a chart below to open the chart editor, before adding it to your document.",
-                                               "Choisissez un graphique ci-dessous pour ouvrir l'éditeur de graphique, avant de l'ajouter à votre document.")
+            Title = Funcs.ChooseLang("PrevAddedChartsTitleStr")
+            PrevAddLbl.Text = Funcs.ChooseLang("PrevAddedChartsSubStr")
 
             ' My.Settings format
             ' charttype>values>theme>title>xlabel>ylabel>data[label>val>label>val>...]
 
             PreviouslyAddedItems = My.Settings.savedcharts.Cast(Of String).ToList()
-            ItemCountLbl.Text = My.Settings.savedcharts.Count.ToString() + Funcs.ChooseLang("/25 items", "/25 éléments")
+            ItemCountLbl.Text = My.Settings.savedcharts.Count.ToString() + "/25 " + Funcs.ChooseLang("ItemsStr")
 
             Dim count = 0
             Try
@@ -44,44 +43,44 @@ Public Class PreviouslyAdded
 
                     Select Case opts.IndexOf(info(2))
                         Case 0
-                            theme = Funcs.ChooseLang("Basic", "Basique")
+                            theme = Funcs.ChooseLang("ChBasicStr")
                         Case 1
-                            theme = Funcs.ChooseLang("Berry", "Baie")
+                            theme = Funcs.ChooseLang("ChBerryStr")
                         Case 2
-                            theme = Funcs.ChooseLang("Chocolate", "Chocolat")
+                            theme = Funcs.ChooseLang("ChChocolateStr")
                         Case 3
-                            theme = Funcs.ChooseLang("Earth", "Terre")
+                            theme = Funcs.ChooseLang("ChEarthStr")
                         Case 4
-                            theme = Funcs.ChooseLang("Fire", "Feu")
+                            theme = Funcs.ChooseLang("ChFireStr")
                         Case 5
-                            theme = Funcs.ChooseLang("Grayscale", "Échelle de Gris")
+                            theme = Funcs.ChooseLang("ChGreyStr")
                         Case 6
-                            theme = Funcs.ChooseLang("Light", "Clair")
+                            theme = Funcs.ChooseLang("ChLightStr")
                         Case 7
-                            theme = Funcs.ChooseLang("Pastel", "Pastels")
+                            theme = Funcs.ChooseLang("ChPastelStr")
                         Case 8
-                            theme = Funcs.ChooseLang("Sea Green", "Vert")
+                            theme = Funcs.ChooseLang("ChGreenStr")
                         Case 9
-                            theme = "Semi-transparent"
+                            theme = Funcs.ChooseLang("ChTransStr")
                     End Select
 
                     Dim title As String = ""
 
                     Select Case info(0)
                         Case "Column"
-                            title = Funcs.ChooseLang("Column chart:", "Histogramme :")
+                            title = Funcs.ChooseLang("ColChartStr")
                         Case "Bar"
-                            title = Funcs.ChooseLang("Bar chart:", "Graphique en barres :")
+                            title = Funcs.ChooseLang("BarChartStr")
                         Case "Line"
-                            title = Funcs.ChooseLang("Line graph:", "Graphique en courbe :")
+                            title = Funcs.ChooseLang("LineChartStr")
                         Case "Pie"
-                            title = Funcs.ChooseLang("Pie chart:", "Graphique en secteurs :")
+                            title = Funcs.ChooseLang("PieChartStr")
                         Case "Doughnut"
-                            title = Funcs.ChooseLang("Doughnut chart:", "Graphique en anneau :")
+                            title = Funcs.ChooseLang("DoughnutChartStr")
                     End Select
 
                     If info(3) = "" Then
-                        title += Funcs.ChooseLang(" (No title)", " (Pas de titre)")
+                        title += " " + Funcs.ChooseLang("NoTitleStr")
                     Else
                         title += " """ + Funcs.EscapeChars(info(3), True) + """"
                     End If
@@ -160,18 +159,17 @@ Public Class PreviouslyAdded
                     PreviouslyAddedData.Add(New PreviouslyAddedItem With {
                                             .ID = count,
                                             .Title = title,
-                                            .Prop1Lbl = Funcs.ChooseLang("Theme: ", "Thème : "),
+                                            .Prop1Lbl = Funcs.ChooseLang("ThemeTitleStr") + " ",
                                             .Prop1Val = theme,
-                                            .Prop2Lbl = Funcs.ChooseLang("Data: ", "Données : "),
+                                            .Prop2Lbl = Funcs.ChooseLang("DataTitleStr") + " ",
                                             .Prop2Val = datastr.Substring(2),
                                             .Image = BitmapToSource(ResizeBitmap(ChartBmp, 150, 100), WinDrawing.Imaging.ImageFormat.Png)
                                             })
                     count += 1
                 Next
             Catch
-                If MainWindow.NewMessage(Funcs.ChooseLang($"There was a problem importing the saved chart data. We recommend deleting all saved charts. Do you wish to continue?{Chr(10)}{Chr(10)}If this problem persists, please contact us.",
-                                                          $"Un problème s'est produit lors de l'importation des données de graphique enregistrées. Nous vous recommandons de supprimer tous les graphiques enregistrés. Souhaitez-vous continuer ?{Chr(10)}{Chr(10)}Si ce problème persiste, veuillez nous contacter."),
-                                         Funcs.ChooseLang("Critical error", "Erreur critique"), MessageBoxButton.YesNoCancel, MessageBoxImage.Error) = MessageBoxResult.Yes Then
+                If MainWindow.NewMessage(Funcs.ChooseLang("ChartImportErrorStr"),
+                                         Funcs.ChooseLang("CriticalErrorStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Error) = MessageBoxResult.Yes Then
 
                     My.Settings.savedcharts.Clear()
                     My.Settings.Save()
@@ -182,16 +180,15 @@ Public Class PreviouslyAdded
             End Try
 
         ElseIf obj = "shape" Then
-            Title = Funcs.ChooseLang("Previously Added Shapes - Type Express", "Formes Précedemment Ajoutées - Type Express")
-            PrevAddLbl.Text = Funcs.ChooseLang("Choose a shape below to open the shape editor, before adding it to your document.",
-                                               "Choisissez une forme ci-dessous pour ouvrir l'éditeur de forme, avant de l'ajouter à votre document.")
+            Title = Funcs.ChooseLang("PrevAddedShapesTitleStr")
+            PrevAddLbl.Text = Funcs.ChooseLang("PrevAddedShapesSubStr")
 
             ' My.Settings format
             ' shapetype>linecolour[hex]>linethickness>dashes>width>height(>fillcolour[hex](>linejoin(>points)))
             ' |all                                                       |!lines          |!circles |!rectangles
 
             PreviouslyAddedItems = My.Settings.savedshapes.Cast(Of String).ToList()
-            ItemCountLbl.Text = My.Settings.savedshapes.Count.ToString() + Funcs.ChooseLang("/25 items", "/25 éléments")
+            ItemCountLbl.Text = My.Settings.savedshapes.Count.ToString() + "/25 " + Funcs.ChooseLang("ItemsStr")
 
             Dim count = 0
             Try
@@ -203,26 +200,36 @@ Public Class PreviouslyAdded
                     Dim prop2lbl = ""
                     Dim prop2val = ""
 
+                    Select Case info(0)
+                        Case "Line"
+                            title = Funcs.ChooseLang("LineStr")
+                        Case "Triangle"
+                            title = Funcs.ChooseLang("TriangleStr")
+                        Case "Rectangle"
+                            title = Funcs.ChooseLang("RectangleStr")
+                        Case "Ellipse"
+                            title = Funcs.ChooseLang("EllipseStr")
+                    End Select
+
                     If info(0) = "Line" Then
-                        title = Funcs.ChooseLang("Line", "Ligne")
-                        prop1lbl = Funcs.ChooseLang("Colour: ", "Couleur : ")
+                        prop1lbl = Funcs.ChooseLang("ColourTitleStr") + " "
                         prop1val = info(1)
-                        prop2lbl = Funcs.ChooseLang("Thickness: ", "Épaisseur : ")
+                        prop2lbl = Funcs.ChooseLang("ThicknessTitleStr") + " "
                         prop2val = info(2)
 
                     Else
-                        prop1lbl = Funcs.ChooseLang("Fill colour: ", "Couleur de remplissage : ")
+                        prop1lbl = Funcs.ChooseLang("FillTitleStr") + " "
 
                         If info(6) = "" Then
-                            prop1val = Funcs.ChooseLang("(None)", "(Aucune)")
+                            prop1val = Funcs.ChooseLang("NoneColourStr")
                         Else
                             prop1val = info(6)
                         End If
 
-                        prop2lbl = Funcs.ChooseLang("Outline colour: ", "Couleur de contour : ")
+                        prop2lbl = Funcs.ChooseLang("OutlineTitleStr") + " "
 
                         If info(1) = "" Then
-                            prop2val = Funcs.ChooseLang("(None)", "(Aucune)")
+                            prop2val = Funcs.ChooseLang("NoneColourStr")
                         Else
                             prop2val = info(1)
                         End If
@@ -347,9 +354,8 @@ Public Class PreviouslyAdded
                     count += 1
                 Next
             Catch
-                If MainWindow.NewMessage(Funcs.ChooseLang($"There was a problem importing the saved shape data. We recommend deleting all saved shapes. Do you wish to continue?{Chr(10)}{Chr(10)}If this problem persists, please contact us.",
-                                                          $"Un problème s'est produit lors de l'importation des données de forme enregistrées. Nous vous recommandons de supprimer tous les formes enregistrées. Souhaitez-vous continuer ?{Chr(10)}{Chr(10)}Si ce problème persiste, veuillez nous contacter."),
-                                         Funcs.ChooseLang("Critical error", "Erreur critique"), MessageBoxButton.YesNoCancel, MessageBoxImage.Error) = MessageBoxResult.Yes Then
+                If MainWindow.NewMessage(Funcs.ChooseLang("ShapeImportErrorStr"),
+                                         Funcs.ChooseLang("CriticalErrorStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Error) = MessageBoxResult.Yes Then
 
                     My.Settings.savedshapes.Clear()
                     My.Settings.Save()
@@ -765,9 +771,8 @@ Public Class PreviouslyAdded
 
     Private Sub RemoveBtns_Click(sender As ExpressControls.AppButton, e As RoutedEventArgs)
 
-        If MainWindow.NewMessage(Funcs.ChooseLang("Are you sure you want to remove this previously added item? This action can't be undone.",
-                                                  "Voulez-vous vraiment supprimer cet élément ajouté précédemment ? Cette action ne peut pas être annulée."),
-                                  Funcs.ChooseLang("Remove item", "Suppression de l'élément"), MessageBoxButton.YesNoCancel, MessageBoxImage.Warning) = MessageBoxResult.Yes Then
+        If MainWindow.NewMessage(Funcs.ChooseLang("RemovePrevAddedDescStr"),
+                                 Funcs.ChooseLang("RemovePrevAddedStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Warning) = MessageBoxResult.Yes Then
 
             If ItemType = "chart" Then
                 My.Settings.savedcharts.Remove(PreviouslyAddedItems(sender.Tag))
@@ -801,7 +806,7 @@ Public Class PreviouslyAdded
             AddedStack.ItemsSource = Nothing
             AddedStack.ItemsSource = PreviouslyAddedData
 
-            ItemCountLbl.Text = count.ToString() + Funcs.ChooseLang("/25 items", "/25 éléments")
+            ItemCountLbl.Text = count.ToString() + "/25 " + Funcs.ChooseLang("ItemsStr")
 
         End If
 
@@ -809,9 +814,8 @@ Public Class PreviouslyAdded
 
     Private Sub ClearAllBtn_Click(sender As Object, e As RoutedEventArgs) Handles ClearAllBtn.Click
 
-        If MainWindow.NewMessage(Funcs.ChooseLang("Are you sure you want to remove all previously added items? This action can't be undone.",
-                                                  "Voulez-vous vraiment supprimer tous les éléments ajoutés précédemment ? Cette action ne peut pas être annulée."),
-                                  Funcs.ChooseLang("Remove all items", "Suppression de tous les éléments"), MessageBoxButton.YesNoCancel, MessageBoxImage.Warning) = MessageBoxResult.Yes Then
+        If MainWindow.NewMessage(Funcs.ChooseLang("RemoveAllPrevAddedDescStr"),
+                                 Funcs.ChooseLang("RemoveAllPrevAddedStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Warning) = MessageBoxResult.Yes Then
 
             If ItemType = "chart" Then
                 My.Settings.savedcharts.Clear()

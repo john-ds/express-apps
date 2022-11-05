@@ -6,7 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Type_Express"
         mc:Ignorable="d"
-        Title="{DynamicResource HTMLTitleStr}" Height="450" Width="900" WindowStartupLocation="CenterScreen" ResizeMode="CanResize" WindowStyle="None" MinWidth="650" MinHeight="300">
+        Title="{DynamicResource HTMLTitleStr}" Background="{DynamicResource BackColor}" Height="450" Width="900" WindowStartupLocation="CenterScreen" ResizeMode="CanResize" Style="{DynamicResource ChromeWindowStyle}" MinWidth="650" MinHeight="300">
     <DockPanel>
         <DockPanel>
             <DockPanel Height="30" Margin="0" VerticalAlignment="Top" Background="{DynamicResource AppColor}" DockPanel.Dock="Top">
@@ -34,12 +34,12 @@
 
                 <StackPanel Height="40" Margin="0" VerticalAlignment="Top" Orientation="Horizontal">
                     <ex:MenuButton x:Name="RunBtn" Text="{DynamicResource RunPreviewStr}" Icon="{DynamicResource RightIcon}" Margin="10,0,0,0"/>
-                    <ex:MenuButton x:Name="ExportBtn" Text="{DynamicResource ExportStr}" Icon="{DynamicResource ExportIcon}" Margin="10,0,0,0"/>
+                    <ex:MenuButton x:Name="ExportBtn" Text="{DynamicResource ExportHTMLStr}" Icon="{DynamicResource ExportIcon}" Margin="10,0,0,0"/>
                 </StackPanel>
             </DockPanel>
             <Rectangle Fill="{DynamicResource AppColor}" Height="2" VerticalAlignment="Top" DockPanel.Dock="Bottom"/>
 
-            <Grid Margin="0">
+            <Grid Margin="0" Background="{DynamicResource BackColor}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="5" />

@@ -45,32 +45,11 @@ Public Class Options
 
     ReadOnly TempLblTimer As New Timer With {.Interval = 4000}
 
-    ReadOnly folderBrowser As New Forms.FolderBrowserDialog With {
-        .Description = "Choose a folder below...",
-        .ShowNewFolderButton = True
-    }
-
-    ReadOnly openDialog As New OpenFileDialog With {
-        .Title = "Type Express",
-        .Filter = "Text files (.txt)|*.txt",
-        .Multiselect = False
-    }
-
-    ReadOnly saveDialog As New SaveFileDialog With {
-        .Title = "Select an export location - Type Express",
-        .Filter = "Text files (.txt)|*.txt"
-    }
-
-    ReadOnly importDialog As New OpenFileDialog With {
-        .Title = "Select a file to import - Type Express",
-        .Filter = "XML files (.xml)|*.xml",
-        .Multiselect = False
-    }
-
-    ReadOnly exportDialog As New SaveFileDialog With {
-        .Title = "Select an export location - Type Express",
-        .Filter = "XML files (.xml)|*.xml"
-    }
+    ReadOnly folderBrowser As Forms.FolderBrowserDialog
+    ReadOnly openDialog As OpenFileDialog
+    ReadOnly saveDialog As SaveFileDialog
+    ReadOnly importDialog As OpenFileDialog
+    ReadOnly exportDialog As SaveFileDialog
 
     Public Sub New()
 
@@ -105,7 +84,7 @@ Public Class Options
         ColourPicker.SelectedColor = Color.FromRgb(My.Settings.textcolour.R, My.Settings.textcolour.G, My.Settings.textcolour.B)
 
         If My.Settings.savelocation = "" Then
-            SaveLocationTxt.Text = "Documents"
+            SaveLocationTxt.Text = Funcs.ChooseLang("DocumentFolderStr")
 
         Else
             SaveLocationTxt.Text = IO.Path.GetFileNameWithoutExtension(My.Settings.savelocation)
@@ -120,19 +99,19 @@ Public Class Options
 
         Select Case My.Settings.colourscheme
             Case 0
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Basic", "Basique")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("BasicStr")
             Case 1
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Blue", "Bleu")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("BlueStr")
             Case 2
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Green", "Vert")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("GreenStr")
             Case 3
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Red Orange", "Rouge Orange")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("RedOrangeStr")
             Case 4
-                ClrSchemeBtn.Text = "Violet"
+                ClrSchemeBtn.Text = Funcs.ChooseLang("VioletStr")
             Case 5
-                ClrSchemeBtn.Text = "Office"
+                ClrSchemeBtn.Text = Funcs.ChooseLang("OfficeStr")
             Case 6
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Greyscale", "Échelle de Gris")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("GreyscaleStr")
         End Select
 
         If My.Settings.spelllang = 0 Then
@@ -143,11 +122,16 @@ Public Class Options
             SpanishRadio.IsChecked = True
         End If
 
-        If My.Settings.language = "fr-FR" Then
-            FrenchRadio1.IsChecked = True
-        Else
-            EnglishRadio1.IsChecked = True
-        End If
+        Select Case Funcs.GetCurrentLang()
+            Case "fr-FR"
+                FrenchRadio1.IsChecked = True
+            Case "es-ES"
+                SpanishRadio1.IsChecked = True
+            Case "it-IT"
+                ItalianRadio1.IsChecked = True
+            Case Else
+                EnglishRadio1.IsChecked = True
+        End Select
 
         RecentUpDown.Value = My.Settings.recentcount
 
@@ -192,13 +176,13 @@ Public Class Options
 
         Select Case My.Settings.preferredcount
             Case "char"
-                WordCountCombo.Text = Funcs.ChooseLang("Characters", "Caractères")
+                WordCountCombo.Text = Funcs.ChooseLang("ApCharsStr")
 
             Case "line"
-                WordCountCombo.Text = Funcs.ChooseLang("Lines", "Lignes")
+                WordCountCombo.Text = Funcs.ChooseLang("ApLinesStr")
 
             Case Else
-                WordCountCombo.Text = Funcs.ChooseLang("Words", "Mots")
+                WordCountCombo.Text = Funcs.ChooseLang("ApWordsStr")
 
         End Select
 
@@ -218,17 +202,36 @@ Public Class Options
         NotificationBtn.IsChecked = My.Settings.notificationcheck
         RecentBtn.IsChecked = My.Settings.openrecent
 
-        If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then
-            folderBrowser.Description = "Choisissez un dossier ci-dessous..."
-            saveDialog.Filter = "Fichiers texte (.txt)|*.txt"
-            openDialog.Filter = "Fichiers texte (.txt)|*.txt"
-            exportDialog.Title = "Sélectionner un emplacement d'exportation - Type Express"
-            importDialog.Title = "Choisissez un fichier à importer - Type Express"
+        BoldBtn.Icon = TryFindResource(Funcs.ChooseIcon("BoldIcon"))
+        ItalicBtn.Icon = TryFindResource(Funcs.ChooseIcon("ItalicIcon"))
+        UnderlineBtn.Icon = TryFindResource(Funcs.ChooseIcon("UnderlineIcon"))
 
-            BoldBtn.Icon = FindResource("GrasIcon")
-            UnderlineBtn.Icon = FindResource("SousligneIcon")
+        folderBrowser = New Forms.FolderBrowserDialog With {
+            .Description = Funcs.ChooseLang("ChooseFolderDialogStr"),
+            .ShowNewFolderButton = True
+        }
 
-        End If
+        openDialog = New OpenFileDialog With {
+            .Title = "Type Express",
+            .Filter = Funcs.ChooseLang("TextFilesFilterStr"),
+            .Multiselect = False
+        }
+
+        saveDialog = New SaveFileDialog With {
+            .Title = Funcs.ChooseLang("OpExportDialogStr") + " - Type Express",
+            .Filter = Funcs.ChooseLang("TextFilesFilterStr")
+        }
+
+        importDialog = New OpenFileDialog With {
+            .Title = Funcs.ChooseLang("OpImportDialogStr") + " - Type Express",
+            .Filter = Funcs.ChooseLang("XMLFilesFilterStr"),
+            .Multiselect = False
+        }
+
+        exportDialog = New SaveFileDialog With {
+            .Title = Funcs.ChooseLang("OpExportDialogStr") + " - Type Express",
+            .Filter = Funcs.ChooseLang("XMLFilesFilterStr")
+        }
 
     End Sub
 
@@ -334,8 +337,8 @@ Public Class Options
             End If
 
         Catch ex As Exception
-            MainWindow.NewMessage(Funcs.ChooseLang("The font size you entered is invalid.", "La taille de police que vous avez entrée est invalide."),
-                                  Funcs.ChooseLang("Invalid font size", "Taille de police invalide"), MessageBoxButton.OK, MessageBoxImage.Error)
+            MainWindow.NewMessage(Funcs.ChooseLang("InvalidFontSizeDescStr"),
+                                  Funcs.ChooseLang("InvalidFontSizeStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
             FontSizeTxt.Text = ""
 
@@ -367,8 +370,8 @@ Public Class Options
                 ChangeFont()
 
             Catch
-                MainWindow.NewMessage(Funcs.ChooseLang("The font you entered could not be found.", "La police que vous avez entrée est introuvable."),
-                                      Funcs.ChooseLang("Invalid font", "Police invalide"), MessageBoxButton.OK, MessageBoxImage.Error)
+                MainWindow.NewMessage(Funcs.ChooseLang("InvalidFontDescStr"),
+                                      Funcs.ChooseLang("InvalidFontStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
                 FontStyleTxt.Text = ""
 
@@ -631,25 +634,25 @@ Public Class Options
 
         Select Case sender.Name
             Case "BasicBtn"
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Basic", "Basique")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("BasicStr")
                 My.Settings.colourscheme = 0
             Case "BlueBtn"
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Blue", "Bleu")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("BlueStr")
                 My.Settings.colourscheme = 1
             Case "GreenBtn"
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Green", "Vert")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("GreenStr")
                 My.Settings.colourscheme = 2
             Case "RedBtn"
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Red Orange", "Rouge Orange")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("RedOrangeStr")
                 My.Settings.colourscheme = 3
             Case "VioletBtn"
-                ClrSchemeBtn.Text = "Violet"
+                ClrSchemeBtn.Text = Funcs.ChooseLang("VioletStr")
                 My.Settings.colourscheme = 4
             Case "OfficeBtn"
-                ClrSchemeBtn.Text = "Office"
+                ClrSchemeBtn.Text = Funcs.ChooseLang("OfficeStr")
                 My.Settings.colourscheme = 5
             Case "GreyscaleBtn"
-                ClrSchemeBtn.Text = Funcs.ChooseLang("Greyscale", "Échelle de Gris")
+                ClrSchemeBtn.Text = Funcs.ChooseLang("GreyscaleStr")
                 My.Settings.colourscheme = 6
         End Select
 
@@ -681,32 +684,32 @@ Public Class Options
     ' GENERAL > INTERFACE
     ' --
 
-    Private Sub InterfaceRadios_Click(sender As ExpressControls.AppRadioButton, e As RoutedEventArgs) Handles EnglishRadio1.Click, FrenchRadio1.Click
+    Private Sub InterfaceRadios_Click(sender As ExpressControls.AppRadioButton, e As RoutedEventArgs) Handles EnglishRadio1.Click, FrenchRadio1.Click,
+        SpanishRadio1.Click, ItalianRadio1.Click
 
-        If (sender.Name = "EnglishRadio1" And Not My.Settings.language = "en-GB") Or (sender.Name = "FrenchRadio1" And Not My.Settings.language = "fr-FR") Then
-            If MainWindow.NewMessage(Funcs.ChooseLang("Changing the interface language requires an application restart. All unsaved work will be lost. Do you wish to continue?",
-                                                           "Pour changer la langue de l'interface, un redémarrage de l'application est nécessaire. Tout le travail non enregistré sera perdu. Vous souhaitez continuer ?"),
-                                     Funcs.ChooseLang("Language warning", "Avertissement de langue"),
+        If sender.Tag.ToString() <> Funcs.GetCurrentLang() Then
+            If MainWindow.NewMessage(Funcs.ChooseLang("LangWarningDescStr"),
+                                     Funcs.ChooseLang("LangWarningStr"),
                                      MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
-                If sender.Name = "EnglishRadio1" Then
-                    My.Settings.language = "en-GB"
-                Else
-                    My.Settings.language = "fr-FR"
-
-                End If
-
+                My.Settings.language = sender.Tag.ToString()
                 SaveAll()
 
                 Forms.Application.Restart()
                 Windows.Application.Current.Shutdown()
 
             Else
-                If sender.Name = "EnglishRadio1" Then
-                    FrenchRadio1.IsChecked = True
-                Else
-                    EnglishRadio1.IsChecked = True
-                End If
+                Select Case Funcs.GetCurrentLang()
+                    Case "fr-FR"
+                        FrenchRadio1.IsChecked = True
+                    Case "es-ES"
+                        SpanishRadio1.IsChecked = True
+                    Case "it-IT"
+                        ItalianRadio1.IsChecked = True
+                    Case Else
+                        EnglishRadio1.IsChecked = True
+                End Select
+
             End If
         End If
 
@@ -765,21 +768,19 @@ Public Class Options
             My.Settings.lockpass = ""
             SaveAll()
 
-            MainWindow.NewMessage(Funcs.ChooseLang("Password cleared. You will be asked for a password every time you use the Alt+L shortcut.",
-                                                        "Mot de passe effacé. Un mot de passe vous sera demandé chaque fois que vous utiliserez le raccourci Alt+L."),
-                                  Funcs.ChooseLang("No password", "Pas de mot de passe"), MessageBoxButton.OK, MessageBoxImage.Information)
+            MainWindow.NewMessage(Funcs.ChooseLang("NoPasswordDescStr"),
+                                  Funcs.ChooseLang("NoPasswordStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
         ElseIf LockPasswordTxt.Password.Length < 4 Then
-            MainWindow.NewMessage(Funcs.ChooseLang("Your password is too short. Please try again.",
-                                                        "Votre mot de passe est trop court. Veuillez réessayer."),
-                                  Funcs.ChooseLang("Invalid password", "Mot de passe invalide"), MessageBoxButton.OK, MessageBoxImage.Error)
+            MainWindow.NewMessage(Funcs.ChooseLang("InvalidPasswordDescStr"),
+                                  Funcs.ChooseLang("InvalidPasswordStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         Else
             My.Settings.lockpass = LockPasswordTxt.Password
             SaveAll()
 
-            MainWindow.NewMessage(Funcs.ChooseLang("Password saved.", "Mot de passe enregistré."),
-                                  Funcs.ChooseLang("Password", "Mot de passe"), MessageBoxButton.OK, MessageBoxImage.Information)
+            MainWindow.NewMessage(Funcs.ChooseLang("PasswordSavedStr"),
+                                  Funcs.ChooseLang("PasswordStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
         End If
 
@@ -802,10 +803,8 @@ Public Class Options
     Private Sub SaveChartsBtn_Click(sender As Object, e As RoutedEventArgs) Handles SaveChartsBtn.Click
 
         If SaveChartsBtn.IsChecked = False And My.Settings.savedcharts.Count > 0 Then
-            If Not MainWindow.NewMessage(Funcs.ChooseLang("Turning off this setting will clear the list of previously added charts. Do you wish to continue?",
-                                                          "La désactivation de ce paramètre efface la liste des graphiques ajoutés précédemment. Souhaitez-vous continuer ?"),
-                                         Funcs.ChooseLang("Previously added charts",
-                                                          "Graphiques ajoutés précédemment"), MessageBoxButton.YesNoCancel, MessageBoxImage.Warning) = MessageBoxResult.Yes Then
+            If Not MainWindow.NewMessage(Funcs.ChooseLang("PrevAddedChartsTurnOffStr"),
+                                         Funcs.ChooseLang("PrevAddedChartsStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Warning) = MessageBoxResult.Yes Then
 
                 SaveChartsBtn.IsChecked = True
                 Exit Sub
@@ -821,10 +820,8 @@ Public Class Options
     Private Sub SaveShapesBtn_Click(sender As Object, e As RoutedEventArgs) Handles SaveShapesBtn.Click
 
         If SaveShapesBtn.IsChecked = False And My.Settings.savedshapes.Count > 0 Then
-            If Not MainWindow.NewMessage(Funcs.ChooseLang("Turning off this setting will clear the list of previously added shapes. Do you wish to continue?",
-                                                          "La désactivation de ce paramètre efface la liste des formes ajoutées précédemment. Souhaitez-vous continuer ?"),
-                                         Funcs.ChooseLang("Previously added shapes",
-                                                          "Formes ajoutées précédemment"), MessageBoxButton.YesNoCancel, MessageBoxImage.Warning) = MessageBoxResult.Yes Then
+            If Not MainWindow.NewMessage(Funcs.ChooseLang("PrevAddedShapesTurnOffStr"),
+                                         Funcs.ChooseLang("PrevAddedShapesStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Warning) = MessageBoxResult.Yes Then
 
                 SaveShapesBtn.IsChecked = True
                 Exit Sub
@@ -840,10 +837,8 @@ Public Class Options
     Private Sub SaveFontStylesBtn_Click(sender As Object, e As RoutedEventArgs) Handles SaveFontStylesBtn.Click
 
         If SaveFontStylesBtn.IsChecked = False Then
-            If Not MainWindow.NewMessage(Funcs.ChooseLang("Turning off this setting will reset any changes you've made to the Font Styles tab. Do you wish to continue?",
-                                                          "La désactivation de ce paramètre réinitialisera toutes les modifications apportées à l'onglet Styles de Police. Souhaitez-vous continuer ?"),
-                                         Funcs.ChooseLang("Font style choices",
-                                                          "Choix de style de police"), MessageBoxButton.YesNoCancel, MessageBoxImage.Warning) = MessageBoxResult.Yes Then
+            If Not MainWindow.NewMessage(Funcs.ChooseLang("FontStylesTurnOffStr"),
+                                         Funcs.ChooseLang("FontStyleChoicesStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Warning) = MessageBoxResult.Yes Then
 
                 SaveFontStylesBtn.IsChecked = True
                 Exit Sub
@@ -1034,15 +1029,15 @@ Public Class Options
 
         Select Case sender.Name
             Case "CharsBtn"
-                WordCountCombo.Text = Funcs.ChooseLang("Characters", "Caractères")
+                WordCountCombo.Text = Funcs.ChooseLang("ApCharsStr")
                 My.Settings.preferredcount = "char"
 
             Case "LinesBtn"
-                WordCountCombo.Text = Funcs.ChooseLang("Lines", "Lignes")
+                WordCountCombo.Text = Funcs.ChooseLang("ApLinesStr")
                 My.Settings.preferredcount = "line"
 
             Case "WordsBtn"
-                WordCountCombo.Text = Funcs.ChooseLang("Words", "Mots")
+                WordCountCombo.Text = Funcs.ChooseLang("ApWordsStr")
                 My.Settings.preferredcount = "word"
 
         End Select
@@ -1186,9 +1181,8 @@ Public Class Options
 
     Private Sub ImportBtn_Click(sender As Object, e As RoutedEventArgs) Handles ImportBtn.Click
 
-        If MainWindow.NewMessage(Funcs.ChooseLang($"Select a text file that contains a list of fonts, each separated by a new line.{Chr(10)}{Chr(10)}Importing fonts will delete all existing favourites. Do you wish to continue?",
-                                                       $"Sélectionnez un fichier texte contenant une liste de polices, séparées par une nouvelle ligne.{Chr(10)}{Chr(10)}L'importation de polices supprimera tous les favoris existants. Souhaitez-vous continuer ?"),
-                                 Funcs.ChooseLang("Import favourites", "Importation des favoris"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+        If MainWindow.NewMessage(Funcs.ChooseLang("ImportFavsWarningStr"),
+                                 Funcs.ChooseLang("ImportFavsStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
             If openDialog.ShowDialog() = True Then
                 My.Settings.favouritefonts.Clear()
@@ -1204,9 +1198,8 @@ Public Class Options
 
                 SaveAll()
 
-                MainWindow.NewMessage(Funcs.ChooseLang("Successfully imported fonts. Head over to the font picker to view them.",
-                                                            "Polices importées avec succès. Rendez-vous sur le sélecteur de polices pour les afficher."),
-                                      Funcs.ChooseLang("Import favourites", "Importation des favoris"), MessageBoxButton.OK, MessageBoxImage.Information)
+                MainWindow.NewMessage(Funcs.ChooseLang("ImportFavsSuccessStr"),
+                                      Funcs.ChooseLang("ImportFavsStr"), MessageBoxButton.OK, MessageBoxImage.Information)
                 Close()
 
             End If
@@ -1278,7 +1271,7 @@ Public Class Options
     ReadOnly defsettings As New List(Of String) From
              {"font-family", "font-size", "bold", "italic", "underline", "text-colour", "save-location", "file-type", "colour-scheme", "spellchecker-language"}
     ReadOnly gensettings As New List(Of String) From
-             {"sounds", "save-prompt", "lock-shortcut", "dict-en", "dict-fr", "dict-es", "save-charts", "save-shapes", "save-fonts", "saved-charts", "saved-shapes", "saved-fonts"}
+             {"sounds", "save-prompt", "lock-shortcut", "dict-en", "dict-fr", "dict-es", "save-charts", "save-shapes", "save-fonts", "saved-charts", "saved-shapes", "saved-fonts", "fav-files", "pinned-folders"}
     ReadOnly appsettings As New List(Of String) From {"dark-mode", "auto-dark", "dark-on", "dark-off", "recent-files", "stat-shortcut", "stat-figure", "save-shortcut"}
     ReadOnly strsettings As New List(Of String) From {"type-menu", "notifications", "open-recent"}
 
@@ -1490,6 +1483,22 @@ Public Class Options
                                                 End If
                                             End If
                                         Next
+                                    ElseIf j.OuterXml.StartsWith("<fav-files>") Then
+                                        For Each k As Xml.XmlNode In j.ChildNodes
+                                            If k.OuterXml.StartsWith("<data>") Then
+                                                If (Not k.InnerText = "") And My.Settings.favourites.Contains(Funcs.EscapeChars(k.InnerText, True)) = False Then
+                                                    My.Settings.favourites.Add(Funcs.EscapeChars(k.InnerText, True))
+                                                End If
+                                            End If
+                                        Next
+                                    ElseIf j.OuterXml.StartsWith("<pinned-folders>") Then
+                                        For Each k As Xml.XmlNode In j.ChildNodes
+                                            If k.OuterXml.StartsWith("<data>") Then
+                                                If (Not k.InnerText = "") And My.Settings.pinned.Contains(Funcs.EscapeChars(k.InnerText, True)) = False Then
+                                                    My.Settings.pinned.Add(Funcs.EscapeChars(k.InnerText, True))
+                                                End If
+                                            End If
+                                        Next
                                     End If
                                 End If
                             Next
@@ -1598,8 +1607,8 @@ Public Class Options
                         End If
                     Next
 
-                    MainWindow.NewMessage(count.ToString() + Funcs.ChooseLang(" settings imported", " paramètres importés"),
-                                          Funcs.ChooseLang("Import Settings", "Importation des Paramètres"), MessageBoxButton.OK, MessageBoxImage.Information)
+                    MainWindow.NewMessage(Funcs.ChooseLang("ImportSettingsDescStr").Replace("{0}", count.ToString()),
+                                          Funcs.ChooseLang("ImportSettingsStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
                     My.Settings.Save()
 
@@ -1625,9 +1634,8 @@ Public Class Options
 
                 End If
             Catch
-                MainWindow.NewMessage(Funcs.ChooseLang("We're having trouble importing these settings. Please make sure this file was generated by Type Express and hasn't been edited.",
-                                                       "Nous avons du mal à importer ces paramètres. Veuillez vous assurer que ce fichier a été généré par Type Express et n'a pas été modifié."),
-                                      Funcs.ChooseLang("Import Error", "Erreur d'Importation"), MessageBoxButton.OK, MessageBoxImage.Error)
+                MainWindow.NewMessage(Funcs.ChooseLang("ImportErrorDescStr").Replace("{0}", "Type Express"),
+                                      Funcs.ChooseLang("ImportSettingsErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             End Try
         End If
 
@@ -1635,9 +1643,8 @@ Public Class Options
 
     Private Sub ExportSettingsBtn_Click(sender As Object, e As RoutedEventArgs) Handles ExportSettingsBtn.Click
 
-        If MainWindow.NewMessage(Funcs.ChooseLang("Save this file in a safe space and import it every time you update Type Express. Click OK to continue.",
-                                                  "Enregistrez ce fichier dans un espace sûr et importez-le chaque fois que vous mettez à jour Type Express. Cliquez sur OK pour continuer."),
-                                 Funcs.ChooseLang("Export settings", "Exportation des paramètres"),
+        If MainWindow.NewMessage(Funcs.ChooseLang("ExportSettingsDescStr").Replace("{0}", "Type Express"),
+                                 Funcs.ChooseLang("ExportSettingsStr"),
                                  MessageBoxButton.OKCancel, MessageBoxImage.Information) = MessageBoxResult.OK Then
 
             If exportDialog.ShowDialog() Then
@@ -1713,6 +1720,14 @@ Public Class Options
                             Next
                         Case "saved-fonts"
                             For Each j In My.Settings.savedfonts
+                                result += "<data>" + Funcs.EscapeChars(j) + "</data>"
+                            Next
+                        Case "fav-files"
+                            For Each j In My.Settings.favourites
+                                result += "<data>" + Funcs.EscapeChars(j) + "</data>"
+                            Next
+                        Case "pinned-folders"
+                            For Each j In My.Settings.pinned
                                 result += "<data>" + Funcs.EscapeChars(j) + "</data>"
                             Next
                     End Select

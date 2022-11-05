@@ -10,8 +10,9 @@ Public Class DictionaryEditor
         InitializeComponent()
 
         ' Add any initialization after the InitializeComponent() call.
-        If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then ChosenLang = "fr"
+        ChosenLang = Funcs.GetCurrentLang(True)
         ChangeLanguage()
+        SetLangPopupChecks(ChosenLang)
 
     End Sub
 
@@ -55,13 +56,13 @@ Public Class DictionaryEditor
         Select Case lang
             Case "fr"
                 Lang2Btn.IsChecked = True
-                LangBtn.Text = Funcs.ChooseLang("Language: French", "Langue : français")
+                LangBtn.Text = Funcs.ChooseLang("LanguageFRStr")
             Case "es"
                 Lang3Btn.IsChecked = True
-                LangBtn.Text = Funcs.ChooseLang("Language: Spanish", "Langue : espagnol")
+                LangBtn.Text = Funcs.ChooseLang("LanguageESStr")
             Case Else
                 Lang1Btn.IsChecked = True
-                LangBtn.Text = Funcs.ChooseLang("Language: English", "Langue : anglais")
+                LangBtn.Text = Funcs.ChooseLang("LanguageENStr")
         End Select
 
     End Sub
@@ -87,9 +88,8 @@ Public Class DictionaryEditor
         End If
 
         If DictionaryList.Children.Count = 0 Then
-            MainWindow.NewMessage(Funcs.ChooseLang("No items in this custom dictionary",
-                                                        "Aucun élément dans ce dictionnaire personnalisé."),
-                                  Funcs.ChooseLang("Empty dictionary", "Dictionnaire vide"), MessageBoxButton.OK, MessageBoxImage.Information)
+            MainWindow.NewMessage(Funcs.ChooseLang("EmptyDictDescStr"),
+                                  Funcs.ChooseLang("EmptyDictStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
         End If
 
@@ -107,18 +107,17 @@ Public Class DictionaryEditor
     Private Sub AddBtn_Click(sender As Object, e As RoutedEventArgs) Handles AddBtn.Click
 
         If AddWordTxt.Text = "" Then
-            MainWindow.NewMessage(Funcs.ChooseLang("Please enter a word first.", "Veuillez entrer un mot d'abord."),
-                                  Funcs.ChooseLang("Can't add word", "Impossible d'ajouter le mot"), MessageBoxButton.OK, MessageBoxImage.Error)
+            MainWindow.NewMessage(Funcs.ChooseLang("EnterWordErrorStr"),
+                                  Funcs.ChooseLang("WordAddErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         ElseIf AddWordTxt.Text.Length > 100 Then
-            MainWindow.NewMessage(Funcs.ChooseLang("Word is too long.", "Le mot est trop long."),
-                                  Funcs.ChooseLang("Can't add word", "Impossible d'ajouter le mot"), MessageBoxButton.OK, MessageBoxImage.Error)
+            MainWindow.NewMessage(Funcs.ChooseLang("WordTooLongStr"),
+                                  Funcs.ChooseLang("WordAddErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         Else
             If GetLanguage().Contains(AddWordTxt.Text) Then
-                MainWindow.NewMessage(Funcs.ChooseLang("The word you entered is already included in the dictionary.",
-                                                            "Le mot que vous avez entré est déjà inclus dans le dictionnaire."),
-                                      Funcs.ChooseLang("Existing word", "Mot existant"), MessageBoxButton.OK, MessageBoxImage.Error)
+                MainWindow.NewMessage(Funcs.ChooseLang("ExistingWordErrorDescStr"),
+                                      Funcs.ChooseLang("ExistingWordErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
             Else
                 GetLanguage().Add(AddWordTxt.Text)
@@ -141,8 +140,8 @@ Public Class DictionaryEditor
             GetLanguage().Remove(bt.Tag.ToString())
 
         Catch
-            MainWindow.NewMessage(Funcs.ChooseLang("Please select a word first.", "Veuillez sélectionner un mot d'abord."),
-                                  Funcs.ChooseLang("No selection", "Pas de sélection"), MessageBoxButton.OK, MessageBoxImage.Error)
+            MainWindow.NewMessage(Funcs.ChooseLang("NoWordSelectionDescStr"),
+                                  Funcs.ChooseLang("NoWordSelectionStr"), MessageBoxButton.OK, MessageBoxImage.Error)
         End Try
 
     End Sub

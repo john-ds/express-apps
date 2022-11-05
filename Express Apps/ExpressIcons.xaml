@@ -2848,6 +2848,46 @@
         </Canvas>
     </Viewbox>
 
+    <Viewbox x:Key="CorsivoIcon" x:Shared="False" Stretch="Uniform">
+        <Canvas Width="26.458333" Height="26.458334">
+            <Canvas.RenderTransform>
+                <TranslateTransform X="0" Y="0"/>
+            </Canvas.RenderTransform>
+            <Canvas.Resources>
+                <LinearGradientBrush xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Key="corsivo_linearGradient861" MappingMode="Absolute" StartPoint="-49,48" EndPoint="-64,23">
+                    <LinearGradientBrush.GradientStops>
+                        <GradientStopCollection>
+                            <GradientStop Color="#FFA235D0" Offset="0"/>
+                            <GradientStop Color="#FFB761DA" Offset="1"/>
+                        </GradientStopCollection>
+                    </LinearGradientBrush.GradientStops>
+                    <LinearGradientBrush.Transform>
+                        <MatrixTransform Matrix="2.9151967 0 0 2.9151967 209.3343 -43.557837"/>
+                    </LinearGradientBrush.Transform>
+                </LinearGradientBrush>
+            </Canvas.Resources>
+            <Canvas>
+                <Canvas.RenderTransform>
+                    <TranslateTransform X="0" Y="-270.54165"/>
+                </Canvas.RenderTransform>
+                <Canvas Opacity="1">
+                    <Canvas.RenderTransform>
+                        <MatrixTransform Matrix="0.26458333 0 0 0.26458333 1.5591518 269.64396"/>
+                    </Canvas.RenderTransform>
+                    <Canvas Opacity="1">
+                        <Canvas>
+                            <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Fill="{StaticResource corsivo_linearGradient861}" StrokeThickness="0.999993">
+                                <Path.Data>
+                                    <PathGeometry Figures="M 73.010473 67.242154 Q 72.042527 75.83979 67.14586 82.501535 62.249193 89.106342 54.39175 92.693435 46.534308 96.22359 37.42423 96.052777 29.225159 95.881963 23.132794 92.294869 17.04043 88.650838 13.510274 81.818279 10.037057 74.928783 9.581553 65.989518 9.1829871 58.986146 11.005003 48.566494 12.883956 38.146842 17.609809 30.061647 22.3926 21.976453 28.940469 17.2506 q 9.223954 -6.604807 21.067056 -6.377055 12.867986 0.227752 20.3838 7.971319 7.572753 7.686628 8.312946 21.408683 l -16.625892 -0.05694 q 0 -7.857442 -3.13159 -11.501473 -3.131589 -3.644032 -9.736396 -3.871784 -8.540698 -0.284689 -14.063683 6.092365 -5.466047 6.377055 -7.345001 18.618723 -1.822015 11.900039 -1.594263 17.82159 0.28469 7.515815 3.359341 11.102908 3.074651 3.530155 8.597636 3.700969 7.629691 0.28469 12.18473 -3.587093 4.611977 -3.928721 6.092365 -11.216784 z" FillRule="NonZero"/>
+                                </Path.Data>
+                            </Path>
+                        </Canvas>
+                    </Canvas>
+                </Canvas>
+            </Canvas>
+        </Canvas>
+    </Viewbox>
+
     <Viewbox x:Key="CriticalIcon" x:Shared="False" Stretch="Uniform">
         <Canvas Width="26.458333" Height="26.458334">
             <Canvas.RenderTransform>
@@ -7272,6 +7312,41 @@
                         <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Fill="{StaticResource music_folder_linearGradient900}" StrokeThickness="2.27025">
                             <Path.Data>
                                 <PathGeometry Figures="m 24 6 c 0 9 0 18 0 27 1.333333 0 2.666667 0 4 0 0 -6.333333 0 -12.666667 0 -19 3.666667 1 7.333333 2 11 3 0 -2.333333 0 -4.666667 0 -7 C 34 8.6666667 29 7.3333333 24 6 Z" FillRule="NonZero"/>
+                            </Path.Data>
+                        </Path>
+                    </Canvas>
+                </Canvas>
+            </Canvas>
+        </Canvas>
+    </Viewbox>
+
+    <Viewbox x:Key="NegritaIcon" x:Shared="False" Stretch="Uniform">
+        <Canvas Width="26.458333" Height="26.458334">
+            <Canvas.RenderTransform>
+                <TranslateTransform X="0" Y="0"/>
+            </Canvas.RenderTransform>
+            <Canvas.Resources>
+                <LinearGradientBrush xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Key="negrita_linearGradient855" MappingMode="Absolute" StartPoint="73,90" EndPoint="16,17">
+                    <LinearGradientBrush.GradientStops>
+                        <GradientStopCollection>
+                            <GradientStop Color="#FFA235D0" Offset="0"/>
+                            <GradientStop Color="#FFB761DA" Offset="1"/>
+                        </GradientStopCollection>
+                    </LinearGradientBrush.GradientStops>
+                </LinearGradientBrush>
+            </Canvas.Resources>
+            <Canvas>
+                <Canvas.RenderTransform>
+                    <TranslateTransform X="0" Y="-270.54165"/>
+                </Canvas.RenderTransform>
+                <Canvas Opacity="1">
+                    <Canvas.RenderTransform>
+                        <MatrixTransform Matrix="0.26458333 0 0 0.26458333 1.5591518 269.64396"/>
+                    </Canvas.RenderTransform>
+                    <Canvas Opacity="1">
+                        <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Fill="{StaticResource negrita_linearGradient855}" StrokeThickness="0.999995">
+                            <Path.Data>
+                                <PathGeometry Figures="M 78.744345 96.079742 H 61.191709 L 27.022578 40.028324 V 96.079742 H 9.4699413 V 10.890948 H 27.022578 l 34.22764 56.168436 V 10.890948 h 17.494127 z" FillRule="NonZero"/>
                             </Path.Data>
                         </Path>
                     </Canvas>

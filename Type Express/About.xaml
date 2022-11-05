@@ -6,7 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Type_Express"
         mc:Ignorable="d"
-        Title="{DynamicResource AboutStr}" Width="450" Background="{x:Null}" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" UseLayoutRounding="True" SizeToContent="Height" AllowsTransparency="True" WindowStyle="None">
+        Title="{DynamicResource AboutTStr}" Width="450" Background="{x:Null}" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" UseLayoutRounding="True" SizeToContent="Height" AllowsTransparency="True" WindowStyle="None">
     <Window.Resources>
         <Storyboard x:Key="EntranceStoryboard">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" Storyboard.TargetName="grid">

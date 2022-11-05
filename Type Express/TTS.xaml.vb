@@ -6,11 +6,7 @@ Imports System.Windows.Markup
 Public Class TTS
 
     ReadOnly SpeechTTS As New SpeechSynthesizer
-
-    ReadOnly saveDialog As New SaveFileDialog With {
-        .Title = "Type Express",
-        .Filter = "WAV files (.wav)|*.wav"
-    }
+    ReadOnly saveDialog As SaveFileDialog
 
 
     Public Sub New(text As String)
@@ -32,12 +28,16 @@ Public Class TTS
         Next
 
         voices.Add(New VoiceItem() With {
-                   .Name = Funcs.ChooseLang("Get more voices...", "Obtenir plus de voix..."),
+                   .Name = Funcs.ChooseLang("GetMoreVoicesStr"),
                    .Tag = "/more/"
         })
 
         VoiceStack.ItemsSource = voices
-        If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then saveDialog.Filter = "Fichiers WAV (.wav)|*.wav"
+
+        saveDialog = New SaveFileDialog With {
+            .Title = "Type Express",
+            .Filter = Funcs.ChooseLang("WAVFilesFilterStr")
+        }
 
         TTSTxt.Document.Blocks.Clear()
         TTSTxt.Document.Blocks.Add(New Paragraph(New Run(text)))
@@ -57,9 +57,8 @@ Public Class TTS
     Private Sub TTS_Loaded(sender As Object, e As RoutedEventArgs) Handles Me.Loaded
 
         If VoiceStack.Items.Count <= 1 Then
-            If MainWindow.NewMessage(Funcs.ChooseLang("You don't have any text-to-speech voices installed. Would you like to open Settings to get some?",
-                                                      "Vous n'avez pas de voix de synthèse vocale installées. Voulez-vous ouvrir Paramètres pour en obtenir ?"),
-                                     Funcs.ChooseLang("No voices installed", "Aucune voix installée"),
+            If MainWindow.NewMessage(Funcs.ChooseLang("NoVoicesDescStr"),
+                                     Funcs.ChooseLang("NoVoicesStr"),
                                      MessageBoxButton.YesNo, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
                 OpenSettings()
 
@@ -67,7 +66,7 @@ Public Class TTS
             Close()
 
         Else
-            VoiceCombo.Text = Funcs.ChooseLang("Voice: ", "Voix : ") + SpeechTTS.GetInstalledVoices()(0).VoiceInfo.Name
+            VoiceCombo.Text = Funcs.ChooseLang("VoiceTitleStr") + " " + SpeechTTS.GetInstalledVoices()(0).VoiceInfo.Name
 
         End If
 
@@ -99,18 +98,18 @@ Public Class TTS
 
         If SpeechTTS.State = SynthesizerState.Speaking Then
             PlayBtn.Icon = FindResource("PlayIcon")
-            PlayBtn.ToolTip = Funcs.ChooseLang("Play", "Lire")
+            PlayBtn.ToolTip = Funcs.ChooseLang("TtPlayStr")
             SpeechTTS.Pause()
 
         ElseIf SpeechTTS.State = SynthesizerState.Paused Then
             PlayBtn.Icon = FindResource("PauseIcon")
-            PlayBtn.ToolTip = "Pause"
+            PlayBtn.ToolTip = Funcs.ChooseLang("TtPauseStr")
             SpeechTTS.Resume()
 
         Else
             DisableControls()
             PlayBtn.Icon = FindResource("PauseIcon")
-            PlayBtn.ToolTip = "Pause"
+            PlayBtn.ToolTip = Funcs.ChooseLang("TtPauseStr")
             StopBtn.Visibility = Visibility.Visible
 
             SpeechTTS.SpeakAsync(New TextRange(TTSTxt.Document.ContentStart, TTSTxt.Document.ContentEnd).Text)
@@ -146,7 +145,7 @@ Public Class TTS
     Private Sub SpeechTTS_SpeakCompleted(sender As Object, e As SpeakCompletedEventArgs)
         EnableControls()
         PlayBtn.Icon = FindResource("PlayIcon")
-        PlayBtn.ToolTip = Funcs.ChooseLang("Play", "Lire")
+        PlayBtn.ToolTip = Funcs.ChooseLang("TtPlayStr")
         StopBtn.Visibility = Visibility.Collapsed
 
         TTSTxt.Selection.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.Regular)
@@ -165,7 +164,7 @@ Public Class TTS
             OpenSettings()
         Else
             SpeechTTS.SelectVoice(sender.Tag.ToString())
-            VoiceCombo.Text = Funcs.ChooseLang("Voice: ", "Voix : ") + sender.Tag.ToString()
+            VoiceCombo.Text = Funcs.ChooseLang("VoiceTitleStr") + " " + sender.Tag.ToString()
         End If
 
     End Sub
@@ -175,9 +174,8 @@ Public Class TTS
         Try
             Process.Start("ms-settings:speech")
         Catch
-            MainWindow.NewMessage(Funcs.ChooseLang("To install more voices, open Control Panel and search for 'speech.'",
-                                                        "Pour installer plus de voix, ouvrez le Panneau de Configuration et recherchez 'fonctions vocales.'"),
-                                  Funcs.ChooseLang("Unable to open Settings", "Impossible d'ouvrir Paramètres"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+            MainWindow.NewMessage(Funcs.ChooseLang("OpenSettingsErrorDescStr"),
+                                  Funcs.ChooseLang("OpenSettingsErrorStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
         End Try
 
     End Sub

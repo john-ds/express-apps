@@ -135,13 +135,16 @@ Public Class Shapes
 
     Private Sub SetDefaults(ShapeType As String, ColourScheme As List(Of Color))
 
-        If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" And ShapeType = "Line" Then
-            Title = "Ligne - Type Express"
-
-        Else
-            Title = ShapeType + " - Type Express"
-
-        End If
+        Select Case ShapeType
+            Case "Line"
+                Title = Funcs.ChooseLang("LineStr") + " - Type Express"
+            Case "Triangle"
+                Title = Funcs.ChooseLang("TriangleStr") + " - Type Express"
+            Case "Rectangle"
+                Title = Funcs.ChooseLang("RectangleStr") + " - Type Express"
+            Case "Ellipse"
+                Title = Funcs.ChooseLang("EllipseStr") + " - Type Express"
+        End Select
 
         CurrentShape = ShapeType
 
@@ -160,10 +163,10 @@ Public Class Shapes
             NoOutlineCheckBox.Visibility = Visibility.Collapsed
             JoinPanel.Visibility = Visibility.Collapsed
 
-            DashCheckBox.Content = Funcs.ChooseLang("Dashed line", "Ligne pointillée")
-            OutlineTxt.Text = Funcs.ChooseLang("Line colour", "Couleur de ligne")
-            ThicknessTxt.Text = Funcs.ChooseLang("Line thickness", "Épaisseur de ligne")
-            WidthTxt.Text = Funcs.ChooseLang("Length", "Longueur")
+            DashCheckBox.Content = Funcs.ChooseLang("DashedLineStr")
+            OutlineTxt.Text = Funcs.ChooseLang("LineColourStr")
+            ThicknessTxt.Text = Funcs.ChooseLang("LineThicknessStr")
+            WidthTxt.Text = Funcs.ChooseLang("LengthStr")
 
         ElseIf ShapeType = "Triangle" Then
             TriangleShape.Visibility = Visibility.Visible

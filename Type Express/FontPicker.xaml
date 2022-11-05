@@ -5,7 +5,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Type_Express"
-        Title="{DynamicResource FnTitleStr}" Background="{DynamicResource BackColor}" Height="618" Width="876" WindowStartupLocation="CenterScreen" MinWidth="520" MinHeight="250" WindowStyle="None">
+        Title="{DynamicResource FnTitleStr}" Background="{DynamicResource BackColor}" Height="618" Width="876" WindowStartupLocation="CenterScreen" MinWidth="520" MinHeight="250" Style="{DynamicResource ChromeWindowStyle}">
     <Window.Resources>
         <Storyboard x:Key="LoaderStartStoryboard">
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="LoadingGrid">
@@ -44,8 +44,8 @@
                 <TextBlock x:Name="SideHeaderLbl_Copy" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" HorizontalAlignment="Left" FontSize="14" Margin="20,0,0,0" Text="{DynamicResource FnHeaderStr}"></TextBlock>
                 <Grid Width="20" DockPanel.Dock="Right"/>
                 <ex:AppButton x:Name="ExitSearchBtn" IconSize="20" Icon="{DynamicResource CrossIcon}" TextVisibility="Collapsed" GapMargin="0" Margin="5,0,0,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" VerticalAlignment="Center" Height="Auto" Padding="4,0" ToolTip="{DynamicResource FnExitSearchStr}" DockPanel.Dock="Right" Visibility="Collapsed"/>
-                <ex:AppButton x:Name="SearchBtn" IconSize="20" Icon="{DynamicResource SearchIcon}" TextVisibility="Collapsed" GapMargin="0" Margin="0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" VerticalAlignment="Center" Height="Auto" Padding="4,0" ToolTip="{DynamicResource FnSearchStr}" DockPanel.Dock="Right"/>
-                <TextBox x:Name="SearchTxt" Margin="5,0,10,0" Text="{DynamicResource FnSearchStr}" Width="104" HorizontalAlignment="Left" UseLayoutRounding="False" VerticalContentAlignment="Center" VerticalAlignment="Center" Height="28" UndoLimit="0" Padding="0" Foreground="#FF818181" Tag="{DynamicResource FnSearchStr}" Background="{DynamicResource BackColor}" DockPanel.Dock="Right" Template="{DynamicResource RoundedTextBox}">
+                <ex:AppButton x:Name="SearchBtn" IconSize="20" Icon="{DynamicResource SearchIcon}" TextVisibility="Collapsed" GapMargin="0" Margin="0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" VerticalAlignment="Center" Height="Auto" Padding="4,0" ToolTip="{DynamicResource SearchStr}" DockPanel.Dock="Right"/>
+                <TextBox x:Name="SearchTxt" Margin="5,0,10,0" Text="{DynamicResource SearchStr}" Width="104" HorizontalAlignment="Left" UseLayoutRounding="False" VerticalContentAlignment="Center" VerticalAlignment="Center" Height="28" UndoLimit="0" Padding="0" Foreground="#FF818181" Tag="{DynamicResource SearchStr}" Background="{DynamicResource BackColor}" DockPanel.Dock="Right" Template="{DynamicResource RoundedTextBox}">
                     <TextBox.ContextMenu>
                         <ContextMenu Visibility="Collapsed"/>
                     </TextBox.ContextMenu>

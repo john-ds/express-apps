@@ -9,18 +9,19 @@
 
         ' Add any initialization after the InitializeComponent() call.
         FontNameTxt.Text = name
-        Title = name + " - Type Express Font Picker"
+        Title = name + " - " + Funcs.ChooseLang("TypeFontPickerStr")
 
         Dim ffcv As New FontFamilyConverter()
         DisplayTxt.FontFamily = ffcv.ConvertFromString(name)
 
         If My.Settings.favouritefonts.Contains(name) Then
             FavouriteBtn.Icon = FindResource("FavouriteIcon")
-            FavouriteBtn.ToolTip = Funcs.ChooseLang("Remove from favourites", "Supprimer des favoris")
+            FavouriteBtn.ToolTip = Funcs.ChooseLang("RemoveFromFavsStr")
 
         End If
 
-        If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then BoldBtn.Icon = FindResource("GrasIcon")
+        BoldBtn.Icon = TryFindResource(Funcs.ChooseIcon("BoldIcon"))
+        ItalicBtn.Icon = TryFindResource(Funcs.ChooseIcon("ItalicIcon"))
 
     End Sub
 
@@ -65,19 +66,19 @@
 
     Private Sub FavouriteBtn_Click(sender As Button, e As RoutedEventArgs) Handles FavouriteBtn.Click
 
-        If sender.ToolTip = Funcs.ChooseLang("Remove from favourites", "Supprimer des favoris") Then
+        If sender.ToolTip = Funcs.ChooseLang("RemoveFromFavsStr") Then
             My.Settings.favouritefonts.Remove(FontNameTxt.Text)
             My.Settings.Save()
 
             FavouriteBtn.Icon = FindResource("AddFavouriteIcon")
-            FavouriteBtn.ToolTip = Funcs.ChooseLang("Add to favourites", "Ajouter aux favoris")
+            FavouriteBtn.ToolTip = Funcs.ChooseLang("AddToFavsStr")
 
         Else
             My.Settings.favouritefonts.Add(FontNameTxt.Text)
             My.Settings.Save()
 
             FavouriteBtn.Icon = FindResource("FavouriteIcon")
-            FavouriteBtn.ToolTip = Funcs.ChooseLang("Remove from favourites", "Supprimer des favoris")
+            FavouriteBtn.ToolTip = Funcs.ChooseLang("RemoveFromFavsStr")
 
         End If
 

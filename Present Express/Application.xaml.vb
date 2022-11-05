@@ -42,9 +42,8 @@ Class Application
         Dim NewInfoForm As New InfoBox
 
         With NewInfoForm
-            .TextLbl.Text = Funcs.ChooseLang("An error occurred that caused this app to stop working." + Chr(10) + Chr(10) + "Please report this issue to us by emailing expressapps@outlook.com and we will aim to fix it.",
-                                             "Une erreur s'est produite et cette application a cessé de fonctionner." + Chr(10) + Chr(10) + "Veuillez nous signaler ce problème en envoyant un mail à expressapps@outlook.com et nous nous efforcerons de le résoudre.")
-            .Title = Funcs.ChooseLang("Critical error", "Erreur critique")
+            .TextLbl.Text = Funcs.ChooseLang("CriticalErrorDescStr")
+            .Title = Funcs.ChooseLang("CriticalErrorStr")
 
             .Button1.Text = "OK"
             .Button2.Visibility = Visibility.Collapsed

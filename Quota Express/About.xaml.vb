@@ -6,10 +6,9 @@
         InitializeComponent()
 
         ' Add any initialization after the InitializeComponent() call.
-        VersionTxt.Text = "Version " + My.Application.Info.Version.ToString(3)
+        VersionTxt.Text = Funcs.ChooseLang("VersionStr") + " " + My.Application.Info.Version.ToString(3)
         CopyrightTxt.Text = My.Application.Info.Copyright
-        DescriptionTxt.Text = Funcs.ChooseLang($"Thank you for installing Quota Express.{Environment.NewLine}Find out what's taking up space on your PC with sort and filter functionalities, and analyse and export data by creating charts.{Environment.NewLine}{Environment.NewLine}To find out about how to use the features available, visit the Help section. You can also leave your feedback there - it is greatly appreciated!{Environment.NewLine}{Environment.NewLine}The app and the Quota Express logo are copyright John D. In-app icon designs from icons8.com. Illustrations from stories.freepik.com.",
-                                               $"Merci d'avoir installé Quota Express.{Environment.NewLine}Découvrez ce qui prend de la place sur votre PC avec des fonctionnalités de tri et de filtrage, et analysez et exportez des données en créant des graphiques.{Environment.NewLine}{Environment.NewLine}Pour savoir comment utiliser les fonctionnalités disponibles, consultez la section Aide. Vous pouvez également laisser vos commentaires là-bas - c'est grandement apprécié !{Environment.NewLine}{Environment.NewLine}L'application et le logo Quota Express sont copyright John D. Conceptions d'icônes intégrées à l'application à partir de icons8.com. Illustrations à partir de stories.freepik.com.")
+        DescriptionTxt.Text = Funcs.ChooseLang("AboutDescQStr")
 
     End Sub
 

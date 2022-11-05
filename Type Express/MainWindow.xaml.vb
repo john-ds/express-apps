@@ -36,28 +36,11 @@ Class MainWindow
     ' DIALOG BOXES
     ' --
 
-    ReadOnly openDialog As New Microsoft.Win32.OpenFileDialog With {
-        .Title = "Type Express",
-        .Filter = "Supported files (.rtf, .txt)|*.txt;*.rtf|Text files (.txt)|*.txt|RTF files (.rtf)|*.rtf",
-        .FilterIndex = 0,
-        .Multiselect = True
-    }
-
-    ReadOnly allfileDialog As New Microsoft.Win32.OpenFileDialog With {
-        .Title = "Choose a file - Type Express",
-        .Filter = "",
-        .Multiselect = False
-    }
-
-    ReadOnly saveDialog As New Microsoft.Win32.SaveFileDialog With {
-        .Title = "Type Express",
-        .Filter = "RTF files (.rtf)|*.rtf|Text files (.txt)|*.txt"
-    }
-
-    ReadOnly folderBrowser As New Forms.FolderBrowserDialog With {
-        .Description = "Choose a folder below...",
-        .ShowNewFolderButton = True
-    }
+    Private openDialog As Microsoft.Win32.OpenFileDialog
+    Private allfileDialog As Microsoft.Win32.OpenFileDialog
+    Private saveDialog As Microsoft.Win32.SaveFileDialog
+    Private folderBrowser As Forms.FolderBrowserDialog
+    Private pictureDialog As Forms.OpenFileDialog
 
     ReadOnly PrintPreviewDialog1 As New Forms.PrintPreviewDialog With {
         .Document = PrintDoc,
@@ -76,69 +59,18 @@ Class MainWindow
         .UseEXDialog = True
     }
 
-    ReadOnly pictureDialog As New Forms.OpenFileDialog With {
-        .Title = "Choose a picture - Type Express",
-        .Filter = "Pictures|*.jpg;*.png;*.bmp;*.gif|JPEG files|*.jpg|PNG files|*.png|BMP files|*.bmp|GIF files|*.gif",
-        .FilterIndex = 0,
-        .Multiselect = False
-    }
-
 
     ' SYMBOL & DATE LISTS
     ' --
 
     ' Be wary of forbidden XML characters when adding to these symbol lists
-    Private Lettering As New List(Of String) From
-        {"À*A GRAVE UPPER", "Á*A ACUTE UPPER", "Â*A CIRCUMFLEX UPPER", "Ã*A TILDE UPPER", "Ä*A DIAERESIS UPPER", "Æ*AE UPPER",
-            "Ć*C ACUTE UPPER", "Č*C CARON UPPER", "Ç*C CEDILLA UPPER", "È*E GRAVE UPPER", "É*E ACUTE UPPER", "Ê*E CIRCUMFLEX UPPER", "Ë*E DIAERESIS UPPER", "Ì*I GRAVE UPPER",
-            "Í*I ACUTE UPPER", "Î*I CIRCUMFLEX UPPER", "Ï*I DIAERESIS UPPER", "Ñ*N TILDE UPPER", "Ò*O GRAVE UPPER", "Ó*O ACUTE UPPER", "Ô*O CIRCUMFLEX UPPER", "Õ*O TILDE UPPER",
-            "Ö*O DIAERESIS UPPER", "Ø*O STROKE UPPER", "Œ*OE UPPER", "Ś*S ACUTE UPPER", "Š*S CARON UPPER", "Ù*U GRAVE UPPER", "Ú*U ACUTE UPPER", "Û*U CIRCUMFLEX UPPER",
-            "Ü*U DIAERESIS UPPER", "Ŵ*W CIRCUMFLEX UPPER", "Ý*Y ACUTE UPPER", "à*A GRAVE LOWER", "á*A ACUTE LOWER", "â*A CIRCUMFLEX LOWER", "ã*A TILDE LOWER",
-            "ä*A DIAERESIS LOWER", "æ*AE LOWER", "ć*C ACUTE LOWER", "č*C CARON LOWER", "ç*C CEDILLA LOWER", "è*E GRAVE LOWER", "é*E ACUTE LOWER", "ê*E CIRCUMFLEX LOWER",
-            "ë*E DIAERESIS LOWER", "ì*I GRAVE LOWER", "í*I ACUTE LOWER", "î*I CIRCUMFLEX LOWER", "ï*I DIAERESIS LOWER", "ñ*N TILDE LOWER", "ò*O GRAVE LOWER", "ó*O ACUTE LOWER",
-            "ô*O CIRCUMFLEX LOWER", "õ*O TILDE LOWER", "ö*O DIAERESIS LOWER", "ø*O STROKE LOWER", "œ*OE LOWER", "ś*S ACUTE LOWER", "š*S CARON LOWER", "ù*U GRAVE LOWER",
-            "ú*U ACUTE LOWER", "û*U CIRCUMFLEX LOWER", "ü*U DIAERESIS LOWER", "ŵ*W CIRCUMFLEX LOWER", "ý*Y ACUTE LOWER"}
-
-    Private Arrows As New List(Of String) From
-        {"˄*UP ARROWHEAD", "˅*DOWN ARROWHEAD", "←*LEFT ARROW", "↑*UP ARROW", "→*RIGHT ARROW", "↓*DOWN ARROW", "↔*LEFT RIGHT ARROW",
-            "↕*UP DOWN ARROW", "ꜛ*RAISED UP ARROW", "ꜜ*RAISED DOWN ARROW"}
-
-    Private Standard As New List(Of String) From
-        {"$*DOLLAR SIGN", "¢*CENT SIGN", "£*POUND SIGN", "¥*YEN SIGN", "¶*PILCROW SIGN", "€*EURO SIGN", "%*PERCENT SIGN", "@*AT SIGN",
-            "°*DEGREE SIGN", "|*VERTICAL LINE", "¦*BROKEN VERTICAL LINE", "©*COPYRIGHT", "®*REGISTERED TRADEMARK", "℗*SOUND RECORDING COPYRIGHT", "™*TRADEMARK", "№*NUMERO SIGN",
-            "♠*SPADE SUIT", "♣*CLUB SUIT", "♥*HEART SUIT", "♦*DIAMOND SUIT", "■*LARGE SQUARE BULLET", "▪*SMALL SQUARE BULLET", "▬*RECTANGLE", "▲*UP-POINTING TRIANGLE",
-            "►*RIGHT-POINTING TRIANGLE", "▼*DOWN-POINTING TRIANGLE", "◄*LEFT-POINTING TRIANGLE"}
-
-    Private Greek As New List(Of String) From
-        {"Α*ALPHA UPPER", "α*ALPHA LOWER", "Β*BETA UPPER", "β*BETA LOWER", "Γ*GAMMA UPPER", "γ*GAMMA LOWER", "Δ*DELTA UPPER",
-            "δ*DELTA LOWER", "Ε*EPSILON UPPER", "ε*EPSILON LOWER", "Ζ*ZETA UPPER", "ζ*ZETA LOWER", "Η*ETA UPPER", "η*ETA LOWER", "Θ*THETA UPPER", "θ*THETA LOWER",
-            "Ι*IOTA UPPER", "ι*IOTA LOWER", "Κ*KAPPA UPPER", "κ*KAPPA LOWER", "Λ*LAMBDA UPPER", "λ*LAMBDA LOWER", "Μ*MU UPPER", "μ*MU LOWER", "Ν*NU UPPER", "ν*NU LOWER",
-            "Ξ*XI UPPER", "ξ*XI LOWER", "Ο*OMICRON UPPER", "ο*OMICRON LOWER", "Π*PI UPPER", "π*PI LOWER", "Ρ*RHO UPPER", "ρ*RHO LOWER", "Σ*SIGMA UPPER", "σ*SIGMA LOWER",
-            "ς*SIGMA LOWER WORD-FINAL", "Τ*TAU UPPER", "τ*TAU LOWER", "Υ*UPSILON UPPER", "υ*UPSILON LOWER", "Φ*PHI UPPER", "φ*PHI LOWER", "Χ*CHI UPPER", "χ*CHI LOWER",
-            "Ψ*PSI UPPER", "ψ*PSI LOWER", "Ω*OMEGA UPPER", "ω*OMEGA LOWER"}
-
-    Private Punctuation As New List(Of String) From
-        {"-*HYPHEN", "–*EN DASH", "—*EM DASH", "…*ELLIPSIS", "¿*INVERTED QUESTION MARK", "¡*INVERTED EXCLAMATION MARK",
-            "«*LEFT GUILLEMET", "»*RIGHT GUILLEMET", "[*LEFT SQUARE BRACKET", "]*RIGHT SQUARE BRACKET", "(*LEFT CURVED BRACKET", ")*RIGHT CURVED BRACKET",
-            "{*LEFT CURLY BRACKET", "}*RIGHT CURLY BRACKET"}
-
-    Private Maths As New List(Of String) From
-        {"±*PLUS-MINUS", "∞*INFINITY", "=*EQUAL", "≠*NOT EQUAL", "≈*APPROXIMATELY EQUAL", "≡*EQUIVALENT", "×*MULTIPLY",
-            "÷*DIVIDE", "∝*PROPORTIONAL TO", "≤*LESS THAN OR EQUAL", "≥*GREATER THAN OR EQUAL", "√*SQUARE ROOT", "∛*CUBE ROOT", "∪*UNION", "∩*INTERSECTION",
-            "∈*ELEMENT OF", "∋*CONTAINS AS MEMBER", "∴*THEREFORE", "¬*NEGATION", "ℵ*ALEPH", "∑*SUMMATION SIGN", "∫*INTEGRAL SIGN"}
-
-    Private ReadOnly Emoji As New List(Of String) From
-        {"😀*GRINNING FACE", "😁*GRINNING FACE WITH SMILING EYES", "😂*FACE WITH TEARS OF JOY", "😃*SMILING FACE WITH OPEN MOUTH",
-            "😄*SMILING FACE WITH OPEN MOUTH AND SMILING EYES", "😅*SMILING FACE WITH OPEN MOUTH AND COLD SWEAT", "😆*SMILING FACE WITH OPEN MOUTH AND TIGHTLY-CLOSED EYES",
-            "😇*SMILING FACE WITH HALO", "😈*SMILING FACE WITH HORNS", "😉*WINKING FACE", "😊*SMILING FACE WITH SMILING EYES", "😋*FACE SAVOURING DELICIOUS FOOD",
-            "😌*RELIEVED FACE", "😍*SMILING FACE WITH HEART-SHAPED EYES", "😎*SMILING FACE WITH SUNGLASSES", "😏*SMIRKING FACE", "😐*NEUTRAL FACE", "😑*EXPRESSIONLESS FACE",
-            "😒*UNAMUSED FACE", "😓*FACE WITH COLD SWEAT", "😔*PENSIVE FACE", "😕*CONFUSED FACE", "😖*CONFOUNDED FACE", "😗*KISSING FACE", "😘*FACE THROWING A KISS",
-            "😙*KISSING FACE WITH SMILING EYES", "😚*KISSING FACE WITH CLOSED EYES", "😛*FACE WITH STUCK-OUT TONGUE", "😜*FACE WITH STUCK-OUT TONGUE AND WINKING EYE",
-            "😝*FACE WITH STUCK-OUT TONGUE AND TIGHTLY-CLOSED EYES", "😞*DISAPPOINTED FACE", "😟*WORRIED FACE", "😠*ANGRY FACE", "😡*POUTING FACE", "😢*CRYING FACE",
-            "😣*PERSEVERING FACE", "😤*FACE WITH LOOK OF TRIUMPH", "😥*DISAPPOINTED BUT RELIEVED FACE", "😦*FROWNING FACE WITH OPEN MOUTH", "😧*ANGUISHED FACE",
-            "😨*FEARFUL FACE", "😩*WEARY FACE", "😪*SLEEPY FACE", "😫*TIRED FACE", "😬*GRIMACING FACE", "😭*LOUDLY CRYING FACE", "😮*FACE WITH OPEN MOUTH", "😯*HUSHED FACE",
-            "😰*FACE WITH OPEN MOUTH AND COLD SWEAT", "😱*FACE SCREAMING IN FEAR", "😲*ASTONISHED FACE", "😳*FLUSHED FACE", "😴*SLEEPING FACE", "😵*DIZZY FACE",
-            "😶*FACE WITHOUT MOUTH", "😷*FACE WITH MEDICAL MASK", "🙁*SLIGHTLY FROWNING FACE", "🙂*SLIGHTLY SMILING FACE", "🙃*UPSIDE-DOWN FACE", "🙄*FACE WITH ROLLING EYES"}
+    Private Lettering As List(Of String)
+    Private Arrows As List(Of String)
+    Private Standard As List(Of String)
+    Private Greek As List(Of String)
+    Private Punctuation As List(Of String)
+    Private Maths As List(Of String)
+    Private Emoji As List(Of String)
 
     ReadOnly DateTimeList As New List(Of String) From {"dd/MM/yyyy", "dddd dd MMMM yyyy", "dd MMMM yyyy", "dd/MM/yy", "yyyy-MM-dd", "dd-MMM-yy",
         "dd.MM.yyyy", "MMMM yyyy", "MMM-yy", "dd/MM/yyyy HH:mm", "dd/MM/yyyy HH:mm:ss", "h:mm tt", "h:mm:ss tt", "HH:mm", "HH:mm:ss"}
@@ -199,27 +131,22 @@ Class MainWindow
 
         End If
 
+        Funcs.SetLang(My.Settings.language)
 
-        If My.Settings.language = "fr-FR" Then
-            Threading.Thread.CurrentThread.CurrentCulture = New Globalization.CultureInfo("fr-FR")
-            Threading.Thread.CurrentThread.CurrentUICulture = New Globalization.CultureInfo("fr-FR")
+        DateTimeLang = Funcs.GetCurrentLang(True)
+        DefineLang = Funcs.GetCurrentLang(True)
 
-            Dim resdict As New ResourceDictionary() With {.Source = New Uri("/DictionaryFR.xaml", UriKind.Relative)}
-            Windows.Application.Current.Resources.MergedDictionaries.Add(resdict)
+        Select Case Funcs.GetCurrentLang(True)
+            Case "fr"
+                My.Settings.spelllang = 1
+            Case "es"
+                My.Settings.spelllang = 2
+            Case Else
+                My.Settings.spelllang = 0
+        End Select
 
-            Dim commonresdict As New ResourceDictionary() With {.Source = New Uri("/CommonDictionaryFR.xaml", UriKind.Relative)}
-            Windows.Application.Current.Resources.MergedDictionaries.Add(commonresdict)
-
-            SetLang()
-
-            My.Settings.spelllang = 1
-            My.Settings.Save()
-
-        ElseIf My.Settings.language = "en-GB" Then
-            Threading.Thread.CurrentThread.CurrentCulture = New Globalization.CultureInfo("en-GB")
-            Threading.Thread.CurrentThread.CurrentUICulture = New Globalization.CultureInfo("en-GB")
-
-        End If
+        My.Settings.Save()
+        InitItems()
 
 
         'If firsttime Then
@@ -244,10 +171,6 @@ Class MainWindow
         AddHandler TempLblTimer.Elapsed, AddressOf TempLblTimer_Tick
         AddHandler EditingTimer.Tick, AddressOf EditingTimer_Tick
         AddHandler ScrollTimer.Tick, AddressOf ScrollTimer_Tick
-
-        MaxHeight = SystemParameters.WorkArea.Height + 13
-        MaxWidth = SystemParameters.WorkArea.Width + 13
-        AddHandler SystemParameters.StaticPropertyChanged, AddressOf WorkAreaChanged
 
 
         ' Storyboards
@@ -301,7 +224,7 @@ Class MainWindow
 
         End If
 
-        If My.Settings.filterindex = 1 Then saveDialog.Filter = Funcs.ChooseLang("Text files (.txt)|*.txt|RTF files (.rtf)|*.rtf", "Fichiers texte (.txt)|*.txt|Fichiers RTF (.rtf)|*.rtf")
+        If My.Settings.filterindex = 1 Then saveDialog.Filter = Funcs.ChooseLang("TypeFilesShortInvFilterStr")
 
         ChangeColourScheme(My.Settings.colourscheme)
 
@@ -393,20 +316,16 @@ Class MainWindow
 
     End Sub
 
-    Private Sub WorkAreaChanged(sender As Object, e As EventArgs)
-        MaxHeight = SystemParameters.WorkArea.Height + 13
-        MaxWidth = SystemParameters.WorkArea.Width + 13
-
-    End Sub
-
     Private Sub FormHeaderLbl_DoubleClick(sender As Object, e As RoutedEventArgs) Handles TitleBtn.MouseDoubleClick
+
         If WindowState = WindowState.Maximized Then
-            WindowState = WindowState.Normal
+            SystemCommands.RestoreWindow(Me)
 
         Else
-            WindowState = WindowState.Maximized
+            SystemCommands.MaximizeWindow(Me)
 
         End If
+
     End Sub
 
 
@@ -519,6 +438,16 @@ Class MainWindow
 
     End Sub
 
+    Private Sub MainWindow_Activated(sender As Object, e As EventArgs) Handles Me.Activated
+        MainRect.Fill = TryFindResource("AppColor")
+
+    End Sub
+
+    Private Sub MainWindow_Deactivated(sender As Object, e As EventArgs) Handles Me.Deactivated
+        MainRect.Fill = TryFindResource("AppLightColor")
+
+    End Sub
+
 
     ' BACKGROUND
     ' --
@@ -576,21 +505,21 @@ Class MainWindow
                 .Button3.IsEnabled = False
 
             ElseIf buttons = MessageBoxButton.YesNo Then
-                .Button1.Text = Funcs.ChooseLang("Yes", "Oui")
+                .Button1.Text = Funcs.ChooseLang("YesStr")
                 .Button2.Visibility = Visibility.Collapsed
                 .Button2.IsEnabled = False
-                .Button3.Content = Funcs.ChooseLang("No", "Non")
+                .Button3.Text = Funcs.ChooseLang("NoStr")
 
             ElseIf buttons = MessageBoxButton.YesNoCancel Then
-                .Button1.Text = Funcs.ChooseLang("Yes", "Oui")
-                .Button2.Text = Funcs.ChooseLang("No", "Non")
-                .Button3.Text = Funcs.ChooseLang("Cancel", "Annuler")
+                .Button1.Text = Funcs.ChooseLang("YesStr")
+                .Button2.Text = Funcs.ChooseLang("NoStr")
+                .Button3.Text = Funcs.ChooseLang("CancelStr")
 
             Else ' buttons = MessageBoxButtons.OKCancel
                 .Button1.Text = "OK"
                 .Button2.Visibility = Visibility.Collapsed
                 .Button2.IsEnabled = False
-                .Button3.Text = Funcs.ChooseLang("Cancel", "Annuler")
+                .Button3.Text = Funcs.ChooseLang("CancelStr")
 
             End If
 
@@ -615,57 +544,265 @@ Class MainWindow
 
     End Function
 
-    Private Sub SetLang()
+    Private Sub InitItems()
 
-        If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then
-            openDialog.Filter = "Fichiers supportés (.rtf, .txt)|*.txt;*.rtf|Fichiers texte (.txt)|*.txt|Fichiers RTF (.rtf)|*.rtf"
-            allfileDialog.Title = "Choisir un fichier - Type Express"
-            saveDialog.Filter = "Fichiers RTF (.rtf)|*.rtf|Fichiers texte (.txt)|*.txt"
-            folderBrowser.Description = "Choisissez un dossier ci-dessous..."
-            pictureDialog.Title = "Choisir une image - Type Express"
-            pictureDialog.Filter = "Images|*.jpg;*.png;*.bmp;*.gif|Fichiers JPEG|*.jpg|Fichiers PNG|*.png|Fichiers BMP|*.bmp|Fichiers GIF|*.gif"
+        openDialog = New Microsoft.Win32.OpenFileDialog With {
+            .Title = "Type Express",
+            .Filter = Funcs.ChooseLang("TypeFilesFilterStr"),
+            .FilterIndex = 0,
+            .Multiselect = True
+        }
 
-            Lettering = New List(Of String) From {"À*A GRAVE MAJUSCULE", "Á*A AIGU MAJUSCULE", "Â*A CIRCONFLEXE MAJUSCULE", "Ã*A TILDE MAJUSCULE", "Ä*A TRÉMA MAJUSCULE", "Æ*AE MAJUSCULE",
-            "Ć*C AIGU MAJUSCULE", "Č*C CARON MAJUSCULE", "Ç*C CÉDILLE MAJUSCULE", "È*E GRAVE MAJUSCULE", "É*E AIGU MAJUSCULE", "Ê*E CIRCONFLEXE MAJUSCULE", "Ë*E TRÉMA MAJUSCULE", "Ì*I GRAVE MAJUSCULE",
-            "Í*I AIGU MAJUSCULE", "Î*I CIRCONFLEXE MAJUSCULE", "Ï*I TRÉMA MAJUSCULE", "Ñ*N TILDE MAJUSCULE", "Ò*O GRAVE MAJUSCULE", "Ó*O AIGU MAJUSCULE", "Ô*O CIRCONFLEXE MAJUSCULE", "Õ*O TILDE MAJUSCULE",
-            "Ö*O TRÉMA MAJUSCULE", "Ø*O BARRÉ MAJUSCULE", "Œ*OE MAJUSCULE", "Ś*S AIGU MAJUSCULE", "Š*S CARON MAJUSCULE", "Ù*U GRAVE MAJUSCULE", "Ú*U AIGU MAJUSCULE", "Û*U CIRCONFLEXE MAJUSCULE",
-            "Ü*U TRÉMA MAJUSCULE", "Ŵ*W CIRCONFLEXE MAJUSCULE", "Ý*Y AIGU MAJUSCULE", "à*A GRAVE MINUSCULE", "á*A AIGU MINUSCULE", "â*A CIRCONFLEXE MINUSCULE", "ã*A TILDE MINUSCULE",
-            "ä*A TRÉMA MINUSCULE", "æ*AE MINUSCULE", "ć*C AIGU MINUSCULE", "č*C CARON MINUSCULE", "ç*C CÉDILLE MINUSCULE", "è*E GRAVE MINUSCULE", "é*E AIGU MINUSCULE", "ê*E CIRCONFLEXE MINUSCULE",
-            "ë*E TRÉMA MINUSCULE", "ì*I GRAVE MINUSCULE", "í*I AIGU MINUSCULE", "î*I CIRCONFLEXE MINUSCULE", "ï*I TRÉMA MINUSCULE", "ñ*N TILDE MINUSCULE", "ò*O GRAVE MINUSCULE", "ó*O AIGU MINUSCULE",
-            "ô*O CIRCONFLEXE MINUSCULE", "õ*O TILDE MINUSCULE", "ö*O TRÉMA MINUSCULE", "ø*O BARRÉ MINUSCULE", "œ*OE MINUSCULE", "ś*S AIGU MINUSCULE", "š*S CARON MINUSCULE", "ù*U GRAVE MINUSCULE",
-            "ú*U AIGU MINUSCULE", "û*U CIRCONFLEXE MINUSCULE", "ü*U TRÉMA MINUSCULE", "ŵ*W CIRCONFLEXE MINUSCULE", "ý*Y AIGU MINUSCULE"}
+        allfileDialog = New Microsoft.Win32.OpenFileDialog With {
+            .Title = Funcs.ChooseLang("ChooseFileStr") + " - Type Express",
+            .Filter = "",
+            .Multiselect = False
+        }
 
-            Arrows = New List(Of String) From {"˄*POINTE DE FLÈCHE HAUT", "˅*POINTE DE FLÈCHE BAS", "←*FLÈCHE GAUCHE", "↑*FLÈCHE HAUT", "→*FLÈCHE DROITE", "↓*FLÈCHE BAS", "↔*FLÈCHE GAUCHE DROITE",
-            "↕*FLÈCHE HAUT BAS", "ꜛ*FLÈCHE SURÉLEVÉE HAUT", "ꜜ*FLÈCHE SURÉLEVÉE BAS"}
+        saveDialog = New Microsoft.Win32.SaveFileDialog With {
+            .Title = "Type Express",
+            .Filter = Funcs.ChooseLang("TypeFilesShortFilterStr")
+        }
 
-            Standard = New List(Of String) From {"$*SYMBOLE DOLLAR", "¢*SYMBOLE CENT", "£*SYMBOLE LIVRE STERLING", "¥*SYMBOLE YEN", "¶*PIED-DE-MOUCHE", "€*SYMBOLE EURO", "%*SIGNE POUR CENT", "@*AROBASE",
-            "°*SYMBOLE DEGRÉ", "|*BARRE VERTICALE", "¦*BARRE VERTICALE BRISÉE", "©*COPYRIGHT", "®*MARQUE DÉPOSÉE", "℗*COPYRIGHT PHONOGRAPHIQUE", "™*MARQUE DE COMMERCE", "№*SYMBOLE NUMÉRO",
-            "♠*PIQUE", "♣*TRÈFLE", "♥*CŒUR", "♦*CARREAU", "■*GRANDE PUCE CARRÉE", "▪*PETITE PUCE CARRÉE", "▬*RECTANGLE", "▲*TRIANGLE HAUT",
-            "►*TRIANGLE DROITE", "▼*TRIANGLE BAS", "◄*TRIANGLE GAUCHE"}
+        folderBrowser = New Forms.FolderBrowserDialog With {
+            .Description = Funcs.ChooseLang("ChooseFolderDialogStr"),
+            .ShowNewFolderButton = True
+        }
 
-            Greek = New List(Of String) From {"Α*ALPHA MAJUSCULE", "α*ALPHA MINUSCULE", "Β*BÊTA MAJUSCULE", "β*BÊTA MINUSCULE", "Γ*GAMMA MAJUSCULE", "γ*GAMMA MINUSCULE", "Δ*DELTA MAJUSCULE",
-            "δ*DELTA MINUSCULE", "Ε*EPSILON MAJUSCULE", "ε*EPSILON MINUSCULE", "Ζ*ZÊTA MAJUSCULE", "ζ*ZÊTA MINUSCULE", "Η*ÊTA MAJUSCULE", "η*ÊTA MINUSCULE", "Θ*THÊTA MAJUSCULE", "θ*THÊTA MINUSCULE",
-            "Ι*IOTA MAJUSCULE", "ι*IOTA MINUSCULE", "Κ*KAPPA MAJUSCULE", "κ*KAPPA MINUSCULE", "Λ*LAMBDA MAJUSCULE", "λ*LAMBDA MINUSCULE", "Μ*MU MAJUSCULE", "μ*MU MINUSCULE", "Ν*NU MAJUSCULE", "ν*NU MINUSCULE",
-            "Ξ*KSI MAJUSCULE", "ξ*KSI MINUSCULE", "Ο*OMICRON MAJUSCULE", "ο*OMICRON MINUSCULE", "Π*PI MAJUSCULE", "π*PI MINUSCULE", "Ρ*RHÔ MAJUSCULE", "ρ*RHÔ MINUSCULE", "Σ*SIGMA MAJUSCULE", "σ*SIGMA MINUSCULE",
-            "ς*SIGMA MINUSCULE WORD-FINAL", "Τ*TAU MAJUSCULE", "τ*TAU MINUSCULE", "Υ*UPSILON MAJUSCULE", "υ*UPSILON MINUSCULE", "Φ*PHI MAJUSCULE", "φ*PHI MINUSCULE", "Χ*KHI MAJUSCULE", "χ*KHI MINUSCULE",
-            "Ψ*PSI MAJUSCULE", "ψ*PSI MINUSCULE", "Ω*OMÉGA MAJUSCULE", "ω*OMÉGA MINUSCULE"}
+        pictureDialog = New Forms.OpenFileDialog With {
+            .Title = Funcs.ChooseLang("ChoosePictureStr") + " - Type Express",
+            .Filter = Funcs.ChooseLang("PicturesFilterStr"),
+            .FilterIndex = 0,
+            .Multiselect = False
+        }
 
-            Punctuation = New List(Of String) From {"-*TIRET COURT", "–*TIRET MOYEN", "—*TIRET LONG", "…*POINTS DE SUSPENSION", "¿*POINT D'INTERROGATION CULBUTÉ", "¡*POINT D'EXCLAMATION CULBUTÉ",
-            "«*GUILLEMET OUVRANT", "»*GUILLEMET FERMANT", "[*CROCHET OUVRANT", "]*CROCHET FERMANT", "(*PARENTHÈSE OUVRANT", ")*PARENTHÈSE FERMANT",
-            "{*ACCOLADE OUVRANTE", "}*ACCOLADE FERMANTE"}
+        ' Be wary of forbidden XML characters when adding to these symbol lists
+        Lettering = Funcs.ChooseLang(New Dictionary(Of String, Object) From {
+            {"en", New List(Of String) From {
+                "À*A GRAVE UPPER", "Á*A ACUTE UPPER", "Â*A CIRCUMFLEX UPPER", "Ã*A TILDE UPPER", "Ä*A DIAERESIS UPPER", "Æ*AE UPPER",
+                "Ć*C ACUTE UPPER", "Č*C CARON UPPER", "Ç*C CEDILLA UPPER", "È*E GRAVE UPPER", "É*E ACUTE UPPER", "Ê*E CIRCUMFLEX UPPER", "Ë*E DIAERESIS UPPER", "Ì*I GRAVE UPPER",
+                "Í*I ACUTE UPPER", "Î*I CIRCUMFLEX UPPER", "Ï*I DIAERESIS UPPER", "Ñ*N TILDE UPPER", "Ò*O GRAVE UPPER", "Ó*O ACUTE UPPER", "Ô*O CIRCUMFLEX UPPER", "Õ*O TILDE UPPER",
+                "Ö*O DIAERESIS UPPER", "Ø*O STROKE UPPER", "Œ*OE UPPER", "Ś*S ACUTE UPPER", "Š*S CARON UPPER", "Ù*U GRAVE UPPER", "Ú*U ACUTE UPPER", "Û*U CIRCUMFLEX UPPER",
+                "Ü*U DIAERESIS UPPER", "Ŵ*W CIRCUMFLEX UPPER", "Ý*Y ACUTE UPPER", "à*A GRAVE LOWER", "á*A ACUTE LOWER", "â*A CIRCUMFLEX LOWER", "ã*A TILDE LOWER",
+                "ä*A DIAERESIS LOWER", "æ*AE LOWER", "ć*C ACUTE LOWER", "č*C CARON LOWER", "ç*C CEDILLA LOWER", "è*E GRAVE LOWER", "é*E ACUTE LOWER", "ê*E CIRCUMFLEX LOWER",
+                "ë*E DIAERESIS LOWER", "ì*I GRAVE LOWER", "í*I ACUTE LOWER", "î*I CIRCUMFLEX LOWER", "ï*I DIAERESIS LOWER", "ñ*N TILDE LOWER", "ò*O GRAVE LOWER", "ó*O ACUTE LOWER",
+                "ô*O CIRCUMFLEX LOWER", "õ*O TILDE LOWER", "ö*O DIAERESIS LOWER", "ø*O STROKE LOWER", "œ*OE LOWER", "ś*S ACUTE LOWER", "š*S CARON LOWER", "ù*U GRAVE LOWER",
+                "ú*U ACUTE LOWER", "û*U CIRCUMFLEX LOWER", "ü*U DIAERESIS LOWER", "ŵ*W CIRCUMFLEX LOWER", "ý*Y ACUTE LOWER"
+            }},
+            {"fr", New List(Of String) From {
+                "À*A GRAVE MAJUSCULE", "Á*A AIGU MAJUSCULE", "Â*A CIRCONFLEXE MAJUSCULE", "Ã*A TILDE MAJUSCULE", "Ä*A TRÉMA MAJUSCULE", "Æ*AE MAJUSCULE",
+                "Ć*C AIGU MAJUSCULE", "Č*C CARON MAJUSCULE", "Ç*C CÉDILLE MAJUSCULE", "È*E GRAVE MAJUSCULE", "É*E AIGU MAJUSCULE", "Ê*E CIRCONFLEXE MAJUSCULE", "Ë*E TRÉMA MAJUSCULE", "Ì*I GRAVE MAJUSCULE",
+                "Í*I AIGU MAJUSCULE", "Î*I CIRCONFLEXE MAJUSCULE", "Ï*I TRÉMA MAJUSCULE", "Ñ*N TILDE MAJUSCULE", "Ò*O GRAVE MAJUSCULE", "Ó*O AIGU MAJUSCULE", "Ô*O CIRCONFLEXE MAJUSCULE", "Õ*O TILDE MAJUSCULE",
+                "Ö*O TRÉMA MAJUSCULE", "Ø*O BARRÉ MAJUSCULE", "Œ*OE MAJUSCULE", "Ś*S AIGU MAJUSCULE", "Š*S CARON MAJUSCULE", "Ù*U GRAVE MAJUSCULE", "Ú*U AIGU MAJUSCULE", "Û*U CIRCONFLEXE MAJUSCULE",
+                "Ü*U TRÉMA MAJUSCULE", "Ŵ*W CIRCONFLEXE MAJUSCULE", "Ý*Y AIGU MAJUSCULE", "à*A GRAVE MINUSCULE", "á*A AIGU MINUSCULE", "â*A CIRCONFLEXE MINUSCULE", "ã*A TILDE MINUSCULE",
+                "ä*A TRÉMA MINUSCULE", "æ*AE MINUSCULE", "ć*C AIGU MINUSCULE", "č*C CARON MINUSCULE", "ç*C CÉDILLE MINUSCULE", "è*E GRAVE MINUSCULE", "é*E AIGU MINUSCULE", "ê*E CIRCONFLEXE MINUSCULE",
+                "ë*E TRÉMA MINUSCULE", "ì*I GRAVE MINUSCULE", "í*I AIGU MINUSCULE", "î*I CIRCONFLEXE MINUSCULE", "ï*I TRÉMA MINUSCULE", "ñ*N TILDE MINUSCULE", "ò*O GRAVE MINUSCULE", "ó*O AIGU MINUSCULE",
+                "ô*O CIRCONFLEXE MINUSCULE", "õ*O TILDE MINUSCULE", "ö*O TRÉMA MINUSCULE", "ø*O BARRÉ MINUSCULE", "œ*OE MINUSCULE", "ś*S AIGU MINUSCULE", "š*S CARON MINUSCULE", "ù*U GRAVE MINUSCULE",
+                "ú*U AIGU MINUSCULE", "û*U CIRCONFLEXE MINUSCULE", "ü*U TRÉMA MINUSCULE", "ŵ*W CIRCONFLEXE MINUSCULE", "ý*Y AIGU MINUSCULE"
+            }},
+            {"es", New List(Of String) From {
+                "À*A GRAVE MAYÚSCULA", "Á*A AGUDO MAYÚSCULA", "Â*A CIRCUNFLEJO MAYÚSCULA", "Ã*A TILDE MAYÚSCULA", "Ä*A DIÉRESIS MAYÚSCULA", "Æ*AE MAYÚSCULA",
+                "Ć*C AGUDO MAYÚSCULA", "Č*C ANTICIRCUNFLEJO MAYÚSCULA", "Ç*C CEDILLA MAYÚSCULA", "È*E GRAVE MAYÚSCULA", "É*E AGUDO MAYÚSCULA", "Ê*E CIRCUNFLEJO MAYÚSCULA", "Ë*E DIÉRESIS MAYÚSCULA", "Ì*I GRAVE MAYÚSCULA",
+                "Í*I AGUDO MAYÚSCULA", "Î*I CIRCUNFLEJO MAYÚSCULA", "Ï*I DIÉRESIS MAYÚSCULA", "Ñ*N TILDE MAYÚSCULA", "Ò*O GRAVE MAYÚSCULA", "Ó*O AGUDO MAYÚSCULA", "Ô*O CIRCUNFLEJO MAYÚSCULA", "Õ*O TILDE MAYÚSCULA",
+                "Ö*O DIÉRESIS MAYÚSCULA", "Ø*O BARRA OBLICUA MAYÚSCULA", "Œ*OE MAYÚSCULA", "Ś*S AGUDO MAYÚSCULA", "Š*S ANTICIRCUNFLEJO MAYÚSCULA", "Ù*U GRAVE MAYÚSCULA", "Ú*U AGUDO MAYÚSCULA", "Û*U CIRCUNFLEJO MAYÚSCULA",
+                "Ü*U DIÉRESIS MAYÚSCULA", "Ŵ*W CIRCUNFLEJO MAYÚSCULA", "Ý*Y AGUDO MAYÚSCULA", "à*A GRAVE MINÚSCULA", "á*A AGUDO MINÚSCULA", "â*A CIRCUNFLEJO MINÚSCULA", "ã*A TILDE MINÚSCULA",
+                "ä*A DIÉRESIS MINÚSCULA", "æ*AE MINÚSCULA", "ć*C AGUDO MINÚSCULA", "č*C ANTICIRCUNFLEJO MINÚSCULA", "ç*C CEDILLA MINÚSCULA", "è*E GRAVE MINÚSCULA", "é*E AGUDO MINÚSCULA", "ê*E CIRCUNFLEJO MINÚSCULA",
+                "ë*E DIÉRESIS MINÚSCULA", "ì*I GRAVE MINÚSCULA", "í*I AGUDO MINÚSCULA", "î*I CIRCUNFLEJO MINÚSCULA", "ï*I DIÉRESIS MINÚSCULA", "ñ*N TILDE MINÚSCULA", "ò*O GRAVE MINÚSCULA", "ó*O AGUDO MINÚSCULA",
+                "ô*O CIRCUNFLEJO MINÚSCULA", "õ*O TILDE MINÚSCULA", "ö*O DIÉRESIS MINÚSCULA", "ø*O BARRA OBLICUA MINÚSCULA", "œ*OE MINÚSCULA", "ś*S AGUDO MINÚSCULA", "š*S ANTICIRCUNFLEJO MINÚSCULA", "ù*U GRAVE MINÚSCULA",
+                "ú*U AGUDO MINÚSCULA", "û*U CIRCUNFLEJO MINÚSCULA", "ü*U DIÉRESIS MINÚSCULA", "ŵ*W CIRCUNFLEJO MINÚSCULA", "ý*Y AGUDO MINÚSCULA"
+            }},
+            {"it", New List(Of String) From {
+                "À*A GRAVE MAIUSCOLA", "Á*A ACUTO MAIUSCOLA", "Â*A CIRCONFLESSO MAIUSCOLA", "Ã*A TILDE MAIUSCOLA", "Ä*A DIERESI MAIUSCOLA", "Æ*AE MAIUSCOLA",
+                "Ć*C ACUTO MAIUSCOLA", "Č*C PIPA MAIUSCOLA", "Ç*C CEDIGLIA MAIUSCOLA", "È*E GRAVE MAIUSCOLA", "É*E ACUTO MAIUSCOLA", "Ê*E CIRCONFLESSO MAIUSCOLA", "Ë*E DIERESI MAIUSCOLA", "Ì*I GRAVE MAIUSCOLA",
+                "Í*I ACUTO MAIUSCOLA", "Î*I CIRCONFLESSO MAIUSCOLA", "Ï*I DIERESI MAIUSCOLA", "Ñ*N TILDE MAIUSCOLA", "Ò*O GRAVE MAIUSCOLA", "Ó*O ACUTO MAIUSCOLA", "Ô*O CIRCONFLESSO MAIUSCOLA", "Õ*O TILDE MAIUSCOLA",
+                "Ö*O DIERESI MAIUSCOLA", "Ø*O APTANG MAIUSCOLA", "Œ*OE MAIUSCOLA", "Ś*S ACUTO MAIUSCOLA", "Š*S PIPA MAIUSCOLA", "Ù*U GRAVE MAIUSCOLA", "Ú*U ACUTO MAIUSCOLA", "Û*U CIRCONFLESSO MAIUSCOLA",
+                "Ü*U DIERESI MAIUSCOLA", "Ŵ*W CIRCONFLESSO MAIUSCOLA", "Ý*Y ACUTO MAIUSCOLA", "à*A GRAVE MINUSCOLO", "á*A ACUTO MINUSCOLO", "â*A CIRCONFLESSO MINUSCOLO", "ã*A TILDE MINUSCOLO",
+                "ä*A DIERESI MINUSCOLO", "æ*AE MINUSCOLO", "ć*C ACUTO MINUSCOLO", "č*C PIPA MINUSCOLO", "ç*C CEDIGLIA MINUSCOLO", "è*E GRAVE MINUSCOLO", "é*E ACUTO MINUSCOLO", "ê*E CIRCONFLESSO MINUSCOLO",
+                "ë*E DIERESI MINUSCOLO", "ì*I GRAVE MINUSCOLO", "í*I ACUTO MINUSCOLO", "î*I CIRCONFLESSO MINUSCOLO", "ï*I DIERESI MINUSCOLO", "ñ*N TILDE MINUSCOLO", "ò*O GRAVE MINUSCOLO", "ó*O ACUTO MINUSCOLO",
+                "ô*O CIRCONFLESSO MINUSCOLO", "õ*O TILDE MINUSCOLO", "ö*O DIERESI MINUSCOLO", "ø*O APTANG MINUSCOLO", "œ*OE MINUSCOLO", "ś*S ACUTO MINUSCOLO", "š*S PIPA MINUSCOLO", "ù*U GRAVE MINUSCOLO",
+                "ú*U ACUTO MINUSCOLO", "û*U CIRCONFLESSO MINUSCOLO", "ü*U DIERESI MINUSCOLO", "ŵ*W CIRCONFLESSO MINUSCOLO", "ý*Y ACUTO MINUSCOLO"
+            }}})
 
-            Maths = New List(Of String) From {"±*PLUS OU MOINS", "∞*INFINI", "=*ÉGAL", "≠*INÉGALE", "≈*APPROXIMATION", "≡*IDENTIQUE À", "×*MULTIPLICATION",
-            "÷*DIVISION", "∝*PROPORTIONNALITÉ", "<*PLUS PETIT QUE", ">*PLUS GRAND QUE", "≤*PLUS PETIT OU ÉGAL", "≥*PLUS GRAND OU ÉGAL", "√*RACINE CARRÉE", "∛*RACINE CUBIQUE",
-            "∪*UNION", "∩*INTERSECTION", "∈*APPARTIENT À", "∋*CONTIENT COMME ÉLÉMENT", "∴*PAR CONSÉQUENT", "¬*NÉGATION", "ℵ*ALEPH", "∑*SYMBOLE SOMME", "∫*SYMBOLE INTÉGRALE"}
+        Arrows = Funcs.ChooseLang(New Dictionary(Of String, Object) From {
+            {"en", New List(Of String) From {
+                "˄*UP ARROWHEAD", "˅*DOWN ARROWHEAD", "←*LEFT ARROW", "↑*UP ARROW", "→*RIGHT ARROW", "↓*DOWN ARROW", "↔*LEFT RIGHT ARROW",
+                "↕*UP DOWN ARROW", "ꜛ*RAISED UP ARROW", "ꜜ*RAISED DOWN ARROW"
+            }},
+            {"fr", New List(Of String) From {
+                "˄*POINTE DE FLÈCHE HAUT", "˅*POINTE DE FLÈCHE BAS", "←*FLÈCHE GAUCHE", "↑*FLÈCHE HAUT", "→*FLÈCHE DROITE", "↓*FLÈCHE BAS", "↔*FLÈCHE GAUCHE DROITE",
+                "↕*FLÈCHE HAUT BAS", "ꜛ*FLÈCHE SURÉLEVÉE HAUT", "ꜜ*FLÈCHE SURÉLEVÉE BAS"
+            }},
+            {"es", New List(Of String) From {
+                "˄*PUNTA DE FLECHA HACIA ARRIBA", "˅*PUNTA DE FLECHA HACIA ABAJO", "←*FLECHA IZQUIERDA", "↑*FLECHA HACIA ARRIBA", "→*FLECHA DERECHA", "↓*FLECHA HACIA ABAJO", "↔*FLECHA IZQUIERDA DERECHA",
+                "↕*FLECHA HACIA ARRIBA Y HACIA ABAJO", "ꜛ*FLECHA LEVANTADA HACIA ARRIBA", "ꜜ*FLECHA LEVANTADA HACIA ABAJO"
+            }},
+            {"it", New List(Of String) From {
+                "˄*PUNTA DELLA FRECCIA VERSO L'ALTO", "˅*PUNTA DELLA FRECCIA VERSO IL BASSO", "←*FRECCIA SINISTRA", "↑*FRECCIA VERSO L'ALTO", "→*FRECCIA DESTRA", "↓*FRECCIA VERSO IL BASSO", "↔*FRECCIA SINISTRA DESTRA",
+                "↕*FRECCIA IN ALTO IN BASSO", "ꜛ*FRECCIA SOLLEVATA VERSO L'ALTO", "ꜜ*FRECCIA SOLLEVATA VERSO IL BASSO"
+            }}})
 
+        Standard = Funcs.ChooseLang(New Dictionary(Of String, Object) From {
+            {"en", New List(Of String) From {
+                "$*DOLLAR SIGN", "¢*CENT SIGN", "£*POUND SIGN", "¥*YEN SIGN", "¶*PILCROW SIGN", "€*EURO SIGN", "%*PERCENT SIGN", "@*AT SIGN",
+                "°*DEGREE SIGN", "|*VERTICAL LINE", "¦*BROKEN VERTICAL LINE", "©*COPYRIGHT", "®*REGISTERED TRADEMARK", "℗*SOUND RECORDING COPYRIGHT", "™*TRADEMARK", "№*NUMERO SIGN",
+                "♠*SPADE SUIT", "♣*CLUB SUIT", "♥*HEART SUIT", "♦*DIAMOND SUIT", "■*LARGE SQUARE BULLET", "▪*SMALL SQUARE BULLET", "▬*RECTANGLE", "▲*UP-POINTING TRIANGLE",
+                "►*RIGHT-POINTING TRIANGLE", "▼*DOWN-POINTING TRIANGLE", "◄*LEFT-POINTING TRIANGLE"
+            }},
+            {"fr", New List(Of String) From {
+                "$*SYMBOLE DOLLAR", "¢*SYMBOLE CENT", "£*SYMBOLE LIVRE STERLING", "¥*SYMBOLE YEN", "¶*PIED-DE-MOUCHE", "€*SYMBOLE EURO", "%*SIGNE POUR CENT", "@*AROBASE",
+                "°*SYMBOLE DEGRÉ", "|*BARRE VERTICALE", "¦*BARRE VERTICALE BRISÉE", "©*COPYRIGHT", "®*MARQUE DÉPOSÉE", "℗*COPYRIGHT PHONOGRAPHIQUE", "™*MARQUE DE COMMERCE", "№*SYMBOLE NUMÉRO",
+                "♠*PIQUE", "♣*TRÈFLE", "♥*CŒUR", "♦*CARREAU", "■*GRANDE PUCE CARRÉE", "▪*PETITE PUCE CARRÉE", "▬*RECTANGLE", "▲*TRIANGLE HAUT",
+                "►*TRIANGLE DROITE", "▼*TRIANGLE BAS", "◄*TRIANGLE GAUCHE"
+            }},
+            {"es", New List(Of String) From {
+                "$*SÍMBOLO DÓLAR", "¢*SÍMBOLO CÉNTIMO", "£*SÍMBOLO LIBRA ESTERLINA", "¥*SÍMBOLO YEN", "¶*SÍMBOLO CALDERÓN", "€*SÍMBOLO EURO", "%*SÍMBOLO PORCENTAJE", "@*ARROBA",
+                "°*SÍMBOLO GRADO", "|*BARRA VERTICAL", "¦*BARRA VERTICAL ROTA", "©*COPYRIGHT", "®*MARCA REGISTRADA", "℗*COPYRIGHT DE LA GRABACIÓN DE SONIDO", "™*MARCA DE COMERCIO", "№*SÍMBOLO NÚMERO",
+                "♠*PICA", "♣*TRÉBOL", "♥*CORAZÓN", "♦*DIAMANTE", "■*VIÑETA CUADRADA GRANDE", "▪*VIÑETA CUADRADA PEQUEÑA", "▬*RECTÁNGULO", "▲*TRIÁNGULO HACIA ARRIBA",
+                "►*TRIÁNGULO HACIA DERECHA", "▼*TRIÁNGULO HACIA ABAJO", "◄*TRIÁNGULO HACIA IZQUIERDA"
+            }},
+            {"it", New List(Of String) From {
+                "$*SIMBOLO DOLLARO", "¢*SIMBOLO CENTESIMO", "£*SIMBOLO STERLINA", "¥*SIMBOLO YEN", "¶*PIEDE DI MOSCA", "€*SIMBOLO EURO", "%*SIMBOLO PERCENTUALE", "@*SIMBOLO CHIOCCIOLA",
+                "°*SIMBOLO GRADO", "|*BARRA VERTICALE", "¦*BARRA VERTICALE ROTTA", "©*COPYRIGHT", "®*MARCHIO REGISTRATO", "℗*COPYRIGHT DELLE REGISTRAZIONI SONORE", "™*MARCHIO COMMERCIALE", "№*SIMBOLO NUMERO",
+                "♠*PICCA", "♣*FIORE", "♥*CUORE", "♦*QUADRO", "■*PUNTO QUADRATO GRANDE", "▪*PUNTO PICCOLO QUADRATO", "▬*RETTANGOLO", "▲*TRIANGOLO VERSO L'ALTO",
+                "►*TRIANGOLO VERSO DESTRA", "▼*TRIANGOLO VERSO IL BASSO", "◄*TRIANGOLO VERSO SINISTRA"
+            }}})
 
-            BoldBtn.Icon = FindResource("GrasIcon")
-            UnderlineBtn.Icon = FindResource("SousligneIcon")
+        Greek = Funcs.ChooseLang(New Dictionary(Of String, Object) From {
+            {"en", New List(Of String) From {
+                "Α*ALPHA UPPER", "α*ALPHA LOWER", "Β*BETA UPPER", "β*BETA LOWER", "Γ*GAMMA UPPER", "γ*GAMMA LOWER", "Δ*DELTA UPPER",
+                "δ*DELTA LOWER", "Ε*EPSILON UPPER", "ε*EPSILON LOWER", "Ζ*ZETA UPPER", "ζ*ZETA LOWER", "Η*ETA UPPER", "η*ETA LOWER", "Θ*THETA UPPER", "θ*THETA LOWER",
+                "Ι*IOTA UPPER", "ι*IOTA LOWER", "Κ*KAPPA UPPER", "κ*KAPPA LOWER", "Λ*LAMBDA UPPER", "λ*LAMBDA LOWER", "Μ*MU UPPER", "μ*MU LOWER", "Ν*NU UPPER", "ν*NU LOWER",
+                "Ξ*XI UPPER", "ξ*XI LOWER", "Ο*OMICRON UPPER", "ο*OMICRON LOWER", "Π*PI UPPER", "π*PI LOWER", "Ρ*RHO UPPER", "ρ*RHO LOWER", "Σ*SIGMA UPPER", "σ*SIGMA LOWER",
+                "ς*SIGMA LOWER WORD-FINAL", "Τ*TAU UPPER", "τ*TAU LOWER", "Υ*UPSILON UPPER", "υ*UPSILON LOWER", "Φ*PHI UPPER", "φ*PHI LOWER", "Χ*CHI UPPER", "χ*CHI LOWER",
+                "Ψ*PSI UPPER", "ψ*PSI LOWER", "Ω*OMEGA UPPER", "ω*OMEGA LOWER"
+            }},
+            {"fr", New List(Of String) From {
+                "Α*ALPHA MAJUSCULE", "α*ALPHA MINUSCULE", "Β*BÊTA MAJUSCULE", "β*BÊTA MINUSCULE", "Γ*GAMMA MAJUSCULE", "γ*GAMMA MINUSCULE", "Δ*DELTA MAJUSCULE",
+                "δ*DELTA MINUSCULE", "Ε*EPSILON MAJUSCULE", "ε*EPSILON MINUSCULE", "Ζ*ZÊTA MAJUSCULE", "ζ*ZÊTA MINUSCULE", "Η*ÊTA MAJUSCULE", "η*ÊTA MINUSCULE", "Θ*THÊTA MAJUSCULE", "θ*THÊTA MINUSCULE",
+                "Ι*IOTA MAJUSCULE", "ι*IOTA MINUSCULE", "Κ*KAPPA MAJUSCULE", "κ*KAPPA MINUSCULE", "Λ*LAMBDA MAJUSCULE", "λ*LAMBDA MINUSCULE", "Μ*MU MAJUSCULE", "μ*MU MINUSCULE", "Ν*NU MAJUSCULE", "ν*NU MINUSCULE",
+                "Ξ*KSI MAJUSCULE", "ξ*KSI MINUSCULE", "Ο*OMICRON MAJUSCULE", "ο*OMICRON MINUSCULE", "Π*PI MAJUSCULE", "π*PI MINUSCULE", "Ρ*RHÔ MAJUSCULE", "ρ*RHÔ MINUSCULE", "Σ*SIGMA MAJUSCULE", "σ*SIGMA MINUSCULE",
+                "ς*SIGMA MINUSCULE FIN DE MOT", "Τ*TAU MAJUSCULE", "τ*TAU MINUSCULE", "Υ*UPSILON MAJUSCULE", "υ*UPSILON MINUSCULE", "Φ*PHI MAJUSCULE", "φ*PHI MINUSCULE", "Χ*KHI MAJUSCULE", "χ*KHI MINUSCULE",
+                "Ψ*PSI MAJUSCULE", "ψ*PSI MINUSCULE", "Ω*OMÉGA MAJUSCULE", "ω*OMÉGA MINUSCULE"
+            }},
+            {"es", New List(Of String) From {
+                "Α*ALFA MAYÚSCULA", "α*ALFA MINÚSCULA", "Β*BETA MAYÚSCULA", "β*BETA MINÚSCULA", "Γ*GAMMA MAYÚSCULA", "γ*GAMMA MINÚSCULA", "Δ*DELTA MAYÚSCULA",
+                "δ*DELTA MINÚSCULA", "Ε*ÉPSILON MAYÚSCULA", "ε*ÉPSILON MINÚSCULA", "Ζ*DSETA MAYÚSCULA", "ζ*DSETA MINÚSCULA", "Η*ETA MAYÚSCULA", "η*ETA MINÚSCULA", "Θ*THETA MAYÚSCULA", "θ*THETA MINÚSCULA",
+                "Ι*IOTA MAYÚSCULA", "ι*IOTA MINÚSCULA", "Κ*KAPPA MAYÚSCULA", "κ*KAPPA MINÚSCULA", "Λ*LAMBDA MAYÚSCULA", "λ*LAMBDA MINÚSCULA", "Μ*MI MAYÚSCULA", "μ*MI MINÚSCULA", "Ν*NI MAYÚSCULA", "ν*NI MINÚSCULA",
+                "Ξ*XI MAYÚSCULA", "ξ*XI MINÚSCULA", "Ο*ÓMICRON MAYÚSCULA", "ο*ÓMICRON MINÚSCULA", "Π*PI MAYÚSCULA", "π*PI MINÚSCULA", "Ρ*RO MAYÚSCULA", "ρ*RO MINÚSCULA", "Σ*SIGMA MAYÚSCULA", "σ*SIGMA MINÚSCULA",
+                "ς*SIGMA MINÚSCULA AL FINAL DE PALABRA", "Τ*TAU MAYÚSCULA", "τ*TAU MINÚSCULA", "Υ*ÍPSILON MAYÚSCULA", "υ*ÍPSILON MINÚSCULA", "Φ*FI MAYÚSCULA", "φ*FI MINÚSCULA", "Χ*JI MAYÚSCULA", "χ*JI MINÚSCULA",
+                "Ψ*PSI MAYÚSCULA", "ψ*PSI MINÚSCULA", "Ω*OMEGA MAYÚSCULA", "ω*OMEGA MINÚSCULA"
+            }},
+            {"it", New List(Of String) From {
+                "Α*ALFA MAIUSCOLA", "α*ALFA MINUSCOLO", "Β*BETA MAIUSCOLA", "β*BETA MINUSCOLO", "Γ*GAMMA MAIUSCOLA", "γ*GAMMA MINUSCOLO", "Δ*DELTA MAIUSCOLA",
+                "δ*DELTA MINUSCOLO", "Ε*EPSILON MAIUSCOLA", "ε*EPSILON MINUSCOLO", "Ζ*ZETA MAIUSCOLA", "ζ*ZETA MINUSCOLO", "Η*ETA MAIUSCOLA", "η*ETA MINUSCOLO", "Θ*THETA MAIUSCOLA", "θ*THETA MINUSCOLO",
+                "Ι*IOTA MAIUSCOLA", "ι*IOTA MINUSCOLO", "Κ*KAPPA MAIUSCOLA", "κ*KAPPA MINUSCOLO", "Λ*LAMBDA MAIUSCOLA", "λ*LAMBDA MINUSCOLO", "Μ*MI MAIUSCOLA", "μ*MI MINUSCOLO", "Ν*NI MAIUSCOLA", "ν*NI MINUSCOLO",
+                "Ξ*XI MAIUSCOLA", "ξ*XI MINUSCOLO", "Ο*OMICRON MAIUSCOLA", "ο*OMICRON MINUSCOLO", "Π*PI MAIUSCOLA", "π*PI MINUSCOLO", "Ρ*RHO MAIUSCOLA", "ρ*RHO MINUSCOLO", "Σ*SIGMA MAIUSCOLA", "σ*SIGMA MINUSCOLO",
+                "ς*SIGMA MINUSCOLO FINALE", "Τ*TAU MAIUSCOLA", "τ*TAU MINUSCOLO", "Υ*YPSILON MAIUSCOLA", "υ*YPSILON MINUSCOLO", "Φ*PHI MAIUSCOLA", "φ*PHI MINUSCOLO", "Χ*CHI MAIUSCOLA", "χ*CHI MINUSCOLO",
+                "Ψ*PSI MAIUSCOLA", "ψ*PSI MINUSCOLO", "Ω*OMEGA MAIUSCOLA", "ω*OMEGA MINUSCOLO"
+            }}})
 
-            DateTimeLang = "fr"
-            DefineLang = "fr"
+        Punctuation = Funcs.ChooseLang(New Dictionary(Of String, Object) From {
+            {"en", New List(Of String) From {
+                "-*HYPHEN", "–*EN DASH", "—*EM DASH", "…*ELLIPSIS", "¿*INVERTED QUESTION MARK", "¡*INVERTED EXCLAMATION MARK",
+                "«*LEFT GUILLEMET", "»*RIGHT GUILLEMET", "[*LEFT SQUARE BRACKET", "]*RIGHT SQUARE BRACKET", "(*LEFT CURVED BRACKET", ")*RIGHT CURVED BRACKET",
+                "{*LEFT CURLY BRACKET", "}*RIGHT CURLY BRACKET"
+            }},
+            {"fr", New List(Of String) From {
+                "-*TIRET COURT", "–*TIRET MOYEN", "—*TIRET LONG", "…*POINTS DE SUSPENSION", "¿*POINT D'INTERROGATION CULBUTÉ", "¡*POINT D'EXCLAMATION CULBUTÉ",
+                "«*GUILLEMET OUVRANT", "»*GUILLEMET FERMANT", "[*CROCHET OUVRANT", "]*CROCHET FERMANT", "(*PARENTHÈSE OUVRANT", ")*PARENTHÈSE FERMANT",
+                "{*ACCOLADE OUVRANTE", "}*ACCOLADE FERMANTE"
+            }},
+            {"es", New List(Of String) From {
+                "-*GUION", "–*SEMIRRAYA", "—*GUION LARGO", "…*PUNTOS SUSPENSIVOS", "¿*SIGNO DE INTERROGACIÓN INICIAL", "¡*SIGNO DE EXCLAMACIÓN​ INICIAL",
+                "«*GUILLEMET IZQUIERDO", "»*GUILLEMET DERECHO", "[*CORCHETE IZQUIERDO", "]*CORCHETE DERECHO", "(*PARÉNTESIS CURVADA IZQUIERDA", ")*PARÉNTESIS CURVADA DERECHA",
+                "{*LLAVE IZQUIERDA", "}*LLAVE DERECHA"
+            }},
+            {"it", New List(Of String) From {
+                "-*LINEETTA CIFRA", "–*LINEETTA ENNE", "—*LINEETTA EMME", "…*PUNTINI DI SOSPENSIONE", "¿*PUNTO INTERROGATIVO INVERTITO", "¡*PUNTO ESCLAMATIVO INVERTITO",
+                "«*GUILLEMET SINISTRA", "»*GUILLEMET DESTRA", "[*PARENTESI QUADRA SINISTRA", "]*PARENTESI QUADRA DESTRA", "(*PARENTESI TONDA SINISTRA", ")*PARENTESI TONDA DESTRA",
+                "{*PARENTESI GRAFFA SINISTRA", "}*PARENTESI GRAFFA DESTRA"
+            }}})
 
-        End If
+        Maths = Funcs.ChooseLang(New Dictionary(Of String, Object) From {
+            {"en", New List(Of String) From {
+                "±*PLUS-MINUS", "∞*INFINITY", "=*EQUAL", "≠*NOT EQUAL", "≈*APPROXIMATELY EQUAL", "≡*EQUIVALENT", "×*MULTIPLY",
+                "÷*DIVIDE", "∝*PROPORTIONAL TO", "≤*LESS THAN OR EQUAL", "≥*GREATER THAN OR EQUAL", "√*SQUARE ROOT", "∛*CUBE ROOT", "∪*UNION", "∩*INTERSECTION",
+                "∈*ELEMENT OF", "∋*CONTAINS AS MEMBER", "∴*THEREFORE", "¬*NEGATION", "ℵ*ALEPH", "∑*SUMMATION SIGN", "∫*INTEGRAL SIGN"
+            }},
+            {"fr", New List(Of String) From {
+                "±*PLUS OU MOINS", "∞*INFINI", "=*ÉGAL", "≠*INÉGALE", "≈*APPROXIMATION", "≡*IDENTIQUE À", "×*MULTIPLICATION",
+                "÷*DIVISION", "∝*PROPORTIONNALITÉ", "<*PLUS PETIT QUE", ">*PLUS GRAND QUE", "≤*PLUS PETIT OU ÉGAL", "≥*PLUS GRAND OU ÉGAL", "√*RACINE CARRÉE", "∛*RACINE CUBIQUE",
+                "∪*UNION", "∩*INTERSECTION", "∈*APPARTIENT À", "∋*CONTIENT COMME ÉLÉMENT", "∴*PAR CONSÉQUENT", "¬*NÉGATION", "ℵ*ALEPH", "∑*SYMBOLE SOMME", "∫*SYMBOLE INTÉGRALE"
+            }},
+            {"es", New List(Of String) From {
+                "±*MÁS MENOS", "∞*INFINITO", "=*IGUAL", "≠*DESIGUAL", "≈*APROXIMACIÓN", "≡*EQUIVALENTE", "×*MULTIPLICACIÓN",
+                "÷*DIVISIÓN", "∝*PROPORCIONALIDAD", "≤*MENOR O IGUAL", "≥*MAYOR O IGUAL", "√*RAÍZ CUADRADA", "∛*RAÍZ CÚBICA", "∪*UNIÓN", "∩*INTERSECCIÓN",
+                "∈*ELEMENTO DE UN CONJUNTO", "∋*MIEMBRO DE UN CONJUNTO", "∴*POR TANTO", "¬*NEGACIÓN", "ℵ*ÁLEF", "∑*SUMATORIO", "∫*INTEGRACIÓN"
+            }},
+            {"it", New List(Of String) From {
+                "±*PIÙ O MENO", "∞*INFINITO", "=*UGUALE", "≠*DISUGUALE", "≈*APPROSSIMAZIONE", "≡*COINCIDENTE", "×*MOLTIPLICAZIONE",
+                "÷*DIVISIONE", "∝*PROPORZIONALITÀ", "≤*MINORE O UGUALE", "≥*MAGGIORE O UGUALE", "√*RADICE QUADRATA", "∛*RADICE CUBICA", "∪*UNIONE", "∩*INTERSEZIONE",
+                "∈*APPARTENENZA", "∋*CONTIENE COMO MEMBRO", "∴*PERCIÒ", "¬*NEGAZIONE", "ℵ*ALEPH", "∑*SOMMATORIA", "∫*INTEGRALE"
+            }}})
+
+        ' Names from emojipedia.org
+        Emoji = Funcs.ChooseLang(New Dictionary(Of String, Object) From {
+            {"en", New List(Of String) From {
+                "😀*GRINNING FACE", "😁*GRINNING FACE WITH SMILING EYES", "😂*FACE WITH TEARS OF JOY", "😃*SMILING FACE WITH OPEN MOUTH",
+                "😄*SMILING FACE WITH OPEN MOUTH AND SMILING EYES", "😅*SMILING FACE WITH OPEN MOUTH AND COLD SWEAT", "😆*SMILING FACE WITH OPEN MOUTH AND TIGHTLY-CLOSED EYES",
+                "😇*SMILING FACE WITH HALO", "😈*SMILING FACE WITH HORNS", "😉*WINKING FACE", "😊*SMILING FACE WITH SMILING EYES", "😋*FACE SAVOURING DELICIOUS FOOD",
+                "😌*RELIEVED FACE", "😍*SMILING FACE WITH HEART-SHAPED EYES", "😎*SMILING FACE WITH SUNGLASSES", "😏*SMIRKING FACE", "😐*NEUTRAL FACE", "😑*EXPRESSIONLESS FACE",
+                "😒*UNAMUSED FACE", "😓*FACE WITH COLD SWEAT", "😔*PENSIVE FACE", "😕*CONFUSED FACE", "😖*CONFOUNDED FACE", "😗*KISSING FACE", "😘*FACE THROWING A KISS",
+                "😙*KISSING FACE WITH SMILING EYES", "😚*KISSING FACE WITH CLOSED EYES", "😛*FACE WITH STUCK-OUT TONGUE", "😜*FACE WITH STUCK-OUT TONGUE AND WINKING EYE",
+                "😝*FACE WITH STUCK-OUT TONGUE AND TIGHTLY-CLOSED EYES", "😞*DISAPPOINTED FACE", "😟*WORRIED FACE", "😠*ANGRY FACE", "😡*POUTING FACE", "😢*CRYING FACE",
+                "😣*PERSEVERING FACE", "😤*FACE WITH LOOK OF TRIUMPH", "😥*DISAPPOINTED BUT RELIEVED FACE", "😦*FROWNING FACE WITH OPEN MOUTH", "😧*ANGUISHED FACE",
+                "😨*FEARFUL FACE", "😩*WEARY FACE", "😪*SLEEPY FACE", "😫*TIRED FACE", "😬*GRIMACING FACE", "😭*LOUDLY CRYING FACE", "😮*FACE WITH OPEN MOUTH", "😯*HUSHED FACE",
+                "😰*FACE WITH OPEN MOUTH AND COLD SWEAT", "😱*FACE SCREAMING IN FEAR", "😲*ASTONISHED FACE", "😳*FLUSHED FACE", "😴*SLEEPING FACE", "😵*DIZZY FACE",
+                "😶*FACE WITHOUT MOUTH", "😷*FACE WITH MEDICAL MASK", "🙁*SLIGHTLY FROWNING FACE", "🙂*SLIGHTLY SMILING FACE", "🙃*UPSIDE-DOWN FACE", "🙄*FACE WITH ROLLING EYES"
+            }},
+            {"fr", New List(Of String) From {
+                "😀*VISAGE RIEUR", "😁*VISAGE SOURIANT AUX YEUX RIEURS", "😂*VISAGE RIANT AUX LARMES", "😃*VISAGE SOURIANT AVEC DE GRANDS YEUX",
+                "😄*VISAGE TRÈS SOURIANT AUX YEUX RIEURS", "😅*VISAGE SOURIANT AVEC UNE GOUTTE DE SUEUR", "😆*VISAGE SOURIANT AVEC YEUX PLISSÉS",
+                "😇*VISAGE SOURIANT AVEC AURÉOLE", "😈*VISAGE SOURIANT AVEC DES CORNES", "😉*VISAGE FAISANT UN CLIN D’ŒIL", "😊*VISAGE SOURIANT AVEC YEUX RIEURS", "😋*MIAM",
+                "😌*VISAGE SOULAGÉ", "😍*VISAGE SOURIANT AVEC YEUX EN FORME DE CŒUR", "😎*VISAGE AVEC LUNETTES DE SOLEIL", "😏*VISAGE AVEC UN SOURIRE MALIN", "😐*VISAGE NEUTRE", "😑*VISAGE SANS EXPRESSION",
+                "😒*VISAGE BLASÉ", "😓*VISAGE DÉMORALISÉ AVEC GOUTTE DE SUEUR", "😔*VISAGE PENSIF", "😕*VISAGE CONFUS", "😖*VISAGE DÉCONCERTÉ", "😗*VISAGE FAISANT UN BISOU", "😘*VISAGE ENVOYANT UN BISOU",
+                "😙*VISAGE AUX YEUX RIEURS FAISANT UN BISOU", "😚*VISAGE FAISANT UN BISOU AVEC LES YEUX FERMÉS", "😛*VISAGE QUI TIRE LA LANGUE", "😜*VISAGE QUI TIRE LA LANGUE ET FAIT UN CLIN D’ŒIL",
+                "😝*VISAGE QUI TIRE LA LANGUE LES YEUX PLISSÉS", "😞*VISAGE DÉÇU", "😟*VISAGE INQUIET", "😠*VISAGE EN COLÈRE", "😡*VISAGE BOUDEUR", "😢*VISAGE QUI PLEURE",
+                "😣*VISAGE PERSÉVÉRANT", "😤*VISAGE AVEC FUMÉE SORTANT DES NARINES", "😥*VISAGE TRISTE MAIS SOULAGÉ", "😦*VISAGE MÉCONTENT AVEC BOUCHE OUVERTE", "😧*VISAGE ANGOISSÉ",
+                "😨*VISAGE EFFRAYÉ", "😩*VISAGE ÉPUISÉ", "😪*VISAGE ENDORMI", "😫*VISAGE FATIGUÉ", "😬*VISAGE GRIMAÇANT", "😭*VISAGE QUI PLEURE À CHAUDES LARMES", "😮*VISAGE AVEC BOUCHE OUVERTE", "😯*VISAGE ÉBAHI",
+                "😰*VISAGE ANXIEUX AVEC GOUTTE DE SUEUR", "😱*VISAGE QUI HURLE DE PEUR", "😲*VISAGE STUPÉFAIT", "😳*VISAGE QUI ROUGIT", "😴*VISAGE SOMNOLENT", "😵*VISAGE ÉTOURDI",
+                "😶*VISAGE SANS BOUCHE", "😷*VISAGE AVEC MASQUE", "🙁*VISAGE LÉGÈREMENT MÉCONTENT", "🙂*VISAGE AVEC UN LÉGER SOURIRE", "🙃*TÊTE À L’ENVERS", "🙄*VISAGE ROULANT DES YEUX"
+            }},
+            {"es", New List(Of String) From {
+                "😀*CARA SONRIENDO", "😁*CARA RADIANTE CON OJOS SONRIENTES", "😂*CARA LLORANDO DE RISA", "😃*CARA SONRIENDO CON OJOS GRANDES",
+                "😄*CARA SONRIENDO CON OJOS SONRIENTES", "😅*CARA SONRIENDO CON SUDOR FRÍO", "😆*CARA SONRIENDO CON LOS OJOS CERRADOS",
+                "😇*CARA SONRIENDO CON AUREOLA", "😈*CARA SONRIENDO CON CUERNOS", "😉*CARA GUIÑANDO EL OJO", "😊*CARA FELIZ CON OJOS SONRIENTES", "😋*CARA SABOREANDO COMIDA",
+                "😌*CARA DE ALIVIO", "😍*CARA SONRIENDO CON OJOS DE CORAZÓN", "😎*CARA SONRIENDO CON GAFAS DE SOL", "😏*CARA SONRIENDO CON SUPERIORIDAD", "😐*CARA NEUTRAL", "😑*CARA SIN EXPRESIÓN",
+                "😒*CARA DE DESAPROBACIÓN", "😓*CARA CON SUDOR FRÍO", "😔*CARA DESANIMADA", "😕*CARA DE CONFUSIÓN", "😖*CARA DE FRUSTRACIÓN", "😗*CARA BESANDO", "😘*CARA LANZANDO UN BESO",
+                "😙*CARA BESANDO CON OJOS SONRIENTES", "😚*CARA BESANDO CON LOS OJOS CERRADOS", "😛*CARA SACANDO LA LENGUA", "😜*CARA SACANDO LA LENGUA Y GUIÑANDO UN OJO",
+                "😝*CARA CON OJOS CERRADOS Y LENGUA FUERA", "😞*CARA DECEPCIONADA", "😟*CARA PREOCUPADA", "😠*CARA ENFADADA", "😡*CARA CABREADA", "😢*CARA LLORANDO",
+                "😣*CARA DESESPERADA", "😤*CARA RESOPLANDO", "😥*CARA TRISTE PERO ALIVIADA", "😦*CARA CON EL CEÑO FRUNCIDO Y LA BOCA ABIERTA", "😧*CARA ANGUSTIADA",
+                "😨*CARA ASUSTADA", "😩*CARA AGOTADA", "😪*CARA DE SUEÑO", "😫*CARA CANSADA", "😬*CARA HACIENDO UNA MUECA", "😭*CARA LLORANDO FUERTE", "😮*CARA CON LA BOCA ABIERTA", "😯*CARA ESTUPEFACTA",
+                "😰*CARA CON ANSIEDAD Y SUDOR", "😱*CARA GRITANDO DE MIEDO", "😲*CARA ASOMBRADA", "😳*CARA SONROJADA", "😴*CARA DURMIENDO", "😵*CARA MAREADA",
+                "😶*CARA SIN BOCA", "😷*CARA CON MASCARILLA MÉDICA", "🙁*CARA CON EL CEÑO LIGERAMENTE FRUNCIDO", "🙂*CARA SONRIENDO LIGERAMENTE", "🙃*CARA AL REVÉS", "🙄*CARA CON OJOS EN BLANCO"
+            }},
+            {"it", New List(Of String) From {
+                "😀*FACCINA CON UN GRAN SORRISO", "😁*FACCINA RAGGIANTE CON OCCHI FELICI", "😂*FACCINA CON LACRIME DI GIOIA", "😃*FACCINA CON UN GRAN SORRISO E OCCHI SPALANCATI",
+                "😄*FACCINA CON SORRISO E OCCHI SORRIDENTI", "😅*FACCINA CON UN GRAN SORRISO E GOCCIA DI SUDORE", "😆*SORRISO A BOCCA APERTA CON OCCHI CHIUSI",
+                "😇*FACCINA CON SORRISO E AUREOLA", "😈*FACCINA CON SORRISO E CORNA", "😉*FACCINA CHE FA L’OCCHIOLINO", "😊*FACCINA CON OCCHI SORRIDENTI", "😋*FACCINA CHE SI LECCA I BAFFI",
+                "😌*FACCINA SOLLEVATA", "😍*FACCINA CON SORRISO E OCCHI A CUORE", "😎*FACCINA CON SORRISO E OCCHIALI DA SOLE", "😏*FACCINA CON SORRISETTO", "😐*FACCINA NEUTRA", "😑*FACCINA INESPRESSIVA",
+                "😒*FACCINA CONTRARIATA", "😓*FACCINA ABBATTUTA SUDATA", "😔*FACCINA PENSIEROSA", "😕*FACCINA CONFUSA", "😖*FACCINA FRUSTRATA", "😗*FACCINA CHE BACIA", "😘*FACCINA CHE MANDA UN BACIO",
+                "😙*FACCINA CHE BACIA CON OCCHI SORRIDENTI", "😚*FACCINA CHE BACIA CON OCCHI CHIUSI", "😛*FACCINA CHE MOSTRA LA LINGUA", "😜*FACCINA CHE FA L’OCCHIOLINO E MOSTRA LA LINGUA",
+                "😝*FACCINA CON UN GRAN SORRISO CHE MOSTRA LA LINGUA", "😞*FACCINA DELUSA", "😟*FACCINA PREOCCUPATA", "😠*FACCINA ARRABBIATA", "😡*FACCINA ACCIGLIATA", "😢*FACCINA CHE PIANGE",
+                "😣*FACCINA PERSEVERANTE", "😤*FACCINA CHE SBUFFA", "😥*FACCINA DELUSA MA SOLLEVATA", "😦*FACCINA IMBRONCIATA CON BOCCA APERTA", "😧*FACCINA ANGOSCIATA",
+                "😨*FACCINA IMPAURITA", "😩*FACCINA ESAUSTA", "😪*FACCINA ASSONNATA", "😫*FACCINA STANCA", "😬*FACCINA CON SMORFIA", "😭*FACCINA DISPERATA", "😮*FACCINA CON BOCCA APERTA", "😯*FACCINA SORPRESA",
+                "😰*FACCINA SUDATA IN ANSIA", "😱*FACCINA TERRORIZZATA", "😲*FACCINA STUPITA", "😳*FACCINA IMBARAZZATA", "😴*FACCINA CHE DORME", "😵*FACCINA FRASTORNATA",
+                "😶*FACCINA SENZA BOCCA", "😷*FACCINA CON MASCHERINA", "🙁*FACCINA LEGGERMENTE IMBRONCIATA", "🙂*FACCINA CON SORRISO ACCENNATO", "🙃*FACCINA SOTTOSOPRA", "🙄*FACCINA CON OCCHI AL CIELO"
+            }}})
+
+        BoldBtn.Icon = TryFindResource(Funcs.ChooseIcon("BoldIcon"))
+        ItalicBtn.Icon = TryFindResource(Funcs.ChooseIcon("ItalicIcon"))
+        UnderlineBtn.Icon = TryFindResource(Funcs.ChooseIcon("UnderlineIcon"))
 
     End Sub
 
@@ -682,17 +819,17 @@ Class MainWindow
     Private Sub MaxBtn_Click(sender As Object, e As RoutedEventArgs) Handles MaxBtn.Click
 
         If WindowState = WindowState.Maximized Then
-            WindowState = WindowState.Normal
+            SystemCommands.RestoreWindow(Me)
 
         Else
-            WindowState = WindowState.Maximized
+            SystemCommands.MaximizeWindow(Me)
 
         End If
 
     End Sub
 
     Private Sub MinBtn_Click(sender As Object, e As RoutedEventArgs) Handles MinBtn.Click
-        WindowState = WindowState.Minimized
+        SystemCommands.MinimizeWindow(Me)
 
     End Sub
 
@@ -717,8 +854,8 @@ Class MainWindow
             Dim SaveChoice As MessageBoxResult = MessageBoxResult.No
 
             If My.Settings.showprompt Then
-                SaveChoice = NewMessage(Funcs.ChooseLang("Do you want to save any changes to your document?", "Vous voulez enregistrer toutes les modifications à votre document ?"),
-                                        Funcs.ChooseLang("Before you go...", "Deux secondes..."), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation)
+                SaveChoice = NewMessage(Funcs.ChooseLang("OnExitDescTStr"),
+                                        Funcs.ChooseLang("OnExitStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation)
 
             End If
 
@@ -815,13 +952,13 @@ Class MainWindow
             Dim selectchars As Integer = DocTxt.SelectedText.Length
 
             If chars = 1 Then
-                WordCountStatusBtn.Content = Funcs.ChooseLang("1 character", "1 caractère")
+                WordCountStatusBtn.Content = Funcs.ChooseLang("CharacterStr")
 
             Else
                 If DocTxt.SelectedText = "" Then
-                    WordCountStatusBtn.Content = $"{chars} {Funcs.ChooseLang("characters", "caractères")}"
+                    WordCountStatusBtn.Content = Funcs.ChooseLang("CharactersStr").Replace("{0}", chars.ToString())
                 Else
-                    WordCountStatusBtn.Content = $"{selectchars} {Funcs.ChooseLang("of", "de")} {chars} {Funcs.ChooseLang("characters", "caractères")}"
+                    WordCountStatusBtn.Content = Funcs.ChooseLang("CharactersOfStr").Replace("{0}", selectchars.ToString()).Replace("{1}", chars.ToString())
                 End If
 
             End If
@@ -830,10 +967,10 @@ Class MainWindow
             Dim lines As Integer = DocTxt.Lines.Length
 
             If lines = 1 Then
-                WordCountStatusBtn.Content = Funcs.ChooseLang("1 line", "1 ligne")
+                WordCountStatusBtn.Content = Funcs.ChooseLang("LineCountStr")
 
             Else
-                WordCountStatusBtn.Content = $"{lines} {Funcs.ChooseLang("lines", "lignes")}"
+                WordCountStatusBtn.Content = Funcs.ChooseLang("LinesCountStr").Replace("{0}", lines.ToString())
 
             End If
 
@@ -842,18 +979,26 @@ Class MainWindow
             Dim selectwords As Integer = FilterSelectWords().Count
 
             If words = 1 Then
-                WordCountStatusBtn.Content = Funcs.ChooseLang("1 word", "1 mot")
+                WordCountStatusBtn.Content = Funcs.ChooseLang("WordStr")
 
             Else
                 If DocTxt.SelectedText = "" Then
-                    WordCountStatusBtn.Content = $"{words} {Funcs.ChooseLang("words", "mots")}"
+                    WordCountStatusBtn.Content = Funcs.ChooseLang("WordsStr").Replace("{0}", words.ToString())
                 Else
-                    WordCountStatusBtn.Content = $"{selectwords} {Funcs.ChooseLang("of", "de")} {words} {Funcs.ChooseLang("words", "mots")}"
+                    WordCountStatusBtn.Content = Funcs.ChooseLang("WordsOfStr").Replace("{0}", selectwords.ToString()).Replace("{1}", words.ToString())
                 End If
 
             End If
 
         End If
+
+        Dim index = DocTxt.SelectionStart
+        Dim ln = DocTxt.GetLineFromCharIndex(index)
+
+        Dim firstChar = DocTxt.GetFirstCharIndexFromLine(ln)
+        Dim col = index - firstChar
+
+        WordCountStatusBtn.Content = WordCountStatusBtn.Content.ToString() + "  |  " + Funcs.ChooseLang("LnColStr").Replace("{0}", ln.ToString()).Replace("{1}", col.ToString())
 
     End Sub
 
@@ -1218,7 +1363,7 @@ Class MainWindow
     Private Sub CheckMenu()
 
         If MainTabs.SelectedIndex = 1 Then
-            TypeBtnTxt.Text = "Menu"
+            TypeBtnTxt.Text = Funcs.ChooseLang("MenuStr")
             TypeBtnIcn.SetResourceReference(ContentProperty, "AppWhiteIcon")
             TypeBtn.Width = 76
             DocTabSelector.Visibility = Visibility.Visible
@@ -1229,7 +1374,7 @@ Class MainWindow
             MenuTabs.SelectedIndex = 5
 
         Else
-            TypeBtnTxt.Text = Funcs.ChooseLang("Close menu", "Fermer le menu")
+            TypeBtnTxt.Text = Funcs.ChooseLang("CloseMenuStr")
             TypeBtnIcn.SetResourceReference(ContentProperty, "BackWhiteIcon")
             TypeBtn.Width = 161
             DocTabSelector.Visibility = Visibility.Collapsed
@@ -1321,7 +1466,7 @@ Class MainWindow
             Dim info As String() = Funcs.GetNotificationInfo("Type")
 
             If Not info(0) = My.Application.Info.Version.ToString(3) Then
-                NotificationsTxt.Content = Funcs.ChooseLang("An update is available.", "Une mise à jour est disponible.")
+                NotificationsTxt.Content = Funcs.ChooseLang("UpdateAvailableStr")
                 NotifyBtnStack.Visibility = Visibility.Visible
 
                 If NotificationsPopup.IsOpen = False Then
@@ -1333,7 +1478,7 @@ Class MainWindow
                 If forcedialog Then CreateNotifyMsg(info)
 
             Else
-                NotificationsTxt.Content = Funcs.ChooseLang("You're up to date!", "Vous êtes à jour !")
+                NotificationsTxt.Content = Funcs.ChooseLang("UpToDateStr")
 
             End If
 
@@ -1343,9 +1488,8 @@ Class MainWindow
         Catch
             If NotificationsPopup.IsOpen Then
                 NotificationsPopup.IsOpen = False
-                NewMessage(Funcs.ChooseLang("It looks like we can't get notifications at the moment. Please check that you are connected to the Internet and try again.",
-                                            "On dirait que nous ne pouvons pas recevoir de notifications pour le moment. Vérifiez votre connexion Internet et réessayez."),
-                           Funcs.ChooseLang("No Internet", "Pas d'Internet"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("NotificationErrorStr"),
+                           Funcs.ChooseLang("NoInternetStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             End If
         End Try
 
@@ -1359,33 +1503,32 @@ Class MainWindow
             Dim features As String = ""
 
             If featurelist.Length <> 0 Then
-                features = Chr(10) + Chr(10) + Funcs.ChooseLang("What's new in this release?", "Quoi de neuf dans cette version ?") + Chr(10)
+                features = Chr(10) + Chr(10) + Funcs.ChooseLang("WhatsNewStr") + Chr(10)
 
                 For Each i In featurelist
                     features += "— " + i + Chr(10)
                 Next
             End If
 
-            Dim start As String = Funcs.ChooseLang("An update is available.", "Une mise à jour est disponible.")
+            Dim start As String = Funcs.ChooseLang("UpdateAvailableStr")
             Dim icon As MessageBoxImage = MessageBoxImage.Information
 
             If info(1) = "High" Then
-                start = Funcs.ChooseLang("An important update is available!", "Une mise à jour importante est disponible !")
+                start = Funcs.ChooseLang("ImportantUpdateStr")
                 icon = MessageBoxImage.Exclamation
             End If
 
-            If NewMessage(start + Chr(10) + "Version " + version + features + Chr(10) + Chr(10) +
-                          Funcs.ChooseLang("Would you like to visit the download page?", "Vous souhaitez visiter la page de téléchargement ?"),
-                          Funcs.ChooseLang("Type Express Updates", "Mises à Jour Type Express"), MessageBoxButton.YesNoCancel, icon) = MessageBoxResult.Yes Then
+            If NewMessage(start + Chr(10) + Funcs.ChooseLang("VersionStr") + " " + version + features + Chr(10) + Chr(10) +
+                          Funcs.ChooseLang("VisitDownloadPageStr"),
+                          Funcs.ChooseLang("UpdatesTStr"), MessageBoxButton.YesNoCancel, icon) = MessageBoxResult.Yes Then
 
                 Process.Start("https://express.johnjds.co.uk/update?app=type")
 
             End If
 
         Catch
-            NewMessage(Funcs.ChooseLang("We can't get update information at the moment. Please check that you are connected to the Internet and try again.",
-                                        "Nous ne pouvons pas obtenir les informations de mise à jour pour le moment. Vérifiez votre connexion Internet et réessayez."),
-                       Funcs.ChooseLang("No Internet", "Pas d'Internet"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("NotificationErrorStr"),
+                       Funcs.ChooseLang("NoInternetStr"), MessageBoxButton.OK, MessageBoxImage.Error)
         End Try
 
     End Sub
@@ -1690,9 +1833,8 @@ Class MainWindow
             Next
 
             If TemplateGrid.Children.Count = 0 Then
-                NewMessage(Funcs.ChooseLang($"We couldn't find any templates that match your search criteria.{Chr(10)}Try something like 'CV' or 'blue'",
-                                        $"Nous n'avons pas trouvé aucun modèle correspondant à vos critères de recherche.{Chr(10)}Essayez quelque chose comme « CV » ou « bleu »"),
-                            Funcs.ChooseLang("No Templates Found", "Aucun modèle trouvé"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+                NewMessage(Funcs.ChooseLang("NoTemplatesFoundDescStr"),
+                           Funcs.ChooseLang("NoTemplatesFoundStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
 
                 ResetTemplateGrid()
 
@@ -1705,9 +1847,8 @@ Class MainWindow
             reader.Dispose()
 
         Catch ex As Exception
-            NewMessage(Funcs.ChooseLang("It looks like we can't get templates at the moment. Please check that you are connected to the Internet and try again.",
-                                    "On dirait que nous ne pouvons pas recevoir de modèles pour le moment. Vérifiez votre connexion Internet et réessayez."),
-                        Funcs.ChooseLang("No Internet", "Pas d'Internet"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("TemplateErrorStr"),
+                       Funcs.ChooseLang("NoInternetStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
             ResetTemplateGrid()
 
@@ -1744,8 +1885,8 @@ Class MainWindow
 
     Public Sub SetTemplate(TempInfo As String())
 
-        Dim TitleText As String = Funcs.ChooseLang("Enter your title here", "Tapez votre titre ici")
-        Dim BodyText As String = Funcs.ChooseLang("Document content goes here.", "Le contenu du document ici.")
+        Dim TitleText As String = Funcs.ChooseLang("EnterTitleStr")
+        Dim BodyText As String = Funcs.ChooseLang("DocContentStr")
 
         Dim TitleFont As String = TempInfo(4)
         Dim TitleFontSize As Integer = Convert.ToInt32(TempInfo(5))
@@ -1834,11 +1975,11 @@ Class MainWindow
 
         With DocTxt
             .Text = TitleText & Chr(10) & Chr(10) & BodyText
-            .Select(0, 21)
+            .Select(0, Funcs.ChooseLang("EnterTitleStr").Length)
             .SelectionFont = New WinDrawing.Font(TitleFont, TitleFontSize, TitleFontStyle)
             .SelectionColor = TitleFontColour
             .SelectionAlignment = TitleAlignment
-            .Select(23, 41)
+            .Select(Funcs.ChooseLang("EnterTitleStr").Length + 2, Funcs.ChooseLang("DocContentStr").Length)
             .SelectionFont = New WinDrawing.Font(BodyFont, BodyFontSize, BodyFontStyle)
             .SelectionColor = BodyFontColour
             NoAdd = False
@@ -1979,8 +2120,8 @@ Class MainWindow
             Return True
 
         Catch
-            NewMessage($"{Funcs.ChooseLang("We ran into a problem while opening this file:", "Nous avons rencontré une erreur lors de l'ouverture de ce fichier :")}{Chr(10)}{filename}{Chr(10)}{Chr(10)}{Funcs.ChooseLang("Please try again.", "Veuillez réessayer.")}",
-                        Funcs.ChooseLang("Error opening file", "Erreur d'ouverture du fichier"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage($"{Funcs.ChooseLang("OpenFileErrorDescStr")}{Chr(10)}{filename}{Chr(10)}{Chr(10)}{Funcs.ChooseLang("TryAgainStr")}",
+                       Funcs.ChooseLang("OpenFileErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             Return False
 
         End Try
@@ -2067,9 +2208,8 @@ Class MainWindow
             LoadFile(filename)
 
         Else
-            If NewMessage(Funcs.ChooseLang("The file you are trying to open no longer exists. Would you like to remove it from the list?",
-                                        "Le fichier que vous essayez d'ouvrir n'existe plus. Vous souhaitez le supprimer de la liste ?"),
-                            Funcs.ChooseLang("File not found", "Fichier non trouvé"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+            If NewMessage(Funcs.ChooseLang("FileNotFoundDescStr"),
+                          Funcs.ChooseLang("FileNotFoundStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
                 If OpenTabs.SelectedIndex = 0 Then
                     RemoveRecent(filename)
@@ -2098,9 +2238,8 @@ Class MainWindow
             Process.Start(Path.GetDirectoryName(ChosenFilename))
 
         Catch
-            If NewMessage(Funcs.ChooseLang("The file location you are trying to open no longer exists. Would you like to remove it from the list?",
-                                        "L'emplacement du fichier que vous essayez d'ouvrir n'existe plus. Vous souhaitez le supprimer de la liste ?"),
-                            Funcs.ChooseLang("Directory not found", "Répertoire non trouvé"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+            If NewMessage(Funcs.ChooseLang("DirNotFoundDescStr"),
+                          Funcs.ChooseLang("DirNotFoundStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
                 If OpenTabs.SelectedIndex = 0 Then
                     RemoveRecent(ChosenFilename)
@@ -2134,9 +2273,8 @@ Class MainWindow
 
     Private Sub ClearRecentsBtn_Click(sender As Object, e As RoutedEventArgs) Handles ClearRecentsBtn.Click
 
-        If NewMessage(Funcs.ChooseLang("Are you sure you want to delete all the files in your recents list? This can't be undone.",
-                                    "Vous êtes sûr(e) de vouloir supprimer tous les fichiers de votre liste récente ? Cela ne peut pas être annulé."),
-                        Funcs.ChooseLang("Are you sure?", "Vous êtes sûr(e) ?"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+        If NewMessage(Funcs.ChooseLang("ConfirmRecentsDeleteStr"),
+                      Funcs.ChooseLang("AreYouSureStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
             My.Settings.recents.Clear()
             My.Settings.Save()
@@ -2195,9 +2333,8 @@ Class MainWindow
 
     Private Sub ClearFavouritesBtn_Click(sender As Object, e As RoutedEventArgs) Handles ClearFavouritesBtn.Click
 
-        If NewMessage(Funcs.ChooseLang("Are you sure you want to delete all the files in your favourites list? This can't be undone.",
-                                    "Vous êtes sûr(e) de vouloir supprimer tous les fichiers de votre liste de favoris ? Cela ne peut pas être annulé."),
-                        Funcs.ChooseLang("Are you sure?", "Vous êtes sûr(e) ?"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+        If NewMessage(Funcs.ChooseLang("ConfirmFavsDeleteStr"),
+                      Funcs.ChooseLang("AreYouSureStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
             My.Settings.favourites.Clear()
             My.Settings.Save()
@@ -2271,9 +2408,8 @@ Class MainWindow
 
 
             Else
-                NewMessage(Funcs.ChooseLang("Web address must end with either .txt or .rtf. Please try again.",
-                                        "L'adresse Web doit se terminer par .txt ou .rtf. Veuillez réessayer."),
-                            Funcs.ChooseLang("Download error", "Erreur de téléchargement"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("DownloadErrorFileExtStr"),
+                           Funcs.ChooseLang("DownloadErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
                 FileDownloadTxt.Focus()
                 FileDownloadTxt.SelectAll()
@@ -2281,9 +2417,8 @@ Class MainWindow
             End If
 
         Catch
-            NewMessage(Funcs.ChooseLang($"We couldn't download that file. Maybe try:{Chr(10)}  - checking the web address is correct{Chr(10)}  - checking your Internet connection{Chr(10)}  - ensuring the file is publicly available",
-                                    $"Nous n'arrivions pas à télécharger ce fichier. Essayez de :{Chr(10)}  - vérifier que l'adresse Web est correcte{Chr(10)}  - vérifier votre connexion Internet{Chr(10)}  - s'assurer que le fichier est accessible au public"),
-                        Funcs.ChooseLang("Download error", "Erreur de téléchargement"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("DownloadErrorDescStr"),
+                       Funcs.ChooseLang("DownloadErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
             FileDownloadTxt.Focus()
             FileDownloadTxt.SelectAll()
@@ -2377,13 +2512,12 @@ Class MainWindow
 
             End If
 
-            CreateTempLabel(Funcs.ChooseLang("Saving complete", "Enregistré"))
+            CreateTempLabel(Funcs.ChooseLang("SavingCompleteStr"))
             Return True
 
         Catch
-            NewMessage(Funcs.ChooseLang($"We couldn't save your document:{Chr(10)}{filename}{Chr(10)}{Chr(10)}Check that you have permission to make changes to this file.",
-                                        $"Nous n'arrivions pas à enregistrer votre document :{Chr(10)}{filename}{Chr(10)}{Chr(10)}Vérifiez que vous avez la permission de modifier ce fichier."),
-                       Funcs.ChooseLang("Error saving file", "Erreur d'enregistrement du fichier"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("SavingErrorDescStr").Replace("{0}", filename),
+                       Funcs.ChooseLang("SavingErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
             Return False
 
@@ -2456,9 +2590,8 @@ Class MainWindow
 
     Private Sub ClearPinnedBtn_Click(sender As Object, e As RoutedEventArgs) Handles ClearPinnedBtn.Click
 
-        If NewMessage(Funcs.ChooseLang("Are you sure you want to delete all the folders in your pinned list? This can't be undone.",
-                                    "Vous êtes sûr(e) de vouloir supprimer tous les dossiers de votre liste épinglée ? Cela ne peut pas être annulé."),
-                        Funcs.ChooseLang("Are you sure?", "Vous êtes sûr(e) ?"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+        If NewMessage(Funcs.ChooseLang("ConfirmPinnedDeleteStr"),
+                      Funcs.ChooseLang("AreYouSureStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
             My.Settings.pinned.Clear()
             My.Settings.Save()
@@ -2524,7 +2657,7 @@ Class MainWindow
             PrintDoc.Print()
             CloseMenuStoryboard.Begin()
 
-            CreateTempLabel(Funcs.ChooseLang("Sent to printer", "Envoyé à l'imprimante"))
+            CreateTempLabel(Funcs.ChooseLang("SentToPrinterStr"))
 
         End If
 
@@ -2646,9 +2779,8 @@ Class MainWindow
             proc.Dispose()
 
         Catch
-            NewMessage(Funcs.ChooseLang("Please make sure you have entered a valid email address.",
-                                    "Veuillez mettre une adresse mail valide."),
-                        Funcs.ChooseLang("Invalid email", "Email invalide"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("InvalidEmailDescStr"),
+                       Funcs.ChooseLang("InvalidEmailStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
             EmailAddressTxt.Focus()
             EmailAddressTxt.SelectAll()
@@ -2683,8 +2815,8 @@ Class MainWindow
     Private Sub PerformLock()
 
         If LockPasswordTxt.Password.Length < 4 Then
-            NewMessage(Funcs.ChooseLang("Your password is too short. Please try again.", "Votre mot de passe est trop court. Veuillez réessayer."),
-                        Funcs.ChooseLang("Invalid password", "Mot de passe incorrect"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("InvalidPasswordDescStr"),
+                       Funcs.ChooseLang("InvalidPasswordStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         Else
             For Each i As Window In My.Application.Windows
@@ -2731,8 +2863,8 @@ Class MainWindow
 
     Private Sub HTMLBtn_Click(sender As Object, e As RoutedEventArgs) Handles HTMLBtn.Click
         If DocTxt.Text = "" Then
-            NewMessage(Funcs.ChooseLang("Please enter some text into your document first.", "Veuillez d'abord entrer du texte dans votre document."),
-                        Funcs.ChooseLang("No text in document", "Pas de texte dans le document"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("NoTextDocDescStr"),
+                       Funcs.ChooseLang("NoTextDocStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         Else
             Dim htmlwin As New HTML With {.HTMLCode = DocTxt.Text}
@@ -2751,13 +2883,12 @@ Class MainWindow
         Try
             My.Computer.FileSystem.WriteAllText(filename, text, False)
 
-            CreateTempLabel(Funcs.ChooseLang("Exported to HTML", "Exporté au format HTML"))
+            CreateTempLabel(Funcs.ChooseLang("HTMLExportedStr"))
             Return True
 
         Catch
-            NewMessage(Funcs.ChooseLang($"We couldn't export your document:{Chr(10)}{filename}{Chr(10)}{Chr(10)}Please try again.{Chr(10)}If this problem persists, contact us for assistance.",
-                                    $"Nous n'arrivions pas à exporter votre document :{Chr(10)}{filename}{Chr(10)}{Chr(10)}Veuillez réessayer.{Chr(10)}Si cette erreur persiste, contactez-nous pour obtenir de l'aide."),
-                        Funcs.ChooseLang("Error exporting file", "Erreur d'exportation du fichier"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("ExportFileErrorDescStr"),
+                       Funcs.ChooseLang("ExportFileErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
             Return False
 
@@ -2815,7 +2946,7 @@ Class MainWindow
 
         If Root2Btn.Tag = 1 Then
             BeginStoryboard(TryFindResource("MoreDownInfoStoryboard"))
-            MoreRootTxt.Text = Funcs.ChooseLang("Show more", "Afficher plus")
+            MoreRootTxt.Text = Funcs.ChooseLang("ShowMoreStr")
             ShowMoreBtn.Visibility = Visibility.Visible
 
         Else
@@ -2823,7 +2954,7 @@ Class MainWindow
 
         End If
 
-        FileSizeTxt.Text = FormatBytes(DirSize())
+        FileSizeTxt.Text = Funcs.FormatBytes(DirSize())
 
         Dim dates As List(Of String) = GetFileDates()
         CreatedTxt.Text = dates(0)
@@ -2832,7 +2963,7 @@ Class MainWindow
 
         If Not update Then
             EditingTimeTxt.Tag = 0
-            EditingTimeTxt.Text = "<1 minute"
+            EditingTimeTxt.Text = "<1 " + Funcs.ChooseLang("MinuteStr")
             EditingTimer.Start()
 
         End If
@@ -2841,7 +2972,7 @@ Class MainWindow
 
     Private Sub ResetInfo()
         FileInfoStack.Visibility = Visibility.Collapsed
-        FilenameTxt.Text = Funcs.ChooseLang("Choose an option from the left.", "Choisissez une option à gauche.")
+        FilenameTxt.Text = Funcs.ChooseLang("OptionFromLeftStr")
 
         Root1Txt.Text = ""
         Root2Btn.Tag = 0
@@ -2855,38 +2986,6 @@ Class MainWindow
         MoreRootBtn.Visibility = Visibility.Collapsed
 
     End Sub
-
-    Public Function FormatBytes(BytesCaller As Long) As String
-        Dim DoubleBytes As Double
-
-        Try
-            Select Case BytesCaller
-                Case Is >= 1125899906842625
-                    Return Funcs.ChooseLang("1000+ TB", "1000+ To")
-                Case 1099511627776 To 1125899906842624
-                    DoubleBytes = BytesCaller / 1099511627776 'TB
-                    Return Math.Round(DoubleBytes, 2).ToString() & Funcs.ChooseLang(" TB", " To")
-                Case 1073741824 To 1099511627775
-                    DoubleBytes = BytesCaller / 1073741824 'GB
-                    Return Math.Round(DoubleBytes, 2).ToString() & Funcs.ChooseLang(" GB", " Go")
-                Case 1048576 To 1073741823
-                    DoubleBytes = BytesCaller / 1048576 'MB
-                    Return Math.Round(DoubleBytes, 2).ToString() & Funcs.ChooseLang(" MB", " Mo")
-                Case 1024 To 1048575
-                    DoubleBytes = BytesCaller / 1024 'KB
-                    Return Math.Round(DoubleBytes, 2).ToString() & Funcs.ChooseLang(" KB", " Ko")
-                Case 1 To 1023
-                    DoubleBytes = BytesCaller ' bytes
-                    Return Math.Round(DoubleBytes, 2).ToString() & Funcs.ChooseLang(" b", " o")
-                Case Else
-                    Return "—"
-            End Select
-
-        Catch
-            Return "—"
-        End Try
-
-    End Function
 
     Private Function DirSize() As Long
         Dim size As Long = 0L
@@ -2935,32 +3034,32 @@ Class MainWindow
 
         If hours = 0 Then
             If minutes = 1 Then
-                EditingTimeTxt.Text = "1 minute"
+                EditingTimeTxt.Text = "1 " + Funcs.ChooseLang("MinuteStr")
             Else
-                EditingTimeTxt.Text = minutes.ToString() + " minutes"
+                EditingTimeTxt.Text = minutes.ToString() + " " + Funcs.ChooseLang("MinutesStr")
             End If
 
         ElseIf hours >= 100 Then
-            EditingTimeTxt.Text = Funcs.ChooseLang("100+ hours", "100+ heures")
+            EditingTimeTxt.Text = "100+ " + Funcs.ChooseLang("HoursStr")
             EditingTimer.Stop()
 
         Else
             If hours = 1 Then
                 If minutes = 0 Then
-                    EditingTimeTxt.Text = Funcs.ChooseLang("1 hour", "1 heure")
+                    EditingTimeTxt.Text = "1 " + Funcs.ChooseLang("HourStr")
                 ElseIf minutes = 1 Then
-                    EditingTimeTxt.Text = Funcs.ChooseLang("1 hour, 1 minute", "1 heure, 1 minute")
+                    EditingTimeTxt.Text = $"1 {Funcs.ChooseLang("HourStr")}, 1 {Funcs.ChooseLang("MinuteStr")}"
                 Else
-                    EditingTimeTxt.Text = Funcs.ChooseLang("1 hour, ", "1 heure, ") + minutes.ToString() + " minutes"
+                    EditingTimeTxt.Text = "1 " + Funcs.ChooseLang("HourStr") + ", " + minutes.ToString() + " " + Funcs.ChooseLang("MinutesStr")
                 End If
 
             Else
                 If minutes = 0 Then
-                    EditingTimeTxt.Text = hours.ToString() + Funcs.ChooseLang(" hours", " heures")
+                    EditingTimeTxt.Text = hours.ToString() + " " + Funcs.ChooseLang("HoursStr")
                 ElseIf minutes = 1 Then
-                    EditingTimeTxt.Text = hours.ToString() + Funcs.ChooseLang(" hours, 1 minute", " heures, 1 minute")
+                    EditingTimeTxt.Text = hours.ToString() + $" {Funcs.ChooseLang("HoursStr")}, 1 {Funcs.ChooseLang("MinuteStr")}"
                 Else
-                    EditingTimeTxt.Text = hours.ToString() + Funcs.ChooseLang(" hours, ", " heures, ") + minutes.ToString() + " minutes"
+                    EditingTimeTxt.Text = hours.ToString() + $" {Funcs.ChooseLang("HoursStr")}, {minutes} {Funcs.ChooseLang("MinutesStr")}"
                 End If
 
             End If
@@ -2984,9 +3083,8 @@ Class MainWindow
             Process.Start(Path.GetDirectoryName(ThisFile))
 
         Catch
-            NewMessage(Funcs.ChooseLang("Can't open file location. Check that you have permission to access it.",
-                                    "Impossible d'ouvrir l'emplacement du fichier. Vérifiez que vous avez la permission d'y accéder."),
-                        Funcs.ChooseLang("Access denied", "Accès refusé"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("AccessDeniedDescStr"),
+                       Funcs.ChooseLang("AccessDeniedStr"), MessageBoxButton.OK, MessageBoxImage.Error)
         End Try
 
     End Sub
@@ -3039,7 +3137,7 @@ Class MainWindow
 
             If InfoStack.Children.Count = 0 Then
                 Dim filebtn As Controls.Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='#00FFFFFF' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='InfoBtn' Height='26' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><DockPanel LastChildFill='False' Height='26' Margin='0'><TextBlock Text='" +
-                                                            Funcs.ChooseLang("No files to open in this folder.", "Aucun fichier à ouvrir dans ce dossier.") + "' Padding='" +
+                                                            Funcs.ChooseLang("NoFilesToOpenStr") + "' Padding='" +
                                                             margin.ToString() + ",0,0,0' TextTrimming='CharacterEllipsis' Name='HomeBtnTxt_Copy22' Margin='0,0,15,0' HorizontalAlignment='Center' VerticalAlignment='Center' /></DockPanel></Button>")
 
                 filebtn.IsEnabled = False
@@ -3050,7 +3148,7 @@ Class MainWindow
         Catch
             InfoStack.Children.Clear()
             Dim filebtn As Controls.Button = XamlReader.Parse("<Button BorderBrush='{x:Null}' BorderThickness='0,0,0,0' Background='#00FFFFFF' HorizontalContentAlignment='Stretch' VerticalContentAlignment='Center' Padding='0,0,0,0' Style='{DynamicResource AppButton}' Name='InfoBtn' Height='26' VerticalAlignment='Top' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'><DockPanel LastChildFill='False' Height='26' Margin='0'><TextBlock Text='" +
-                                                        Funcs.ChooseLang("No files to open in this folder.", "Aucun fichier à ouvrir dans ce dossier.") + "' Padding='" +
+                                                        Funcs.ChooseLang("NoFilesToOpenStr") + "' Padding='" +
                                                         margin.ToString() + ",0,0,0' TextTrimming='CharacterEllipsis' Name='HomeBtnTxt_Copy22' Margin='0,0,15,0' HorizontalAlignment='Center' VerticalAlignment='Center' /></DockPanel></Button>")
 
             filebtn.IsEnabled = False
@@ -3070,7 +3168,7 @@ Class MainWindow
 
     Private Sub ShowMoreBtn_Click(sender As Object, e As RoutedEventArgs) Handles ShowMoreBtn.Click
 
-        If MoreRootTxt.Text = Funcs.ChooseLang("Show more", "Afficher plus") Then
+        If MoreRootTxt.Text = Funcs.ChooseLang("ShowMoreStr") Then
             If Root2Btn.Tag = 1 Then Root2Btn.Visibility = Visibility.Visible
             If Root3Btn.Tag = 1 Then Root3Btn.Visibility = Visibility.Visible
             If Root4Btn.Tag = 1 Then Root4Btn.Visibility = Visibility.Visible
@@ -3094,7 +3192,7 @@ Class MainWindow
             End If
 
             BeginStoryboard(TryFindResource("MoreUpInfoStoryboard"))
-            MoreRootTxt.Text = Funcs.ChooseLang("Show less", "Afficher moins")
+            MoreRootTxt.Text = Funcs.ChooseLang("ShowLessStr")
 
         Else
             Root2Btn.Visibility = Visibility.Collapsed
@@ -3104,7 +3202,7 @@ Class MainWindow
 
             Root1Img.Margin = New Thickness(3, 0, 0, 0)
             BeginStoryboard(TryFindResource("MoreDownInfoStoryboard"))
-            MoreRootTxt.Text = Funcs.ChooseLang("Show more", "Afficher plus")
+            MoreRootTxt.Text = Funcs.ChooseLang("ShowMoreStr")
 
         End If
 
@@ -3115,8 +3213,8 @@ Class MainWindow
         Dim SaveChoice As MessageBoxResult = MessageBoxResult.No
 
         If My.Settings.showprompt Then
-            SaveChoice = NewMessage(Funcs.ChooseLang("Do you want to save any changes to your document?", "Vous voulez enregistrer toutes les modifications à votre document ?"),
-                                    Funcs.ChooseLang("Before you go...", "Deux secondes..."), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation)
+            SaveChoice = NewMessage(Funcs.ChooseLang("OnExitDescTStr"),
+                                    Funcs.ChooseLang("OnExitStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation)
 
         End If
 
@@ -3142,8 +3240,8 @@ Class MainWindow
         RedoBtn.IsEnabled = False
         urc.AddItem(DocTxt.Text)
 
-        Title = Funcs.ChooseLang("Untitled - Type Express", "Sans titre - Type Express")
-        TitleTxt.Text = Funcs.ChooseLang("Untitled - Type Express", "Sans titre - Type Express")
+        Title = Funcs.ChooseLang("TitleStr")
+        TitleTxt.Text = Funcs.ChooseLang("TitleStr")
         CloseMenuStoryboard.Begin()
 
     End Sub
@@ -3287,25 +3385,25 @@ Class MainWindow
 
         Select Case SideTabs.SelectedIndex
             Case 0
-                SideHeaderLbl.Text = Funcs.ChooseLang("Table", "Tableau")
+                SideHeaderLbl.Text = Funcs.ChooseLang("TableTitleStr")
             Case 1
-                SideHeaderLbl.Text = Funcs.ChooseLang("Dictionary", "Dictionnaire")
+                SideHeaderLbl.Text = Funcs.ChooseLang("DictionaryStr")
             Case 2
-                SideHeaderLbl.Text = Funcs.ChooseLang("Symbol", "Symbole")
+                SideHeaderLbl.Text = Funcs.ChooseLang("SymbolStr")
             Case 3
-                SideHeaderLbl.Text = Funcs.ChooseLang("Equation", "Équation")
+                SideHeaderLbl.Text = Funcs.ChooseLang("EquationStr")
             Case 4
-                SideHeaderLbl.Text = Funcs.ChooseLang("Date & Time", "Date et Heure")
+                SideHeaderLbl.Text = Funcs.ChooseLang("DateAndTimeStr")
             Case 5
-                SideHeaderLbl.Text = Funcs.ChooseLang("Font Styles", "Styles de Police")
+                SideHeaderLbl.Text = Funcs.ChooseLang("StylesStr")
             Case 6
-                SideHeaderLbl.Text = Funcs.ChooseLang("Colour Schemes", "Palettes de Couleurs")
+                SideHeaderLbl.Text = Funcs.ChooseLang("ColourSchemeStr")
             Case 7
-                SideHeaderLbl.Text = Funcs.ChooseLang("Find & Replace", "Rechercher et Remplacer")
+                SideHeaderLbl.Text = Funcs.ChooseLang("FindReplaceStr")
             Case 8
-                SideHeaderLbl.Text = Funcs.ChooseLang("Spellchecker", "Orthographe")
+                SideHeaderLbl.Text = Funcs.ChooseLang("SpellcheckStr")
             Case 9
-                SideHeaderLbl.Text = Funcs.ChooseLang("Text Property", "Propriété de Texte")
+                SideHeaderLbl.Text = Funcs.ChooseLang("TextPropertyStr")
         End Select
 
     End Sub
@@ -3388,7 +3486,7 @@ Class MainWindow
 
     Private Sub CopyBtn_Click(sender As Object, e As RoutedEventArgs) Handles CopyBtn.Click, CopyMenuBtn.Click
         DocTxt.Copy()
-        CreateTempLabel(Funcs.ChooseLang("Copied to clipboard", "Copié vers le presse-papiers"))
+        CreateTempLabel(Funcs.ChooseLang("ClipCopiedStr"))
 
     End Sub
 
@@ -3628,9 +3726,6 @@ Class MainWindow
                 Catch
                     FontStyleTxt.Text = ""
                 End Try
-                'NewMessage(Funcs.ChooseLang("The font you entered could not be found.", "La police que vous avez entrée est introuvable."),
-                'Funcs.ChooseLang("Invalid font", "Police invalide"), MessageBoxButton.OK, MessageBoxImage.Error)
-
 
             End Try
 
@@ -3790,8 +3885,8 @@ Class MainWindow
                 End If
 
             Catch ex As Exception
-                NewMessage(Funcs.ChooseLang("The font size you entered is invalid.", "La taille de police que vous avez entrée est invalide."),
-                            Funcs.ChooseLang("Invalid font size", "Taille de police invalide"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("InvalidFontSizeDescStr"),
+                           Funcs.ChooseLang("InvalidFontSizeStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
                 EnableFontChange = True
                 FontSizeTxt.Text = ""
@@ -4298,8 +4393,8 @@ Class MainWindow
             SetTextColour(New SolidColorBrush(ColourPicker.SelectedColor))
 
         Catch
-            NewMessage(Funcs.ChooseLang("Please choose a custom colour first.", "Choisissez d'abord une couleur personnalisée."),
-                        Funcs.ChooseLang("No colour selected", "Aucune couleur sélectionnée"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("NoColourSelectedDescStr"),
+                       Funcs.ChooseLang("NoColourSelectedStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         End Try
 
@@ -4315,9 +4410,8 @@ Class MainWindow
             TextColourBox.Fill = ChosenColour
 
         Catch
-            NewMessage(Funcs.ChooseLang("We couldn't change the text colour. Please try again.",
-                                    "Nous n'arrivions pas à changer la couleur du texte. Veuillez réessayer."),
-                        Funcs.ChooseLang("Invalid colour", "Couleur invalide"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("InvalidColourDescStr"),
+                       Funcs.ChooseLang("InvalidColourStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         End Try
 
@@ -4639,9 +4733,8 @@ Class MainWindow
                 PutBacktoClip()
 
             Catch ex As Exception
-                NewMessage(Funcs.ChooseLang($"An error occurred when inserting your image.{Chr(10)}Please try again.",
-                                        $"Une erreur s'est produite lors de l'insertion de votre image.{Chr(10)}Veuillez réessayer."),
-                            Funcs.ChooseLang("Image error", "Erreur d'image"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("ImageInsertErrorDescStr"),
+                           Funcs.ChooseLang("ImageErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             End Try
 
         End If
@@ -4662,9 +4755,8 @@ Class MainWindow
             End If
 
         Catch ex As Exception
-            NewMessage(Funcs.ChooseLang($"An error occurred when inserting your image.{Chr(10)}Please try again.",
-                                    $"Une erreur s'est produite lors de l'insertion de votre image.{Chr(10)}Veuillez réessayer."),
-                        Funcs.ChooseLang("Image error", "Erreur d'image"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("ImageInsertErrorDescStr"),
+                       Funcs.ChooseLang("ImageErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         End Try
 
@@ -4682,9 +4774,8 @@ Class MainWindow
             End If
 
         Catch ex As Exception
-            NewMessage(Funcs.ChooseLang($"An error occurred when inserting your icon.{Chr(10)}Please try again.",
-                                        $"Une erreur s'est produite lors de l'insertion de votre icône.{Chr(10)}Veuillez réessayer."),
-                       Funcs.ChooseLang("Icon error", "Erreur d'icône"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("IconInsertErrorDescStr"),
+                       Funcs.ChooseLang("IconErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         End Try
 
@@ -4724,9 +4815,8 @@ Class MainWindow
                 PutBacktoClip()
 
             Catch ex As Exception
-                NewMessage(Funcs.ChooseLang($"An error occurred when inserting your screenshot.{Chr(10)}Please try again.",
-                                        $"Une erreur s'est produite lors de l'insertion de votre capture d'écran.{Chr(10)}Veuillez réessayer."),
-                            Funcs.ChooseLang("Screenshot error", "Erreur de capture"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("ScreenshotErrorDescStr"),
+                           Funcs.ChooseLang("ScreenshotErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
             End Try
         End If
@@ -4763,9 +4853,8 @@ Class MainWindow
                 PutBacktoClip()
 
             Catch ex As Exception
-                NewMessage(Funcs.ChooseLang($"An error occurred when inserting your shape.{Chr(10)}Please try again.",
-                                            $"Une erreur s'est produite lors de l'insertion de cette forme.{Chr(10)}Veuillez réessayer."),
-                           Funcs.ChooseLang("Shape error", "Erreur de forme"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("ShapeErrorDescStr"),
+                           Funcs.ChooseLang("ShapeErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
             End Try
         End If
@@ -4782,9 +4871,8 @@ Class MainWindow
                 PutBacktoClip()
 
             Catch ex As Exception
-                NewMessage(Funcs.ChooseLang($"An error occurred when inserting your shape.{Chr(10)}Please try again.",
-                                            $"Une erreur s'est produite lors de l'insertion de cette forme.{Chr(10)}Veuillez réessayer."),
-                           Funcs.ChooseLang("Shape error", "Erreur de forme"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("ShapeErrorDescStr"),
+                           Funcs.ChooseLang("ShapeErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             End Try
         End If
 
@@ -4800,9 +4888,8 @@ Class MainWindow
                 PutBacktoClip()
 
             Catch ex As Exception
-                NewMessage(Funcs.ChooseLang($"An error occurred when inserting your shape.{Chr(10)}Please try again.",
-                                            $"Une erreur s'est produite lors de l'insertion de cette forme.{Chr(10)}Veuillez réessayer."),
-                           Funcs.ChooseLang("Shape error", "Erreur de forme"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("ShapeErrorDescStr"),
+                           Funcs.ChooseLang("ShapeErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             End Try
         End If
 
@@ -4818,9 +4905,8 @@ Class MainWindow
                 PutBacktoClip()
 
             Catch ex As Exception
-                NewMessage(Funcs.ChooseLang($"An error occurred when inserting your shape.{Chr(10)}Please try again.",
-                                            $"Une erreur s'est produite lors de l'insertion de cette forme.{Chr(10)}Veuillez réessayer."),
-                           Funcs.ChooseLang("Shape error", "Erreur de forme"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("ShapeErrorDescStr"),
+                           Funcs.ChooseLang("ShapeErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             End Try
         End If
 
@@ -4829,14 +4915,12 @@ Class MainWindow
     Private Sub PrevShapeBtn_Click(sender As Object, e As RoutedEventArgs) Handles PrevShapeBtn.Click
 
         If My.Settings.saveshapes = False Then
-            NewMessage(Funcs.ChooseLang("Saving shapes has been turned off. To view previously added shapes, go to Options > General.",
-                                        "L'enregistrement des formes a été désactivé. Pour afficher les formes ajoutées précédemment, accédez à Paramètres > Général."),
-                       Funcs.ChooseLang("Previously added shapes", "Formes ajoutées précédemment"), MessageBoxButton.OK, MessageBoxImage.Information)
+            NewMessage(Funcs.ChooseLang("PrevAddedShapesOffStr"),
+                       Funcs.ChooseLang("PrevAddedShapesStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
         ElseIf My.Settings.savedshapes.Count = 0 Then
-            NewMessage(Funcs.ChooseLang("There are no previously added shapes. Please add a shape first.",
-                                        "Il n'y a pas de formes ajoutées précédemment. Veuillez d'abord ajouter une forme."),
-                       Funcs.ChooseLang("No previously added shapes", "Pas de formes ajoutées précédemment"), MessageBoxButton.OK, MessageBoxImage.Information)
+            NewMessage(Funcs.ChooseLang("NoPrevAddedShapesDescStr"),
+                       Funcs.ChooseLang("NoPrevAddedShapesStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
         Else
             Dim shp As New PreviouslyAdded("shape") With {
@@ -4850,9 +4934,8 @@ Class MainWindow
                         PutBacktoClip()
 
                     Catch ex As Exception
-                        NewMessage(Funcs.ChooseLang($"An error occurred when inserting your shape.{Chr(10)}Please try again.",
-                                                $"Une erreur s'est produite lors de l'insertion de cette forme.{Chr(10)}Veuillez réessayer."),
-                               Funcs.ChooseLang("Shape error", "Erreur de forme"), MessageBoxButton.OK, MessageBoxImage.Error)
+                        NewMessage(Funcs.ChooseLang("ShapeErrorDescStr"),
+                                   Funcs.ChooseLang("ShapeErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
                     End Try
                 End If
             End If
@@ -4875,9 +4958,8 @@ Class MainWindow
                 PutBacktoClip()
 
             Catch ex As Exception
-                NewMessage(Funcs.ChooseLang($"An error occurred when inserting your drawing.{Chr(10)}Please try again.",
-                                                        $"Une erreur s'est produite lors de l'insertion de votre dessin.{Chr(10)}Veuillez réessayer."),
-                                            Funcs.ChooseLang("Drawing error", "Erreur de dessin"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("DrawingErrorDescStr"),
+                           Funcs.ChooseLang("DrawingErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             End Try
         End If
 
@@ -4897,14 +4979,7 @@ Class MainWindow
         SymbolPanel.Visibility = Visibility.Collapsed
         SymbolBackBtn.Visibility = Visibility.Collapsed
         SymbolLbl.Visibility = Visibility.Visible
-
-        LetteringBtn.Visibility = Visibility.Visible
-        ArrowsBtn.Visibility = Visibility.Visible
-        StandardBtn.Visibility = Visibility.Visible
-        GreekBtn.Visibility = Visibility.Visible
-        PunctuationBtn.Visibility = Visibility.Visible
-        MathematicsBtn.Visibility = Visibility.Visible
-        EmojiBtn.Visibility = Visibility.Visible
+        SymbolList.Visibility = Visibility.Visible
 
     End Sub
 
@@ -4912,14 +4987,7 @@ Class MainWindow
         SymbolPanel.Visibility = Visibility.Visible
         SymbolBackBtn.Visibility = Visibility.Visible
         SymbolLbl.Visibility = Visibility.Collapsed
-
-        LetteringBtn.Visibility = Visibility.Collapsed
-        ArrowsBtn.Visibility = Visibility.Collapsed
-        StandardBtn.Visibility = Visibility.Collapsed
-        GreekBtn.Visibility = Visibility.Collapsed
-        PunctuationBtn.Visibility = Visibility.Collapsed
-        MathematicsBtn.Visibility = Visibility.Collapsed
-        EmojiBtn.Visibility = Visibility.Collapsed
+        SymbolList.Visibility = Visibility.Collapsed
 
     End Sub
 
@@ -4927,14 +4995,16 @@ Class MainWindow
     ' TOOLS > SYMBOL > DISPLAYS
     ' --
 
-    Private IsEmoji As Boolean = False
-
-    Private Sub DisplaySymbols(symbols As List(Of String))
+    Private Sub DisplaySymbols(symbols As List(Of String), Optional isemoji As String = "False")
         Dim SymbolList As New List(Of SymbolItem) From {}
         ShowSymbolDisplay()
 
         For Each symbol In symbols
-            SymbolList.Add(New SymbolItem() With {.Symbol = symbol.Split("*")(0), .Info = symbol.Split("*")(1)})
+            SymbolList.Add(New SymbolItem() With {
+                               .Symbol = symbol.Split("*")(0),
+                               .Info = symbol.Split("*")(1),
+                               .Tag = symbol.Split("*")(0) + "*" + isemoji
+                           })
         Next
 
         SymbolPanel.ItemsSource = SymbolList
@@ -4943,60 +5013,100 @@ Class MainWindow
 
     Private Sub LetteringBtn_Click(sender As Object, e As RoutedEventArgs) Handles LetteringBtn.Click
         DisplaySymbols(Lettering)
-        IsEmoji = False
 
     End Sub
 
     Private Sub ArrowsBtn_Click(sender As Object, e As RoutedEventArgs) Handles ArrowsBtn.Click
         DisplaySymbols(Arrows)
-        IsEmoji = False
 
     End Sub
 
     Private Sub StandardBtn_Click(sender As Object, e As RoutedEventArgs) Handles StandardBtn.Click
         DisplaySymbols(Standard)
-        IsEmoji = False
 
     End Sub
 
     Private Sub GreekBtn_Click(sender As Object, e As RoutedEventArgs) Handles GreekBtn.Click
         DisplaySymbols(Greek)
-        IsEmoji = False
 
     End Sub
 
     Private Sub PunctuationBtn_Click(sender As Object, e As RoutedEventArgs) Handles PunctuationBtn.Click
         DisplaySymbols(Punctuation)
-        IsEmoji = False
 
     End Sub
 
     Private Sub MathematicsBtn_Click(sender As Object, e As RoutedEventArgs) Handles MathematicsBtn.Click
         DisplaySymbols(Maths)
-        IsEmoji = False
 
     End Sub
 
     Private Sub EmojiBtn_Click(sender As Object, e As RoutedEventArgs) Handles EmojiBtn.Click
-        DisplaySymbols(Emoji)
-        IsEmoji = True
+        DisplaySymbols(Emoji, "True")
 
     End Sub
 
     Private Sub SymbolBtns_Click(sender As Controls.Button, e As RoutedEventArgs)
         DocTxt.SelectedRtf = ""
 
-        If IsEmoji = True Then
+        If sender.Tag.ToString().Split("*")(1) = "True" Then
             DocTxt.SelectionFont = New WinDrawing.Font("Segoe UI Emoji", DocTxt.SelectionFont.Size, WinDrawing.FontStyle.Regular)
 
         End If
 
-        DocTxt.SelectedText = sender.Tag
+        DocTxt.SelectedText = sender.Tag.ToString().Split("*")(0)
 
     End Sub
 
     Private Sub SymbolBackBtn_Click(sender As Object, e As RoutedEventArgs) Handles SymbolBackBtn.Click
         HideSymbolDisplay()
+
+    End Sub
+
+    Private Sub SymbolSearchTxt_KeyDown(sender As Object, e As Input.KeyEventArgs) Handles SymbolSearchTxt.KeyDown
+        If e.Key = Key.Enter Then StartSymbolSearch()
+
+    End Sub
+
+    Private Sub SymbolSearchBtn_Click(sender As Object, e As RoutedEventArgs) Handles SymbolSearchBtn.Click
+        StartSymbolSearch()
+
+    End Sub
+
+    Private Sub StartSymbolSearch()
+
+        If SymbolSearchTxt.Text <> "" Then
+            Dim results = Lettering.Concat(Arrows).Concat(Standard).Concat(Greek).Concat(Punctuation).Concat(Maths) _
+                            .Where(Function(s)
+                                       Return s.Split("*")(1).ToLower().Contains(SymbolSearchTxt.Text.ToLower())
+                                   End Function).ToList()
+
+            Dim emojires = Emoji.Where(Function(s)
+                                           Return s.Split("*")(1).ToLower().Contains(SymbolSearchTxt.Text.ToLower())
+                                       End Function).ToList()
+
+            Dim SymbolList As New List(Of SymbolItem) From {}
+            ShowSymbolDisplay()
+
+            For Each symbol In results
+                SymbolList.Add(New SymbolItem() With {
+                                   .Symbol = symbol.Split("*")(0),
+                                   .Info = symbol.Split("*")(1),
+                                   .Tag = symbol.Split("*")(0) + "*False"
+                               })
+            Next
+
+            For Each symbol In emojires
+                SymbolList.Add(New SymbolItem() With {
+                                   .Symbol = symbol.Split("*")(0),
+                                   .Info = symbol.Split("*")(1),
+                                   .Tag = symbol.Split("*")(0) + "*True"
+                               })
+            Next
+
+            SymbolPanel.ItemsSource = SymbolList
+
+        End If
 
     End Sub
 
@@ -5050,16 +5160,16 @@ Class MainWindow
         Select Case DateTimeLang
             Case "en"
                 ChosenCulture = New Globalization.CultureInfo("en-GB")
-                DateLangBtn.Text = Funcs.ChooseLang("Language: English", "Langue : anglais")
+                DateLangBtn.Text = Funcs.ChooseLang("LanguageENStr")
             Case "fr"
                 ChosenCulture = New Globalization.CultureInfo("fr-FR")
-                DateLangBtn.Text = Funcs.ChooseLang("Language: French", "Langue : français")
+                DateLangBtn.Text = Funcs.ChooseLang("LanguageFRStr")
             Case "es"
                 ChosenCulture = New Globalization.CultureInfo("es-ES")
-                DateLangBtn.Text = Funcs.ChooseLang("Language: Spanish", "Langue : espagnol")
+                DateLangBtn.Text = Funcs.ChooseLang("LanguageESStr")
             Case "it"
                 ChosenCulture = New Globalization.CultureInfo("it-IT")
-                DateLangBtn.Text = Funcs.ChooseLang("Language: Italian", "Langue : italien")
+                DateLangBtn.Text = Funcs.ChooseLang("LanguageITStr")
         End Select
 
         For Each DateStr In DateTimeList
@@ -5118,8 +5228,8 @@ Class MainWindow
             End If
 
         Catch
-            NewMessage(Funcs.ChooseLang("We ran into a problem while importing text from a file. Please try again.", "Nous avons rencontré une erreur lors de l'importation de texte à partir d'un fichier. Veuillez réessayer."),
-                        Funcs.ChooseLang("Error importing file", "Erreur d'importation du fichier"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("ImportFileErrorDescStr"),
+                       Funcs.ChooseLang("ImportFileErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
         End Try
 
     End Sub
@@ -5149,15 +5259,15 @@ Class MainWindow
                 DocTxt.SelectedText = DocTxt.Lines.Length.ToString()
             Case "FilenameBtn"
                 If ThisFile = "" Then
-                    NewMessage(Funcs.ChooseLang("Please save your document first.", "Enregistrez d'abord votre document."),
-                                Funcs.ChooseLang("No file name", "Pas de nom de fichier"), MessageBoxButton.OK, MessageBoxImage.Error)
+                    NewMessage(Funcs.ChooseLang("NoFilenameDescStr"),
+                               Funcs.ChooseLang("NoFilenameStr"), MessageBoxButton.OK, MessageBoxImage.Error)
                 Else
                     DocTxt.SelectedText = Path.GetFileName(ThisFile)
                 End If
             Case "FilepathBtn"
                 If ThisFile = "" Then
-                    NewMessage(Funcs.ChooseLang("Please save your document first.", "Enregistrez d'abord votre document."),
-                                Funcs.ChooseLang("No file path", "Pas de chemin de fichier"), MessageBoxButton.OK, MessageBoxImage.Error)
+                    NewMessage(Funcs.ChooseLang("NoFilenameDescStr"),
+                               Funcs.ChooseLang("NoFilePathStr"), MessageBoxButton.OK, MessageBoxImage.Error)
                 Else
                     DocTxt.SelectedText = ThisFile
                 End If
@@ -5219,9 +5329,8 @@ Class MainWindow
                 PutBacktoClip()
 
             Catch ex As Exception
-                NewMessage(Funcs.ChooseLang($"An error occurred when inserting your chart.{Chr(10)}Please try again.",
-                                            $"Une erreur s'est produite lors de l'insertion de votre graphique.{Chr(10)}Veuillez réessayer."),
-                           Funcs.ChooseLang("Chart error", "Erreur de graphique"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("ChartErrorDescStr"),
+                           Funcs.ChooseLang("ChartErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             End Try
         End If
 
@@ -5230,14 +5339,12 @@ Class MainWindow
     Private Sub PrevChartBtn_Click(sender As Object, e As RoutedEventArgs) Handles PrevChartBtn.Click
 
         If My.Settings.savecharts = False Then
-            NewMessage(Funcs.ChooseLang("Saving charts has been turned off. To view previously added charts, go to Options > General.",
-                                        "L'enregistrement des graphiques a été désactivé. Pour afficher les graphiques ajoutés précédemment, accédez à Paramètres > Général."),
-                       Funcs.ChooseLang("Previously added charts", "Graphiques ajoutés précédemment"), MessageBoxButton.OK, MessageBoxImage.Information)
+            NewMessage(Funcs.ChooseLang("PrevAddedChartsOffStr"),
+                       Funcs.ChooseLang("PrevAddedChartsStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
         ElseIf My.Settings.savedcharts.Count = 0 Then
-            NewMessage(Funcs.ChooseLang("There are no previously added charts. Please add a chart first.",
-                                        "Il n'y a pas de graphiques ajoutés précédemment. Veuillez d'abord ajouter un graphique."),
-                       Funcs.ChooseLang("No previously added charts", "Pas de graphiques ajoutés précédemment"), MessageBoxButton.OK, MessageBoxImage.Information)
+            NewMessage(Funcs.ChooseLang("NoPrevAddedChartsDescStr"),
+                       Funcs.ChooseLang("NoPrevAddedChartsStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
         Else
             Dim crt As New PreviouslyAdded("chart")
@@ -5249,9 +5356,8 @@ Class MainWindow
                         PutBacktoClip()
 
                     Catch ex As Exception
-                        NewMessage(Funcs.ChooseLang($"An error occurred when inserting your chart.{Chr(10)}Please try again.",
-                                                $"Une erreur s'est produite lors de l'insertion de votre graphique.{Chr(10)}Veuillez réessayer."),
-                               Funcs.ChooseLang("Chart error", "Erreur de graphique"), MessageBoxButton.OK, MessageBoxImage.Error)
+                        NewMessage(Funcs.ChooseLang("ChartErrorDescStr"),
+                                   Funcs.ChooseLang("ChartErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
                     End Try
                 End If
             End If
@@ -5424,12 +5530,11 @@ Class MainWindow
     Private Sub H1ApplyBtn_Click(sender As Object, e As RoutedEventArgs) Handles H1ApplyBtn.Click
         Try
             ApplyFontStyle(DocTxt.SelectionFont, DocTxt.SelectionColor, H1Txt)
-            CreateTempLabel(Funcs.ChooseLang("Font style applied to Heading 1", "Style de police appliqué à Titre 1"))
+            CreateTempLabel(Funcs.ChooseLang("StyleAppliedHeadStr").Replace("{0}", "1"))
 
         Catch
-            NewMessage(Funcs.ChooseLang("Please select text that contains only one font, then try again.",
-                                    "Veuillez sélectionner du texte ne contenant qu'une police, et réessayez."),
-                        Funcs.ChooseLang("Too many fonts selected", "Trop de polices sélectionnées"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("TooManyFontsDescStr"),
+                       Funcs.ChooseLang("TooManyFontsStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         End Try
 
@@ -5444,12 +5549,11 @@ Class MainWindow
     Private Sub H2ApplyBtn_Click(sender As Object, e As RoutedEventArgs) Handles H2ApplyBtn.Click
         Try
             ApplyFontStyle(DocTxt.SelectionFont, DocTxt.SelectionColor, H2Txt)
-            CreateTempLabel(Funcs.ChooseLang("Font style applied to Heading 2", "Style de police appliqué à Titre 2"))
+            CreateTempLabel(Funcs.ChooseLang("StyleAppliedHeadStr").Replace("{0}", "2"))
 
         Catch
-            NewMessage(Funcs.ChooseLang("Please select text that contains only one font, then try again.",
-                                    "Veuillez sélectionner du texte ne contenant qu'une police, et réessayez."),
-                        Funcs.ChooseLang("Too many fonts selected", "Trop de polices sélectionnées"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("TooManyFontsDescStr"),
+                       Funcs.ChooseLang("TooManyFontsStr"), MessageBoxButton.OK, MessageBoxImage.Error)
         End Try
 
     End Sub
@@ -5463,12 +5567,11 @@ Class MainWindow
     Private Sub H3ApplyBtn_Click(sender As Object, e As RoutedEventArgs) Handles H3ApplyBtn.Click
         Try
             ApplyFontStyle(DocTxt.SelectionFont, DocTxt.SelectionColor, H3Txt)
-            CreateTempLabel(Funcs.ChooseLang("Font style applied to Heading 3", "Style de police appliqué à Titre 3"))
+            CreateTempLabel(Funcs.ChooseLang("StyleAppliedHeadStr").Replace("{0}", "3"))
 
         Catch
-            NewMessage(Funcs.ChooseLang("Please select text that contains only one font, then try again.",
-                                                "Veuillez sélectionner du texte ne contenant qu'une police, et réessayez."),
-                        Funcs.ChooseLang("Too many fonts selected", "Trop de polices sélectionnées"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("TooManyFontsDescStr"),
+                       Funcs.ChooseLang("TooManyFontsStr"), MessageBoxButton.OK, MessageBoxImage.Error)
         End Try
 
     End Sub
@@ -5482,12 +5585,11 @@ Class MainWindow
     Private Sub B1ApplyBtn_Click(sender As Object, e As RoutedEventArgs) Handles B1ApplyBtn.Click
         Try
             ApplyFontStyle(DocTxt.SelectionFont, DocTxt.SelectionColor, B1Txt)
-            CreateTempLabel(Funcs.ChooseLang("Font style applied to Body 1", "Style de police appliqué à Corps 1"))
+            CreateTempLabel(Funcs.ChooseLang("StyleAppliedBodyStr").Replace("{0}", "1"))
 
         Catch
-            NewMessage(Funcs.ChooseLang("Please select text that contains only one font, then try again.",
-                                    "Veuillez sélectionner du texte ne contenant qu'une police, et réessayez."),
-                        Funcs.ChooseLang("Too many fonts selected", "Trop de polices sélectionnées"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("TooManyFontsDescStr"),
+                       Funcs.ChooseLang("TooManyFontsStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         End Try
 
@@ -5502,12 +5604,11 @@ Class MainWindow
     Private Sub B2ApplyBtn_Click(sender As Object, e As RoutedEventArgs) Handles B2ApplyBtn.Click
         Try
             ApplyFontStyle(DocTxt.SelectionFont, DocTxt.SelectionColor, B2Txt)
-            CreateTempLabel(Funcs.ChooseLang("Font style applied to Body 2", "Style de police appliqué à Corps 2"))
+            CreateTempLabel(Funcs.ChooseLang("StyleAppliedBodyStr").Replace("{0}", "2"))
 
         Catch
-            NewMessage(Funcs.ChooseLang("Please select text that contains only one font, then try again.",
-                                    "Veuillez sélectionner du texte ne contenant qu'une police, et réessayez."),
-                        Funcs.ChooseLang("Too many fonts selected", "Trop de polices sélectionnées"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("TooManyFontsDescStr"),
+                       Funcs.ChooseLang("TooManyFontsStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         End Try
 
@@ -5522,12 +5623,11 @@ Class MainWindow
     Private Sub B3ApplyBtn_Click(sender As Object, e As RoutedEventArgs) Handles B3ApplyBtn.Click
         Try
             ApplyFontStyle(DocTxt.SelectionFont, DocTxt.SelectionColor, B3Txt)
-            CreateTempLabel(Funcs.ChooseLang("Font style applied to Quote", "Style de police appliqué à Citation"))
+            CreateTempLabel(Funcs.ChooseLang("StyleAppliedQuoteStr"))
 
         Catch
-            NewMessage(Funcs.ChooseLang("Please select text that contains only one font, then try again.",
-                                    "Veuillez sélectionner du texte ne contenant qu'une police, et réessayez."),
-                        Funcs.ChooseLang("Too many fonts selected", "Trop de polices sélectionnées"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("TooManyFontsDescStr"),
+                       Funcs.ChooseLang("TooManyFontsStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         End Try
 
@@ -5607,13 +5707,13 @@ Class MainWindow
     End Sub
 
     Private Sub ResetColourSchemeLabels()
-        BasicBtn.Text = Funcs.ChooseLang("Basic", "Basique")
-        BlueBtn.Text = Funcs.ChooseLang("Blue", "Bleu")
-        GreenBtn.Text = Funcs.ChooseLang("Green", "Vert")
-        RedBtn.Text = Funcs.ChooseLang("Red Orange", "Rouge Orange")
-        VioletBtn.Text = "Violet"
-        OfficeBtn.Text = "Office"
-        GreyscaleBtn.Text = Funcs.ChooseLang("Greyscale", "Échelle de Gris")
+        BasicBtn.Text = Funcs.ChooseLang("BasicStr")
+        BlueBtn.Text = Funcs.ChooseLang("BlueStr")
+        GreenBtn.Text = Funcs.ChooseLang("GreenStr")
+        RedBtn.Text = Funcs.ChooseLang("RedOrangeStr")
+        VioletBtn.Text = Funcs.ChooseLang("VioletStr")
+        OfficeBtn.Text = Funcs.ChooseLang("OfficeStr")
+        GreyscaleBtn.Text = Funcs.ChooseLang("GreyscaleStr")
 
         RefreshColourTooltips()
 
@@ -5633,7 +5733,7 @@ Class MainWindow
                 Colour10.Fill = Basic8.Fill
 
                 ResetColourSchemeLabels()
-                BasicBtn.Text += Funcs.ChooseLang(" (current)", " (actuel)")
+                BasicBtn.Text += " " + Funcs.ChooseLang("CurrentStr")
 
             Case 1
                 Colour3.Fill = Blue1.Fill
@@ -5646,7 +5746,7 @@ Class MainWindow
                 Colour10.Fill = Blue8.Fill
 
                 ResetColourSchemeLabels()
-                BlueBtn.Text += Funcs.ChooseLang(" (current)", " (actuel)")
+                BlueBtn.Text += " " + Funcs.ChooseLang("CurrentStr")
 
             Case 2
                 Colour3.Fill = Green1.Fill
@@ -5659,7 +5759,7 @@ Class MainWindow
                 Colour10.Fill = Green8.Fill
 
                 ResetColourSchemeLabels()
-                GreenBtn.Text += Funcs.ChooseLang(" (current)", " (actuel)")
+                GreenBtn.Text += " " + Funcs.ChooseLang("CurrentStr")
 
             Case 3
                 Colour3.Fill = Red1.Fill
@@ -5672,7 +5772,7 @@ Class MainWindow
                 Colour10.Fill = Red8.Fill
 
                 ResetColourSchemeLabels()
-                RedBtn.Text += Funcs.ChooseLang(" (current)", " (actuel)")
+                RedBtn.Text += " " + Funcs.ChooseLang("CurrentStr")
 
             Case 4
                 Colour3.Fill = Violet1.Fill
@@ -5685,7 +5785,7 @@ Class MainWindow
                 Colour10.Fill = Violet8.Fill
 
                 ResetColourSchemeLabels()
-                VioletBtn.Text += Funcs.ChooseLang(" (current)", " (actuel)")
+                VioletBtn.Text += " " + Funcs.ChooseLang("CurrentStr")
 
             Case 5
                 Colour3.Fill = Office1.Fill
@@ -5698,7 +5798,7 @@ Class MainWindow
                 Colour10.Fill = Office8.Fill
 
                 ResetColourSchemeLabels()
-                OfficeBtn.Text += Funcs.ChooseLang(" (current)", " (actuel)")
+                OfficeBtn.Text += " " + Funcs.ChooseLang("CurrentStr")
 
             Case 6
                 Colour3.Fill = Greyscale1.Fill
@@ -5711,7 +5811,7 @@ Class MainWindow
                 Colour10.Fill = Greyscale8.Fill
 
                 ResetColourSchemeLabels()
-                GreyscaleBtn.Text += Funcs.ChooseLang(" (current)", " (actuel)")
+                GreyscaleBtn.Text += " " + Funcs.ChooseLang("CurrentStr")
 
         End Select
 
@@ -5719,43 +5819,43 @@ Class MainWindow
 
     Private Sub BasicBtn_Click(sender As Object, e As RoutedEventArgs) Handles BasicBtn.Click
         ChangeColourScheme(0)
-        CreateTempLabel(Funcs.ChooseLang("Basic colour scheme applied", "Palette de couleurs Basique appliquée"))
+        CreateTempLabel(Funcs.ChooseLang("ColourSchemeAppliedStr").Replace("{0}", Funcs.ChooseLang("BasicStr")))
 
     End Sub
 
     Private Sub BlueBtn_Click(sender As Object, e As RoutedEventArgs) Handles BlueBtn.Click
         ChangeColourScheme(1)
-        CreateTempLabel(Funcs.ChooseLang("Blue colour scheme applied", "Palette de couleurs Bleu appliquée"))
+        CreateTempLabel(Funcs.ChooseLang("ColourSchemeAppliedStr").Replace("{0}", Funcs.ChooseLang("BlueStr")))
 
     End Sub
 
     Private Sub GreenBtn_Click(sender As Object, e As RoutedEventArgs) Handles GreenBtn.Click
         ChangeColourScheme(2)
-        CreateTempLabel(Funcs.ChooseLang("Green colour scheme applied", "Palette de couleurs Vert appliquée"))
+        CreateTempLabel(Funcs.ChooseLang("ColourSchemeAppliedStr").Replace("{0}", Funcs.ChooseLang("GreenStr")))
 
     End Sub
 
     Private Sub RedBtn_Click(sender As Object, e As RoutedEventArgs) Handles RedBtn.Click
         ChangeColourScheme(3)
-        CreateTempLabel(Funcs.ChooseLang("Red Orange colour scheme applied", "Palette de couleurs Rouge Orange appliquée"))
+        CreateTempLabel(Funcs.ChooseLang("ColourSchemeAppliedStr").Replace("{0}", Funcs.ChooseLang("RedOrangeStr")))
 
     End Sub
 
     Private Sub VioletBtn_Click(sender As Object, e As RoutedEventArgs) Handles VioletBtn.Click
         ChangeColourScheme(4)
-        CreateTempLabel(Funcs.ChooseLang("Violet colour scheme applied", "Palette de couleurs Violet appliquée"))
+        CreateTempLabel(Funcs.ChooseLang("ColourSchemeAppliedStr").Replace("{0}", Funcs.ChooseLang("VioletStr")))
 
     End Sub
 
     Private Sub OfficeBtn_Click(sender As Object, e As RoutedEventArgs) Handles OfficeBtn.Click
         ChangeColourScheme(5)
-        CreateTempLabel(Funcs.ChooseLang("Office colour scheme applied", "Palette de couleurs Office appliquée"))
+        CreateTempLabel(Funcs.ChooseLang("ColourSchemeAppliedStr").Replace("{0}", Funcs.ChooseLang("OfficeStr")))
 
     End Sub
 
     Private Sub GreyscaleBtn_Click(sender As Object, e As RoutedEventArgs) Handles GreyscaleBtn.Click
         ChangeColourScheme(6)
-        CreateTempLabel(Funcs.ChooseLang("Greyscale colour scheme applied", "Palette de couleurs Échelle de Gris appliquée"))
+        CreateTempLabel(Funcs.ChooseLang("ColourSchemeAppliedStr").Replace("{0}", Funcs.ChooseLang("GreyscaleStr")))
 
     End Sub
 
@@ -5774,7 +5874,7 @@ Class MainWindow
             Colour10.Fill = ccl.Colours.Item(7)
 
             ResetColourSchemeLabels()
-            CreateTempLabel(Funcs.ChooseLang("Custom colour scheme applied", "Palette de couleurs personnalisée appliquée"))
+            CreateTempLabel(Funcs.ChooseLang("CustomColourSchemeAppliedStr"))
 
         End If
 
@@ -6014,13 +6114,13 @@ Class MainWindow
 
 
         If DocTxt.Find(FindTxt.Text, start, finish, GetFindOptions()) = -1 Then
-            NewMessage(Funcs.ChooseLang("Finished searching the document.", "Terminé la recherche dans le document."),
-                        Funcs.ChooseLang("Search finished", "Recherche terminée"), MessageBoxButton.OK, MessageBoxImage.Information)
+            NewMessage(Funcs.ChooseLang("SearchFinishedDescStr"),
+                       Funcs.ChooseLang("SearchFinishedStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
             Return False
 
         Else
-            CreateTempLabel(Funcs.ChooseLang("Occurrence found", "Résultat trouvé"))
+            CreateTempLabel(Funcs.ChooseLang("OccurrenceFoundStr"))
             Return True
 
         End If
@@ -6071,7 +6171,7 @@ Class MainWindow
 
         If DocTxt.SelectionStart = DocTxt.Find(FindTxt.Text, start, finish, GetFindOptions() Or Forms.RichTextBoxFinds.NoHighlight) And DocTxt.SelectionLength = FindTxt.Text.Length Then
             DocTxt.SelectedText = ReplaceTxt.Text
-            CreateTempLabel(Funcs.ChooseLang("Replaced text", "Texte remplacé"))
+            CreateTempLabel(Funcs.ChooseLang("ReplacedTextStr"))
 
         Else
             FindText(0)
@@ -6138,8 +6238,8 @@ Class MainWindow
     Private Sub ReadAloudBtn_Click(sender As Object, e As RoutedEventArgs) Handles ReadAloudBtn.Click
 
         If DocTxt.Text = "" Then
-            NewMessage(Funcs.ChooseLang("Please add some text to your document first.", "Veuillez d'abord ajouter du texte à votre document."),
-                        Funcs.ChooseLang("No text", "Pas de texte"), MessageBoxButton.OK, MessageBoxImage.Error)
+            NewMessage(Funcs.ChooseLang("NoTextDocDescStr"),
+                       Funcs.ChooseLang("NoTextDocStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         Else
             Dim ts As New TTS(DocTxt.Text)
@@ -6162,7 +6262,7 @@ Class MainWindow
 
     Private Sub ResetSpellchecker()
         SpellInfoPnl.Visibility = Visibility.Collapsed
-        CheckSpellBtn.Text = Funcs.ChooseLang("Start checking", "Démarrer")
+        CheckSpellBtn.Text = Funcs.ChooseLang("StartCheckingStr")
         SpellOverride = False
 
     End Sub
@@ -6204,7 +6304,7 @@ Class MainWindow
         Dim originalstart As Integer = DocTxt.SelectionStart
         Dim originallength As Integer = DocTxt.SelectionLength
 
-        If CheckSpellBtn.Text = Funcs.ChooseLang("Start checking", "Démarrer") Then
+        If CheckSpellBtn.Text = Funcs.ChooseLang("StartCheckingStr") Then
             DocTxt.Select(0, 0)
 
         Else
@@ -6221,7 +6321,7 @@ Class MainWindow
             Dim finish As Integer = SpellTxt.GetSpellingErrorRange(SpellTxt.GetNextSpellingErrorPosition(SpellTxt.CaretPosition, LogicalDirection.Forward)).End.GetTextRunLength(LogicalDirection.Backward)
 
             DocTxt.Select(start, finish - start)
-            CheckSpellBtn.Text = Funcs.ChooseLang("Continue", "Continuer")
+            CheckSpellBtn.Text = Funcs.ChooseLang("ContinueStr")
 
 
             If SpellLang = "fr" Then
@@ -6269,11 +6369,11 @@ Class MainWindow
 
             If count = 0 Then
                 SuggestionPnl.Visibility = Visibility.Collapsed
-                InfoSpellLbl.Text = Funcs.ChooseLang("No suggestions", "Pas de suggestions")
+                InfoSpellLbl.Text = Funcs.ChooseLang("NoSuggestionsStr")
 
             Else
                 SuggestionPnl.Visibility = Visibility.Visible
-                InfoSpellLbl.Text = Funcs.ChooseLang("Did you mean..?", "Vouliez-vous dire..?")
+                InfoSpellLbl.Text = Funcs.ChooseLang("DidYouMeanStr")
 
             End If
 
@@ -6284,8 +6384,8 @@ Class MainWindow
 
         Catch ex As Exception
             DocTxt.Select(originalstart, originallength)
-            NewMessage(Funcs.ChooseLang("Finished searching for errors.", "Terminé la recherche des fautes."),
-                        Funcs.ChooseLang("Spellcheck complete", "Vérification orthographique terminée"), MessageBoxButton.OK, MessageBoxImage.Information)
+            NewMessage(Funcs.ChooseLang("SpellcheckCompleteDescStr"),
+                       Funcs.ChooseLang("SpellcheckCompleteStr"), MessageBoxButton.OK, MessageBoxImage.Information)
 
             ResetSpellchecker()
 
@@ -6355,9 +6455,8 @@ Class MainWindow
         End If
 
         If SpeechTTS.GetInstalledVoices(New Globalization.CultureInfo(SpellLang)).Count = 0 Then
-            If NewMessage(Funcs.ChooseLang("You don't have any text-to-speech voices installed in this language. Would you like to open Settings to get some?",
-                                        "Vous n'avez pas de voix de synthèse vocale installées dans cette langue. Voulez-vous ouvrir Paramètres pour en obtenir ?"),
-                            Funcs.ChooseLang("No voices installed", "Aucune voix installée"), MessageBoxButton.YesNo, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+            If NewMessage(Funcs.ChooseLang("NoVoicesDescStr"),
+                          Funcs.ChooseLang("NoVoicesStr"), MessageBoxButton.YesNo, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
                 OpenSettings()
 
@@ -6384,9 +6483,8 @@ Class MainWindow
         End If
 
         If SpeechTTS.GetInstalledVoices(New Globalization.CultureInfo(SpellLang)).Count = 0 Then
-            If NewMessage(Funcs.ChooseLang("You don't have any text-to-speech voices installed in this language. Would you like to open Settings to get some?",
-                                        "Vous n'avez pas de voix de synthèse vocale installées dans cette langue. Voulez-vous ouvrir Paramètres pour en obtenir ?"),
-                            Funcs.ChooseLang("No voices installed", "Aucune voix installée"), MessageBoxButton.YesNo, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
+            If NewMessage(Funcs.ChooseLang("NoVoicesDescStr"),
+                          Funcs.ChooseLang("NoVoicesStr"), MessageBoxButton.YesNo, MessageBoxImage.Exclamation) = MessageBoxResult.Yes Then
 
                 OpenSettings()
 
@@ -6410,9 +6508,8 @@ Class MainWindow
         Try
             Process.Start("ms-settings:speech")
         Catch
-            NewMessage(Funcs.ChooseLang("To install more voices, open Control Panel and search for 'speech.'",
-                                    "Pour installer plus de voix, ouvrez le Panneau de Configuration et recherchez 'fonctions vocales.'"),
-                        Funcs.ChooseLang("Unable to open Settings", "Impossible d'ouvrir Paramètres"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+            NewMessage(Funcs.ChooseLang("OpenSettingsErrorDescStr"),
+                       Funcs.ChooseLang("OpenSettingsErrorStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
         End Try
 
     End Sub
@@ -6443,12 +6540,11 @@ Class MainWindow
         DefineSearchTxt.Text = DefineSearchTxt.Text.TrimStart(" ")
 
         If DefineSearchTxt.Text.Contains("&") Or DefineSearchTxt.Text.Contains("?") Then
-            Dim modetxt = Funcs.ChooseLang("definitions", "définitions")
-            If DictMode = "synonyms" Then modetxt = Funcs.ChooseLang("synonyms", "synonymes")
+            Dim modetxt = Funcs.ChooseLang("NoDefinitionsStr")
+            If DictMode = "synonyms" Then modetxt = Funcs.ChooseLang("NoSynonymsStr")
 
-            NewMessage(Funcs.ChooseLang($"We couldn't get {modetxt} for that word. Be sure to:{Chr(10)}— check your spelling is correct{Chr(10)}— try using words like 'swim' instead of 'swam'{Chr(10)}{Chr(10)}If this problem persists, we may be experiencing issues. Please try again later and check for app updates.",
-                                        $"Nous n'arrivions pas à obtenir les {modetxt} pour ce mot. Veuillez :{Chr(10)}— vérifier que l'orthographe est correcte{Chr(10)}— utiliser des mots comme 'nager' au lieu de 'nagé'{Chr(10)}{Chr(10)}Si ce problème persiste, il est possible que nous rencontrons des problèmes de réseau. Veuillez réessayer plus tard et vérifier les mises à jour de l'application."),
-                       Funcs.ChooseLang("Dictionary Error", "Erreur de Dictionnaire"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+            NewMessage(Funcs.ChooseLang("DictErrorDescStr").Replace("{0}", modetxt),
+                       Funcs.ChooseLang("DictErrorStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
 
         ElseIf Not DefineSearchTxt.Text = "" Then
             DefineStack.Children.Clear()
@@ -6550,9 +6646,8 @@ Class MainWindow
                 End Using
 
             Catch
-                NewMessage(Funcs.ChooseLang($"Unable to retrieve thesaurus API key.{Chr(10)}Please contact support.",
-                                            $"Impossible de récupérer la clé API dictionnaire.{Chr(10)}Veuillez contacter l'assistance."),
-                           Funcs.ChooseLang("Critical error", "Erreur critique"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("DictAPIKeyNotFoundStr"),
+                           Funcs.ChooseLang("CriticalErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
                 DefineError = True
                 Return False
@@ -6628,9 +6723,8 @@ Class MainWindow
                 End Using
 
             Catch
-                NewMessage(Funcs.ChooseLang($"Unable to retrieve dictionary/thesaurus API key.{Chr(10)}Please contact support.",
-                                            $"Impossible de récupérer la clé API dictionnaire.{Chr(10)}Veuillez contacter l'assistance."),
-                           Funcs.ChooseLang("Critical error", "Erreur critique"), MessageBoxButton.OK, MessageBoxImage.Error)
+                NewMessage(Funcs.ChooseLang("DictAPIKeyNotFoundStr"),
+                           Funcs.ChooseLang("CriticalErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
                 DefineError = True
                 Return False
@@ -6796,7 +6890,7 @@ Class MainWindow
             End If
 
             Dim definition As DockPanel = XamlReader.Parse("<DockPanel Name='DefinitionPnl' xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' xmlns:ex='clr-namespace:ExpressControls;assembly=ExpressControls' UseLayoutRounding='True'><ex:AppButton Name='SynonymsBtn' IconVisibility='Collapsed' GapMargin='0' MoreVisibility='Visible' Text='" +
-                                                           Funcs.ChooseLang("Synonyms", "Synonymes") + "' Margin='25,10,0,0' Height='32' VerticalAlignment='Top' HorizontalAlignment='Left' DockPanel.Dock='Bottom'/><TextBlock Text='" +
+                                                           Funcs.ChooseLang("SynonymsStr") + "' Margin='25,10,0,0' Height='32' VerticalAlignment='Top' HorizontalAlignment='Left' DockPanel.Dock='Bottom'/><TextBlock Text='" +
                                                            controlid + "' FontSize='14' Padding='0,10,0,0' TextTrimming='CharacterEllipsis' Name='DefNumTxt' Width='" +
                                                            controlwidth + "' Margin='" +
                                                            controlmarg + ",0,0,0' /><TextBlock Text='" +
@@ -6864,12 +6958,11 @@ Class MainWindow
 
         If e.Cancelled Then
             If DefineError Then
-                Dim modetxt = Funcs.ChooseLang("definitions", "définitions")
-                If DictMode = "synonyms" Then modetxt = Funcs.ChooseLang("synonyms", "synonymes")
+                Dim modetxt = Funcs.ChooseLang("NoDefinitionsStr")
+                If DictMode = "synonyms" Then modetxt = Funcs.ChooseLang("NoSynonymsStr")
 
-                NewMessage(Funcs.ChooseLang($"We couldn't get {modetxt} for that word. Be sure to:{Chr(10)}— check your spelling is correct{Chr(10)}— try using words like 'swim' instead of 'swam'{Chr(10)}{Chr(10)}If this problem persists, we may be experiencing issues. Please try again later and check for app updates.",
-                                            $"Nous n'arrivions pas à obtenir les {modetxt} pour ce mot. Veuillez :{Chr(10)}— vérifier que l'orthographe est correcte{Chr(10)}— utiliser des mots comme 'nager' au lieu de 'nagé'{Chr(10)}{Chr(10)}Si ce problème persiste, il est possible que nous rencontrons des problèmes de réseau. Veuillez réessayer plus tard et vérifier les mises à jour de l'application."),
-                           Funcs.ChooseLang("Dictionary Error", "Erreur de Dictionnaire"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+                NewMessage(Funcs.ChooseLang("DictErrorDescStr").Replace("{0}", modetxt),
+                           Funcs.ChooseLang("DictErrorStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
             End If
 
         Else
@@ -6936,11 +7029,11 @@ Class MainWindow
             End If
 
             If NoItemsAdded Then
-                Dim modetxt = Funcs.ChooseLang("definitions", "définitions")
-                If DictMode = "synonyms" Then modetxt = Funcs.ChooseLang("synonyms", "synonymes")
-                NewMessage(Funcs.ChooseLang($"We couldn't get {modetxt} for that word. Be sure to:{Chr(10)}— check your spelling is correct{Chr(10)}— try using words like 'swim' instead of 'swam'{Chr(10)}{Chr(10)}If this problem persists, we may be experiencing issues. Please try again later and check for app updates.",
-                                            $"Nous n'arrivions pas à obtenir les {modetxt} pour ce mot. Veuillez :{Chr(10)}— vérifier que l'orthographe est correcte{Chr(10)}— utiliser des mots comme 'nager' au lieu de 'nagé'{Chr(10)}{Chr(10)}Si ce problème persiste, il est possible que nous rencontrons des problèmes de réseau. Veuillez réessayer plus tard et vérifier les mises à jour de l'application."),
-                           Funcs.ChooseLang("Dictionary Error", "Erreur de Dictionnaire"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+                Dim modetxt = Funcs.ChooseLang("NoDefinitionsStr")
+                If DictMode = "synonyms" Then modetxt = Funcs.ChooseLang("NoSynonymsStr")
+
+                NewMessage(Funcs.ChooseLang("DictErrorDescStr").Replace("{0}", modetxt),
+                           Funcs.ChooseLang("DictErrorStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
             End If
         End If
 
@@ -7118,15 +7211,15 @@ Class MainWindow
         Help3Btn.Visibility = Visibility.Visible
 
         Help1Btn.Icon = FindResource("BlankIcon")
-        Help1Btn.Text = Funcs.ChooseLang("Getting started", "Prise en main")
+        Help1Btn.Text = Funcs.ChooseLang("GettingStartedStr")
         Help1Btn.Tag = 1
 
         Help2Btn.Icon = FindResource("TypeExpressIcon")
-        Help2Btn.Text = Funcs.ChooseLang("What's new and still to come", "Nouvelles fonctions et autres à venir")
+        Help2Btn.Text = Funcs.ChooseLang("NewComingSoonStr")
         Help2Btn.Tag = 37
 
         Help3Btn.Icon = FindResource("FeedbackIcon")
-        Help3Btn.Text = Funcs.ChooseLang("Troubleshooting and feedback", "Dépannage et commentaires")
+        Help3Btn.Text = Funcs.ChooseLang("TroubleshootingStr")
         Help3Btn.Tag = 38
 
     End Sub
@@ -7174,118 +7267,118 @@ Class MainWindow
         ' 37 What's new and still to come
         ' 38 Troubleshooting and feedback
 
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("start new creat template", "prise démar nouveau cré modèle")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT1Str")) Then
             results.Add(1)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("open brows", "ouvrir ouverture parcourir")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT2Str")) Then
             results.Add(4)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("recent favourite", "récent favori")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT3Str")) Then
             results.Add(2)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("open web download internet online", "ouvrir ligne internet télécharge")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT4Str")) Then
             results.Add(3)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("sav brows", "enregistre parcourir")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT5Str")) Then
             results.Add(5)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("sav pin", "enregistre épingl")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT6Str")) Then
             results.Add(6)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("print page", "imprim impression page")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT7Str")) Then
             results.Add(7)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("mail send", "mail mél envo")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT8Str")) Then
             results.Add(8)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("lock hid protect", "vérrouill cache protége")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT9Str")) Then
             results.Add(9)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("html code", "html cod")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT10Str")) Then
             results.Add(10)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("info analys propert clos", "info analyse propriété ferme")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT11Str")) Then
             results.Add(15)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("font format bold italic underlin strike cross", "police format fonte gras italique souslign barr rayer")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT12Str")) Then
             results.Add(17)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("font style colour palette", "police style couleur palette")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT13Str")) Then
             results.Add(27)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("colour highlight", "couleur surlign")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT14Str")) Then
             results.Add(19)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("align indent script", "aligne retrait indice exposant")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT15Str")) Then
             results.Add(18)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("picture photo image screen", "image photo écran")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT16Str")) Then
             results.Add(21)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("shape rectangle square line circle ellipse triangle", "forme rectangle carré ligne cercle ellipse triangle")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT17Str")) Then
             results.Add(22)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("draw canvas", "dessin toile")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT18Str")) Then
             results.Add(23)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("chart graph", "graphique diagramme histogramme courbe")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT19Str")) Then
             results.Add(25)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("symbol equation math char emoji", "symbole équation emoji math émoticon caractère")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT20Str")) Then
             results.Add(24)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("list bullet number table grid", "liste puce nombre tableau")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT21Str")) Then
             results.Add(20)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("text block link embed import date time propert", "texte bloc lien intégre import propriété date heure")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT22Str")) Then
             results.Add(26)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("design cas url link wrap", "design conception casse majuscule minuscule url lien retour")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT23Str")) Then
             results.Add(28)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("read speech listen dictate", "lire voix dicter entend synthèse")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT24Str")) Then
             results.Add(29)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("undo redo clipboard copy past cut", "annule rétabli coupe copi colle presse clipboard")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT25Str")) Then
             results.Add(16)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("word stat line char select clear delet", "stat mot ligne caractère sélect efface supprim")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT26Str")) Then
             results.Add(30)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("find replac search", "recherche remplace trouve")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT27Str")) Then
             results.Add(31)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("dictionar thesaurus synonym defin mean", "dictionnaire synonyme défini dire")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT28Str")) Then
             results.Add(33)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("spell error dictionar", "orthograph correcteur vérificateur dictionnaire")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT29Str")) Then
             results.Add(32)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("font start import export", "police allumage démarr import export")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT30Str")) Then
             results.Add(14)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("default setting option", "paramètre option défaut")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT31Str")) Then
             results.Add(11)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("general language sound prompt change lock dictionary setting option", "paramètre langue généra option son invite modifi vérrouill dictionnaire")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT32Str")) Then
             results.Add(12)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("appearance recent word sav setting option dark", "paramètre option apparence enregistre stat récent noir sombre")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT33Str")) Then
             results.Add(13)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("notification updat", "notification jour")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT34Str")) Then
             results.Add(34)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("pane bar zoom", "panneau barre zoom")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT35Str")) Then
             results.Add(35)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("keyboard shortcut", "raccourci clavier")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT36Str")) Then
             results.Add(36)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("new coming feature tip", "nouvelle nouveau bientôt prochainement fonction conseil")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT37Str")) Then
             results.Add(37)
         End If
-        If HelpCheck(query.ToLower(), Funcs.ChooseLang("help feedback comment trouble problem error suggest mail contact", "aide remarque réaction impression comment mail contact erreur")) Then
+        If HelpCheck(query.ToLower(), Funcs.ChooseLang("HelpGuideT38Str")) Then
             results.Add(38)
         End If
 
@@ -7332,118 +7425,118 @@ Class MainWindow
         Select Case topic
             Case 1
                 icon = "BlankIcon"
-                title = Funcs.ChooseLang("Creating a document with templates", "Créer un document avec des modèles")
+                title = Funcs.ChooseLang("HelpTitleT1Str")
             Case 2
                 icon = "FavouriteIcon"
-                title = Funcs.ChooseLang("Recent files and favourites", "Fichiers récents et favoris")
+                title = Funcs.ChooseLang("HelpTitleT2Str")
             Case 3
                 icon = "DownloadIcon"
-                title = Funcs.ChooseLang("Opening files from the Web", "Ouvrir des fichiers à partir du Web")
+                title = Funcs.ChooseLang("HelpTitleT3Str")
             Case 4
                 icon = "OpenIcon"
-                title = Funcs.ChooseLang("Browsing your PC for files", "Parcourir votre PC pour les fichiers")
+                title = Funcs.ChooseLang("HelpTitleT4Str")
             Case 5
                 icon = "SaveIcon"
-                title = Funcs.ChooseLang("Saving files", "Enregistrer les fichiers")
+                title = Funcs.ChooseLang("HelpTitleT5Str")
             Case 6
                 icon = "FolderIcon"
-                title = Funcs.ChooseLang("Pinned folders", "Dossiers épinglés")
+                title = Funcs.ChooseLang("HelpTitleT6Str")
             Case 7
                 icon = "PrintIcon"
-                title = Funcs.ChooseLang("Printing and page setup", "Impression et mise en page")
+                title = Funcs.ChooseLang("HelpTitleT7Str")
             Case 8
                 icon = "EmailIcon"
-                title = Funcs.ChooseLang("Emailing documents", "Envoyer les documents par mail")
+                title = Funcs.ChooseLang("HelpTitleT8Str")
             Case 9
                 icon = "LockIcon"
-                title = Funcs.ChooseLang("Locking documents", "Verrouiller les documents")
+                title = Funcs.ChooseLang("HelpTitleT9Str")
             Case 10
                 icon = "HtmlIcon"
-                title = Funcs.ChooseLang("Converting your document to HTML", "Convertir votre document en HTML")
+                title = Funcs.ChooseLang("HelpTitleT10Str")
             Case 11
                 icon = "DefaultsIcon"
-                title = Funcs.ChooseLang("Default options", "Paramètres par défaut")
+                title = Funcs.ChooseLang("HelpTitleT11Str")
             Case 12
                 icon = "GearsIcon"
-                title = Funcs.ChooseLang("General options", "Paramètres généraux")
+                title = Funcs.ChooseLang("HelpTitleT12Str")
             Case 13
                 icon = "ColoursIcon"
-                title = Funcs.ChooseLang("Appearance options", "Paramètres d'apparence")
+                title = Funcs.ChooseLang("HelpTitleT13Str")
             Case 14
                 icon = "StartupIcon"
-                title = Funcs.ChooseLang("Other options", "Autres paramètres")
+                title = Funcs.ChooseLang("HelpTitleT14Str")
             Case 15
                 icon = "InfoIcon"
-                title = Funcs.ChooseLang("The Info tab", "L'onglet Info")
+                title = Funcs.ChooseLang("HelpTitleT15Str")
             Case 16
                 icon = "PasteIcon"
-                title = Funcs.ChooseLang("Undo, redo and the clipboard", "Annuler, rétablir et le presse-papiers")
+                title = Funcs.ChooseLang("HelpTitleT16Str")
             Case 17
                 icon = "TextIcon"
-                title = Funcs.ChooseLang("Fonts and formatting", "Polices et mise en forme")
+                title = Funcs.ChooseLang("HelpTitleT17Str")
             Case 18
                 icon = "LeftAlignIcon"
-                title = Funcs.ChooseLang("Aligning and indenting text", "Aligner et mettre en retrait le texte")
+                title = Funcs.ChooseLang("HelpTitleT18Str")
             Case 19
                 icon = "HighlighterIcon"
-                title = Funcs.ChooseLang("Text colour and highlighting", "Couleur du texte et surlignage")
+                title = Funcs.ChooseLang("HelpTitleT19Str")
             Case 20
                 icon = "BulletsIcon"
-                title = Funcs.ChooseLang("Lists and tables", "Listes et tableaux")
+                title = Funcs.ChooseLang("HelpTitleT20Str")
             Case 21
                 icon = "PictureIcon"
-                title = Funcs.ChooseLang("Pictures and screenshots", "Images et captures d'écran")
+                title = Funcs.ChooseLang("HelpTitleT21Str")
             Case 22
                 icon = "ShapesIcon"
-                title = Funcs.ChooseLang("Shapes", "Formes")
+                title = Funcs.ChooseLang("HelpTitleT22Str")
             Case 23
                 icon = "EditIcon"
-                title = Funcs.ChooseLang("Drawings", "Dessins")
+                title = Funcs.ChooseLang("HelpTitleT23Str")
             Case 24
                 icon = "SymbolIcon"
-                title = Funcs.ChooseLang("Symbols and equations", "Symboles et équations")
+                title = Funcs.ChooseLang("HelpTitleT24Str")
             Case 25
                 icon = "ColumnChartIcon"
-                title = Funcs.ChooseLang("Charts and graphs", "Graphiques")
+                title = Funcs.ChooseLang("HelpTitleT25Str")
             Case 26
                 icon = "LinkIcon"
-                title = Funcs.ChooseLang("Text blocks and hyperlinks", "Blocs de texte et hyperliens")
+                title = Funcs.ChooseLang("HelpTitleT26Str")
             Case 27
                 icon = "StylesIcon"
-                title = Funcs.ChooseLang("Font styles and colour schemes", "Styles de police et palettes de couleurs")
+                title = Funcs.ChooseLang("HelpTitleT27Str")
             Case 28
                 icon = "CaseIcon"
-                title = Funcs.ChooseLang("Design options", "Paramètres de design")
+                title = Funcs.ChooseLang("HelpTitleT28Str")
             Case 29
                 icon = "SpeakerIcon"
-                title = Funcs.ChooseLang("Reading aloud", "Lecture à haute voix")
+                title = Funcs.ChooseLang("HelpTitleT29Str")
             Case 30
                 icon = "WordCountIcon"
-                title = Funcs.ChooseLang("Word count and selecting and clearing text", "Statistiques et sélection et effacement du texte")
+                title = Funcs.ChooseLang("HelpTitleT30Str")
             Case 31
                 icon = "FindReplaceIcon"
-                title = Funcs.ChooseLang("Find and replace", "Rechercher et remplacer")
+                title = Funcs.ChooseLang("HelpTitleT31Str")
             Case 32
                 icon = "SpellcheckerIcon"
-                title = Funcs.ChooseLang("Spellchecker", "Correcteur orthographique")
+                title = Funcs.ChooseLang("HelpTitleT32Str")
             Case 33
                 icon = "DictionaryIcon"
-                title = Funcs.ChooseLang("Dictionary", "Dictionnaire")
+                title = Funcs.ChooseLang("HelpTitleT33Str")
             Case 34
                 icon = "NotificationIcon"
-                title = "Notifications"
+                title = Funcs.ChooseLang("HelpTitleT34Str")
             Case 35
                 icon = "PaneIcon"
-                title = Funcs.ChooseLang("Using the side pane and status bar", "Utiliser le panneau à côté et la barre d'état")
+                title = Funcs.ChooseLang("HelpTitleT35Str")
             Case 36
                 icon = "CtrlIcon"
-                title = Funcs.ChooseLang("Keyboard shortcuts", "Raccourcis clavier")
+                title = Funcs.ChooseLang("HelpTitleT36Str")
             Case 37
                 icon = "TypeExpressIcon"
-                title = Funcs.ChooseLang("What's new and still to come", "Nouvelles fonctions et autres à venir")
+                title = Funcs.ChooseLang("NewComingSoonStr")
             Case 38
                 icon = "FeedbackIcon"
-                title = Funcs.ChooseLang("Troubleshooting and feedback", "Dépannage et commentaires")
+                title = Funcs.ChooseLang("TroubleshootingStr")
         End Select
 
         Select Case btn
@@ -7549,6 +7642,7 @@ End Class
 Public Class SymbolItem
     Public Property Symbol As String
     Public Property Info As String
+    Public Property Tag As String
 End Class
 
 Public Class DateTimeItem

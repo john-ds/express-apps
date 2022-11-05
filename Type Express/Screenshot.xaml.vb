@@ -16,25 +16,15 @@ Public Class Screenshot
         ' Add any initialization after the InitializeComponent() call.
         AddHandler Timer1.Elapsed, AddressOf Timer1_Tick
 
-        MaxHeight = SystemParameters.WorkArea.Height + 13
-        MaxWidth = SystemParameters.WorkArea.Width + 13
-        AddHandler SystemParameters.StaticPropertyChanged, AddressOf WorkAreaChanged
-
-    End Sub
-
-    Private Sub WorkAreaChanged(sender As Object, e As EventArgs)
-        MaxHeight = SystemParameters.WorkArea.Height + 12
-        MaxWidth = SystemParameters.WorkArea.Width + 12
-
     End Sub
 
     Private Sub MaxBtn_Click(sender As Object, e As RoutedEventArgs) Handles MaxBtn.Click
 
         If WindowState = WindowState.Maximized Then
-            WindowState = WindowState.Normal
+            SystemCommands.RestoreWindow(Me)
 
         Else
-            WindowState = WindowState.Maximized
+            SystemCommands.MaximizeWindow(Me)
 
         End If
 
@@ -57,9 +47,11 @@ Public Class Screenshot
     Private Sub TitleBtn_DoubleClick(sender As Object, e As RoutedEventArgs) Handles TitleBtn.MouseDoubleClick
 
         If WindowState = WindowState.Maximized Then
-            WindowState = WindowState.Normal
+            SystemCommands.RestoreWindow(Me)
+
         Else
-            WindowState = WindowState.Maximized
+            SystemCommands.MaximizeWindow(Me)
+
         End If
 
     End Sub
@@ -89,7 +81,7 @@ Public Class Screenshot
         If Full = False Then
             Dim reg As New Region
             If reg.ShowDialog() = True Then
-                Title = Funcs.ChooseLang("Capturing in progress...", "Capture en cours...")
+                Title = Funcs.ChooseLang("CaptureProgressStr")
                 bounds = reg.SavedBounds
                 IsEnabled = False
 
@@ -98,7 +90,7 @@ Public Class Screenshot
             End If
 
         Else
-            Title = Funcs.ChooseLang("Capturing in progress...", "Capture en cours...")
+            Title = Funcs.ChooseLang("CaptureProgressStr")
             bounds = Nothing
             IsEnabled = False
 
@@ -151,8 +143,8 @@ Public Class Screenshot
         ScreenshotImg.Source = scr
 
         AddBtn.Visibility = Visibility.Visible
-        Title = Funcs.ChooseLang("Screenshot - Type Express", "Capture d'Écran - Type Express")
-        CaptureBtn.Text = Funcs.ChooseLang("Capture new", "Capturer nouveau")
+        Title = Funcs.ChooseLang("ScTitleTStr")
+        CaptureBtn.Text = Funcs.ChooseLang("CaptureNewStr")
         IsEnabled = True
 
     End Sub

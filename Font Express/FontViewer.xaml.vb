@@ -25,10 +25,11 @@ Public Class FontViewer
         DisplayTxt.FontFamily = ffcv.ConvertFromString(name)
         GlyphItems.FontFamily = ffcv.ConvertFromString(name)
 
-        If Threading.Thread.CurrentThread.CurrentUICulture.Name = "fr-FR" Then
-            BoldBtn.Icon = FindResource("GrasIcon")
-            BoldGlyphBtn.Icon = FindResource("GrasIcon")
-        End If
+        BoldBtn.Icon = FindResource(Funcs.ChooseIcon("BoldIcon"))
+        BoldGlyphBtn.Icon = FindResource(Funcs.ChooseIcon("BoldIcon"))
+
+        ItalicBtn.Icon = FindResource(Funcs.ChooseIcon("ItalicIcon"))
+        ItalicGlyphBtn.Icon = FindResource(Funcs.ChooseIcon("ItalicIcon"))
 
         RefreshCategories()
         SetCategoryBtns()
@@ -119,8 +120,8 @@ Public Class FontViewer
     Private Sub AddCategoryBtn_Click(sender As Button, e As RoutedEventArgs) Handles NewCategoryBtn.Click
 
         If My.Settings.categories.Count >= 10 Then
-            MainWindow.NewMessage(Funcs.ChooseLang("You've reached the maximum number of categories.", "Vous avez atteint le nombre maximum de catégories."),
-                                  Funcs.ChooseLang("Category Limit Reached", "Limite de Catégorie Atteinte"), MessageBoxButton.OK, MessageBoxImage.Error)
+            MainWindow.NewMessage(Funcs.ChooseLang("CategoryLimitStr"),
+                                  Funcs.ChooseLang("CategoryLimitReachedStr"), MessageBoxButton.OK, MessageBoxImage.Error)
 
         Else
             Dim cat As New AddEditCategory()
@@ -162,7 +163,7 @@ Public Class FontViewer
     Private Sub CategoryPopupBtns_Click(sender As ExpressControls.AppCheckBox, e As RoutedEventArgs) Handles AddFavBtn.Click
 
         If sender.IsChecked Then
-            If sender.Tag.ToString() = Funcs.ChooseLang("Favourites", "Favoris") Then
+            If sender.Tag.ToString() = Funcs.ChooseLang("FavouritesStr") Then
                 My.Settings.favouritefonts.Add(FontName)
                 My.Settings.Save()
 
@@ -174,12 +175,12 @@ Public Class FontViewer
 
         Else
             If Not CurrentCategory = "" Then
-                If sender.Tag.ToString() = CurrentCategory Or (sender.Tag.ToString() = Funcs.ChooseLang("Favourites", "Favoris") And CurrentCategory = "fav") Then
+                If sender.Tag.ToString() = CurrentCategory Or (sender.Tag.ToString() = Funcs.ChooseLang("FavouritesStr") And CurrentCategory = "fav") Then
                     FavouriteChange = True
                 End If
             End If
 
-            If sender.Tag.ToString() = Funcs.ChooseLang("Favourites", "Favoris") Then
+            If sender.Tag.ToString() = Funcs.ChooseLang("FavouritesStr") Then
                 My.Settings.favouritefonts.Remove(FontName)
                 My.Settings.Save()
 
@@ -223,18 +224,18 @@ Public Class FontViewer
             FreeTextPnl.Visibility = Visibility.Visible
             GlyphsPnl.Visibility = Visibility.Collapsed
             ToggleBtn.Icon = FindResource("TextIcon")
-            ToggleBtn.Text = Funcs.ChooseLang("Glyphs", "Glyphes")
+            ToggleBtn.Text = Funcs.ChooseLang("GlyphsStr")
 
         Else ' show glyphs
             FreeTextPnl.Visibility = Visibility.Collapsed
             GlyphsPnl.Visibility = Visibility.Visible
             ToggleBtn.Icon = FindResource("EditorIcon")
-            ToggleBtn.Text = Funcs.ChooseLang("Free text", "Texte libre")
+            ToggleBtn.Text = Funcs.ChooseLang("FreeTextStr")
 
             GlyphItems.ItemsSource = GlyphList.Take(66)
             PrevBtn.IsEnabled = False
             NextBtn.IsEnabled = True
-            PageTxt.Text = Funcs.ChooseLang("Page 1 of " + Math.Ceiling(GlyphList.Count / 66).ToString(), "Page 1 sur " + Math.Ceiling(GlyphList.Count / 66).ToString())
+            PageTxt.Text = Funcs.ChooseLang("PageStr").Replace("{0}", "1").Replace("{1}", Math.Ceiling(GlyphList.Count / 66).ToString())
             GlyphPage = 1
 
         End If
@@ -248,7 +249,7 @@ Public Class FontViewer
         If GlyphPage > 1 Then
             GlyphPage -= 1
             GlyphItems.ItemsSource = GlyphList.Skip((GlyphPage * 66) - 66).Take(66)
-            PageTxt.Text = Funcs.ChooseLang("Page " + GlyphPage.ToString() + " of " + Math.Ceiling(GlyphList.Count / 66).ToString(), "Page " + GlyphPage.ToString() + " sur " + Math.Ceiling(GlyphList.Count / 66).ToString())
+            PageTxt.Text = Funcs.ChooseLang("PageStr").Replace("{0}", GlyphPage.ToString()).Replace("{1}", Math.Ceiling(GlyphList.Count / 66).ToString())
 
             NextBtn.IsEnabled = GlyphPage < Math.Ceiling(GlyphList.Count / 66)
             PrevBtn.IsEnabled = GlyphPage > 1
@@ -262,7 +263,7 @@ Public Class FontViewer
         If GlyphPage < Math.Ceiling(GlyphList.Count / 66) Then
             GlyphPage += 1
             GlyphItems.ItemsSource = GlyphList.Skip((GlyphPage * 66) - 66).Take(66)
-            PageTxt.Text = Funcs.ChooseLang("Page " + GlyphPage.ToString() + " of " + Math.Ceiling(GlyphList.Count / 66).ToString(), "Page " + GlyphPage.ToString() + " sur " + Math.Ceiling(GlyphList.Count / 66).ToString())
+            PageTxt.Text = Funcs.ChooseLang("PageStr").Replace("{0}", GlyphPage.ToString()).Replace("{1}", Math.Ceiling(GlyphList.Count / 66).ToString())
 
             NextBtn.IsEnabled = GlyphPage < Math.Ceiling(GlyphList.Count / 66)
             PrevBtn.IsEnabled = GlyphPage > 1

@@ -8,7 +8,7 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:wf1="clr-namespace:System.Windows.Forms.DataVisualization.Charting;assembly=System.Windows.Forms.DataVisualization"
         mc:Ignorable="d"
-        Title="{DynamicResource ChartTitleStr}" Height="530" Width="820" WindowStartupLocation="CenterScreen" WindowStyle="None" MinWidth="750" MinHeight="450">
+        Title="{DynamicResource ChartTitlePStr}" Height="530" Width="820" WindowStartupLocation="CenterScreen" Style="{DynamicResource ChromeWindowStyle}" MinWidth="750" MinHeight="450">
 
     <Grid x:Name="grid1">
         <DockPanel>
@@ -31,10 +31,10 @@
                 </Button>
             </DockPanel>
             <DockPanel Background="{DynamicResource SecondaryColor}" DockPanel.Dock="Right">
-                <ex:AppButton x:Name="AddBtn" Icon="{DynamicResource RightIcon}" CornerRadius="0" Text="{DynamicResource AddDocStr}" VerticalAlignment="Top" FontWeight="SemiBold" DockPanel.Dock="Bottom" HorizontalContentAlignment="Stretch"/>
+                <ex:AppButton x:Name="AddBtn" Icon="{DynamicResource RightIcon}" CornerRadius="0" Text="{DynamicResource AddSlideshowStr}" VerticalAlignment="Top" FontWeight="SemiBold" DockPanel.Dock="Bottom" HorizontalContentAlignment="Stretch"/>
                 <ScrollViewer Width="248" DockPanel.Dock="Right" VerticalScrollBarVisibility="Auto" UseLayoutRounding="True">
                     <StackPanel Margin="0">
-                        <TextBlock TextWrapping="Wrap" FontSize="14" Margin="20" Text="{DynamicResource ChartInfoStr}"></TextBlock>
+                        <TextBlock TextWrapping="Wrap" FontSize="14" Margin="20" Text="{DynamicResource ChartInfoPStr}"></TextBlock>
                         <DockPanel x:Name="ChartPanel" Margin="20,0,10,20">
                             <StackPanel VerticalAlignment="Top" Margin="34,0,0,0">
                                 <TextBlock x:Name="ThicknessTxt1" TextWrapping="Wrap" FontSize="14" Margin="0,2,0,5" Text="{DynamicResource ChTypeStr}"/>

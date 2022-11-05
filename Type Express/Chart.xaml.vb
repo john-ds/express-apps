@@ -9,7 +9,7 @@
 
         ' Add any initialization after the InitializeComponent() call.
         SetDefaults()
-        Chart1.Series.Item(0).Points.Add(1.0, 0).AxisLabel = Funcs.ChooseLang("Add some data", "Ajouter des données")
+        Chart1.Series.Item(0).Points.Add(1.0, 0).AxisLabel = Funcs.ChooseLang("AddSomeDataStr")
         Chart1.Palette = Forms.DataVisualization.Charting.ChartColorPalette.BrightPastel
 
     End Sub
@@ -78,10 +78,6 @@
     End Sub
 
     Private Sub SetDefaults()
-        MaxHeight = SystemParameters.WorkArea.Height + 13
-        MaxWidth = SystemParameters.WorkArea.Width + 13
-        AddHandler SystemParameters.StaticPropertyChanged, AddressOf WorkAreaChanged
-
         Chart1.Series.Item(0).Font = New System.Drawing.Font("Segoe UI", 10, System.Drawing.FontStyle.Bold)
         Chart1.Series.Item(0).LabelBackColor = System.Drawing.Color.White
 
@@ -95,19 +91,13 @@
 
     End Sub
 
-    Private Sub WorkAreaChanged(sender As Object, e As EventArgs)
-        MaxHeight = SystemParameters.WorkArea.Height + 12
-        MaxWidth = SystemParameters.WorkArea.Width + 12
-
-    End Sub
-
     Private Sub MaxBtn_Click(sender As Object, e As RoutedEventArgs) Handles MaxBtn.Click
 
         If WindowState = WindowState.Maximized Then
-            WindowState = WindowState.Normal
+            SystemCommands.RestoreWindow(Me)
 
         Else
-            WindowState = WindowState.Maximized
+            SystemCommands.MaximizeWindow(Me)
 
         End If
 
@@ -130,9 +120,11 @@
     Private Sub TitleBtn_DoubleClick(sender As Object, e As RoutedEventArgs) Handles TitleBtn.MouseDoubleClick
 
         If WindowState = WindowState.Maximized Then
-            WindowState = WindowState.Normal
+            SystemCommands.RestoreWindow(Me)
+
         Else
-            WindowState = WindowState.Maximized
+            SystemCommands.MaximizeWindow(Me)
+
         End If
 
     End Sub

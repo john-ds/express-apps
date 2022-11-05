@@ -108,9 +108,8 @@ Public Class Icons
             SearchTxt.IsEnabled = False
             SearchBtn.IsEnabled = False
 
-            MainWindow.NewMessage(Funcs.ChooseLang($"Unable to retrieve icon API key.{Chr(10)}Please contact support.",
-                                                        $"Impossible de récupérer la clé API icône.{Chr(10)}Veuillez contacter l'assistance."),
-                                  Funcs.ChooseLang("Critical error", "Erreur critique"), MessageBoxButton.OK, MessageBoxImage.Error)
+            MainWindow.NewMessage(Funcs.ChooseLang("IconAPIKeyNotFoundStr"),
+                                  Funcs.ChooseLang("CriticalErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
         End Try
 
     End Sub
@@ -138,9 +137,8 @@ Public Class Icons
     Private Sub StartIconSearch(query As String)
 
         If query.Contains("&") Or query.Contains("?") Then
-            MainWindow.NewMessage(Funcs.ChooseLang($"We couldn't find any icons. Please try a different search query.{Chr(10)}{Chr(10)}If this problem persists, we may be experiencing issues. Please try again later and check for app updates.",
-                                                        $"Nous n'arrivions pas à trouver des icônes. Veuillez essayer un requête different.{Chr(10)}{Chr(10)}Veuillez noter que seules les requêtes de recherche en anglais sont supportées.{Chr(10)}{Chr(10)}Si ce problème persiste, il est possible que nous rencontrons des problèmes de réseau. Veuillez réessayer plus tard et vérifier les mises à jour de l'application."),
-                                  Funcs.ChooseLang("Icon Error", "Erreur d'Icône"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+            MainWindow.NewMessage(Funcs.ChooseLang("IconErrorDescStr"),
+                                  Funcs.ChooseLang("IconErrorStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
 
         ElseIf Not SearchTxt.Text = "" Then
             BackGrid.IsEnabled = False
@@ -176,9 +174,8 @@ Public Class Icons
         BackGrid.IsEnabled = True
 
         If PictureError Then
-            MainWindow.NewMessage(Funcs.ChooseLang($"We couldn't find any icons. Please try a different search query.{Chr(10)}{Chr(10)}If this problem persists, we may be experiencing issues. Please try again later and check for app updates.",
-                                                        $"Nous n'arrivions pas à trouver des icônes. Veuillez essayer un requête different.{Chr(10)}{Chr(10)}Veuillez noter que seules les requêtes de recherche en anglais sont supportées.{Chr(10)}{Chr(10)}Si ce problème persiste, il est possible que nous rencontrons des problèmes de réseau. Veuillez réessayer plus tard et vérifier les mises à jour de l'application."),
-                                  Funcs.ChooseLang("Icon Error", "Erreur d'Icône"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+            MainWindow.NewMessage(Funcs.ChooseLang("IconErrorDescStr"),
+                                  Funcs.ChooseLang("IconErrorStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
 
             LoadMoreBtn.Visibility = Visibility.Collapsed
 
@@ -212,9 +209,8 @@ Public Class Icons
             Next
 
             If PhotoGrid.Children.Count = 0 Then
-                MainWindow.NewMessage(Funcs.ChooseLang($"We couldn't find any icons. Please try a different search query.{Chr(10)}{Chr(10)}If this problem persists, we may be experiencing issues. Please try again later and check for app updates.",
-                                                       $"Nous n'arrivions pas à trouver des icônes. Veuillez essayer un requête different.{Chr(10)}{Chr(10)}Veuillez noter que seules les requêtes de recherche en anglais sont supportées.{Chr(10)}{Chr(10)}Si ce problème persiste, il est possible que nous rencontrons des problèmes de réseau. Veuillez réessayer plus tard et vérifier les mises à jour de l'application."),
-                                      Funcs.ChooseLang("Icon Error", "Erreur d'Icône"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
+                MainWindow.NewMessage(Funcs.ChooseLang("IconErrorDescStr"),
+                                      Funcs.ChooseLang("IconErrorStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation)
 
                 LoadMoreBtn.Visibility = Visibility.Collapsed
 
@@ -442,9 +438,8 @@ Public Class Icons
                 Close()
 
             Catch
-                MainWindow.NewMessage(Funcs.ChooseLang("We're having trouble getting this icon. Please try again later.",
-                                                       "Nous avons du mal à obtenir cette icône. Veuillez réessayer plus tard."),
-                                      Funcs.ChooseLang("Icon error", "Erreur d'icône"), MessageBoxButton.OK, MessageBoxImage.Error)
+                MainWindow.NewMessage(Funcs.ChooseLang("IconRetrievalErrorStr"),
+                                      Funcs.ChooseLang("IconErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error)
             End Try
 
         End If
