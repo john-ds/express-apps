@@ -1,88 +1,41 @@
-﻿<Window x:Class="WordCount" x:Name="Word1"
+﻿<Window x:Class="Type_Express.WordCount"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:ex="clr-namespace:ExpressControls;assembly=ExpressControls"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Type_Express"
-        mc:Ignorable="d"
-        Title="{DynamicResource WordTitleStr}" Background="{x:Null}" Height="250" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" SizeToContent="Width" AllowsTransparency="True" WindowStyle="None">
-    <Window.Resources>
-        <Storyboard x:Key="EntranceStoryboard">
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)" Storyboard.TargetName="grid">
-                <EasingDoubleKeyFrame KeyTime="0" Value="0.8">
-                    <EasingDoubleKeyFrame.EasingFunction>
-                        <CircleEase EasingMode="EaseOut"/>
-                    </EasingDoubleKeyFrame.EasingFunction>
-                </EasingDoubleKeyFrame>
-                <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="1">
-                    <EasingDoubleKeyFrame.EasingFunction>
-                        <CircleEase EasingMode="EaseOut"/>
-                    </EasingDoubleKeyFrame.EasingFunction>
-                </EasingDoubleKeyFrame>
-            </DoubleAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)" Storyboard.TargetName="grid">
-                <EasingDoubleKeyFrame KeyTime="0" Value="0.8">
-                    <EasingDoubleKeyFrame.EasingFunction>
-                        <CircleEase EasingMode="EaseOut"/>
-                    </EasingDoubleKeyFrame.EasingFunction>
-                </EasingDoubleKeyFrame>
-                <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="1">
-                    <EasingDoubleKeyFrame.EasingFunction>
-                        <CircleEase EasingMode="EaseOut"/>
-                    </EasingDoubleKeyFrame.EasingFunction>
-                </EasingDoubleKeyFrame>
-            </DoubleAnimationUsingKeyFrames>
-        </Storyboard>
-    </Window.Resources>
-    <Window.Triggers>
-        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-            <BeginStoryboard Storyboard="{StaticResource EntranceStoryboard}"/>
-        </EventTrigger>
-    </Window.Triggers>
-    <Grid x:Name="grid" RenderTransformOrigin="0.5,0.5">
-        <Grid.RenderTransform>
-            <TransformGroup>
-                <ScaleTransform/>
-                <SkewTransform/>
-                <RotateTransform/>
-                <TranslateTransform/>
-            </TransformGroup>
-        </Grid.RenderTransform>
-        <ContentControl Content="{StaticResource WindowShadow}" Focusable="False"/>
-        <Border Margin="10" CornerRadius="5" Background="{DynamicResource BackColor}">
-            <ex:ClippedBorder CornerRadius="5">
-                <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
-                    <DockPanel>
-                        <DockPanel Height="30" Margin="0" VerticalAlignment="Top" Background="{DynamicResource AppColor}" DockPanel.Dock="Top">
-                            <Button x:Name="CloseBtn" Width="30" Padding="0" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" HorizontalAlignment="Right" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" DockPanel.Dock="Right" Style="{DynamicResource TransHoverCloseButton}" Margin="0" ToolTip="{DynamicResource CloseStr}">
-                                <DockPanel>
-                                    <ContentControl Width="16" HorizontalAlignment="Center" Margin="0" Height="16" Content="{DynamicResource CloseWhiteIcon}"/>
-                                </DockPanel>
-                            </Button>
-                            <ContentControl DockPanel.Dock="Left" Content="{DynamicResource AppWhiteIcon}" Height="20" Margin="5,0,0,0"/>
-                            <Button x:Name="TitleBtn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource TransButton}" Height="30">
-                                <DockPanel x:Name="stackPanel444" RenderTransformOrigin="0.5,0.5">
-                                    <TextBlock VerticalAlignment="Center" Margin="0" Text="{Binding Title, ElementName=Word1}" TextAlignment="Center" Foreground="White" TextTrimming="CharacterEllipsis" Padding="10,0"/>
-                                </DockPanel>
-                            </Button>
-                        </DockPanel>
-                        <Grid>
-                            <ContentControl x:Name="HelpBtnImg47_Copy" Content="{DynamicResource TitleCaseIcon}" Width="24" HorizontalAlignment="Left" Margin="15,20,0,0" Height="24" VerticalAlignment="Top" />
-                            <TextBlock x:Name="SideHeaderLbl_Copy" Margin="51.173,22,0,0" FontSize="14" VerticalAlignment="Top" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="{DynamicResource WrWordsStr}"></TextBlock>
-                            <ContentControl x:Name="HelpBtnImg47_Copy1" Content="{DynamicResource StylesIcon}" Width="24" HorizontalAlignment="Left" Margin="15,64,0,0" Height="24" VerticalAlignment="Top" />
-                            <TextBlock x:Name="SideHeaderLbl_Copy1" Margin="51.173,66,0,0" FontSize="14" VerticalAlignment="Top" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="{DynamicResource WrCharsStr}"/>
-                            <TextBlock x:Name="SideHeaderLbl_Copy2" Margin="51.173,84.62,0,0" FontSize="14" VerticalAlignment="Top" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis"><Run Text="•  "/><Run Text="{DynamicResource WrNoSpaceStr}"/><Run Text="&#xD;&#xA;•  "/><Run Text="{DynamicResource WrSpaceStr}"/></TextBlock>
-                            <TextBlock x:Name="CharNoSpaceLbl" Margin="203,84.62,30,0" FontSize="14" VerticalAlignment="Top" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="0" FontWeight="SemiBold"/>
-                            <TextBlock x:Name="CharSpaceLbl" Margin="203,103.24,30,0" FontSize="14" VerticalAlignment="Top" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="0" FontWeight="SemiBold"/>
-                            <TextBlock x:Name="WordLbl" Margin="203,22,30,0" FontSize="14" VerticalAlignment="Top" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="0" FontWeight="SemiBold"/>
-                            <ContentControl x:Name="HelpBtnImg47_Copy2" Content="{DynamicResource LeftAlignIcon}" Width="20" HorizontalAlignment="Left" Margin="17,155,0,0" Height="24" VerticalAlignment="Top" />
-                            <TextBlock x:Name="SideHeaderLbl_Copy6" Margin="51.173,157,0,0" FontSize="14" VerticalAlignment="Top" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="{DynamicResource WrLinesStr}"/>
-                            <TextBlock x:Name="LineLbl" Margin="203,157,30,0" FontSize="14" VerticalAlignment="Top" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="0" FontWeight="SemiBold"/>
-                        </Grid>
-                    </DockPanel>
-                </ScrollViewer>
-            </ex:ClippedBorder>
-        </Border>
+        xmlns:ex="clr-namespace:ExpressControls;assembly=ExpressControls"
+        mc:Ignorable="d" x:Name="Wrd"
+        Title="{DynamicResource WordTitleStr}" Width="325" SizeToContent="Height" Style="{DynamicResource ChromeWindowStyle}" d:FontFamily="Inter" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen">
+    <Grid Background="{DynamicResource BackColor}">
+        <StackPanel Margin="20,50,20,20">
+            <DockPanel LastChildFill="False">
+                <ContentControl Content="{DynamicResource TitleCaseIcon}" Width="24" HorizontalAlignment="Left" Margin="0,0,15,0" Height="24" VerticalAlignment="Center" />
+                <TextBlock Margin="0,0,0,0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="{DynamicResource WrWordsStr}"></TextBlock>
+                <TextBlock x:Name="WordLbl" DockPanel.Dock="Right" Margin="0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left" Text="0" FontWeight="SemiBold"/>
+            </DockPanel>
+            <DockPanel LastChildFill="False" Margin="0,20,0,0">
+                <ContentControl Content="{DynamicResource StylesIcon}" Width="24" HorizontalAlignment="Left" Margin="0,0,15,0" Height="24" VerticalAlignment="Center" />
+                <TextBlock Margin="0,0,0,0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="{DynamicResource WrCharsStr}"></TextBlock>
+            </DockPanel>
+            <DockPanel LastChildFill="False" Margin="0,5,0,0">
+                <TextBlock Margin="45,0,0,0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis"><Run Text="•  "/><Run Text="{DynamicResource WrNoSpaceStr}"/></TextBlock>
+                <TextBlock x:Name="CharNoSpaceLbl" DockPanel.Dock="Right" Margin="0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left" Text="0" FontWeight="SemiBold"/>
+            </DockPanel>
+            <DockPanel LastChildFill="False" Margin="0,5,0,0">
+                <TextBlock Margin="45,0,0,0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis"><Run Text="•  "/><Run Text="{DynamicResource WrSpaceStr}"/></TextBlock>
+                <TextBlock x:Name="CharSpaceLbl" DockPanel.Dock="Right" Margin="0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left" Text="0" FontWeight="SemiBold"/>
+            </DockPanel>
+            <DockPanel LastChildFill="False" Margin="0,25,0,0">
+                <ContentControl Content="{DynamicResource WordCountIcon}" Width="24" HorizontalAlignment="Left" Margin="0,0,15,0" Height="24" VerticalAlignment="Center" />
+                <TextBlock Margin="0,0,0,0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="{DynamicResource WrLinesStr}"></TextBlock>
+                <TextBlock x:Name="LineLbl" DockPanel.Dock="Right" Margin="0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left" Text="0" FontWeight="SemiBold"/>
+            </DockPanel>
+        </StackPanel>
+        <DockPanel Height="30" Margin="0" VerticalAlignment="Top" Background="{DynamicResource AppColor}">
+            <ex:AppButton x:Name="CloseBtn" IsCloseBtn="True" Background="Transparent" Icon="{DynamicResource CloseWhiteIcon}" NoShadow="True" CornerRadius="0" IconSize="16" Height="30" Padding="7,0" TextVisibility="Collapsed" DockPanel.Dock="Right" ToolTip="{DynamicResource CloseStr}"/>
+            <ex:AppButton x:Name="AppLogoBtn" HasNoEffects="True" Background="Transparent" Icon="{DynamicResource AppWhiteIcon}" NoShadow="True" CornerRadius="0" IconSize="20" Height="30" Padding="6,0,0,0" TextVisibility="Collapsed"/>
+            <ex:AppButton x:Name="TitleBtn" HasNoEffects="True" Focusable="False" Text="{Binding Title, ElementName=Wrd}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Foreground="White" FontSize="12" GapMargin="0" Background="Transparent" NoShadow="True" CornerRadius="0" IconVisibility="Collapsed" Height="30" Padding="7,0"/>
+        </DockPanel>
     </Grid>
 </Window>

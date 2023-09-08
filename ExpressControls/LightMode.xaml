@@ -1,0 +1,15 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <SolidColorBrush x:Key="BackColor" Color="#FFFFFFFF"/>
+    <Color x:Key="BackDirectColor" R="255" G="255" B="255" A="255"/>
+    <Color x:Key="BackTransDirectColor" R="255" G="255" B="255" A="0"/>
+    <SolidColorBrush x:Key="BackSpecialColor" Color="#FFFFFFFF"/>
+    <SolidColorBrush x:Key="TextColor" Color="#FF000000"/>
+    <SolidColorBrush x:Key="SecondaryColor" Color="#FFF6F8FC"/>
+    <SolidColorBrush x:Key="TertiaryColor" Color="#FFF0F0F0"/>
+    <SolidColorBrush x:Key="AcryllicColor" Opacity="0.6" Color="#FFFFFFFF"/>
+    <SolidColorBrush x:Key="Gray1" Color="#FFAEAEAE"/>
+    <SolidColorBrush x:Key="Gray2" Color="#FF888888"/>
+
+</ResourceDictionary>

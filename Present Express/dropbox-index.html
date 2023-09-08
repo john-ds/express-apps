@@ -1,0 +1,17 @@
+<html>
+    <head>
+        <script type="text/javascript">
+            function redirect() {
+                document.location.href = "/token?url_with_fragment=" + encodeURIComponent(document.location.href);
+                setTimeout(() => {document.location.href = "https://express.johnjds.co.uk"}, 1000);
+            }
+        </script>
+        <style>
+            body { display: flex; }
+            h1 { font-family: 'Segoe UI', sans-serif; margin: auto; }
+        </style>
+    </head>
+    <body onload="redirect()">
+        <h1>Please wait...</h1>
+    </body>
+</html>

@@ -1,0 +1,40 @@
+﻿<Window x:Class="ExpressControls.InfoBox"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ex="clr-namespace:ExpressControls"
+        mc:Ignorable="d" x:Name="Info"
+        Title="Express Apps" Loaded="Info_Loaded" Width="500" MaxHeight="600" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize" SizeToContent="Height" MinHeight="150" Style="{DynamicResource ChromeWindowStyle}" d:FontFamily="Inter">
+    <Grid>
+        <DockPanel Margin="0,30,0,0" Background="{DynamicResource BackColor}">
+            <StackPanel x:Name="ReportPnl" DockPanel.Dock="Bottom" Background="{DynamicResource SecondaryColor}" Visibility="Collapsed">
+                <Rectangle Fill="{DynamicResource AppColor}" Height="2"/>
+                <TextBlock x:Name="ReportTxt" Text="{DynamicResource PleaseWaitStr}" Padding="25,10" FontSize="14" TextWrapping="Wrap"/>
+            </StackPanel>
+            <DockPanel LastChildFill="False" Margin="0" DockPanel.Dock="Bottom" Height="50">
+                <ex:AppButton x:Name="Button1" Background="{DynamicResource BackSpecialColor}" Click="Buttons_Click" LastChildFill="True" Text="Yes" IconVisibility="Collapsed" GapMargin="0" Margin="72,0,0,0" HorizontalContentAlignment="Stretch" FontWeight="SemiBold" IsDefault="True" Height="32" VerticalAlignment="Top" MinWidth="84"/>
+                <ex:AppButton x:Name="Button2" Background="{DynamicResource BackSpecialColor}" Click="Buttons_Click" LastChildFill="True" Text="No" IconVisibility="Collapsed" GapMargin="0" Margin="10,0,0,0" HorizontalContentAlignment="Stretch" Height="32" VerticalAlignment="Top" MinWidth="84"/>
+                <ex:AppButton x:Name="Button3" Background="{DynamicResource BackSpecialColor}" Click="Buttons_Click" LastChildFill="True" Text="Cancel" IconVisibility="Collapsed" GapMargin="0" Margin="10,0,0,0" HorizontalContentAlignment="Stretch" IsCancel="True" Height="32" VerticalAlignment="Top" MinWidth="84"/>
+                <ex:AppButton x:Name="ReportBtn" Background="{DynamicResource BackSpecialColor}" Click="ReportBtn_Click" DockPanel.Dock="Right" LastChildFill="True" Text="{DynamicResource ReportStr}" IconVisibility="Collapsed" GapMargin="0" Margin="10,0,20,0" HorizontalContentAlignment="Stretch" Height="32" VerticalAlignment="Top" MinWidth="84"/>
+            </DockPanel>
+
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Margin="0,0,0,20">
+                <DockPanel Margin="0,0,0,10" DockPanel.Dock="Bottom">
+                    <ContentControl x:Name="IconPic" HorizontalAlignment="Left" Margin="20,20,0,0" Width="32" Content="{DynamicResource InfoIcon}" Height="32" VerticalAlignment="Top" Focusable="False"/>
+                    <ex:AppTextBox x:Name="InputTxt" DockPanel.Dock="Bottom" Margin="20,20,20,0" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
+                    <FlowDocumentScrollViewer Foreground="{DynamicResource TextColor}" Margin="20,27,25,0" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled">
+                        <FlowDocument x:Name="FlowDoc" Style="{DynamicResource FlowStyle}">
+                            <Paragraph>No message.</Paragraph>
+                        </FlowDocument>
+                    </FlowDocumentScrollViewer>
+                </DockPanel>
+            </ScrollViewer>
+        </DockPanel>
+        <DockPanel Height="30" Margin="0" VerticalAlignment="Top" Background="{DynamicResource AppColor}">
+            <ex:AppButton x:Name="CloseBtn" IsCloseBtn="True" Background="Transparent" Icon="{DynamicResource CloseWhiteIcon}" NoShadow="True" CornerRadius="0" IconSize="16" Height="30" Padding="7,0" TextVisibility="Collapsed" DockPanel.Dock="Right" ToolTip="{DynamicResource CloseStr}"/>
+            <ex:AppButton x:Name="AppLogoBtn" HasNoEffects="True" Background="Transparent" Icon="{DynamicResource AppWhiteIcon}" NoShadow="True" CornerRadius="0" IconSize="20" Height="30" Padding="6,0,0,0" TextVisibility="Collapsed"/>
+            <ex:AppButton x:Name="TitleBtn" HasNoEffects="True" Focusable="False" Text="{Binding Title, ElementName=Info}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Foreground="White" FontSize="12" GapMargin="0" Background="Transparent" NoShadow="True" CornerRadius="0" IconVisibility="Collapsed" Height="30" Padding="7,0"/>
+        </DockPanel>
+    </Grid>
+</Window>

@@ -1,0 +1,53 @@
+﻿<Window x:Class="Type_Express.ReadAloud"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Type_Express"
+        xmlns:ex="clr-namespace:ExpressControls;assembly=ExpressControls"
+        mc:Ignorable="d" x:Name="Tts"
+        Title="{DynamicResource TtTitleStr}" Closing="Tts_Closing" Height="450" Width="900" MinWidth="800" MinHeight="300" Style="{DynamicResource ChromeWindowStyle}" d:FontFamily="Inter" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <DockPanel Margin="0,30,0,0" Background="{DynamicResource BackColor}">
+            <DockPanel Height="40" DockPanel.Dock="Bottom" Background="{DynamicResource SecondaryColor}">
+                <ex:MenuButton x:Name="SaveWAVBtn" Click="SaveWAVBtn_Click" DockPanel.Dock="Right" Text="{DynamicResource TtSaveWAVStr}" Icon="{DynamicResource SaveIcon}" Margin="0,0,10,0"/>
+                <ex:AppDropdown x:Name="VoiceCombo" SelectionChanged="VoiceCombo_SelectionChanged" DockPanel.Dock="Right" Background="Transparent" IsUpFacingMenu="True" DropdownBackground="{DynamicResource SecondaryColor}" Height="30" FontSize="12" Width="175" Margin="5,0,10,1" ToolTip="{DynamicResource SelectVoiceStr}"/>
+                <TextBlock Text="{DynamicResource TtVoiceStr}" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                <StackPanel Margin="0" VerticalAlignment="Stretch" Orientation="Horizontal">
+                    <ex:MenuButton x:Name="PlayBtn" Click="PlayBtn_Click" TextVisibility="Collapsed" Icon="{DynamicResource PlayIcon}" Margin="10,0,0,0" ToolTip="{DynamicResource TtPlayStr}"/>
+                    <ex:MenuButton x:Name="StopBtn" Click="StopBtn_Click" TextVisibility="Collapsed" Visibility="Collapsed" Icon="{DynamicResource StopIcon}" Margin="5,0,0,0" ToolTip="{DynamicResource TtStopStr}"/>
+                    <ex:MenuButton x:Name="VolumeBtn" Click="VolumeBtn_Click" TextVisibility="Collapsed" IsUpFacingMenu="True" MoreVisibility="Visible" Icon="{DynamicResource SpeakerIcon}" Margin="5,0,0,0" ToolTip="{DynamicResource TtVolumeStr}"/>
+                    <Separator Style="{StaticResource VerticalSeparator}"/>
+                    <TextBlock Text="{DynamicResource TtSlowStr}" VerticalAlignment="Center" Margin="10,0"/>
+                    <Slider x:Name="RateSlider" ValueChanged="RateSlider_ValueChanged" Style="{StaticResource SimpleSlider}" VerticalAlignment="Center" Width="130" HorizontalAlignment="Right" Margin="0" SmallChange="1" IsSnapToTickEnabled="True" Minimum="-10" Maximum="10"/>
+                    <TextBlock Text="{DynamicResource TtFastStr}" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                </StackPanel>
+            </DockPanel>
+            <Rectangle Fill="{DynamicResource AppColor}" Height="2" VerticalAlignment="Top" DockPanel.Dock="Bottom"/>
+            <ScrollViewer Background="{DynamicResource BackColor}">
+                <RichTextBox x:Name="TTSTxt" Background="{DynamicResource BackColor}" Foreground="{DynamicResource TextColor}" Grid.Column="0" BorderThickness="0" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled" Padding="12" FontSize="14" AllowDrop="False" UndoLimit="0" IsReadOnly="True" IsUndoEnabled="False" Focusable="False">
+                    <RichTextBox.ContextMenu>
+                        <ContextMenu Visibility="Collapsed"/>
+                    </RichTextBox.ContextMenu>
+                    <FlowDocument>
+                        <Paragraph/>
+                    </FlowDocument>
+                </RichTextBox>
+            </ScrollViewer>
+        </DockPanel>
+        <DockPanel Height="30" Margin="0" VerticalAlignment="Top" Background="{DynamicResource AppColor}">
+            <ex:AppButton x:Name="CloseBtn" IsCloseBtn="True" Background="Transparent" Icon="{DynamicResource CloseWhiteIcon}" NoShadow="True" CornerRadius="0" IconSize="16" Height="30" Padding="7,0" TextVisibility="Collapsed" DockPanel.Dock="Right" ToolTip="{DynamicResource CloseStr}"/>
+            <ex:AppButton x:Name="MaxBtn" IsInTitleBar="True" Background="Transparent" Icon="{DynamicResource MaxWhiteIcon}" NoShadow="True" CornerRadius="0" IconSize="16" Height="30" Padding="7,0" TextVisibility="Collapsed" DockPanel.Dock="Right" ToolTip="{DynamicResource MaxStr}"/>
+            <ex:AppButton x:Name="AppLogoBtn" HasNoEffects="True" Background="Transparent" Icon="{DynamicResource AppWhiteIcon}" NoShadow="True" CornerRadius="0" IconSize="20" Height="30" Padding="6,0,0,0" TextVisibility="Collapsed"/>
+            <ex:AppButton x:Name="TitleBtn" HasNoEffects="True" Focusable="False" Text="{Binding Title, ElementName=Tts}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Foreground="White" FontSize="12" GapMargin="0" Background="Transparent" NoShadow="True" CornerRadius="0" IconVisibility="Collapsed" Height="30" Padding="7,0"/>
+        </DockPanel>
+        <Popup x:Name="VolumePopup" Placement="Top" PlacementTarget="{Binding ElementName=VolumeBtn}"  Style="{StaticResource ExpressPopup}">
+            <ex:PopupContainer>
+                <Grid Margin="10,0">
+                    <Slider x:Name="VolumeSlider" ValueChanged="VolumeSlider_ValueChanged" Style="{StaticResource SimpleSlider}" Orientation="Vertical" Maximum="100" Minimum="1" IsSnapToTickEnabled="True" SmallChange="1" Margin="0,30,0,10" Height="180" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Value="100" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding Value, ElementName=VolumeSlider}" HorizontalAlignment="Center" TextAlignment="Center" VerticalAlignment="Top" Margin="0,10,0,0" MinWidth="25"></TextBlock>
+                </Grid>
+            </ex:PopupContainer>
+        </Popup>
+    </Grid>
+</Window>

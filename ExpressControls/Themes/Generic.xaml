@@ -1,6 +1,7 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:local="clr-namespace:ExpressControls">
 
 
@@ -24,41 +25,47 @@
                             Height="{TemplateBinding Height}"
                             x:Name="border">
 
-                        <StackPanel Orientation="Horizontal"
+                        <Border Background="Transparent"
+                                CornerRadius="5"
+                                UseLayoutRounding="True"
+                                x:Name="borderInner">
+
+                            <StackPanel Orientation="Horizontal"
                                     Margin="{TemplateBinding Padding}"
                                     x:Name="stack">
 
-                            <ContentControl Content="{TemplateBinding Icon}"
+                                <ContentControl Content="{TemplateBinding Icon}"
                                             Focusable="False"
                                             Margin="0,4,0,4"
                                             Width="24"
                                             Height="24"
                                             x:Name="contp"/>
 
-                            <TextBlock Text="{TemplateBinding Text}"
+                                <TextBlock Text="{TemplateBinding Text}"
                                        Foreground="{DynamicResource TextColor}"
                                        Visibility="{TemplateBinding TextVisibility}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"
-                                       Margin="5,0,0,2"
+                                       Margin="5,0,2,1"
                                        FontSize="14"
                                        x:Name="txt"/>
 
-                            <ContentControl Content="{DynamicResource DownIcon}"
+                                <ContentControl Content="{DynamicResource DownIcon}"
                                             Visibility="{TemplateBinding MoreVisibility}"
                                             Focusable="False"
                                             Margin="4,0,0,0"
                                             Width="12"
                                             Height="12"
                                             x:Name="morebtn"/>
-                        </StackPanel>
+                            </StackPanel>
+                        </Border>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" TargetName="border" Value="{DynamicResource AppHoverColor}"/>
+                            <Setter Property="Background" TargetName="borderInner" Value="{DynamicResource AppHoverColor}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Background" TargetName="border" Value="{DynamicResource AppPressedColor}"/>
+                            <Setter Property="Background" TargetName="borderInner" Value="{DynamicResource AppPressedColor}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" TargetName="txt" Value="Gray"/>
@@ -70,9 +77,11 @@
                         </Trigger>
                         <Trigger Property="IsLSquared" Value="True">
                             <Setter Property="CornerRadius" TargetName="border" Value="0,5,5,0"/>
+                            <Setter Property="CornerRadius" TargetName="borderInner" Value="0,5,5,0"/>
                         </Trigger>
                         <Trigger Property="IsRSquared" Value="True">
                             <Setter Property="CornerRadius" TargetName="border" Value="5,0,0,5"/>
+                            <Setter Property="CornerRadius" TargetName="borderInner" Value="5,0,0,5"/>
                         </Trigger>
                         <Trigger Property="IsUpFacingMenu" Value="True">
                             <Setter Property="Content" TargetName="morebtn" Value="{DynamicResource UpIcon}"/>
@@ -85,7 +94,7 @@
 
     <Style TargetType="{x:Type local:AppButton}">
         <Setter Property="Background" Value="{DynamicResource BackColor}" />
-        <Setter Property="Foreground" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextColor}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Padding" Value="10,0"/>
@@ -100,11 +109,7 @@
         <Setter Property="TextMargin" Value="2,0,2,1"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="LastChildFill" Value="False"/>
-        <Setter Property="Effect">
-            <Setter.Value>
-                <DropShadowEffect Color="#FFC3C3C3" BlurRadius="15" Direction="270" Opacity="0.2" ShadowDepth="2"/>
-            </Setter.Value>
-        </Setter>
+        <Setter Property="Effect" Value="{DynamicResource DropShadowBottom}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:AppButton}">
@@ -116,17 +121,20 @@
                             CornerRadius="{TemplateBinding CornerRadius}"
                             Height="{TemplateBinding Height}"
                             Width="{TemplateBinding Width}"
-                            x:Name="border">
+                            UseLayoutRounding="True"
+                            x:Name="border"
+                            Effect="{DynamicResource DropShadowTop}">
 
-                        <Border.Effect>
-                            <DropShadowEffect Color="#FFC3C3C3" BlurRadius="15" Direction="90" Opacity="0.2" ShadowDepth="2"/>
-                        </Border.Effect>
+                        <Border Background="Transparent"
+                                CornerRadius="{TemplateBinding CornerRadius}"
+                                UseLayoutRounding="True"
+                                x:Name="borderInner">
 
-                        <DockPanel Margin="{TemplateBinding Padding}"
+                            <DockPanel Margin="{TemplateBinding Padding}"
                                    LastChildFill="{TemplateBinding LastChildFill}"
                                    x:Name="stack">
 
-                            <ContentControl Content="{TemplateBinding Icon}"
+                                <ContentControl Content="{TemplateBinding Icon}"
                                             Visibility="{TemplateBinding IconVisibility}"
                                             Focusable="False"
                                             Margin="0,4,0,4"
@@ -134,7 +142,7 @@
                                             Height="{TemplateBinding IconSize}"
                                             x:Name="contp"/>
 
-                            <ContentControl Content="{DynamicResource DownIcon}"
+                                <ContentControl Content="{DynamicResource DownIcon}"
                                             Visibility="{TemplateBinding MoreVisibility}"
                                             Focusable="False"
                                             Margin="4,0,0,0"
@@ -142,9 +150,9 @@
                                             Height="12"
                                             DockPanel.Dock="Right"
                                             x:Name="morebtn"/>
-                            
-                            <TextBlock Text="{TemplateBinding Text}"
-                                       Foreground="{DynamicResource TextColor}"
+
+                                <TextBlock Text="{TemplateBinding Text}"
+                                       Foreground="{TemplateBinding Foreground}"
                                        Visibility="{TemplateBinding TextVisibility}"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"
@@ -153,9 +161,97 @@
                                        TextWrapping="{TemplateBinding TextWrapping}"
                                        Padding="{TemplateBinding GapMargin}"
                                        FontSize="{TemplateBinding FontSize}"
+                                       DockPanel.Dock="{TemplateBinding TextAlign}"
                                        x:Name="txt"/>
 
+                            </DockPanel>
+                        </Border>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" TargetName="borderInner" Value="{DynamicResource AppHoverColor}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" TargetName="borderInner" Value="{DynamicResource AppPressedColor}"/>
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsInTitleBar" Value="True"/>
+                                <Condition Property="IsMouseOver" Value="True"/>
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Background" TargetName="borderInner" Value="{DynamicResource AppPressedColor}"/>
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsCloseBtn" Value="True"/>
+                                <Condition Property="IsMouseOver" Value="True"/>
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Background" TargetName="borderInner" Value="#FF5050"/>
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="HasNoEffects" Value="True"/>
+                                <Condition Property="IsMouseOver" Value="True"/>
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Background" TargetName="borderInner" Value="Transparent"/>
+                        </MultiTrigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" TargetName="txt" Value="Gray"/>
+                        </Trigger>
+                        <Trigger Property="NoShadow" Value="True">
+                            <Setter Property="Effect" TargetName="border" Value="{x:Null}"/>
+                            <Setter Property="Effect" Value="{x:Null}"/>
+                        </Trigger>
+                        <Trigger Property="IsUpFacingMenu" Value="True">
+                            <Setter Property="Content" TargetName="morebtn" Value="{DynamicResource UpIcon}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 
+    <Style TargetType="{x:Type local:CardButton}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource TextColor}"/>
+        <Setter Property="VerticalAlignment" Value="Top"/>
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Width" Value="200"/>
+        <Setter Property="Height" Value="227"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:CardButton}">
+                    <Border BorderThickness="{TemplateBinding BorderThickness}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            CornerRadius="10"
+                            Height="{TemplateBinding Height}"
+                            Width="{TemplateBinding Width}"
+                            x:Name="border">
+
+                        <DockPanel>
+                            <TextBlock Text="{TemplateBinding Text}"
+                                       DockPanel.Dock="Bottom"
+                                       Foreground="{TemplateBinding Foreground}"
+                                       HorizontalAlignment="Center"
+                                       TextAlignment="Center"
+                                       Margin="15,0,15,10"
+                                       FontSize="14"
+                                       Padding="0"
+                                       TextTrimming="CharacterEllipsis"
+                                       TextWrapping="NoWrap"
+                                       x:Name="txt"/>
+
+                            <ContentControl Focusable="False"
+                                            Margin="10"
+                                            Style="{DynamicResource RoundedShadowContainer}">
+
+                                <local:ClippedBorder CornerRadius="10">
+                                    <Image Stretch="Fill" Source="{TemplateBinding ImageSource}"/>
+                                </local:ClippedBorder>
+                            </ContentControl>
                         </DockPanel>
                     </Border>
                     <ControlTemplate.Triggers>
@@ -168,12 +264,78 @@
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Foreground" TargetName="txt" Value="Gray"/>
                         </Trigger>
-                        <Trigger Property="NoShadow" Value="True">
-                            <Setter Property="Effect" TargetName="border" Value="{x:Null}"/>
-                            <Setter Property="Effect" Value="{x:Null}"/>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type local:ListItemButton}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource TextColor}"/>
+        <Setter Property="VerticalAlignment" Value="Top"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Icon" Value="{DynamicResource BlankIcon}"/>
+        <Setter Property="IsMultiline" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:ListItemButton}">
+                    <Border BorderThickness="{TemplateBinding BorderThickness}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            CornerRadius="5"
+                            Height="{TemplateBinding Height}"
+                            Width="{TemplateBinding Width}"
+                            x:Name="border">
+
+                        <DockPanel x:Name="dck" Margin="0,10" LastChildFill="False">
+                            <ContentControl x:Name="icn" Content="{TemplateBinding Icon}" Width="30" Margin="10,0,0,0" />
+
+                            <TextBlock Foreground="{TemplateBinding Foreground}"
+                                       VerticalAlignment="Center"
+                                       Margin="10,0,10,0"
+                                       FontSize="14"
+                                       Padding="0"
+                                       TextTrimming="CharacterEllipsis"
+                                       TextWrapping="NoWrap"
+                                       x:Name="txt">
+                                
+                                <Run x:Name="firstRun" FontWeight="SemiBold" Text="{TemplateBinding Heading}"/>
+                                <LineBreak x:Name="lnBreak"/>
+                                <Run x:Name="secondRun" FontSize="12" Text="{TemplateBinding Text}"/>
+
+                            </TextBlock>
+
+                            <TextBlock Foreground="{TemplateBinding Foreground}"
+                                       VerticalAlignment="Center"
+                                       Margin="10,0,10,0"
+                                       FontSize="14"
+                                       Padding="0"
+                                       TextTrimming="CharacterEllipsis"
+                                       TextWrapping="NoWrap"
+                                       Visibility="Collapsed"
+                                       x:Name="txtSingle"
+                                       Text="{TemplateBinding Text}"/>
+                        </DockPanel>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" TargetName="border" Value="{DynamicResource AppHoverColor}"/>
                         </Trigger>
-                        <Trigger Property="IsUpFacingMenu" Value="True">
-                            <Setter Property="Content" TargetName="morebtn" Value="{DynamicResource UpIcon}"/>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" TargetName="border" Value="{DynamicResource AppPressedColor}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Foreground" TargetName="txt" Value="Gray"/>
+                        </Trigger>
+                        <Trigger Property="IsMultiline" Value="False">
+                            <Setter Property="Visibility" TargetName="txtSingle" Value="Visible"/>
+                            <Setter Property="Visibility" TargetName="txt" Value="Collapsed"/>
+                            <Setter Property="Width" TargetName="icn" Value="24"/>
+                            <Setter Property="Margin" TargetName="dck" Value="0,5"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -205,11 +367,10 @@
                             Height="{TemplateBinding Height}"
                             x:Name="border">
 
-                        <StackPanel Orientation="Horizontal"
-                                    Margin="{TemplateBinding Padding}"
-                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                    x:Name="stack">
+                        <DockPanel Margin="{TemplateBinding Padding}"
+                                   HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                   x:Name="stack">
 
                             <ContentControl Content="{DynamicResource UntickIcon}"
                                             Focusable="False"
@@ -220,14 +381,15 @@
 
                             <TextBlock Text="{TemplateBinding Content}"
                                        Foreground="{DynamicResource TextColor}"
-                                       HorizontalAlignment="Center"
+                                       HorizontalAlignment="Left"
                                        VerticalAlignment="Center"
                                        Margin="2,0,2,1"
                                        Padding="{TemplateBinding GapMargin}"
                                        FontSize="{TemplateBinding FontSize}"
                                        TextTrimming="CharacterEllipsis"
+                                       TextAlignment="Left"
                                        x:Name="txt"/>
-                        </StackPanel>
+                        </DockPanel>
                     </Border>
 
                     <ControlTemplate.Triggers>
@@ -274,11 +436,10 @@
                             Height="{TemplateBinding Height}"
                             x:Name="border">
 
-                        <StackPanel Orientation="Horizontal"
-                                    Margin="{TemplateBinding Padding}"
-                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                    x:Name="stack">
+                        <DockPanel Margin="{TemplateBinding Padding}"
+                                   HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                   VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                   x:Name="stack">
 
                             <ContentControl Content="{DynamicResource CircleUntickIcon}"
                                             Focusable="False"
@@ -289,14 +450,15 @@
 
                             <TextBlock Text="{TemplateBinding Content}"
                                        Foreground="{DynamicResource TextColor}"
-                                       HorizontalAlignment="Center"
+                                       HorizontalAlignment="Left"
                                        VerticalAlignment="Center"
                                        Margin="2,0,2,1"
                                        Padding="{TemplateBinding GapMargin}"
                                        FontSize="{TemplateBinding FontSize}"
                                        TextTrimming="CharacterEllipsis"
+                                       TextAlignment="Left"
                                        x:Name="txt"/>
-                        </StackPanel>
+                        </DockPanel>
                     </Border>
 
                     <ControlTemplate.Triggers>
@@ -314,6 +476,175 @@
                         </Trigger>
                     </ControlTemplate.Triggers>
 
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type local:PopupContainer}">
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="Background" Value="{DynamicResource SecondaryColor}"/>
+        <Setter Property="Margin" Value="10"/>
+        <Setter Property="DisableScrollbar" Value="False"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:PopupContainer}">
+                    <Grid Height="{TemplateBinding Height}" Width="{TemplateBinding Width}">
+                        <Border Margin="10" CornerRadius="5" Background="{DynamicResource SecondaryColor}" Effect="{DynamicResource DropShadowTop}">
+                            <Border CornerRadius="5" Background="{DynamicResource SecondaryColor}" Effect="{DynamicResource DropShadowBottom}"/>
+                        </Border>
+                        <Border Margin="{TemplateBinding ContentControl.Margin}" CornerRadius="5" Background="{TemplateBinding ContentControl.Background}">
+                            <local:ClippedBorder CornerRadius="5">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" x:Name="scrl">
+                                    <ContentPresenter Content="{TemplateBinding ContentControl.Content}"/>
+                                </ScrollViewer>
+                            </local:ClippedBorder>
+                        </Border>
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="DisableScrollbar" Value="True">
+                            <Setter Property="VerticalScrollBarVisibility" Value="Disabled" TargetName="scrl"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type local:AppDropdown}">
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Background" Value="{DynamicResource BackColor}"/>
+        <Setter Property="DropdownBackground" Value="{DynamicResource SecondaryColor}"/>
+        <Setter Property="IsUpFacingMenu" Value="False"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:AppDropdown}">
+                    <Grid>
+                        <ToggleButton UseLayoutRounding="True" Template="{DynamicResource AppToggleButton}" Background="{TemplateBinding Background}" x:Name="ToggleButton" Focusable="False" IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Release"/>
+                        <ContentPresenter HorizontalAlignment="Left" Margin="10,5,25,5" x:Name="ContentSite" VerticalAlignment="Center" Content="{TemplateBinding SelectionBoxItem}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" IsHitTestVisible="False">
+                            <ContentPresenter.ContentTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                                </DataTemplate>
+                            </ContentPresenter.ContentTemplate>
+                        </ContentPresenter>
+
+                        <Popup IsOpen="{TemplateBinding IsDropDownOpen}" Placement="Bottom" x:Name="Popup" Focusable="False" AllowsTransparency="True" PopupAnimation="Slide">
+                            <local:PopupContainer Background="{TemplateBinding DropdownBackground}" MaxHeight="{TemplateBinding MaxDropDownHeight}" MaxWidth="500" MinWidth="{TemplateBinding ActualWidth}" x:Name="DropDown" SnapsToDevicePixels="True">
+                                <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Contained"/>
+                            </local:PopupContainer>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="HasItems" Value="false">
+                            <Setter Property="MinHeight" Value="95" TargetName="DropDown"/>
+                        </Trigger>
+                        <Trigger Property="IsUpFacingMenu" Value="True">
+                            <Setter Property="Template" Value="{DynamicResource AppToggleButtonUp}" TargetName="ToggleButton"/>
+                            <Setter Property="Placement" Value="Top" TargetName="Popup"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
+    <Style TargetType="{x:Type local:AppDropdownItem}">
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="ShowColours" Value="False"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:AppDropdownItem}">
+                    <Grid SnapsToDevicePixels="True">
+                        <Border x:Name="Border" Background="{TemplateBinding Background}" BorderThickness="0"/>
+                        <StackPanel>
+                            <TextBlock Text="{TemplateBinding Content}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Margin="10,5,10,5" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            <ItemsControl ItemsSource="{TemplateBinding Colours}" Margin="10,0,10,5" Visibility="{TemplateBinding ShowColours, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <UniformGrid Columns="8" UseLayoutRounding="False"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Rectangle Fill="{Binding}" Height="5"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource AppHoverColor}" TargetName="Border"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource AppPressedColor}" TargetName="Border"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.7"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="{x:Type local:AppTextBox}">
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="CornerRadius" Value="5"/>
+        <Setter Property="Padding" Value="3"/>
+        <Setter Property="HasContextMenu" Value="False"/>
+        <Setter Property="Background" Value="{DynamicResource BackColor}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource Gray1}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextColor}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:AppTextBox}">
+                    <Grid>
+                        <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+                            <TextBlock x:Name="Wm" Text="" Foreground="#FF818181" VerticalAlignment="Center" Margin="{TemplateBinding Padding}" Padding="2,0" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                        </Border>
+                        <Border Background="Transparent" Padding="{TemplateBinding Padding}" x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+                            <ScrollViewer x:Name="PART_ContentHost"/>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Background" Value="{DynamicResource TertiaryColor}" TargetName="Bd"/>
+                        </Trigger>
+                        <Trigger Property="Width" Value="Auto">
+                            <Setter Property="MinWidth" Value="100"/>
+                        </Trigger>
+                        <Trigger Property="Height" Value="Auto">
+                            <Setter Property="MinHeight" Value="20"/>
+                        </Trigger>
+                        <Trigger Property="HasContextMenu" Value="False">
+                            <Setter Property="ContextMenu">
+                                <Setter.Value>
+                                    <ContextMenu Visibility="Collapsed"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="Text" Value="{x:Static sys:String.Empty}">
+                            <Setter Property="Text" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Watermark}" TargetName="Wm"/>
+                        </Trigger>
+                        <Trigger Property="Text" Value="{x:Null}">
+                            <Setter Property="Text" Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Watermark}" TargetName="Wm"/>
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter Property="Text" Value="{x:Static sys:String.Empty}" TargetName="Wm"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

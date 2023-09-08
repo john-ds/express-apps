@@ -1,0 +1,31 @@
+﻿<Application x:Class="Font_Express.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:Font_Express"
+             StartupUri="MainWindow.xaml"
+             Startup="App_Startup">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+
+                <!-- This theme resource dictionary must be the first element -->
+                <ResourceDictionary Source="pack://application:,,,/ExpressControls;component/LightMode.xaml"/>
+
+                <ResourceDictionary Source="pack://application:,,,/ExpressControls;component/Simple Styles.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/ExpressControls;component/ExpressIcons.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/ExpressControls;component/CommonDictionaryEN.xaml"/>
+                <ResourceDictionary Source="ExpressStyles.xaml"/>
+                <ResourceDictionary Source="ColorIcons.xaml"/>
+
+            </ResourceDictionary.MergedDictionaries>
+
+            <SolidColorBrush x:Key="AppColor" Color="#8252AD"/>
+            <SolidColorBrush x:Key="AppHoverColor" Color="#26BF56FF"/>
+            <SolidColorBrush x:Key="AppPressedColor" Color="#59BF56FF"/>
+            <SolidColorBrush x:Key="AppLightColor" Color="#FF9771BB"/>
+            <SolidColorBrush x:Key="AppLinkColor" Color="#FF590060"/>
+            <Color x:Key="AppDirectColor" R="130" G="82" B="173" A="255"/>
+
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

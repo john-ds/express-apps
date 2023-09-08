@@ -17,4 +17,4 @@ A collection of quality WPF apps created by John D that optimise your user exper
 
 
 ## Contact
-To get in touch, visit www.johnjds.co.uk/express or send me an email at expressapps@outlook.com
+To get in touch, visit [our contact page](https://express.johnjds.co.uk/help#contact)

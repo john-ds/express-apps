@@ -1,0 +1,92 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <RootNamespace>Type_Express</RootNamespace>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <Platforms>AnyCPU;x64</Platforms>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <AssemblyVersion>6.0.0</AssemblyVersion>
+    <FileVersion>6.0.0</FileVersion>
+    <RollForward>Major</RollForward>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="auth-deepl.secret" />
+    <None Remove="auth-dropbox.secret" />
+    <None Remove="auth-icon.secret" />
+    <None Remove="auth-lexicala.secret" />
+    <None Remove="auth-merriam.secret" />
+    <None Remove="auth-photo.secret" />
+    <None Remove="dropbox-index.html" />
+    <None Remove="fonts\Inter-Bold.ttf" />
+    <None Remove="fonts\Inter-Regular.ttf" />
+    <None Remove="fonts\Inter-SemiBold.ttf" />
+    <None Remove="splash.png" />
+    <None Remove="symbols.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="fonts\Inter-Bold.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="fonts\Inter-Regular.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="fonts\Inter-SemiBold.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="icon.ico" />
+    <EmbeddedResource Include="auth-lexicala.secret" />
+    <EmbeddedResource Include="auth-deepl.secret" />
+    <EmbeddedResource Include="auth-merriam.secret" />
+    <EmbeddedResource Include="symbols.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="auth-photo.secret" />
+    <EmbeddedResource Include="auth-icon.secret" />
+    <EmbeddedResource Include="auth-dropbox.secret" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DeepL.net" Version="1.7.1" />
+    <PackageReference Include="System.Speech" Version="7.0.0" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Page Include="..\ExpressControls\ExpressStyles.xaml" Link="ExpressStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ExpressControls\ExpressControls.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="dropbox-index.html" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SplashScreen Include="splash.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+
+</Project>
