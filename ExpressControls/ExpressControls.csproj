@@ -1,20 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
-    <AssemblyVersion>3.0.0</AssemblyVersion>
-    <FileVersion>3.0.0</FileVersion>
+    <AssemblyVersion>3.1.0</AssemblyVersion>
+    <FileVersion>3.1.0</FileVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-
   <ItemGroup>
     <None Remove="sounds\error.wav" />
     <None Remove="sounds\exclamation.wav" />
     <None Remove="sounds\information.wav" />
   </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="sounds\error.wav">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
@@ -26,16 +24,14 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="CsvHelper" Version="30.0.1" />
+    <PackageReference Include="CsvHelper" Version="32.0.0" />
     <PackageReference Include="DotNetProjects.WpfToolkit.Input" Version="6.1.94" />
     <PackageReference Include="Dropbox.Api" Version="6.37.0" />
-    <PackageReference Include="Extended.Wpf.Toolkit" Version="4.5.1" />
+    <PackageReference Include="Extended.Wpf.Toolkit" Version="4.6.0" />
     <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.0-beta.700" />
+    <PackageReference Include="VirtualizingWrapPanel" Version="2.0.5" />
+    <PackageReference Include="WindowsAPICodePackShell" Version="8.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="VirtualizingWrapPanel" Version="1.5.7" />
-    <PackageReference Include="WindowsAPICodePackShell" Version="7.0.4" />
   </ItemGroup>
-
 </Project>

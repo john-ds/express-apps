@@ -36,7 +36,8 @@ namespace ExpressControls
             MessageBoxImage icon = MessageBoxImage.None,
             ErrorReport? report = null,
             bool audio = true,
-            bool showInput = false) 
+            bool showInput = false,
+            bool showApplyAllCheckbox = false)
         {
             InitializeComponent();
 
@@ -107,7 +108,9 @@ namespace ExpressControls
                         break;
                 }
             }
-            
+
+            ApplyToAllBtn.Visibility = showApplyAllCheckbox ? Visibility.Visible : Visibility.Collapsed;
+
             if (!audio || showInput)
                 AudioFile = "";
 
@@ -284,7 +287,7 @@ namespace ExpressControls
             if (Regex.IsMatch(s, "\\*\\*.+?\\*\\*"))
             {
                 // string contains bold markup
-                List<Run> result = new();
+                List<Run> result = [];
                 string[] runs = Regex.Split(s, "\\*\\*");
                 bool bold = false;
 
@@ -297,11 +300,11 @@ namespace ExpressControls
 
                     bold = !bold;
                 }
-                return result.ToArray();
+                return [.. result];
             }
             else
             {
-                return new Run[] { new Run(s) };
+                return [new(s)];
             }
         }
     }

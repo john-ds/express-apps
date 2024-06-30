@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Blend for Visual Studio Version 17
 VisualStudioVersion = 17.3.32929.385
@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Font Express", "Font Expres
 		{B20F4052-A62C-42C6-88E3-3C6EAAF5F171} = {B20F4052-A62C-42C6-88E3-3C6EAAF5F171}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quota Express", "Quota Express\Quota Express.csproj", "{BB788603-AEBD-4ABE-8A1B-3494398256A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Quota Express", "Quota Express\Quota Express.csproj", "{BB788603-AEBD-4ABE-8A1B-3494398256A2}"
 	ProjectSection(ProjectDependencies) = postProject
 		{B20F4052-A62C-42C6-88E3-3C6EAAF5F171} = {B20F4052-A62C-42C6-88E3-3C6EAAF5F171}
 	EndProjectSection

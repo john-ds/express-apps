@@ -843,7 +843,7 @@ CTRL+H</System:String>
     <System:String x:Key="BreakdownStr">File breakdown</System:String>
     <System:String x:Key="AboutDescFStr" xml:space="preserve">Thank you for installing Font Express.
 
-Choose fonts with ease by organising them into categories and setting your favourites, giving you quick access to the fonts you need
+Choose fonts with ease by organising them into categories and setting your favourites, giving you quick access to the fonts you need.
 
 To find out about how to use the features available, visit the Help section. You can also leave your feedback there - it is greatly appreciated!
 
@@ -865,6 +865,7 @@ Please report this issue to us by emailing express@johnjds.co.uk and we will aim
     <System:String x:Key="CategoryLimitStr">You've reached the maximum number of categories.</System:String>
     <System:String x:Key="FreeTextStr">Free text</System:String>
     <System:String x:Key="PageStr">Page {0} of {1}</System:String>
+    <System:String x:Key="PageSimpleStr">Page {0}</System:String>
     <System:String x:Key="YesStr">Yes</System:String>
     <System:String x:Key="NoStr">No</System:String>
     <System:String x:Key="UpdateAvailableStr">An update is available.</System:String>
@@ -1743,11 +1744,11 @@ If this issue persists, click "Report" below.</System:String>
     <System:String x:Key="GnDisplayModeStr">Default display mode</System:String>
     <System:String x:Key="HelpBrowsingFontsStr">Browsing for fonts</System:String>
     <System:String x:Key="HelpFiltersCategoriesStr">Filters and categories</System:String>
-    <System:String x:Key="HelpComparingFontsStr">Comparing fonts</System:String>
+    <System:String x:Key="HelpComparingFontsStr">Downloading and comparing fonts</System:String>
     <System:String x:Key="HelpOptionsFStr">Options and customisation</System:String>
     <System:String x:Key="SearchHelpBrowsingFontsStr">start font brows bold italic size list grid preview</System:String>
     <System:String x:Key="SearchHelpFiltersCategoriesStr">filter categor organis favourite</System:String>
-    <System:String x:Key="SearchHelpComparingFontsStr">compar pair font</System:String>
+    <System:String x:Key="SearchHelpComparingFontsStr">compar pair font download google</System:String>
     <System:String x:Key="SearchHelpOptionsFStr">start view import export option setting categor organis font favourite general language sound dark appearance</System:String>
     <System:String x:Key="AboutQuotaStr">About Quota Express</System:String>
     <System:String x:Key="OptionsQStr">Options - Quota Express</System:String>
@@ -1774,5 +1775,32 @@ If this issue persists, click "Report" below.</System:String>
     <System:String x:Key="SearchHelpViewTabStr">file folder sort filter</System:String>
     <System:String x:Key="SearchHelpExportingDataStr">export chart rtf txt text csv xml json</System:String>
     <System:String x:Key="SearchHelpOptionsQStr">general language sound dark appearance option setting percentage default sort colour scheme start folder import export</System:String>
+    <System:String x:Key="DownloadFontsStr">Download fonts</System:String>
+    <System:String x:Key="DownloadFontsToolStr">Download and install fonts from Google Fonts without leaving the app</System:String>
+    <System:String x:Key="DownloadFontsTitleStr">Download Fonts - Font Express</System:String>
+    <System:String x:Key="NoNewFontsFoundStr">We couldn't find any new fonts. Please try a different search query.</System:String>
+    <System:String x:Key="LoadingFontsStr">Loading fonts...</System:String>
+    <System:String x:Key="SearchNewFontsStr">Search for new fonts</System:String>
+    <System:String x:Key="InstallStr">Install</System:String>
+    <System:String x:Key="DownloadFontErrorDescStr" xml:space="preserve">An error occurred while loading fonts. Please check your Internet connection.
+
+If this problem persists, we may be experiencing issues. Please try again later and check for app updates.</System:String>
+    <System:String x:Key="DownloadFontErrorStr">Font loading error</System:String>
+    <System:String x:Key="InstalledStr">Installed</System:String>
+    <System:String x:Key="InstallFontErrorDescStr">We couldn't download or install this font. If this issue persists, click the "Report" button below to notify us.</System:String>
+    <System:String x:Key="InstallFontErrorStr">Font install error</System:String>
+    <System:String x:Key="FnStyleStr">Font style:</System:String>
+    <System:String x:Key="FnStyleSansStr">Sans serif</System:String>
+    <System:String x:Key="FnStyleSerifStr">Serif</System:String>
+    <System:String x:Key="FnStyleMonoStr">Monospace</System:String>
+    <System:String x:Key="FnStyleHandStr">Handwriting</System:String>
+    <System:String x:Key="FnStyleDisplayStr">Display</System:String>
+    <System:String x:Key="ApplyAllWindowsStr">Apply to all open windows</System:String>
+    <System:String x:Key="QuickTipStr">Quick tip</System:String>
+    <System:String x:Key="InsightLargeFolderStr">Your '{0}' folder is quite large ({1}). Consider removing any unneeded files inside it.</System:String>
+    <System:String x:Key="InsightLargeFileStr">Your '{0}' file is quite large ({1}). Consider reducing its size to save space.</System:String>
+    <System:String x:Key="InsightManyFilesStr">You have {0} files in this folder. Consider splitting them into subfolders.</System:String>
+    <System:String x:Key="InsightDiffTypesStr">There are lots of different types of files in this folder. Consider splitting them into subfolders.</System:String>
+    <System:String x:Key="InsightFileModifiedStr">{0} files in this folder haven't been modified in over 2 years. Consider deleting them if they're no longer needed.</System:String>
 
 </ResourceDictionary>

@@ -35,7 +35,7 @@ namespace Quota_Express
         private readonly DispatcherTimer TempLblTimer = new() { Interval = new TimeSpan(0, 0, 4) };
         private readonly BackgroundWorker FileSizeWorker = new() { WorkerSupportsCancellation = true };
         
-        public readonly ObservableCollection<FileItem> FileDisplayList = new();
+        public readonly ObservableCollection<FileItem> FileDisplayList = [];
         public ICollectionView FileItemsView
         {
             get { return CollectionViewSource.GetDefaultView(FileDisplayList); }
@@ -95,7 +95,7 @@ namespace Quota_Express
             Funcs.SetupDialogs();
 
             // Setup for scrollable ribbon menu
-            Funcs.Tabs = new string[] { "Menu", "Home", "View", "Export" };
+            Funcs.Tabs = ["Menu", "Home", "View", "Export"];
             Funcs.ScrollTimer.Tick += Funcs.ScrollTimer_Tick;
             DocTabs.SelectionChanged += Funcs.RibbonTabs_SelectionChanged;
 
@@ -295,7 +295,8 @@ namespace Quota_Express
                             FileName = Path.GetFileName(item),
                             FilePath = item,
                             FilePathFormatted = item.Replace("\\", " » "),
-                            DateCreated = GetFileDate(item, true)
+                            DateCreated = GetFileCreationDate(item, true),
+                            DateModified = GetFileModifiedDate(item, true)
                         });
                 }
 
@@ -309,7 +310,8 @@ namespace Quota_Express
                             FileName = Path.GetFileName(item),
                             FilePath = item,
                             FilePathFormatted = item.Replace("\\", " » "),
-                            DateCreated = GetFileDate(item, false)
+                            DateCreated = GetFileCreationDate(item, false),
+                            DateModified = GetFileModifiedDate(item, false)
                         });
                 }
 
@@ -321,10 +323,10 @@ namespace Quota_Express
                     ForwardStack.Clear();
                 }
 
-                BackBtn.IsEnabled = BackStack.Any();
-                BackBtn.Icon = (Viewbox)TryFindResource(BackStack.Any() ? "UndoIcon" : "NoUndoIcon");
-                ForwardBtn.IsEnabled = ForwardStack.Any();
-                ForwardBtn.Icon = (Viewbox)TryFindResource(ForwardStack.Any() ? "RedoIcon" : "NoRedoIcon");
+                BackBtn.IsEnabled = BackStack.Count != 0;
+                BackBtn.Icon = (Viewbox)TryFindResource(BackStack.Count != 0 ? "UndoIcon" : "NoUndoIcon");
+                ForwardBtn.IsEnabled = ForwardStack.Count != 0;
+                ForwardBtn.Icon = (Viewbox)TryFindResource(ForwardStack.Count != 0 ? "RedoIcon" : "NoRedoIcon");
 
                 CurrentFolderTxt.Text = CurrentRoot = path;
                 TopBtnTxt.Text = Path.GetFileName(CurrentRoot) == "" ? CurrentRoot : Path.GetFileName(CurrentRoot);
@@ -421,11 +423,23 @@ namespace Quota_Express
                 return size;
         }
 
-        private static DateTime? GetFileDate(string path, bool isFolder)
+        private static DateTime? GetFileCreationDate(string path, bool isFolder)
         {
             try
             {
                 return isFolder ? new DirectoryInfo(path).CreationTime : new FileInfo(path).CreationTime;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static DateTime? GetFileModifiedDate(string path, bool isFolder)
+        {
+            try
+            {
+                return isFolder ? new DirectoryInfo(path).LastWriteTime : new FileInfo(path).LastWriteTime;
             }
             catch
             {
@@ -743,6 +757,47 @@ namespace Quota_Express
             }
         }
 
+        private void GetFolderInsight()
+        {
+            if (TotalFolderSize > 0 && !GetSelectedItems().Any())
+            {
+                FileItem? largestItem = FileDisplayList.MaxBy(x => x.FileSize);
+                IEnumerable<FileItem> files = FileDisplayList.Where(x => !x.IsFolder);
+
+                if (largestItem != null && largestItem.FileSize >= 524288000 &&
+                    (largestItem.FileSize / (double)TotalFolderSize >= 0.7))
+                {
+                    // The largest item exceeds 500MB and is more than 70% of the total folder size
+                    InsightTxt.Text = string.Format(
+                        Funcs.ChooseLang(largestItem.IsFolder ? "InsightLargeFolderStr" : "InsightLargeFileStr"),
+                        largestItem.FileName,
+                        Funcs.FormatBytes(largestItem.FileSize)
+                    );
+                }
+                else if (files.Count() >= 75)
+                {
+                    // More than 75 files
+                    InsightTxt.Text = string.Format(Funcs.ChooseLang("InsightManyFilesStr"), files.Count());
+                }
+                else if (files.Count() >= 25 &&
+                    files.GroupBy(x => GetFileTypeCategory(x.FilePath)).Count() >= 4)
+                {
+                    // More than 25 files and at least 4 different file types
+                    InsightTxt.Text = Funcs.ChooseLang("InsightDiffTypesStr");
+                }
+                else if (FileDisplayList.Count(x => x.DateModified != null && x.DateModified < DateTime.Now.AddYears(-2)) >= 25)
+                {
+                    // More than 25 files that were last accessed more than 2 years ago
+                    InsightTxt.Text = string.Format(Funcs.ChooseLang("InsightFileModifiedStr"),
+                        FileDisplayList.Count(x => x.DateModified != null && x.DateModified < DateTime.Now.AddYears(-2)));
+                }
+                else
+                    return;
+                
+                InsightStack.Visibility = Visibility.Visible;
+            }
+        }
+
         private void UpdateSelectionSize()
         {
             if (GetSelectedItems().Any())
@@ -780,6 +835,7 @@ namespace Quota_Express
             SideHeaderLbl.Text = Funcs.ChooseLang("FolderAnalysisStr");
             DriveStack.Visibility = Visibility.Collapsed;
             FolderStack.Visibility = Visibility.Visible;
+            InsightStack.Visibility = Visibility.Collapsed;
             BreakdownStack.Visibility = Visibility.Collapsed;
             UpdateTotalSize();
 
@@ -791,6 +847,7 @@ namespace Quota_Express
                 CircleProgress.Visibility = Visibility.Collapsed;
 
                 GetFileBreakdown();
+                GetFolderInsight();
             }
             else
             {
@@ -869,7 +926,7 @@ namespace Quota_Express
                 };
             });
 
-            if (!DriveInfo.GetDrives().Any())
+            if (DriveInfo.GetDrives().Length == 0)
                 Funcs.ShowMessageRes("DriveErrorShortDescStr", "DriveErrorStr", MessageBoxButton.OK, MessageBoxImage.Error);
             else
                 DrivePopup.IsOpen = true;
@@ -933,6 +990,9 @@ namespace Quota_Express
             UpdateFilter((FileTypeCategory)((AppRadioButton)sender).Tag);
         }
 
+        [GeneratedRegex(@"\s+")]
+        private static partial Regex WhitespaceRegex();
+
         private void UpdateFilter(FileTypeCategory filter)
         {
             ChosenFilter = filter;
@@ -951,9 +1011,9 @@ namespace Quota_Express
                 else
                 {
                     string[] exts = ChosenFilter == FileTypeCategory.Custom ?
-                        Regex.Replace(CustomFilterTxt.Text, @"\s+", "").ToLower().Split(",") : FileTypeCategories[ChosenFilter];
+                        WhitespaceRegex().Replace(CustomFilterTxt.Text, "").ToLower().Split(",") : FileTypeCategories[ChosenFilter];
 
-                    if (!exts.Any())
+                    if (exts.Length == 0)
                         return true;
                     else
                     {
@@ -1066,14 +1126,14 @@ namespace Quota_Express
                 {
                     Type = ChartType.Pie,
                     Labels = items.Take(25).Select(x => x.FileName).ToList(),
-                    Series = new List<SeriesItem>()
-                    {
+                    Series =
+                    [
                         new SeriesItem()
                         {
                             Type = SeriesType.Default,
                             Values = items.Take(25).Select(x => Math.Round((double)x.FileSize / 1024 / 1024, 2)).ToList()
                         }
-                    },
+                    ],
                     ChartTitle = Path.GetFileName(CurrentRoot),
                     AxisXTitle = Funcs.ChooseLang("FilenameStr"),
                     AxisYTitle = Funcs.ChooseLang("SizeAxisTitleStr"),
@@ -1314,7 +1374,7 @@ namespace Quota_Express
 
                 IEnumerable<ReleaseItem> updates = resp.Where(x =>
                 {
-                    return new Version(x.Version) > (Assembly.GetCallingAssembly().GetName().Version ?? new Version(1, 0, 0));
+                    return new Version(x.Version) > (Assembly.GetExecutingAssembly().GetName().Version ?? new Version(1, 0, 0));
 
                 }).OrderByDescending(x => new Version(x.Version));
 

@@ -25,8 +25,8 @@ namespace Type_Express
     public partial class FontPicker : Window
     {
         public string ChosenFont { get; set; } = "";
-        private readonly FontItems FontCollection = new();
-        private IEnumerable<string> QueriedFonts = Array.Empty<string>();
+        private readonly FontItems FontCollection = [];
+        private IEnumerable<string> QueriedFonts = [];
 
         private readonly int PerPage = 25;
         private int CurrentPage = 1;
@@ -55,32 +55,17 @@ namespace Type_Express
 
         private void GetFonts(FontFilter filter, string parameter = "", bool noscroll = false)
         {
-            IEnumerable<string> fonts = Array.Empty<string>();
+            IEnumerable<string> fonts = [];
             NoFontsLbl.Visibility = Visibility.Collapsed;
 
             switch (filter)
             {
                 case FontFilter.Suggested:
-                    fonts = Funcs.SuggestedFonts.Where(f => FontCollection.Contains(f)).Take(PerPage);
+                    fonts = Funcs.SuggestedFonts.Where(FontCollection.Contains).Take(PerPage);
                     break;
 
                 case FontFilter.Favourites:
-                    fonts = Settings.Default.FavouriteFonts.Cast<string>().Where((s) =>
-                    {
-                        try
-                        {
-                            if (string.IsNullOrWhiteSpace(s))
-                                return false;
-
-                            var testfont = new WinDrawing.FontFamily(s);
-                            testfont.Dispose();
-                            return true;
-                        }
-                        catch
-                        {
-                            return false;
-                        }
-                    }).Distinct();
+                    fonts = Settings.Default.FavouriteFonts.Cast<string>().Where(Funcs.IsValidFont).Distinct();
                     break;
 
                 case FontFilter.Search:

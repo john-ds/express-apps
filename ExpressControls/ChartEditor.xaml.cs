@@ -37,8 +37,8 @@ namespace ExpressControls
         private ColourScheme Colours = ColourScheme.Basic;
         public readonly ExpressApp CurrentApp;
 
-        private List<string> CurrentLabels = new();
-        private IEnumerable<SeriesItem> CurrentSeries = new List<SeriesItem>();
+        private List<string> CurrentLabels = [];
+        private IEnumerable<SeriesItem> CurrentSeries = [];
         private bool IsDoughnut = false;
         private readonly int DefaultFontSize = 16;
 
@@ -87,20 +87,20 @@ namespace ExpressControls
             if (backColor != null)
                 ChartBackGrid.Background = backColor;
 
-            ChartData = data;
+            ChartData = data?.Clone();
 
             // Set up colours
             Funcs.SetupColorPickers(null, TextColourPicker);
 
             // Set up series
-            CartesianChrt.Series = new List<ISeries>();
-            PieChrt.Series = new List<ISeries>();
-            PolarChrt.Series = new List<ISeries>();
+            CartesianChrt.Series = [];
+            PieChrt.Series = [];
+            PolarChrt.Series = [];
 
-            CartesianChrt.XAxes = new List<Axis>() { new Axis() };
-            CartesianChrt.YAxes = new List<Axis>() { new Axis() };
-            PolarChrt.AngleAxes = new List<PolarAxis>() { new PolarAxis() };
-            PolarChrt.RadiusAxes = new List<PolarAxis>() { new PolarAxis() };
+            CartesianChrt.XAxes = new List<Axis>() { new() };
+            CartesianChrt.YAxes = new List<Axis>() { new() };
+            PolarChrt.AngleAxes = new List<PolarAxis>() { new() };
+            PolarChrt.RadiusAxes = new List<PolarAxis>() { new() };
 
             CartesianChrt.Visibility = Visibility.Visible;
             PieChrt.Visibility = Visibility.Visible;
@@ -138,17 +138,17 @@ namespace ExpressControls
             });
             LegendCombo.SelectedIndex = 0;
 
-            List<AppDropdownItem> clrItems = new();
+            List<AppDropdownItem> clrItems = [];
             for (int i = 0; i < Funcs.ColourSchemes.Length; i++)
             {
-                List<SolidColorBrush> clrs = new();
+                List<SolidColorBrush> clrs = [];
                 foreach (var item in Funcs.ColourSchemes[i])
                     clrs.Add(Funcs.ColorToBrush(item));
 
                 clrItems.Add(new AppDropdownItem()
                 {
                     Content = Funcs.GetTypeColourSchemeName((ColourScheme)i),
-                    Colours = clrs.ToArray(),
+                    Colours = [.. clrs],
                     ShowColours = true
                 });
             }
@@ -171,16 +171,16 @@ namespace ExpressControls
             if (data == null)
             {
                 // Load sample data
-                CurrentLabels = new List<string>() { Funcs.ChooseLang("AddSomeDataStr") };
-                CurrentSeries = new List<SeriesItem>()
-                {
+                CurrentLabels = [Funcs.ChooseLang("AddSomeDataStr")];
+                CurrentSeries =
+                [
                     new SeriesItem()
                     {
                         Name = "",
                         Type = SeriesType.Column,
-                        Values = new List<double> { 4 }
+                        Values = [4]
                     }
-                };
+                ];
 
                 SetChartType(ChartType.Cartesian);
             }
@@ -248,7 +248,7 @@ namespace ExpressControls
             SolidColorPaint gridlines = new(SKColors.LightSlateGray)
             {
                 StrokeThickness = 1,
-                PathEffect = new DashEffect(new float[] { 3, 3 })
+                PathEffect = new DashEffect([3, 3])
             };
 
             SKDefaultLegend legend = new()
@@ -271,7 +271,7 @@ namespace ExpressControls
                         Height = height,
                         XAxes = new List<Axis>()
                         {
-                            new Axis()
+                            new()
                             {
                                 Name = string.IsNullOrWhiteSpace(data.AxisXTitle) ? null : data.AxisXTitle,
                                 Labels = data.Series[0].Type == SeriesType.Bar ? null : data.Labels,
@@ -285,7 +285,7 @@ namespace ExpressControls
                         },
                         YAxes = new List<Axis>()
                         {
-                            new Axis()
+                            new()
                             {
                                 Name = string.IsNullOrWhiteSpace(data.AxisYTitle) ? null : data.AxisYTitle,
                                 Labels = data.Series[0].Type != SeriesType.Bar ? null : data.Labels,
@@ -333,7 +333,7 @@ namespace ExpressControls
                         Height = height,
                         AngleAxes = new List<PolarAxis>()
                         {
-                            new PolarAxis()
+                            new()
                             {
                                 Labels = data.Labels,
                                 TextSize = fontSize,
@@ -342,7 +342,7 @@ namespace ExpressControls
                         },
                         RadiusAxes = new List<PolarAxis>()
                         {
-                            new PolarAxis()
+                            new()
                             {
                                 Labeler = GetLabelersFunc(data.AxisFormatType),
                                 TextSize = fontSize,
@@ -385,7 +385,7 @@ namespace ExpressControls
             {
                 Type = GetCurrentChartType(),
                 Labels = CurrentLabels,
-                Series = GetCurrentChartType() == ChartType.Pie ? new List<SeriesItem> { CurrentSeries.First() } : CurrentSeries.ToList(),
+                Series = GetCurrentChartType() == ChartType.Pie ? [CurrentSeries.First()] : CurrentSeries.ToList(),
                 ChartTitle = string.IsNullOrWhiteSpace(TitleTxt.Text) ? "" : TitleTxt.Text,
                 AxisXTitle = GetCurrentChartType() == ChartType.Cartesian ? XAxisTxt.Text : "",
                 AxisYTitle = GetCurrentChartType() == ChartType.Cartesian ? YAxisTxt.Text : "",
@@ -437,8 +437,8 @@ namespace ExpressControls
                     CartesianChrt.Visibility = Visibility.Visible;
                     ChartSelect.Margin = new Thickness(leftMargin, 5, 0, 5);
 
-                    CartesianChrt.XAxes = new List<Axis>() { new Axis() };
-                    CartesianChrt.YAxes = new List<Axis>() { new Axis() };
+                    CartesianChrt.XAxes = new List<Axis>() { new() };
+                    CartesianChrt.YAxes = new List<Axis>() { new() };
 
                     AxisPnl.Visibility = Visibility.Visible;
                     ValueFormatPnl.Visibility = Visibility.Visible;
@@ -461,8 +461,8 @@ namespace ExpressControls
                     PolarChrt.Visibility = Visibility.Visible;
                     ChartSelect.Margin = new Thickness(leftMargin + (width * 2), 5, 0, 5);
 
-                    PolarChrt.AngleAxes = new List<PolarAxis>() { new PolarAxis() };
-                    PolarChrt.RadiusAxes = new List<PolarAxis>() { new PolarAxis() };
+                    PolarChrt.AngleAxes = new List<PolarAxis>() { new() };
+                    PolarChrt.RadiusAxes = new List<PolarAxis>() { new() };
 
                     AxisPnl.Visibility = Visibility.Collapsed;
                     ValueFormatPnl.Visibility = Visibility.Visible;
@@ -577,7 +577,7 @@ namespace ExpressControls
         public static List<ISeries> GetSeries(IEnumerable<SeriesItem> data, ChartType type, 
             List<string> labels, SolidColorPaint font, int fontSize, ColourScheme scheme)
         {
-            List<ISeries> series = new();
+            List<ISeries> series = [];
             switch (type)
             {
                 case ChartType.Cartesian:
@@ -677,7 +677,7 @@ namespace ExpressControls
                         {
                             Name = labels[i],
                             Fill = new SolidColorPaint(GetSKColour(i, scheme)),
-                            Values = new List<double> { pieItem.Values[i] },
+                            Values = [pieItem.Values[i]],
                             DataLabelsPaint = pieItem.ShowValueLabels ? font : null,
                             DataLabelsPosition = PolarLabelsPosition.Middle,
                             DataLabelsSize = fontSize
@@ -877,7 +877,7 @@ namespace ExpressControls
             SolidColorPaint paint = new(SKColors.LightSlateGray)
             {
                 StrokeThickness = 1,
-                PathEffect = new DashEffect(new float[] { 3, 3 })
+                PathEffect = new DashEffect([3, 3])
             };
   
             GetXAxis().SeparatorsPaint = HorizontalGridlineCheckBox.IsChecked == true ? paint : null;

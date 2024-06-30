@@ -1,0 +1,117 @@
+﻿<Window x:Class="Font_Express.DownloadFonts"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Font_Express"
+        xmlns:ex="clr-namespace:ExpressControls;assembly=ExpressControls"
+        mc:Ignorable="d" x:Name="Dwn"
+        Title="{DynamicResource DownloadFontsTitleStr}" Width="750" Height="450" Style="{DynamicResource ChromeWindowStyle}" d:FontFamily="Inter" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen" Loaded="Dwn_Loaded">
+    <Grid Background="{DynamicResource BackColor}">
+        <DockPanel>
+            <DockPanel x:Name="MenuPnl" DockPanel.Dock="Top" Margin="20,50,20,20" IsEnabled="False" LastChildFill="False">
+                <ex:AppDropdown SelectionChanged="FontStyleCombo_SelectionChanged" DockPanel.Dock="Right" x:Name="FontStyleCombo" Background="{DynamicResource BackSpecialColor}" DropdownBackground="{DynamicResource SecondaryColor}" VerticalAlignment="Stretch" Width="150"/>
+                <TextBlock DockPanel.Dock="Right" Margin="30,0,10,0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="{DynamicResource FnStyleStr}"/>
+                <ex:AppTextBox x:Name="SearchTxt" PreviewKeyDown="SearchTxt_PreviewKeyDown" Margin="0" Watermark="{DynamicResource SearchNewFontsStr}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Width="250"/>
+                <ex:AppButton x:Name="SearchBtn" Click="SearchBtn_Click" Background="{DynamicResource BackSpecialColor}" Icon="{DynamicResource SearchIcon}" ToolTip="{DynamicResource SearchStr}" IconSize="18" Height="30" TextVisibility="Collapsed" Padding="6,0" Margin="10,0,0,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" VerticalAlignment="Center"/>
+                <ex:AppButton x:Name="ExitSearchBtn" Click="ExitSearchBtn_Click" Visibility="Collapsed" Background="{DynamicResource BackSpecialColor}" Icon="{DynamicResource CloseIcon}" ToolTip="{DynamicResource FnExitSearchStr}" IconSize="18" Height="30" TextVisibility="Collapsed" Padding="6,0" Margin="10,0,30,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" VerticalAlignment="Center"/>
+            </DockPanel>
+            <ScrollViewer x:Name="FontScroller" Margin="20,0,0,0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel>
+                    <ItemsControl x:Name="FontPnl" Visibility="Collapsed">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Background="{DynamicResource BackColor}">
+                                    <Rectangle Fill="{DynamicResource Gray1}" Height="1" Margin="0,0,20,5"/>
+                                    <DockPanel>
+                                        <TextBlock Text="{Binding Name}" FontSize="14" MaxWidth="400" FontWeight="SemiBold" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Margin="0" VerticalAlignment="Center"/>
+                                        <ex:AppButton Click="CopyBtns_Click" Tag="{Binding Name}" Icon="{DynamicResource CopyIcon}" Text="{DynamicResource CopyCmStr}" IconSize="18" Height="26" Padding="6,0" FontSize="12" NoShadow="True" GapMargin="4,1,0,0" Margin="10,0,20,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" VerticalAlignment="Center">
+                                            <ex:AppButton.Style>
+                                                <Style TargetType="{x:Type ex:AppButton}">
+                                                    <Setter Property="Visibility" Value="Hidden" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type StackPanel}}, Path=IsMouseOver}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </ex:AppButton.Style>
+                                        </ex:AppButton>
+                                    </DockPanel>
+                                    <Grid Margin="0,0,0,20">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="50"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" FontFamily="{Binding Preview}" Grid.ColumnSpan="3" Text="{DynamicResource PalindromeStr}" FontSize="24" TextWrapping="NoWrap" TextTrimming="None" Margin="0,10,20,10" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                        <Grid Grid.Column="1">
+                                            <Grid.Background>
+                                                <LinearGradientBrush EndPoint="1,0.5" StartPoint="0,0.5">
+                                                    <GradientStop Color="{DynamicResource BackTransDirectColor}"/>
+                                                    <GradientStop Color="{DynamicResource BackDirectColor}" Offset="0.8"/>
+                                                </LinearGradientBrush>
+                                            </Grid.Background>
+                                        </Grid>
+                                        <StackPanel Grid.Column="2" Background="{DynamicResource BackColor}" VerticalAlignment="Stretch" HorizontalAlignment="Right" Margin="0,0,20,0" Orientation="Horizontal">
+                                            <StackPanel.Style>
+                                                <Style TargetType="{x:Type StackPanel}">
+                                                    <Setter Property="Visibility" Value="Collapsed" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type StackPanel}}, Path=IsMouseOver}" Value="True">
+                                                            <Setter Property="Visibility" Value="Visible" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </StackPanel.Style>
+                                            <ex:AppButton Click="DownloadBtns_Click" Background="{DynamicResource BackSpecialColor}" Tag="{Binding Name}" Icon="{DynamicResource DownloadIcon}" Text="{DynamicResource DownloadStr}" IconSize="18" Height="30" Margin="0,0,0,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" VerticalAlignment="Center"/>
+                                            <ex:AppButton Click="InstallBtns_Click" Background="{DynamicResource BackSpecialColor}" Tag="{Binding Name}" Icon="{DynamicResource DriveIcon}" IconSize="18" Height="30" Margin="10,0,0,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" VerticalAlignment="Center">
+                                                <ex:AppButton.Style>
+                                                    <Style TargetType="{x:Type ex:AppButton}">
+                                                        <Setter Property="Text" Value="{DynamicResource InstallStr}" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Installed}" Value="True">
+                                                                <Setter Property="IsEnabled" Value="False" />
+                                                                <Setter Property="IconVisibility" Value="Collapsed" />
+                                                                <Setter Property="Text" Value="{DynamicResource InstalledStr}" />
+                                                                <Setter Property="GapMargin" Value="0" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ex:AppButton.Style>
+                                            </ex:AppButton>
+                                            <ex:AppButton Click="ExpandBtns_Click" Background="{DynamicResource BackSpecialColor}" Tag="{Binding Name}" Icon="{DynamicResource ExpandIcon}" ToolTip="{DynamicResource ExpandStr}" TextVisibility="Collapsed" IconSize="18" Height="30" Margin="10,0,0,0" Padding="8,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <StackPanel x:Name="LoadingGrid" Margin="0,80,20,0">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <ContentControl Focusable="False" Content="{DynamicResource StylesIcon}" Height="80" VerticalAlignment="Center"/>
+                            <ContentControl Focusable="False" Margin="-30,0,0,0" VerticalAlignment="Bottom" Content="{DynamicResource SearchIcon}" Height="50" Effect="{StaticResource DropShadowTop}"/>
+                        </StackPanel>
+                        <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Center" FontWeight="SemiBold" Margin="0,15,0,20" FontSize="20" Text="{DynamicResource LoadingFontsStr}"/>
+                    </StackPanel>
+                    <TextBlock x:Name="NoResultsLbl" Visibility="Collapsed" Text="{DynamicResource NoNewFontsFoundStr}" FontSize="14" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="500" Margin="20,80,40,40" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    <DockPanel x:Name="PagePnl" Margin="0,25,20,25" HorizontalAlignment="Center" Visibility="Collapsed">
+                        <ex:AppButton x:Name="PrevPageBtn" Background="{DynamicResource BackSpecialColor}" Click="PrevPageBtn_Click" Icon="{DynamicResource LeftIcon}" ToolTip="{DynamicResource PrevPageStr}" IconSize="18" Height="30" TextVisibility="Collapsed" Padding="6,0" Margin="10,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" VerticalAlignment="Center"/>
+                        <ex:AppButton x:Name="NextPageBtn" Background="{DynamicResource BackSpecialColor}" Click="NextPageBtn_Click" DockPanel.Dock="Right" Icon="{DynamicResource RightIcon}" ToolTip="{DynamicResource NextPageStr}" IconSize="18" Height="30" TextVisibility="Collapsed" Padding="6,0" Margin="10,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="PageLbl" Text="{DynamicResource PageSimpleStr}" FontSize="14" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Margin="15,0" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                    </DockPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </DockPanel>
+        <DockPanel Height="30" Margin="0" VerticalAlignment="Top" Background="{DynamicResource AppColor}">
+            <ex:AppButton x:Name="CloseBtn" IsCloseBtn="True" Background="Transparent" Icon="{DynamicResource CloseWhiteIcon}" NoShadow="True" CornerRadius="0" IconSize="16" Height="30" Padding="7,0" TextVisibility="Collapsed" DockPanel.Dock="Right" ToolTip="{DynamicResource CloseStr}"/>
+            <ex:AppButton x:Name="AppLogoBtn" HasNoEffects="True" Background="Transparent" Icon="{DynamicResource AppWhiteIcon}" NoShadow="True" CornerRadius="0" IconSize="20" Height="30" Padding="6,0,0,0" TextVisibility="Collapsed"/>
+            <ex:AppButton x:Name="TitleBtn" HasNoEffects="True" Focusable="False" Text="{Binding Title, ElementName=Dwn}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Foreground="White" FontSize="12" GapMargin="0" Background="Transparent" NoShadow="True" CornerRadius="0" IconVisibility="Collapsed" Height="30" Padding="7,0"/>
+        </DockPanel>
+    </Grid>
+</Window>

@@ -20,7 +20,7 @@ namespace Font_Express
     /// </summary>
     public partial class AddEditCategory : Window
     {
-        private bool IsEditingCategory = false;
+        private readonly bool IsEditingCategory = false;
         public string ChosenName { get; set; } = "";
         public FontCategoryIcon ChosenIcon { get; set; } = FontCategoryIcon.A;
 

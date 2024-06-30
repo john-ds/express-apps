@@ -1646,8 +1646,8 @@ Se il problema persiste, è possibile che si siano verificati dei malfunzionamen
     <System:String x:Key="SearchHelpTextSlidesStr">test font caratter titol slide diapositiv</System:String>
     <System:String x:Key="SearchHelpDrawingsStr">disegn tel</System:String>
     <System:String x:Key="SearchHelpSlidesSetupDesignStr">disegn temp fond color dim adat trans</System:String>
-    <System:String x:Key="MoveToTopStr">Sposta in alto</System:String>
-    <System:String x:Key="MoveToBottomStr">Sposta in basso</System:String>
+    <System:String x:Key="MoveToTopStr">Sposta all'inizio</System:String>
+    <System:String x:Key="MoveToBottomStr">Sposta al fondo</System:String>
     <System:String x:Key="BusinessStr">Azienda</System:String>
     <System:String x:Key="AlbumsStr">Album</System:String>
     <System:String x:Key="DropboxOpenPresentStr">Seleziona un file PRESENT da aprire in Present Express...</System:String>
@@ -1716,7 +1716,7 @@ Se il problema persiste, clicca su "Segnala" qui sotto.</System:String>
     <System:String x:Key="TransitionBottomStr">Dal basso</System:String>
     <System:String x:Key="TransitionsUpdatedStr">Transizioni aggiornate per tutte le diapositive</System:String>
     <System:String x:Key="SearchHelpFiltersCategoriesStr">filtr categori organiz ordin preferit favorit</System:String>
-    <System:String x:Key="SearchHelpComparingFontsStr">confron compar appaia abbinam font caratter</System:String>
+    <System:String x:Key="SearchHelpComparingFontsStr">confron compar appaia abbinam font caratter scaric google</System:String>
     <System:String x:Key="SearchHelpOptionsFStr">inizi cominci import esport opzion imposta categori organiz ordin font general lingua suon rumor scur apparenz preferit favorit</System:String>
     <System:String x:Key="SearchHelpAnalysingStorageStr">cartel directory unità anali memori spazi percentua file</System:String>
     <System:String x:Key="SearchHelpViewTabStr">file cartel directory ordin filtr</System:String>
@@ -1753,7 +1753,7 @@ Se il problema persiste, clicca su "Segnala" qui sotto.</System:String>
     <System:String x:Key="GnDisplayModeStr">Modalità di visualizzazione predefinita</System:String>
     <System:String x:Key="HelpBrowsingFontsStr">Ricerca dei font</System:String>
     <System:String x:Key="HelpFiltersCategoriesStr">Filtri e categorie</System:String>
-    <System:String x:Key="HelpComparingFontsStr">Confronto dei font</System:String>
+    <System:String x:Key="HelpComparingFontsStr">Scaricamento e confronto dei font</System:String>
     <System:String x:Key="HelpOptionsFStr">Impostazioni e personalizzazione</System:String>
     <System:String x:Key="SearchHelpBrowsingFontsStr">inizi cominci sfogli grass corsiv dim elenc list grig antepr</System:String>
     <System:String x:Key="AboutQuotaStr">Informazioni su Quota Express</System:String>
@@ -1777,5 +1777,33 @@ Se il problema persiste, clicca su "Segnala" qui sotto.</System:String>
     <System:String x:Key="HelpViewTabStr">La scheda Vista</System:String>
     <System:String x:Key="HelpExportingDataStr">Esportazione dei dati</System:String>
     <System:String x:Key="HelpOptionsQStr">Impostazioni e personalizzazione</System:String>
+    <System:String x:Key="PageSimpleStr">Pagina {0}</System:String>
+    <System:String x:Key="DownloadFontsStr">Scarica i font</System:String>
+    <System:String x:Key="DownloadFontsToolStr">Scarica e installa i font da Google Fonts senza uscire dall'app</System:String>
+    <System:String x:Key="DownloadFontsTitleStr">Scarica i Font - Font Express</System:String>
+    <System:String x:Key="NoNewFontsFoundStr">Non siamo riusciti a trovare nuovi font. Si prega di provare con un'altra query di ricerca.</System:String>
+    <System:String x:Key="LoadingFontsStr">Caricamento dei font in corso...</System:String>
+    <System:String x:Key="SearchNewFontsStr">Ricerca di nuovi font</System:String>
+    <System:String x:Key="InstallStr">Installa</System:String>
+    <System:String x:Key="DownloadFontErrorDescStr" xml:space="preserve">Si è verificato un errore durante il caricamento dei font. Si prega di controllare la connessione a Internet.
+
+Se il problema persiste, è possibile che si siano verificati dei malfunzionamenti. Riprova più tardi e controlla gli aggiornamenti dell'app.</System:String>
+    <System:String x:Key="DownloadFontErrorStr">Errore di caricamento del font</System:String>
+    <System:String x:Key="InstalledStr">Installato</System:String>
+    <System:String x:Key="InstallFontErrorDescStr">Non è stato possibile scaricare o installare questo font. Se il problema persiste, fai clic sul pulsante "Segnala" qui sotto per informarci.</System:String>
+    <System:String x:Key="InstallFontErrorStr">Errore di installazione del font</System:String>
+    <System:String x:Key="FnStyleStr">Stile del font:</System:String>
+    <System:String x:Key="FnStyleSansStr">Sans serif</System:String>
+    <System:String x:Key="FnStyleSerifStr">Serif</System:String>
+    <System:String x:Key="FnStyleMonoStr">Ampiezza fissa</System:String>
+    <System:String x:Key="FnStyleHandStr">Manoscritto</System:String>
+    <System:String x:Key="FnStyleDisplayStr">Visualizzazione</System:String>
+    <System:String x:Key="ApplyAllWindowsStr">Applica a tutte le finestre aperte</System:String>
+    <System:String x:Key="QuickTipStr">Consiglio rapido</System:String>
+    <System:String x:Key="InsightLargeFolderStr">La cartella "{0}" è piuttosto grande ({1}). Considera di rimuovere tutti i file non necessari al suo interno.</System:String>
+    <System:String x:Key="InsightLargeFileStr">Il tuo file "{0}" è piuttosto grande ({1}). Considera di ridurre le sue dimensioni per risparmiare spazio.</System:String>
+    <System:String x:Key="InsightManyFilesStr">In questa cartella sono presenti {0} file. Considera di dividerli in sottocartelle.</System:String>
+    <System:String x:Key="InsightDiffTypesStr">Ci sono molti tipi diversi di file in questa cartella. Considera di dividerli in sottocartelle.</System:String>
+    <System:String x:Key="InsightFileModifiedStr">{0} file in questa cartella non vengono modificati da oltre 2 anni. Considera di eliminarli se non sono più necessari.</System:String>
     
 </ResourceDictionary>

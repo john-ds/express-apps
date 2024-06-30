@@ -309,6 +309,7 @@
                                     <ex:MenuButton x:Name="SearchBtn" Click="SearchBtn_Click" TextVisibility="Collapsed" Icon="{DynamicResource SearchIcon}" ToolTip="{DynamicResource SearchStr}"/>
                                     <Separator Style="{StaticResource VerticalSeparator}"/>
                                     <ex:MenuButton x:Name="CompareBtn" Click="CompareBtn_Click" Text="{DynamicResource CompareFontsStr}" Icon="{DynamicResource CaseIcon}" ToolTip="{DynamicResource CompareToolStr}"/>
+                                    <ex:MenuButton x:Name="DownloadFontsBtn" Click="DownloadFontsBtn_Click" Text="{DynamicResource DownloadFontsStr}" Icon="{DynamicResource DownloadIcon}" ToolTip="{DynamicResource DownloadFontsToolStr}"/>
                                 </StackPanel>
                             </ScrollViewer>
                             <Grid x:Name="HomeScroll" HorizontalAlignment="Right" Background="{DynamicResource SecondaryColor}">

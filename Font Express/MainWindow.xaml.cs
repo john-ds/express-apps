@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -20,7 +21,6 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using WpfToolkit.Controls;
 using WinDrawing = System.Drawing;
@@ -35,9 +35,10 @@ namespace Font_Express
         private readonly DispatcherTimer TempLblTimer = new() { Interval = new TimeSpan(0, 0, 4) };
         private StackPanel? CategoryPopupParent;
 
-        private readonly FontItems FontCollection = new();
-        private IEnumerable<string> QueriedFonts = Array.Empty<string>();
-        private ObservableCollection<IconButtonItem> CategoryDisplayList = new();
+        private readonly FontItems FontCollection = [];
+        private IEnumerable<string> QueriedFonts = [];
+        private readonly ObservableCollection<IconButtonItem> CategoryDisplayList = [];
+        private readonly string TempFilePath;
 
         private int PerPage = 25;
         private int CurrentPage = 1;
@@ -80,7 +81,7 @@ namespace Font_Express
             Funcs.SetupDialogs();
 
             // Setup for scrollable ribbon menu
-            Funcs.Tabs = new string[] { "Menu", "Home", "View", "Category" };
+            Funcs.Tabs = ["Menu", "Home", "View", "Category"];
             Funcs.ScrollTimer.Tick += Funcs.ScrollTimer_Tick;
             DocTabs.SelectionChanged += Funcs.RibbonTabs_SelectionChanged;
 
@@ -149,6 +150,8 @@ namespace Font_Express
             });
 
             PerPageBtn.Text = Funcs.ChooseLang("PerPageStr") + " " + PerPage.ToString();
+
+            TempFilePath = Path.Combine(Path.GetTempPath(), "FontExpressTempFontFiles");
         }
 
         private async void Main_Loaded(object sender, RoutedEventArgs e)
@@ -158,7 +161,7 @@ namespace Font_Express
                 FilterSelector.Margin = new Thickness(FavouritesBtn.TranslatePoint(new Point(0, 0), FilterMenuPnl).X, 0, 0, -3);
                 FilterSelector.Width = FavouritesBtn.ActualWidth;
             }
-                
+            
             if (Settings.Default.CheckNotifications)
                 await GetNotifications();
         }
@@ -243,7 +246,7 @@ namespace Font_Express
 
         private void GetFonts(FontFilter filter, string parameter = "", bool noscroll = false)
         {
-            IEnumerable<string> fonts = Array.Empty<string>();
+            IEnumerable<string> fonts = [];
             NoFontsLbl.Visibility = Visibility.Collapsed;
             HeaderLbl.Inlines.Clear();
 
@@ -268,7 +271,7 @@ namespace Font_Express
                     break;
 
                 case FontFilter.Suggested:
-                    fonts = Funcs.SuggestedFonts.Where(f => FontCollection.Contains(f));
+                    fonts = Funcs.SuggestedFonts.Where(FontCollection.Contains);
                     HeaderIcon.SetResourceReference(ContentProperty, "StylesIcon");
                     HeaderLbl.Inlines.AddRange(new Inline[]
                     {
@@ -318,8 +321,8 @@ namespace Font_Express
                     break;
 
                 case FontFilter.Alpha:
-                    string[] alphabet = new string[] {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-                                                      "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
+                    string[] alphabet = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
+                                                      "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
 
                     fonts = FontCollection.Where(f => parameter == "123&" ? !alphabet.Contains(f.ToUpper()[0].ToString()) : f.ToUpper()[0] == parameter[0]);
                     HeaderIcon.SetResourceReference(ContentProperty, "AlphabeticalIcon");
@@ -468,7 +471,7 @@ namespace Font_Express
 
         public static FontCategory[] GetSavedCategories(bool includeFav = true)
         {
-            List<FontCategory> categories = new();
+            List<FontCategory> categories = [];
 
             if (includeFav)
                 categories.Add(new FontCategory()
@@ -496,7 +499,7 @@ namespace Font_Express
                 }
             }
 
-            return categories.ToArray();
+            return [.. categories];
         }
 
         public static void SaveCategories(IEnumerable<FontCategory> categories)
@@ -533,26 +536,17 @@ namespace Font_Express
 
         public static string GetCategoryIcon(FontCategoryIcon icon)
         {
-            switch (icon)
+            return icon switch
             {
-                case FontCategoryIcon.A:
-                    return "FontIcon";
-                case FontCategoryIcon.B:
-                    return "BoldIcon";
-                case FontCategoryIcon.C:
-                    return "CorsivoIcon";
-                case FontCategoryIcon.F:
-                    return "StylesIcon";
-                case FontCategoryIcon.T:
-                    return "SerifIcon";
-                case FontCategoryIcon.M:
-                    return "MonoIcon";
-                case FontCategoryIcon.Star:
-                    return "StarIcon";
-                case FontCategoryIcon.None:
-                default:
-                    return "BulletsIcon";
-            }
+                FontCategoryIcon.A => "FontIcon",
+                FontCategoryIcon.B => "BoldIcon",
+                FontCategoryIcon.C => "CorsivoIcon",
+                FontCategoryIcon.F => "StylesIcon",
+                FontCategoryIcon.T => "SerifIcon",
+                FontCategoryIcon.M => "MonoIcon",
+                FontCategoryIcon.Star => "StarIcon",
+                _ => "BulletsIcon",
+            };
         }
 
         public static KeyValuePair<string, bool>[] GetCategoriesForFont(string font)
@@ -792,6 +786,18 @@ namespace Font_Express
         private void CompareBtn_Click(object sender, RoutedEventArgs e)
         {
             new CompareFonts(FontCollection).ShowDialog();
+        }
+
+        #endregion
+        #region Home > Download
+
+        private void DownloadFontsBtn_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                new DownloadFonts(TempFilePath).ShowDialog();
+            }
+            catch { }
         }
 
         #endregion
@@ -1070,7 +1076,7 @@ namespace Font_Express
 
                 IEnumerable<ReleaseItem> updates = resp.Where(x =>
                 {
-                    return new Version(x.Version) > (Assembly.GetCallingAssembly().GetName().Version ?? new Version(1, 0, 0));
+                    return new Version(x.Version) > (Assembly.GetExecutingAssembly().GetName().Version ?? new Version(1, 0, 0));
 
                 }).OrderByDescending(x => new Version(x.Version));
 

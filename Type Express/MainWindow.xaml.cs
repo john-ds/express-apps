@@ -50,8 +50,10 @@ namespace Type_Express
         private readonly DispatcherTimer TempLblTimer = new() { Interval = new TimeSpan(0, 0, 4) };
 
         private ColourScheme CurrentColourScheme = ColourScheme.Basic;
-        private bool SpellOverride = false;
         private LanguageChoiceMode PopupLanguageMode = LanguageChoiceMode.None;
+        private bool SpellOverride = false;
+        public bool HasChanges = false;
+        public MessageBoxResult? ClosingPromptResponse = null;
 
         private bool FormatPainterOn = false;
         private bool FormatPainterAlwaysOn = false;
@@ -93,7 +95,7 @@ namespace Type_Express
             SpellLang = Funcs.GetCurrentLangEnum();
 
             // Setup for scrollable ribbon menu
-            Funcs.Tabs = new string[] { "Menu", "Home", "Tools", "Design", "Review" };
+            Funcs.Tabs = ["Menu", "Home", "Tools", "Design", "Review"];
             Funcs.ScrollTimer.Tick += Funcs.ScrollTimer_Tick;
             DocTabs.SelectionChanged += Funcs.RibbonTabs_SelectionChanged;
             
@@ -117,7 +119,7 @@ namespace Type_Express
             HideSideBarBtn.Click += Funcs.HideSideBarBtn_Click;
 
             // Storyboard setup
-            string[] OverlayStoryboards = new string[] { "New", "Open", "Cloud", "Save", "Info" };
+            string[] OverlayStoryboards = ["New", "Open", "Cloud", "Save", "Info"];
 
             OverlayGrid.Visibility = Visibility.Collapsed;
             ((Storyboard)TryFindResource("OverlayOutStoryboard")).Completed += OverlayStoryboard_Completed;
@@ -235,13 +237,32 @@ namespace Type_Express
 
             Settings.Default.Save();
 
-            if (!IsDocTxtEmpty())
+            if ((ThisFile != "" && HasChanges) || (ThisFile == "" && !IsDocTxtEmpty()))
             {
                 MessageBoxResult SaveChoice = MessageBoxResult.No;
+                bool applySaveChoiceToAll;
 
-                if (Settings.Default.ShowClosingPrompt)
-                    SaveChoice = Funcs.ShowPromptRes("OnExitDescTStr", "OnExitStr", 
-                        MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation);
+                if (ClosingPromptResponse != null)
+                {
+                    SaveChoice = (MessageBoxResult)ClosingPromptResponse;
+                }
+                else if (Settings.Default.ShowClosingPrompt)
+                {
+                    if (Application.Current.Windows.OfType<MainWindow>().Count() > 1)
+                    {
+                        (SaveChoice, applySaveChoiceToAll) = Funcs.ShowPromptResWithCheckbox(
+                            "OnExitDescTStr", "OnExitStr", MessageBoxButton.YesNoCancel,
+                            MessageBoxImage.Exclamation);
+
+                        if (applySaveChoiceToAll)
+                            ClosingPromptResponse = SaveChoice;
+                    }
+                    else
+                    {
+                        SaveChoice = Funcs.ShowPromptRes("OnExitDescTStr", "OnExitStr",
+                            MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation);
+                    }
+                }
 
                 if (SaveChoice == MessageBoxResult.Yes)
                 {
@@ -260,6 +281,23 @@ namespace Type_Express
                 }
                 else if (SaveChoice != MessageBoxResult.No)
                     e.Cancel = true;
+
+                if (e.Cancel)
+                    ClosingPromptResponse = null;
+            }
+        }
+
+        private void Main_Closed(object sender, EventArgs e)
+        {
+            if (ClosingPromptResponse != null)
+            {
+                // get next window and close it
+                var next = Application.Current.Windows.OfType<MainWindow>().Where(w => !w.Equals(this)).FirstOrDefault();
+                if (next != null)
+                {
+                    next.ClosingPromptResponse = ClosingPromptResponse;
+                    next.Close();
+                }
             }
         }
 
@@ -368,8 +406,13 @@ namespace Type_Express
                         TextFocus();
                         break;
                     case "Save":
-                        DocTabs.SelectedIndex = 0;
-                        SavePopup.IsOpen = true;
+                        if (ThisFile == "")
+                        {
+                            DocTabs.SelectedIndex = 0;
+                            SavePopup.IsOpen = true;
+                        }
+                        else
+                            SaveFile(ThisFile);
                         break;
                     case "Strikethrough":
                         ToggleStrikethrough();
@@ -474,7 +517,7 @@ namespace Type_Express
 
                 TemplateLoadingGrid.Visibility = Visibility.Collapsed;
 
-                Random rnd = new Random();
+                Random rnd = new();
                 TemplateItems = new ObservableCollection<TemplateItem>(resp.OrderBy(x => rnd.Next()));
                 TemplateItemsView.Filter = new Predicate<object>(o =>
                 {
@@ -603,7 +646,7 @@ namespace Type_Express
                 string dataFormat = DataFormats.Rtf;
                 string ext = System.IO.Path.GetExtension(filename);
 
-                if (ext.ToLower() != ".rtf")
+                if (!ext.Equals(".rtf", StringComparison.CurrentCultureIgnoreCase))
                     dataFormat = DataFormats.Text;
 
                 using (FileStream stream = new(filename, FileMode.Open))
@@ -611,16 +654,11 @@ namespace Type_Express
 
                 SetRecentFile(filename);
 
-                if (NewWin == null)
-                {
-                    SetUpInfo();
-                    TextFocus(true);
-                }
-                else
-                {
-                    NewWin.SetUpInfo();
-                    NewWin.TextFocus(true);
-                }
+                (NewWin ?? this).HasChanges = false;
+                (NewWin ?? this).Title = System.IO.Path.GetFileName(filename) + " - Type Express";
+
+                (NewWin ?? this).SetUpInfo();
+                (NewWin ?? this).TextFocus(true);
 
                 Funcs.StartStoryboard(this, "OverlayOutStoryboard");
                 System.Windows.Shell.JumpList.AddToRecentCategory(filename);
@@ -710,7 +748,7 @@ namespace Type_Express
                 Settings.Default.Recents.RemoveAt(Settings.Default.Recents.Count - 1);
 
             Settings.Default.Save();
-            List<FileItem> fileItems = new();
+            List<FileItem> fileItems = [];
 
             foreach (string? item in Settings.Default.Recents)
             {
@@ -742,7 +780,7 @@ namespace Type_Express
 
         private void GetFavourites()
         {
-            List<FileItem> fileItems = new();
+            List<FileItem> fileItems = [];
 
             foreach (string? item in Settings.Default.Favourites)
             {
@@ -951,10 +989,7 @@ namespace Type_Express
             {
                 try
                 {
-                    var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Type_Express.auth-dropbox.secret");
-                    if (info == null)
-                        throw new NullReferenceException();
-
+                    var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Type_Express.auth-dropbox.secret") ?? throw new NullReferenceException();
                     using var sr = new StreamReader(info);
                     string creds = sr.ReadToEnd();
                     DropboxApiKey = creds.Split(":")[0];
@@ -976,7 +1011,7 @@ namespace Type_Express
             }
             else
             {
-                string[] scopeList = new string[] { "files.metadata.read", "files.content.read", "files.content.write", "account_info.read" };
+                string[] scopeList = ["files.metadata.read", "files.content.read", "files.content.write", "account_info.read"];
                 _ = await AcquireAccessToken(scopeList, IncludeGrantedScopes.None);
                 DropboxUsername = await Funcs.GetCurrentAccount(dpxClient ?? GetDropboxClient());
 
@@ -1116,10 +1151,7 @@ namespace Type_Express
                     Funcs.DropboxListener.Start();
                     Process.Start(new ProcessStartInfo(authorizeUri.ToString()) { UseShellExecute = true });
 
-                    var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Type_Express.dropbox-index.html");
-                    if (info == null)
-                        throw new NullReferenceException();
-
+                    var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Type_Express.dropbox-index.html") ?? throw new NullReferenceException();
                     string indexHtml;
                     using (var sr = new StreamReader(info))
                         indexHtml = sr.ReadToEnd().Replace("Please wait...", Funcs.ChooseLang("PleaseWaitStr"));
@@ -1168,7 +1200,7 @@ namespace Type_Express
                 DropboxClient dbx = dpxClient ?? GetDropboxClient();
                 ListFolderResult files = await dbx.Files.ListFolderAsync(folder, includeNonDownloadableFiles: false);
 
-                List<FileItem> res = new();
+                List<FileItem> res = [];
                 if (folder != "")
                 {
                     string parent;
@@ -1336,7 +1368,7 @@ namespace Type_Express
                 string dataFormat = DataFormats.Rtf;
                 string ext = System.IO.Path.GetExtension(filename);
 
-                if (ext.ToLower() != ".rtf")
+                if (!ext.Equals(".rtf", StringComparison.CurrentCultureIgnoreCase))
                     dataFormat = DataFormats.Text;
 
                 using (FileStream stream = File.OpenWrite(filename))
@@ -1346,14 +1378,15 @@ namespace Type_Express
                 {
                     SetRecentFile(filename);
                     ThisFile = filename;
-
-                    Title = System.IO.Path.GetFileName(filename) + " - Type Express";
                     SetUpInfo();
                 }
                 else
                 {
                     SetUpInfo(true);
                 }
+
+                Title = System.IO.Path.GetFileName(filename) + " - Type Express";
+                HasChanges = false;
 
                 Funcs.StartStoryboard(this, "OverlayOutStoryboard");
                 CreateTempLabel(Funcs.ChooseLang("SavingCompleteStr"));
@@ -1407,7 +1440,7 @@ namespace Type_Express
 
         private void GetPinned()
         {
-            List<FileItem> fileItems = new();
+            List<FileItem> fileItems = [];
 
             foreach (string? item in Settings.Default.Pinned)
             {
@@ -1568,7 +1601,7 @@ namespace Type_Express
                 catch (ApiException<GetMetadataError> ex)
                 {
                     if (!(ex.ErrorResponse.IsPath && ex.ErrorResponse.AsPath.Value.IsNotFound))
-                        throw ex;
+                        throw;
                 }
 
                 TextRange documentTextRange = new(DocTxt.Document.ContentStart, DocTxt.Document.ContentEnd);
@@ -1750,7 +1783,7 @@ namespace Type_Express
                 FilenameTxt.Text = System.IO.Path.GetFileName(ThisFile);
 
                 string[] paths = ThisFile.Split(@"\").Reverse().ToArray();
-                List<FileItem> files = new();
+                List<FileItem> files = [];
 
                 for (int i = 1; i < Math.Min(5, paths.Length); i++)
                 {
@@ -1842,7 +1875,7 @@ namespace Type_Express
             }
             catch
             {
-                files = Array.Empty<string>();
+                files = [];
             }
 
             if (files.Length > 0)
@@ -1897,6 +1930,7 @@ namespace Type_Express
             EditingTimer.Stop();
 
             ThisFile = "";
+            HasChanges = false;
             SetUpInfo();
             ClearDocTxt();
 
@@ -1957,6 +1991,12 @@ namespace Type_Express
 
             if (WordCountStatusBtn.Visibility == Visibility.Visible)
                 CheckWordStatus();
+
+            if (ThisFile != "" && !HasChanges)
+            {
+                Title = System.IO.Path.GetFileName(ThisFile) + "* - Type Express";
+                HasChanges = true;
+            }
         }
 
         private void DocTxt_MouseUp(object sender, MouseButtonEventArgs e)
@@ -2024,12 +2064,19 @@ namespace Type_Express
                 ResetSpellchecker();
         }
 
-        private Block? GetSelectedBlock()
+        private Block? GetSelectedBlock(bool force = false)
         {
             TextPointer curCaret = DocTxt.CaretPosition;
+            Block defaultBlock = new Paragraph(new Run(""));
+
+            if (DocTxt.Document.Blocks.Count != 0)
+                defaultBlock = DocTxt.Document.Blocks.LastBlock;
+            else
+                DocTxt.Document.Blocks.Add(defaultBlock);
+
             return DocTxt.Document.Blocks.Where(x => 
                 x.ContentStart.CompareTo(curCaret) == -1 && x.ContentEnd.CompareTo(curCaret) == 1
-            ).FirstOrDefault(DocTxt.Document.Blocks.LastBlock);
+            ).FirstOrDefault(force ? defaultBlock : null);
         }
 
         private void FindSelectedRangeOrWord(out TextPointer start, out TextPointer end)
@@ -2050,7 +2097,7 @@ namespace Type_Express
 
         private static List<TextRange> SplitToTextRanges(TextPointer start, TextPointer end)
         {
-            List<TextRange> textToChange = new();
+            List<TextRange> textToChange = [];
             var previousPointer = start;
             for (var pointer = start; pointer.CompareTo(end) <= 0; pointer = pointer.GetPositionAtOffset(1, LogicalDirection.Forward))
             {
@@ -2252,13 +2299,13 @@ namespace Type_Express
             {
                 PasteItems.ItemsSource = new IconButtonItem[]
                 {
-                    new IconButtonItem()
+                    new()
                     {
                         ID = (int)FileFormat.RichText,
                         Name = Funcs.ChooseLang("PasteRichTextStr"),
                         Icon = (Viewbox)TryFindResource("RtfIcon")
                     },
-                    new IconButtonItem()
+                    new()
                     {
                         ID = (int)FileFormat.PlainText,
                         Name = Funcs.ChooseLang("PastePlainTextStr"),
@@ -2270,7 +2317,7 @@ namespace Type_Express
             {
                 PasteItems.ItemsSource = new IconButtonItem[]
                 {
-                    new IconButtonItem()
+                    new()
                     {
                         ID = (int)FileFormat.PlainText,
                         Name = Funcs.ChooseLang("PastePlainTextStr"),
@@ -2282,7 +2329,7 @@ namespace Type_Express
             {
                 PasteItems.ItemsSource = new IconButtonItem[]
                 {
-                    new IconButtonItem()
+                    new()
                     {
                         ID = (int)FileFormat.Image,
                         Name = Funcs.ChooseLang("PasteImageStr"),
@@ -2294,13 +2341,13 @@ namespace Type_Express
             {
                 PasteItems.ItemsSource = new IconButtonItem[]
                 {
-                    new IconButtonItem()
+                    new()
                     {
                         ID = (int)FileFormat.File,
                         Name = Funcs.ChooseLang("PasteFilenameStr"),
                         Icon = (Viewbox)TryFindResource("BlankIcon")
                     },
-                    new IconButtonItem()
+                    new()
                     {
                         ID = (int)FileFormat.Link,
                         Name = Funcs.ChooseLang("PasteLinkStr"),
@@ -2387,22 +2434,7 @@ namespace Type_Express
 
         private void RefreshFavouriteFonts()
         {
-            IEnumerable<string> fonts = Settings.Default.FavouriteFonts.Cast<string>().Where((s) =>
-            {
-                try
-                {
-                    if (string.IsNullOrWhiteSpace(s))
-                        return false;
-
-                    var testfont = new WinDrawing.FontFamily(s);
-                    testfont.Dispose();
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
-            }).Distinct();
+            IEnumerable<string> fonts = Settings.Default.FavouriteFonts.Cast<string>().Where(Funcs.IsValidFont).Distinct();
 
             if (!fonts.Any())
             {
@@ -2474,7 +2506,7 @@ namespace Type_Express
 
             if (FontPopup.IsOpen)
             {
-                if (alphabet.Contains(e.Key.ToString().ToUpper()))
+                if (alphabet.Contains(e.Key.ToString(), StringComparison.CurrentCultureIgnoreCase))
                     FontScroll.ScrollToVerticalOffset(ReturnFontPos(e.Key.ToString().ToUpper()));
             }
         }
@@ -2506,14 +2538,11 @@ namespace Type_Express
 
         private void CheckFont()
         {
-            try
+            if (Funcs.IsValidFont(FontStyleTxt.Text))
             {
-                var testfont = new WinDrawing.FontFamily(FontStyleTxt.Text);
-                testfont.Dispose();
-
                 ChangeFont();
             }
-            catch
+            else
             {
                 try
                 {
@@ -2993,7 +3022,7 @@ namespace Type_Express
 
             t.RowGroups.Add(trg);
 
-            DocTxt.Document.Blocks.InsertAfter(GetSelectedBlock(), t);
+            DocTxt.Document.Blocks.InsertAfter(GetSelectedBlock(true), t);
             DocTxt.Document.Blocks.InsertAfter(t, new Paragraph(new Run("")));
             TextFocus();
         }
@@ -3010,10 +3039,7 @@ namespace Type_Express
         {
             try
             {
-                var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Type_Express.auth-icon.secret");
-                if (info == null)
-                    throw new NullReferenceException();
-
+                var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Type_Express.auth-icon.secret") ?? throw new NullReferenceException();
                 using var sr = new StreamReader(info);
                 IconSelector icn = new(sr.ReadToEnd());
 
@@ -3044,10 +3070,7 @@ namespace Type_Express
         {
             try
             {
-                var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Type_Express.auth-photo.secret");
-                if (info == null)
-                    throw new NullReferenceException();
-
+                var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Type_Express.auth-photo.secret") ?? throw new NullReferenceException();
                 using var sr = new StreamReader(info);
                 PictureSelector pct = new(sr.ReadToEnd(), ExpressApp.Type);
 
@@ -3179,7 +3202,7 @@ namespace Type_Express
 
         public static ShapeItem[] GetPrevAddedShapes()
         {
-            List<ShapeItem> shapes = new();
+            List<ShapeItem> shapes = [];
             foreach (string item in Settings.Default.SavedShapes.Cast<string>())
             {
                 try
@@ -3195,7 +3218,7 @@ namespace Type_Express
                 catch { }
             }
 
-            return shapes.ToArray();
+            return [.. shapes];
         }
 
         private static void SetPrevAddedShape(Shape shape)
@@ -3350,7 +3373,7 @@ namespace Type_Express
 
         public static ChartItem[] GetPrevAddedCharts()
         {
-            List<ChartItem> charts = new();
+            List<ChartItem> charts = [];
             foreach (string item in Settings.Default.SavedCharts.Cast<string>())
             {
                 try
@@ -3366,7 +3389,7 @@ namespace Type_Express
                 catch { }
             }
 
-            return charts.ToArray();
+            return [.. charts];
         }
 
         private static void SetPrevAddedChart(ChartItem item)
@@ -3423,11 +3446,11 @@ namespace Type_Express
         #region Insert > Text Blocks > Date & Time
 
         private CultureInfo ChosenDateTimeCulture = new("en-GB");
-        private readonly string[] DateTimeFormats = new string[]
-        {
+        private readonly string[] DateTimeFormats =
+        [
             "dd/MM/yyyy", "dddd dd MMMM yyyy", "dd MMMM yyyy", "dd/MM/yy", "yyyy-MM-dd", "dd-MMM-yy", "dd.MM.yyyy",
             "MMMM yyyy", "MMM-yy", "dd/MM/yyyy HH:mm", "dd/MM/yyyy HH:mm:ss", "h:mm tt", "h:mm:ss tt", "HH:mm", "HH:mm:ss"
-        };
+        ];
 
         private void DateTimeBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -3616,9 +3639,9 @@ namespace Type_Express
         private Dictionary<string, string> GetAllSymbols()
         {
             if (AvailableSymbols == null)
-                return new();
+                return [];
 
-            Dictionary<string, string> result = new();
+            Dictionary<string, string> result = [];
             var all = new Dictionary<string, Dictionary<string, string>>[]
             {
                 AvailableSymbols.Lettering, AvailableSymbols.Arrows, AvailableSymbols.Standard, AvailableSymbols.Greek,
@@ -3662,7 +3685,7 @@ namespace Type_Express
                 SymbolCategory.Punctuation => AvailableSymbols.Punctuation,
                 SymbolCategory.Maths => AvailableSymbols.Maths,
                 SymbolCategory.Emoji => AvailableSymbols.Emoji,
-                _ => new()
+                _ => []
             };
 
             SymbolList.ItemsSource = symbols[Funcs.GetCurrentLang(true)];
@@ -3817,12 +3840,12 @@ namespace Type_Express
         {
             return new FontStyleItem[]
             {
-                new FontStyleItem { FontName = "Calibri", FontSize = 20, IsBold = true },
-                new FontStyleItem { FontName = "Calibri", FontSize = 18 },
-                new FontStyleItem { FontName = "Calibri", FontSize = 16, IsBold = true, FontColourString = "#FF00007C" },
-                new FontStyleItem { FontName = "Calibri", FontSize = 14 },
-                new FontStyleItem { FontName = "Calibri", FontSize = 12 },
-                new FontStyleItem { FontName = "Calibri", FontSize = 14, IsItalic = true, FontColourString = "#FF00007C" }
+                new() { FontName = "Calibri", FontSize = 20, IsBold = true },
+                new() { FontName = "Calibri", FontSize = 18 },
+                new() { FontName = "Calibri", FontSize = 16, IsBold = true, FontColourString = "#FF00007C" },
+                new() { FontName = "Calibri", FontSize = 14 },
+                new() { FontName = "Calibri", FontSize = 12 },
+                new() { FontName = "Calibri", FontSize = 14, IsItalic = true, FontColourString = "#FF00007C" }
 
             }.Select(x => JsonConvert.SerializeObject(x, Formatting.None)).ToArray();
         }
@@ -4014,11 +4037,7 @@ namespace Type_Express
 
             try
             {
-                return Settings.Default.CustomColourScheme.Cast<string>().Select(x =>
-                {
-                    return Funcs.HexColor(x);
-
-                }).ToArray();
+                return Settings.Default.CustomColourScheme.Cast<string>().Select(Funcs.HexColor).ToArray();
             }
             catch
             {
@@ -4037,8 +4056,8 @@ namespace Type_Express
 
             CurrentColourScheme = scheme;
 
-            Color[] basic = new Color[2] { Colors.Black, Colors.White };
-            Color[] clrs = basic.Concat(GetSchemeColours(scheme) ?? Funcs.ColourSchemes[0]).ToArray();
+            Color[] basic = [Colors.Black, Colors.White];
+            Color[] clrs = [.. basic, .. GetSchemeColours(scheme) ?? Funcs.ColourSchemes[0]];
             TextColourItems.ItemsSource = clrs.Select(c => new ColourItem()
             {
                 Name = c.ToString(),
@@ -4054,16 +4073,12 @@ namespace Type_Express
             return Funcs.ColourSchemes[(int)scheme];
         }
 
-        private void SaveCustomColourScheme(Color[] colours)
+        private static void SaveCustomColourScheme(Color[] colours)
         {
             if (colours.Length == 8)
             {
                 Settings.Default.CustomColourScheme.Clear();
-                Settings.Default.CustomColourScheme.AddRange(colours.Select(x =>
-                {
-                    return Funcs.ColorHex(x);
-
-                }).ToArray());
+                Settings.Default.CustomColourScheme.AddRange(colours.Select(Funcs.ColorHex).ToArray());
 
                 Settings.Default.Save();
             }
@@ -4102,21 +4117,21 @@ namespace Type_Express
         {
             CasePopup.IsOpen = false;
             var textInfo = CultureInfo.CurrentUICulture.TextInfo;
-            ChangeCase((text) => textInfo.ToLower(text));
+            ChangeCase(textInfo.ToLower);
         }
 
         private void UppercaseBtn_Click(object sender, RoutedEventArgs e)
         {
             CasePopup.IsOpen = false;
             var textInfo = CultureInfo.CurrentUICulture.TextInfo;
-            ChangeCase((text) => textInfo.ToUpper(text));
+            ChangeCase(textInfo.ToUpper);
         }
 
         private void TitleCaseBtn_Click(object sender, RoutedEventArgs e)
         {
             CasePopup.IsOpen = false;
             var textInfo = CultureInfo.CurrentUICulture.TextInfo;
-            ChangeCase((text) => textInfo.ToTitleCase(text));
+            ChangeCase(textInfo.ToTitleCase);
         }
 
         private void ChangeCase(Func<string, string> caseFunc)
@@ -4195,12 +4210,9 @@ namespace Type_Express
             ClearPopup.IsOpen = false;
             TextRange tr = new(DocTxt.Document.ContentStart, DocTxt.Document.ContentEnd);
 
-            try
-            {
-                var testfont = new WinDrawing.FontFamily(Settings.Default.DefaultFont.Name);
+
+            if (Funcs.IsValidFont(Settings.Default.DefaultFont.Name))
                 tr.ApplyPropertyValue(TextElement.FontFamilyProperty, Settings.Default.DefaultFont.Name);
-            }
-            catch { }
 
             try
             {
@@ -4215,7 +4227,7 @@ namespace Type_Express
                 tr.ApplyPropertyValue(TextElement.FontStyleProperty, 
                     Settings.Default.DefaultFont.Italic ? FontStyles.Italic : FontStyles.Normal);
                 tr.ApplyPropertyValue(Inline.TextDecorationsProperty, 
-                    Settings.Default.DefaultFont.Underline ? TextDecorations.Underline : new TextDecorationCollection());
+                    Settings.Default.DefaultFont.Underline ? TextDecorations.Underline : []);
             }
             catch { }
 
@@ -4570,10 +4582,7 @@ namespace Type_Express
             {
                 try
                 {
-                    var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Type_Express.auth-merriam.secret");
-                    if (info == null)
-                        throw new NullReferenceException();
-
+                    var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Type_Express.auth-merriam.secret") ?? throw new NullReferenceException();
                     using var sr = new StreamReader(info);
                     MerriamWebsterKey = sr.ReadToEnd();
                 }
@@ -4587,7 +4596,7 @@ namespace Type_Express
 
             try
             {
-                List<WordItem> wordItems = new();
+                List<WordItem> wordItems = [];
                 string query = Uri.EscapeDataString(DefineSearchTxt.Text.Replace(" ", "_"));
                 JArray obj = await Funcs.GetJsonAsync<JArray>("https://dictionaryapi.com/api/v3/references/thesaurus/json/" + query + "?key=" + MerriamWebsterKey);
 
@@ -4633,10 +4642,7 @@ namespace Type_Express
             {
                 try
                 {
-                    var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Type_Express.auth-lexicala.secret");
-                    if (info == null)
-                        throw new NullReferenceException();
-
+                    var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Type_Express.auth-lexicala.secret") ?? throw new NullReferenceException();
                     using var sr = new StreamReader(info);
                     LexicalaKey = sr.ReadToEnd();
                 }
@@ -4650,7 +4656,7 @@ namespace Type_Express
 
             try
             {
-                List<WordItem> wordItems = new();
+                List<WordItem> wordItems = [];
                 UriBuilder ub = new("https://lexicala1.p.rapidapi.com/search-entries") { Port = -1 };
 
                 var queryString = HttpUtility.ParseQueryString(ub.Query);
@@ -4721,7 +4727,7 @@ namespace Type_Express
         {
             try
             {
-                List<WordItem> wordItems = new();
+                List<WordItem> wordItems = [];
                 string query = Uri.EscapeDataString(DefineSearchTxt.Text.Replace(" ", "_"));
                 JObject obj = await Funcs.GetJsonAsync<JObject>("https://synonymes-api.vercel.app/" + query);
 
@@ -4749,12 +4755,12 @@ namespace Type_Express
             if (items != null)
             {
                 foreach (WordItem i in items)
-                    i.Types.RemoveAll(x => !x.Definitions.Any());
+                    i.Types.RemoveAll(x => x.Definitions.Count == 0);
 
-                items.RemoveAll(x => !x.Types.Any());
+                items.RemoveAll(x => x.Types.Count == 0);
             }
 
-            if (items == null || !items.Any())
+            if (items == null || items.Count == 0)
                 Funcs.ShowMessage(string.Format(Funcs.ChooseLang("DictErrorDescStr"),
                     DefinitionsBtn.IsChecked == true ? Funcs.ChooseLang("NoDefinitionsStr") : Funcs.ChooseLang("NoSynonymsStr")),
                     Funcs.ChooseLang("DictErrorStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation,
@@ -4826,7 +4832,7 @@ namespace Type_Express
 
                 foreach (Languages lang in Enum.GetValues<Languages>())
                 {
-                    List<string> entries = new() { GetLEXHeader(lang) };
+                    List<string> entries = [GetLEXHeader(lang)];
                     string filename = "dict-en.lex";
                     switch (lang)
                     {
@@ -5013,8 +5019,8 @@ namespace Type_Express
 
         private bool CheckForSpeechVoices(bool all = false)
         {
-            bool voices = all ? SpeechTTS.GetInstalledVoices().Any() :
-                SpeechTTS.GetInstalledVoices(new CultureInfo(Funcs.GetCurrentLangEnum(SpellLang))).Any();
+            bool voices = all ? SpeechTTS.GetInstalledVoices().Count != 0 :
+                SpeechTTS.GetInstalledVoices(new CultureInfo(Funcs.GetCurrentLangEnum(SpellLang))).Count != 0;
 
             if (!voices)
             {
@@ -5063,28 +5069,28 @@ namespace Type_Express
 
         private void LoadTranslationLanguages()
         {
-            string[] supportedLanguages = new string[]
-            {
+            string[] supportedLanguages =
+            [
                 LanguageCode.English, LanguageCode.EnglishBritish, LanguageCode.EnglishAmerican, LanguageCode.Chinese, 
                 LanguageCode.Danish, LanguageCode.Dutch, LanguageCode.Finnish, LanguageCode.French, LanguageCode.German, 
                 LanguageCode.Greek, LanguageCode.Italian, LanguageCode.Japanese, LanguageCode.Korean, LanguageCode.Norwegian, 
                 LanguageCode.Polish, LanguageCode.Portuguese, LanguageCode.PortugueseEuropean, LanguageCode.PortugueseBrazilian, 
                 LanguageCode.Spanish, LanguageCode.Swedish, LanguageCode.Turkish, LanguageCode.Ukrainian
-            };
+            ];
 
             SourceLangCombo.ItemsSource = new AppDropdownItem[]
             {
-                new AppDropdownItem()
+                new()
                 {
                     Content = Funcs.ChooseLang("DetectLanguageStr"),
                     Tag = null
                 }
             }.Concat(supportedLanguages.Where(x =>
             {
-                string[] notIncluded = new string[]
-                {
+                string[] notIncluded =
+                [
                     LanguageCode.EnglishBritish, LanguageCode.EnglishAmerican, LanguageCode.PortugueseEuropean, LanguageCode.PortugueseBrazilian
-                };
+                ];
                 return !notIncluded.Contains(x);
 
             }).Select(x =>
@@ -5120,7 +5126,7 @@ namespace Type_Express
             SourceLangCombo.SelectedIndex = SourceLangCombo.ItemsSource.Cast<AppDropdownItem>().ToList().FindIndex(x =>
             {
                 string target = (string)((AppDropdownItem)TargetLangCombo.SelectedItem).Tag;
-                return (string)x.Tag == target.Substring(0, 2);
+                return (string)x.Tag == target[..2];
             });
 
             if (buffer.Tag != null)
@@ -5152,10 +5158,7 @@ namespace Type_Express
                 {
                     try
                     {
-                        var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Type_Express.auth-deepl.secret");
-                        if (info == null)
-                            throw new NullReferenceException();
-
+                        var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Type_Express.auth-deepl.secret") ?? throw new NullReferenceException();
                         using var sr = new StreamReader(info);
                         DeepLKey = sr.ReadToEnd();
                     }
@@ -5247,17 +5250,18 @@ namespace Type_Express
             TextRange tr = range ?? new TextRange(DocTxt.Document.ContentStart, DocTxt.Document.ContentEnd);
             string wordstr = (tr.Text + " ").Replace("\r", " ").Replace("\n", " ").Replace("/", " ");
 
-            List<string> wordlist = wordstr.Split(" ").ToList();
-            wordlist.RemoveAll(str => string.IsNullOrWhiteSpace(str));
+            List<string> wordlist = [.. wordstr.Split(" ")];
+            wordlist.RemoveAll(string.IsNullOrWhiteSpace);
 
             return wordlist;
         }
 
         private List<string> GetLines(TextRange? range = null)
         {
+            string[] separator = ["\r\n", "\r", "\n"];
             TextRange tr = range ?? new TextRange(DocTxt.Document.ContentStart, DocTxt.Document.ContentEnd);
-            string[] splittedLines = tr.Text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
-            List<string> ls = splittedLines.ToList();
+            string[] splittedLines = tr.Text.Split(separator, StringSplitOptions.None);
+            List<string> ls = [.. splittedLines];
 
             if (ls.Count > 1)
                 ls.RemoveAt(ls.Count - 1);
@@ -5294,7 +5298,7 @@ namespace Type_Express
 
                 IEnumerable<ReleaseItem> updates = resp.Where(x =>
                 {
-                    return new Version(x.Version) > (Assembly.GetCallingAssembly().GetName().Version ?? new Version(1, 0, 0));
+                    return new Version(x.Version) > (Assembly.GetExecutingAssembly().GetName().Version ?? new Version(1, 0, 0));
 
                 }).OrderByDescending(x => new Version(x.Version));
 
@@ -5537,7 +5541,7 @@ namespace Type_Express
 
         public object[] ConvertBack(object value, Type[] targetType, object parameter, CultureInfo culture)
         {
-            return new object[] {};
+            return [];
         }
     }
 

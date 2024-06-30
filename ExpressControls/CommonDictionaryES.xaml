@@ -1712,7 +1712,7 @@ Si el problema persiste, haz clic en "Informar".</System:String>
     <System:String x:Key="TransitionBottomStr">Desde abajo</System:String>
     <System:String x:Key="TransitionsUpdatedStr">Transiciones actualizadas para todas las diapositivas</System:String>
     <System:String x:Key="SearchHelpFiltersCategoriesStr">filtr categor organiz favorit preferid</System:String>
-    <System:String x:Key="SearchHelpComparingFontsStr">compar par fuente tipo</System:String>
+    <System:String x:Key="SearchHelpComparingFontsStr">compar par fuente tipo descarg google</System:String>
     <System:String x:Key="SearchHelpOptionsFStr">empez comenz import export opción ajuste categor organiz fuente tipo favorit preferid general idioma sonid oscur obscur aparienci aparici</System:String>
     <System:String x:Key="SearchHelpAnalysingStorageStr">carpeta archiv analiz almacenamien porcentaje</System:String>
     <System:String x:Key="SearchHelpViewTabStr">carpeta archiv orden filtr</System:String>
@@ -1749,7 +1749,7 @@ Si el problema persiste, haz clic en "Informar".</System:String>
     <System:String x:Key="GnDisplayModeStr">Modo de visualización por defecto</System:String>
     <System:String x:Key="HelpBrowsingFontsStr">Búsqueda de fuentes</System:String>
     <System:String x:Key="HelpFiltersCategoriesStr">Filtros y categorías</System:String>
-    <System:String x:Key="HelpComparingFontsStr">Comparación de fuentes</System:String>
+    <System:String x:Key="HelpComparingFontsStr">Descarga y comparación de fuentes</System:String>
     <System:String x:Key="HelpOptionsFStr">Ajustes y personalización</System:String>
     <System:String x:Key="SearchHelpBrowsingFontsStr">empez fuente tipo examin negr itálic cursiv tamaño cuadríc vista lista</System:String>
     <System:String x:Key="AboutQuotaStr">Acerca de Quota Express</System:String>
@@ -1773,5 +1773,33 @@ Si el problema persiste, haz clic en "Informar".</System:String>
     <System:String x:Key="HelpViewTabStr">La pestaña Vista</System:String>
     <System:String x:Key="HelpExportingDataStr">Exportación de datos</System:String>
     <System:String x:Key="HelpOptionsQStr">Ajustes y personalización</System:String>
+    <System:String x:Key="PageSimpleStr">Página {0}</System:String>
+    <System:String x:Key="DownloadFontsStr">Descargar fuentes</System:String>
+    <System:String x:Key="DownloadFontsToolStr">Descarga e instala fuentes de Google Fonts sin salir de la aplicación</System:String>
+    <System:String x:Key="DownloadFontsTitleStr">Descargar Fuentes - Font Express</System:String>
+    <System:String x:Key="NoNewFontsFoundStr">No hemos encontrado ninguna fuente nueva. Por favor, inténtalo con otra búsqueda.</System:String>
+    <System:String x:Key="LoadingFontsStr">Cargando fuentes...</System:String>
+    <System:String x:Key="SearchNewFontsStr">Buscar nuevas fuentes</System:String>
+    <System:String x:Key="InstallStr">Instalar</System:String>
+    <System:String x:Key="DownloadFontErrorDescStr" xml:space="preserve">Se ha producido un error al cargar las fuentes. Comprueba tu conexión a Internet.
+
+Si este problema persiste, es posible que estemos experimentando dificultades. Inténtalo de nuevo más tarde y comprueba si hay actualizaciones de la aplicación.</System:String>
+    <System:String x:Key="DownloadFontErrorStr">Error al cargar la fuente</System:String>
+    <System:String x:Key="InstalledStr">Instalada</System:String>
+    <System:String x:Key="InstallFontErrorDescStr">No hemos podido descargar o instalar esta fuente. Si el problema persiste, haz clic en el botón "Informar" para notificárnoslo.</System:String>
+    <System:String x:Key="InstallFontErrorStr">Error al instalar la fuente</System:String>
+    <System:String x:Key="FnStyleStr">Estilo de fuente:</System:String>
+    <System:String x:Key="FnStyleSansStr">Sans serif</System:String>
+    <System:String x:Key="FnStyleSerifStr">Serif</System:String>
+    <System:String x:Key="FnStyleMonoStr">Ancho fijo</System:String>
+    <System:String x:Key="FnStyleHandStr">Manuscrito</System:String>
+    <System:String x:Key="FnStyleDisplayStr">Visualización</System:String>
+    <System:String x:Key="ApplyAllWindowsStr">Aplicar a todas las ventanas abiertas</System:String>
+    <System:String x:Key="QuickTipStr">Consejo rápido</System:String>
+    <System:String x:Key="InsightLargeFolderStr">Tu carpeta "{0}" es bastante grande ({1}). Considera eliminar todos los archivos que no necesites.</System:String>
+    <System:String x:Key="InsightLargeFileStr">Tu archivo "{0}" es bastante grande ({1}). Considera reducir su tamaño para ahorrar espacio.</System:String>
+    <System:String x:Key="InsightManyFilesStr">Tienes {0} archivos en esta carpeta. Considera dividirlos en subcarpetas.</System:String>
+    <System:String x:Key="InsightDiffTypesStr">Hay muchos tipos diferentes de archivos en esta carpeta. Considera dividirlos en subcarpetas.</System:String>
+    <System:String x:Key="InsightFileModifiedStr">{0} archivos en esta carpeta no han sido modificados en más de 2 años. Considera eliminarlos si ya no son necesarios.</System:String>
     
 </ResourceDictionary>

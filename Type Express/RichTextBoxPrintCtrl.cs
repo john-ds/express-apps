@@ -61,7 +61,9 @@ namespace Type_Express
             rectPage.Left = (int)(e.PageBounds.Left * anInch);
             rectPage.Right = (int)(e.PageBounds.Right * anInch);
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
             IntPtr hdc = e.Graphics.GetHdc();
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
             FORMATRANGE fmtRange;
             fmtRange.chrg.cpMax = charTo;				//Indicate character from to character to 
@@ -71,18 +73,14 @@ namespace Type_Express
             fmtRange.rc = rectToPrint;             //Indicate the area on page to print
             fmtRange.rcPage = rectPage;            //Indicate size of page
 
-            IntPtr res = IntPtr.Zero;
-
-            IntPtr wparam = IntPtr.Zero;
-            wparam = new IntPtr(1);
+            nint wparam = new(1);
 
             //Get the pointer to the FORMATRANGE structure in memory
-            IntPtr lparam = IntPtr.Zero;
-            lparam = Marshal.AllocCoTaskMem(Marshal.SizeOf(fmtRange));
+            nint lparam = Marshal.AllocCoTaskMem(Marshal.SizeOf(fmtRange));
             Marshal.StructureToPtr(fmtRange, lparam, false);
 
             //Send the rendered data for printing 
-            res = SendMessage(Handle, EM_FORMATRANGE, wparam, lparam);
+            nint res = SendMessage(Handle, EM_FORMATRANGE, wparam, lparam);
 
             //Free the block of memory allocated
             Marshal.FreeCoTaskMem(lparam);

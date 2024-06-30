@@ -8,7 +8,7 @@
         xmlns:controls="clr-namespace:System.Windows.Controls;assembly=DotNetProjects.Input.Toolkit"
         xmlns:controls1="clr-namespace:WpfToolkit.Controls;assembly=VirtualizingWrapPanel"
         x:Name="Main" mc:Ignorable="d" x:Class="Type_Express.MainWindow"
-        Title="{DynamicResource TitleStr}" Loaded="Main_Loaded" Closing="Main_Closing" Height="680" Width="1180" MinWidth="600" d:FontFamily="Inter" MinHeight="415" Style="{DynamicResource ChromeWindowStyle}">
+        Title="{DynamicResource TitleStr}" Loaded="Main_Loaded" Closing="Main_Closing" Closed="Main_Closed" Height="680" Width="1180" MinWidth="600" d:FontFamily="Inter" MinHeight="415" Style="{DynamicResource ChromeWindowStyle}">
     <Window.Resources>
         <xctk:SolidColorBrushToColorConverter x:Key="SolidColorBrushToColorConverter"/>
         <local:FileButtonWidthConverter x:Key="FileButtonWidthConverter"/>

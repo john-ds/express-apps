@@ -79,9 +79,6 @@ namespace ExpressControls
             }
         }
 
-        public static void IsUpFacingMenuPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            bool b = Convert.ToBoolean(e.NewValue);
-        }
+        public static void IsUpFacingMenuPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {}
     }
 }

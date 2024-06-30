@@ -102,8 +102,13 @@ namespace Present_Express
             if (UnderlineSelector.Visibility == Visibility.Visible)
                 style |= WinDrawing.FontStyle.Underline;
 
+
+            string fontname = FontStyleTxt.Text;
+            if (!Funcs.IsValidFont(fontname))
+                fontname = "Calibri";
+
             ImgEdit.Source = Funcs.ResizeImage(Funcs.GenerateTextBmp(SlideTxt.Text,
-                new WinDrawing.Font(new WinDrawing.FontFamily(FontStyleTxt.Text), (float)FontSizeSlider.Value, style),
+                new WinDrawing.Font(new WinDrawing.FontFamily(fontname), (float)FontSizeSlider.Value, style),
                 TextColourPicker.SelectedColor ?? Colors.Black, IsWidescreen ? 2560 : 1920), 580, 430);
         }
 
@@ -134,15 +139,12 @@ namespace Present_Express
 
         private void SetFont()
         {
-            try
+            if (Funcs.IsValidFont(FontStyleTxt.Text))
             {
-                var testfont = new WinDrawing.FontFamily(FontStyleTxt.Text);
-                testfont.Dispose();
-
                 ChosenSlide.FontName = FontStyleTxt.Text;
                 UpdateImage();
             }
-            catch
+            else
             {
                 Funcs.ShowMessageRes("InvalidFontDescStr", "InvalidFontStr",
                         MessageBoxButton.OK, MessageBoxImage.Error);

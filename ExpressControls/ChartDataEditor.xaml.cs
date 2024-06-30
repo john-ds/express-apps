@@ -24,8 +24,8 @@ namespace ExpressControls
     public partial class ChartDataEditor : Window
     {
         public readonly ChartType CurrentChartType;
-        public List<string> CurrentLabels { get; set; } = new();
-        public List<SeriesItem> CurrentSeries { get; set; } = new();
+        public List<string> CurrentLabels { get; set; } = [];
+        public List<SeriesItem> CurrentSeries { get; set; } = [];
 
         private readonly int MaxRows = 25;
         private readonly int MaxSeries = 5;
@@ -72,7 +72,7 @@ namespace ExpressControls
 
             DataLabelsCombo.ItemsSource = new AppDropdownItem[]
             {
-                new AppDropdownItem() { Content = Funcs.ChooseLang("LegendHiddenStr") }
+                new() { Content = Funcs.ChooseLang("LegendHiddenStr") }
 
             }.Concat(Enum.GetValues<DataLabelsPosition>().Where(x =>
             {
@@ -516,8 +516,8 @@ namespace ExpressControls
                 {
                     try
                     {
-                        List<string> labels = new();
-                        List<SeriesItem> series = new();
+                        List<string> labels = [];
+                        List<SeriesItem> series = [];
                         CsvConfiguration config = new(CultureInfo.InvariantCulture) { HasHeaderRecord = false };
 
                         using System.IO.StreamReader reader = new(Funcs.CSVOpenDialog.FileName);
@@ -544,7 +544,7 @@ namespace ExpressControls
                                         series.Add(new SeriesItem()
                                         {
                                             Type = CurrentChartType == ChartType.Cartesian ? SeriesType.Column : SeriesType.Default,
-                                            Values = new List<double>() { Funcs.ConvertDouble(string.IsNullOrWhiteSpace(value) ? "0" : value) }
+                                            Values = [Funcs.ConvertDouble(string.IsNullOrWhiteSpace(value) ? "0" : value)]
                                         });
                                     }
                                 }

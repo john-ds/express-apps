@@ -35,50 +35,43 @@ namespace ExpressControls
 {
     public class Funcs
     {
-        public static Color[][] ColourSchemes { get; } = new Color[][]
-        {
-            new Color[8]  // Basic
-            {
+        public static Color[][] ColourSchemes { get; } =
+        [
+            [   // Basic
                 Colors.DeepSkyBlue, Colors.Navy, Colors.Gold, Colors.OrangeRed, Colors.MediumSeaGreen,
                 Colors.Teal, Colors.Gray, Colors.Purple
-            },
-            new Color[8]  // Blue
-            {
+            ],
+            [   // Blue
                 HexColor("#FF59E5FB"), HexColor("#FF55A8CF"), HexColor("#FF0AD3B7"),
                 HexColor("#FF5985FB"), HexColor("#FF7659FB"), HexColor("#FF59FBD6"),
                 HexColor("#FF5A6A97"), HexColor("#FF3838FF")
-            },
-            new Color[8]  // Green
-            {
+            ],
+            [   // Green
                 HexColor("#FF59FBDE"), HexColor("#FF6FFB59"), HexColor("#FFA3FB59"),
                 HexColor("#FF64B025"), HexColor("#FF268D63"), HexColor("#FF266A16"),
                 HexColor("#FF9EE050"), HexColor("#FFD4FF8A")
-            },
-            new Color[8]  // RedOrange
-            {
+            ],
+            [   // RedOrange
                 HexColor("#FFFB5959"), HexColor("#FFE48D7F"), HexColor("#FFFBC059"),
                 HexColor("#FFE0C61F"), HexColor("#FFDC742C"), HexColor("#FF974331"),
                 HexColor("#FFC5883E"), HexColor("#FFEA9191")
-            },
-            new Color[8]  // Violet
-            {
+            ],
+            [   // Violet
                 HexColor("#FFC759FB"), HexColor("#FF9624F5"), HexColor("#FFE559FB"),
                 HexColor("#FF6E305A"), HexColor("#FFC18CEE"), HexColor("#FFC895CB"),
                 HexColor("#FF741FC9"), HexColor("#FFC937A1")
-            },
-            new Color[8]  // Office
-            {
+            ],
+            [   // Office
                 HexColor("#FF4472C4"), HexColor("#FF5B9BD5"), HexColor("#FFED7D31"),
                 HexColor("#FFFFC000"), HexColor("#FF70AD47"), HexColor("#FF7030A0"),
                 HexColor("#FFE7E6E6"), HexColor("#FF44546A")
-            },
-            new Color[8]  // Grayscale
-            {
+            ],
+            [   // Grayscale
                 HexColor("#FFF1F1F1"), Colors.Gainsboro, HexColor("#FFAEAEAE"),
                 HexColor("#FF8D8D8D"), HexColor("#FF787878"), HexColor("#FF5D5B5B"),
                 HexColor("#FF3D3D3E"), HexColor("#FF232323")
-            }
-        };
+            ]
+        ];
 
         public static Dictionary<string, Color> Highlighters { get; } = new()
         {
@@ -106,27 +99,30 @@ namespace ExpressControls
             { "GreenStr", HexColor("#7FD883") }
         };
 
-        public static readonly string[] DarkModeFrom = new string[] 
-        {
+        public static readonly string[] DarkModeFrom =
+        [
             "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00"
-        };
+        ];
 
-        public static readonly string[] DarkModeTo = new string[] 
-        {
+        public static readonly string[] DarkModeTo =
+        [
             "4:00", "4:30", "5:00", "5:30", "6:00", "6:30", "7:00", "7:30", "8:00", "8:30", "9:00", "9:30", "10:00"
-        };
+        ];
 
-        public static readonly string[] SuggestedFonts = new string[]
-        {
+        public static readonly string[] SuggestedFonts =
+        [
             "Inter", "Roboto", "Open Sans", "Montserrat", "Lato", "Raleway", "Ubuntu", "Merriweather", "Lora", "Source Sans Pro", 
             "Source Serif Pro", "Cabin", "Georgia", "Franklin Gothic", "Gotham", "Baskerville", "Proxima Nova", "Calibri", 
             "Calibri Light", "Bahnschrift", "Cambria", "Corbel", "Trebuchet MS", "Verdana", "Tahoma", "Candara", "Arial"
-        };
+        ];
 
         public static readonly DispatcherTimer AppThemeTimer = new() { Interval = new TimeSpan(0, 1, 0) };
+
+#pragma warning disable CA2211 // Non-constant fields should not be visible
         public static ThemeOptions AppTheme = ThemeOptions.LightMode;
         public static string AutoDarkModeOn = "18:00";
         public static string AutoDarkModeOff = "6:00";
+#pragma warning restore CA2211 // Non-constant fields should not be visible
         
         #region Localisation
 
@@ -359,7 +355,9 @@ namespace ExpressControls
                 GetControl(sender, "TitleBtn").Opacity = 0.6;
         }
 
+#pragma warning disable CA2211 // Non-constant fields should not be visible
         public static bool EnableInfoBoxAudio = true;
+#pragma warning restore CA2211 // Non-constant fields should not be visible
 
         /// <summary>
         ///     Shows a messagebox to the user and awaits a response.
@@ -514,11 +512,64 @@ namespace ExpressControls
                 return null;
         }
 
+        /// <summary>
+        ///     Shows a messagebox to the user with the Apply All checkbox and awaits a response.
+        /// </summary>
+        /// <param name="text">
+        ///     The formatted text to display in the messagebox.
+        /// </param>
+        /// <param name="caption">
+        ///     The text to display in the title bar of the messagebox.
+        /// </param>
+        /// <param name="buttons">
+        ///     One of the MessageBoxButtons values that specifies which buttons to display in the messagebox.
+        /// </param>
+        /// <param name="icon">
+        ///     One of the MessageBoxIcon values that specifies which icon to display in the messagebox.
+        /// </param>
+        public static (MessageBoxResult, bool) ShowPromptWithCheckbox(
+            string text,
+            string caption = "Express Apps",
+            MessageBoxButton buttons = MessageBoxButton.OK,
+            MessageBoxImage icon = MessageBoxImage.None)
+        {
+            InfoBox i = new(text, caption, buttons, icon, audio: EnableInfoBoxAudio, showApplyAllCheckbox: true);
+            i.ShowDialog();
+            return (i.Result, i.ApplyToAllBtn.IsChecked == true);
+        }
+
+        /// <summary>
+        ///     Shows a messagebox to the user with the Apply All checkbox and awaits a response.
+        ///     This function takes in resource key values, not text.
+        /// </summary>
+        /// <param name="text">
+        ///     The resource key value for the formatted text to display in the messagebox.
+        /// </param>
+        /// <param name="caption">
+        ///     The resource key value for the text to display in the title bar of the messagebox.
+        /// </param>
+        /// <param name="buttons">
+        ///     One of the MessageBoxButtons values that specifies which buttons to display in the messagebox.
+        /// </param>
+        /// <param name="icon">
+        ///     One of the MessageBoxIcon values that specifies which icon to display in the messagebox.
+        /// </param>
+        public static (MessageBoxResult, bool) ShowPromptResWithCheckbox(
+            string text,
+            string caption,
+            MessageBoxButton buttons = MessageBoxButton.OK,
+            MessageBoxImage icon = MessageBoxImage.None)
+        {
+            return ShowPromptWithCheckbox(ChooseLang(text), ChooseLang(caption), buttons, icon);
+        }
+
         #endregion
         #region Ribbons
 
+#pragma warning disable CA2211 // Non-constant fields should not be visible
         public static readonly DispatcherTimer ScrollTimer = new() { Interval = new TimeSpan(0, 0, 0, 0, 10) };
-        public static string[] Tabs = Array.Empty<string>();
+        public static string[] Tabs = [];
+#pragma warning restore CA2211 // Non-constant fields should not be visible
 
         public static void ScrollTimer_Tick(object? sender, EventArgs e)
         {
@@ -530,7 +581,7 @@ namespace ExpressControls
         {
             try
             {
-                string tab = Tabs.Where(x => btn.Name.StartsWith(x)).First();
+                string tab = Tabs.Where(btn.Name.StartsWith).First();
                 ScrollViewer scroller = (ScrollViewer)GetWindow(btn).FindName(tab + "ScrollViewer");
 
                 if (btn.Name.Contains("LeftBtn"))
@@ -1205,8 +1256,8 @@ namespace ExpressControls
             foreach (var clrPicker in clrs)
             {
                 clrPicker.ShowStandardColors = true;
-                clrPicker.StandardColors = new ObservableCollection<Xceed.Wpf.Toolkit.ColorItem>()
-                {
+                clrPicker.StandardColors =
+                [
                     new(Colors.White, ChooseLang("WhiteStr")),
                     new(Colors.LightGray, ChooseLang("LightGreyStr")),
                     new(Colors.DarkGray, ChooseLang("DarkGreyStr")),
@@ -1217,7 +1268,7 @@ namespace ExpressControls
                     new(Colors.Yellow, ChooseLang("YellowStr")),
                     new(Colors.Orange, ChooseLang("OrangeStr")),
                     new(Colors.Purple, ChooseLang("PurpleStr"))
-                };
+                ];
 
                 if (theme != null)
                 {
@@ -1401,7 +1452,7 @@ namespace ExpressControls
 
         public static List<string> GetFileDates(string file)
         {
-            List<string> dates = new();
+            List<string> dates = [];
 
             try
             {
@@ -1513,7 +1564,7 @@ namespace ExpressControls
             
             using var stream = new StreamWriter(filename);
             using var writer = XmlWriter.Create(stream, settings);
-            x.Serialize(writer, opts, !formatted ? new XmlSerializerNamespaces(new[] { XmlQualifiedName.Empty }) : null);
+            x.Serialize(writer, opts, !formatted ? new XmlSerializerNamespaces([XmlQualifiedName.Empty]) : null);
         }
 
         public static bool? CheckBoolean(string s)
@@ -1795,7 +1846,7 @@ namespace ExpressControls
                 GetTransitionCategory(slide2.Transition) == TransitionCategory.Uncover && slide1 == null)
                 return;
 
-            List<string> filenames = new();
+            List<string> filenames = [];
             using WinDrawing.Bitmap slide1Image = new(width, height);
             using WinDrawing.Bitmap slide2Image = new(width, height);
 
@@ -2032,43 +2083,43 @@ namespace ExpressControls
                     case ImageFilter.Red:
                     case ImageFilter.Green:
                     case ImageFilter.Blue:
-                        clr = new float[][]
-                        {
-                            new float[] { 0.299F, 0.299F, 0.299F, 0, 0 },
-                            new float[] { 0.587F, 0.587F, 0.587F, 0, 0 },
-                            new float[] { 0.114F, 0.114F, 0.114F, 0, 0 },
-                            new float[] { 0, 0, 0, 1, 0 },
-                            new float[] { 0, 0, 0, 0, 1 }
-                        };
+                        clr =
+                        [
+                            [0.299F, 0.299F, 0.299F, 0, 0],
+                            [0.587F, 0.587F, 0.587F, 0, 0],
+                            [0.114F, 0.114F, 0.114F, 0, 0],
+                            [0, 0, 0, 1, 0],
+                            [0, 0, 0, 0, 1]
+                        ];
                         break;
 
                     case ImageFilter.Sepia:
-                        clr = new float[][]
-                        {
-                            new float[] { 0.393F, 0.349F, 0.272F, 0, 0 },
-                            new float[] { 0.769F, 0.686F, 0.534F, 0, 0 },
-                            new float[] { 0.189F, 0.168F, 0.131F, 0, 0 },
-                            new float[] { 0, 0, 0, 1, 0 },
-                            new float[] { 0, 0, 0, 0, 1 }
-                        };
+                        clr =
+                        [
+                            [0.393F, 0.349F, 0.272F, 0, 0],
+                            [0.769F, 0.686F, 0.534F, 0, 0],
+                            [0.189F, 0.168F, 0.131F, 0, 0],
+                            [0, 0, 0, 1, 0],
+                            [0, 0, 0, 0, 1]
+                        ];
                         break;
 
                     case ImageFilter.BlackWhite:
-                        clr = Multiply(new float[][]
-                        {
-                            new float[] { 0.299F, 0.299F, 0.299F, 0, 0 },
-                            new float[] { 0.587F, 0.587F, 0.587F, 0, 0 },
-                            new float[] { 0.114F, 0.114F, 0.114F, 0, 0 },
-                            new float[] { 0, 0, 0, 1, 0 },
-                            new float[] { 0, 0, 0, 0, 1 }
-                        }, new float[][]
-                        {
-                            new float[] { 2.0F, 0, 0, 0, 0 },
-                            new float[] { 0, 2.0F, 0, 0, 0 },
-                            new float[] { 0, 0, 2.0F, 0, 0 },
-                            new float[] { 0, 0, 0, 1, 0 },
-                            new float[] { 0, 0, 0, 0, 1 }
-                        });
+                        clr = Multiply(
+                        [
+                            [0.299F, 0.299F, 0.299F, 0, 0],
+                            [0.587F, 0.587F, 0.587F, 0, 0],
+                            [0.114F, 0.114F, 0.114F, 0, 0],
+                            [0, 0, 0, 1, 0],
+                            [0, 0, 0, 0, 1]
+                        ],
+                        [
+                            [2.0F, 0, 0, 0, 0],
+                            [0, 2.0F, 0, 0, 0],
+                            [0, 0, 2.0F, 0, 0],
+                            [0, 0, 0, 1, 0],
+                            [0, 0, 0, 0, 1]
+                        ]);
 
                         imgattr.SetThreshold(0.9F);
                         break;
@@ -2079,11 +2130,11 @@ namespace ExpressControls
 
                 var light = new float[][]
                 {
-                    new float[] { filters.Contrast, 0, 0, 0, 0 },
-                    new float[] { 0, filters.Contrast, 0, 0, 0 },
-                    new float[] { 0, 0, filters.Contrast, 0, 0 },
-                    new float[] { 0, 0, 0, 1, 0 },
-                    new float[] { filters.Brightness, filters.Brightness, filters.Brightness, 0, 1 }
+                    [filters.Contrast, 0, 0, 0, 0],
+                    [0, filters.Contrast, 0, 0, 0],
+                    [0, 0, filters.Contrast, 0, 0],
+                    [0, 0, 0, 1, 0],
+                    [filters.Brightness, filters.Brightness, filters.Brightness, 0, 1]
                 };
 
                 if (clr == null)
@@ -2288,7 +2339,7 @@ namespace ExpressControls
 
         public static string[] SavedShapesCompatUpgrade(string[] old)
         {
-            List<string> converted = new();
+            List<string> converted = [];
             foreach (var item in old)
             {
                 try
@@ -2313,7 +2364,7 @@ namespace ExpressControls
 
                         if (info[0] == "Triangle")
                         {
-                            pts = new PointCollection();
+                            pts = [];
                             var xy = info[8].Split(";");
                             if (xy.Length != 3)
                                 throw new FormatException();
@@ -2362,12 +2413,12 @@ namespace ExpressControls
                 }
             }
 
-            return converted.ToArray();
+            return [.. converted];
         }
 
         public static string[] SavedChartsCompatUpgrade(string[] old)
         {
-            List<string> converted = new();
+            List<string> converted = [];
             foreach (var item in old)
             {
                 try
@@ -2387,8 +2438,8 @@ namespace ExpressControls
                         // charttype>values>theme>title>xlabel>ylabel>data[>label>val>label>val>...]
 
                         string[] info = item.Split(">");
-                        List<string> labels = new();
-                        List<double> values = new();
+                        List<string> labels = [];
+                        List<double> values = [];
 
                         int datacount = 0;
                         double tempdbl = 0.0;
@@ -2436,7 +2487,7 @@ namespace ExpressControls
                                 {
                                     Type = SeriesType.Column,
                                     Values = values,
-                                    ShowValueLabels = info[1].ToLower() == "true"
+                                    ShowValueLabels = info[1].Equals("true", StringComparison.CurrentCultureIgnoreCase)
                                 });
                                 break;
 
@@ -2446,7 +2497,7 @@ namespace ExpressControls
                                 {
                                     Type = SeriesType.Bar,
                                     Values = values,
-                                    ShowValueLabels = info[1].ToLower() == "true"
+                                    ShowValueLabels = info[1].Equals("true", StringComparison.CurrentCultureIgnoreCase)
                                 });
                                 break;
 
@@ -2456,7 +2507,7 @@ namespace ExpressControls
                                 {
                                     Type = SeriesType.Line,
                                     Values = values,
-                                    ShowValueLabels = info[1].ToLower() == "true",
+                                    ShowValueLabels = info[1].Equals("true", StringComparison.CurrentCultureIgnoreCase),
                                     SmoothLines = false
                                 });
                                 break;
@@ -2467,7 +2518,7 @@ namespace ExpressControls
                                 {
                                     Type = SeriesType.Default,
                                     Values = values,
-                                    ShowValueLabels = info[1].ToLower() == "true"
+                                    ShowValueLabels = info[1].Equals("true", StringComparison.CurrentCultureIgnoreCase)
                                 });
                                 break;
 
@@ -2477,7 +2528,7 @@ namespace ExpressControls
                                 {
                                     Type = SeriesType.Default,
                                     Values = values,
-                                    ShowValueLabels = info[1].ToLower() == "true",
+                                    ShowValueLabels = info[1].Equals("true", StringComparison.CurrentCultureIgnoreCase),
                                     DoughnutChart = true
                                 });
                                 break;
@@ -2492,7 +2543,24 @@ namespace ExpressControls
                 }
             }
 
-            return converted.ToArray();
+            return [.. converted];
+        }
+
+        public static bool IsValidFont(string? fontname)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(fontname))
+                    return false;
+
+                var testfont = new WinDrawing.FontFamily(fontname);
+                testfont.Dispose();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         #endregion

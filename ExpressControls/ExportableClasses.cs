@@ -19,19 +19,19 @@ namespace ExpressControls
     public class TemplateItem
     {
         [JsonProperty("name")]
-        public Dictionary<string, string> Names { get; set; } = new();
+        public Dictionary<string, string> Names { get; set; } = [];
 
         [JsonIgnore]
         public string Name { get; set; } = "";
 
         [JsonProperty("image")]
-        public Dictionary<string, string> Images { get; set; } = new();
+        public Dictionary<string, string> Images { get; set; } = [];
 
         [JsonIgnore]
         public string Image { get; set; } = "";
 
         [JsonProperty("file")]
-        public Dictionary<string, string> Files { get; set; } = new();
+        public Dictionary<string, string> Files { get; set; } = [];
 
         [JsonIgnore]
         public string File { get; set; } = "";
@@ -69,7 +69,7 @@ namespace ExpressControls
         public bool Important { get; set; } = false;
 
         [JsonProperty("desc")]
-        public Dictionary<string, string> Descriptions { get; set; } = new();
+        public Dictionary<string, string> Descriptions { get; set; } = [];
 
         [JsonIgnore]
         public string Description { get; set; } = "";
@@ -269,7 +269,7 @@ namespace ExpressControls
 
                 try
                 {
-                    PointCollection pts = new();
+                    PointCollection pts = [];
                     foreach (string item in PointsData.Split(" "))
                     {
                         double x = 0, y = 0;
@@ -295,7 +295,7 @@ namespace ExpressControls
                     PointsData = null;
                 else
                 {
-                    List<string> result = new();
+                    List<string> result = [];
                     foreach (Point item in value)
                         result.Add(item.X.ToString(CultureInfo.InvariantCulture) + "," + item.Y.ToString(CultureInfo.InvariantCulture));
 
@@ -315,7 +315,7 @@ namespace ExpressControls
             return new ChartItem()
             {
                 Type = Type,
-                Labels = Labels.ToList(),
+                Labels = [.. Labels],
                 Series = Series.Select(x => x.Clone()).ToList(),
                 ChartTitle = ChartTitle,
                 AxisXTitle = AxisXTitle,
@@ -361,12 +361,12 @@ namespace ExpressControls
         [JsonProperty("labels")]
         [XmlArray("labels")]
         [XmlArrayItem("data")]
-        public List<string> Labels { get; set; } = new();
+        public List<string> Labels { get; set; } = [];
 
         [JsonProperty("series")]
         [XmlArray("series")]
         [XmlArrayItem("item")]
-        public List<SeriesItem> Series { get; set; } = new();
+        public List<SeriesItem> Series { get; set; } = [];
 
         [JsonProperty("title")]
         [XmlElement("title")]
@@ -551,7 +551,7 @@ namespace ExpressControls
             {
                 Type = Type,
                 Name = Name,
-                Values = Values.ToList(),
+                Values = [.. Values],
                 ShowValueLabels = ShowValueLabels,
                 DataLabelsPlacement = DataLabelsPlacement,
                 StrokeThickness = StrokeThickness,
@@ -590,7 +590,7 @@ namespace ExpressControls
         [JsonProperty("values")]
         [XmlArray("values")]
         [XmlArrayItem("data")]
-        public List<double> Values { get; set; } = new();
+        public List<double> Values { get; set; } = [];
 
         [JsonProperty("showvlabels")]
         [XmlElement("showvlabels")]
@@ -718,7 +718,7 @@ namespace ExpressControls
         {
             get
             {
-                TextDecorationCollection decs = new();
+                TextDecorationCollection decs = [];
 
                 if (IsUnderlined)
                     decs.Add(TextDecorations.Underline);
@@ -766,7 +766,7 @@ namespace ExpressControls
         [XmlArrayItem("screenshot", typeof(ScreenshotSlide))]
         [XmlArrayItem("chart", typeof(ChartSlide))]
         [XmlArrayItem("drawing", typeof(DrawingSlide))]
-        public List<Slide> Slides { get; set; } = new();
+        public List<Slide> Slides { get; set; } = [];
     }
 
     public class SlideshowInfo
@@ -791,7 +791,7 @@ namespace ExpressControls
         }
 
         [XmlIgnore]
-        private int _height = 90;
+        private readonly int _height = 90;
 
         [XmlElement("height")]
         public double Height
@@ -1067,7 +1067,7 @@ namespace ExpressControls
             }
             set
             {
-                List<int> possibleValues = new() { 0, 90, 180, 270 };
+                List<int> possibleValues = [0, 90, 180, 270];
                 _rotation = possibleValues.OrderBy(item => Math.Abs(value - item)).First();
             }
         }
@@ -1154,13 +1154,8 @@ namespace ExpressControls
             }
             set
             {
-                try
-                {
-                    var testfont = new WinDrawing.FontFamily(value);
-                    testfont.Dispose();
+                if (Funcs.IsValidFont(value))
                     _fontname = value;
-                }
-                catch { }
             }
         }
 
@@ -1216,7 +1211,7 @@ namespace ExpressControls
                 if (IsUnderlined)
                     return TextDecorations.Underline;
                 else
-                    return new();
+                    return [];
             }
             set
             {
@@ -1252,7 +1247,7 @@ namespace ExpressControls
             }
             set
             {
-                List<int> possibleValues = new() { 50, 75, 100, 125, 150, 175, 200 };
+                List<int> possibleValues = [50, 75, 100, 125, 150, 175, 200];
                 _fontsize = possibleValues.OrderBy(item => Math.Abs(value - item)).First();
             }
         }
@@ -1305,7 +1300,7 @@ namespace ExpressControls
                 if (LegacyData.Length == 0)
                     return false;
 
-                List<string> types = new() { "Column", "Bar", "Line", "Doughnut", "Pie" };
+                List<string> types = ["Column", "Bar", "Line", "Doughnut", "Pie"];
                 if (types.IndexOf(LegacyChartType) == -1)
                     return false;
 
@@ -1331,8 +1326,8 @@ namespace ExpressControls
                         "SeaGreen" => ColourScheme.Green,
                         _ => ColourScheme.Basic
                     },
-                    Series = new List<SeriesItem>()
-                    {
+                    Series =
+                    [
                         new SeriesItem()
                         {
                             Type = LegacyChartType switch
@@ -1347,12 +1342,12 @@ namespace ExpressControls
                             SmoothLines = false,
                             DoughnutChart = LegacyChartType == "Doughnut",
                         }
-                    }
+                    ]
                 };
             }
             else
             {
-                if (ChartData.Type == ChartType.Unknown || !ChartData.Series.Any())
+                if (ChartData.Type == ChartType.Unknown || ChartData.Series.Count == 0)
                     return false;
             }
 
@@ -1406,7 +1401,7 @@ namespace ExpressControls
                             break;
                     }
 
-                    List<LabelValueItem> data = new();
+                    List<LabelValueItem> data = [];
                     for (int i = 0; i < ChartData.Labels.Count; i++)
                     {
                         data.Add(new LabelValueItem()
@@ -1415,7 +1410,7 @@ namespace ExpressControls
                             Value = series.Values[i]
                         });
                     }
-                    LegacyData = data.ToArray();
+                    LegacyData = [.. data];
 
                     LegacyTitle = ChartData.ChartTitle;
                     LegacyXLabel = ChartData.AxisXTitle;
@@ -1440,7 +1435,7 @@ namespace ExpressControls
         // Legacy compatibility...
 
         [XmlElement("data")]
-        public LabelValueItem[] LegacyData { get; set; } = Array.Empty<LabelValueItem>();
+        public LabelValueItem[] LegacyData { get; set; } = [];
 
         [XmlElement("charttype")]
         public string LegacyChartType { get; set; } = "";
@@ -1499,7 +1494,7 @@ namespace ExpressControls
         }
 
         [XmlIgnore]
-        public StrokeCollection Strokes { get; set; } = new();
+        public StrokeCollection Strokes { get; set; } = [];
     }
 
     public class FontCategory
@@ -1527,7 +1522,7 @@ namespace ExpressControls
         }
 
         [JsonProperty("fonts")]
-        public List<string> Fonts { get; set; } = new();
+        public List<string> Fonts { get; set; } = [];
     }
 
     [XmlRoot("export")]

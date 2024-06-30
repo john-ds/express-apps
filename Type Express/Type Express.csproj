@@ -1,18 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <RootNamespace>Type_Express</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <Platforms>AnyCPU;x64</Platforms>
     <ApplicationIcon>icon.ico</ApplicationIcon>
-    <AssemblyVersion>6.0.0</AssemblyVersion>
-    <FileVersion>6.0.0</FileVersion>
+    <AssemblyVersion>6.1.0</AssemblyVersion>
+    <FileVersion>6.1.0</FileVersion>
     <RollForward>Major</RollForward>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-
   <ItemGroup>
     <None Remove="auth-deepl.secret" />
     <None Remove="auth-dropbox.secret" />
@@ -27,7 +26,6 @@
     <None Remove="splash.png" />
     <None Remove="symbols.json" />
   </ItemGroup>
-
   <ItemGroup>
     <Content Include="fonts\Inter-Bold.ttf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -44,36 +42,29 @@
     <EmbeddedResource Include="auth-merriam.secret" />
     <EmbeddedResource Include="symbols.json" />
   </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="auth-photo.secret" />
     <EmbeddedResource Include="auth-icon.secret" />
     <EmbeddedResource Include="auth-dropbox.secret" />
   </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="DeepL.net" Version="1.7.1" />
-    <PackageReference Include="System.Speech" Version="7.0.0" />
+    <PackageReference Include="DeepL.net" Version="1.9.0" />
+    <PackageReference Include="System.Speech" Version="8.0.0" />
   </ItemGroup>
-  
   <ItemGroup>
     <Page Include="..\ExpressControls\ExpressStyles.xaml" Link="ExpressStyles.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\ExpressControls\ExpressControls.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="dropbox-index.html" />
   </ItemGroup>
-
   <ItemGroup>
     <SplashScreen Include="splash.png" />
   </ItemGroup>
-
   <ItemGroup>
     <Compile Update="Properties\Settings.Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
@@ -81,12 +72,10 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
   </ItemGroup>
-
   <ItemGroup>
     <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
-
 </Project>

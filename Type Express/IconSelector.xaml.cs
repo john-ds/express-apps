@@ -26,10 +26,10 @@ namespace Type_Express
     public partial class IconSelector : Window
     {
         private readonly string IconAPIKey = "";
-        private IEnumerable<ImageItem> QueriedIcons = Array.Empty<ImageItem>();
+        private IEnumerable<ImageItem> QueriedIcons = [];
         public ImageItem? ChosenIcon { get; set; } = null;
 
-        private readonly List<string> CancellationTokens = new();
+        private readonly List<string> CancellationTokens = [];
         private string CurrentCancellationToken = "";
 
         private int CurrentPage = 1;
@@ -176,7 +176,7 @@ namespace Type_Express
                             IconSizeItemResponse? size = item.IconSizes.OrderBy(x => Math.Abs(x.Size - 48)).FirstOrDefault(defaultValue: null);
 
                             if (size != null)
-                                if (size.Formats.Any())
+                                if (size.Formats.Length != 0)
                                     return true;
 
                             return false;
@@ -250,7 +250,7 @@ namespace Type_Express
         private void ShowNoResults()
         {
             IconPnl.ItemsSource = null;
-            QueriedIcons = Array.Empty<ImageItem>();
+            QueriedIcons = [];
 
             MenuPnl.IsEnabled = true;
             IconPnl.Visibility = Visibility.Collapsed;
@@ -339,7 +339,7 @@ namespace Type_Express
         public int TotalCount { get; set; } = 0;
 
         [JsonProperty("icons")]
-        public IconItemResponse[] Icons { get; set; } = Array.Empty<IconItemResponse>();
+        public IconItemResponse[] Icons { get; set; } = [];
     }
 
     public class IconItemResponse
@@ -348,7 +348,7 @@ namespace Type_Express
         public int IconID { get; set; } = 0;
 
         [JsonProperty("raster_sizes")]
-        public IconSizeItemResponse[] IconSizes { get; set; } = Array.Empty<IconSizeItemResponse>();
+        public IconSizeItemResponse[] IconSizes { get; set; } = [];
     }
 
     public class IconSizeItemResponse
@@ -357,7 +357,7 @@ namespace Type_Express
         public int Size { get; set; } = 0;
 
         [JsonProperty("formats")]
-        public IconFormatItemResponse[] Formats { get; set; } = Array.Empty<IconFormatItemResponse>();
+        public IconFormatItemResponse[] Formats { get; set; } = [];
     }
 
     public class IconFormatItemResponse

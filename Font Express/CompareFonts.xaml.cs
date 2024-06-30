@@ -26,9 +26,9 @@ namespace Font_Express
         private string Font1 = "";
         private string Font2 = "";
 
-        private readonly ObservableCollection<SelectableItem> SearchResList = new();
-        private readonly ObservableCollection<SelectableItem> FavouriteList = new();
-        private readonly ObservableCollection<SelectableItem> SuggestedList = new();
+        private readonly ObservableCollection<SelectableItem> SearchResList = [];
+        private readonly ObservableCollection<SelectableItem> FavouriteList = [];
+        private readonly ObservableCollection<SelectableItem> SuggestedList = [];
 
         public CompareFonts(FontItems collection)
         {
@@ -55,7 +55,7 @@ namespace Font_Express
             else
                 FavouriteItems.ItemsSource = FavouriteList;
 
-            foreach (string item in Funcs.SuggestedFonts.Where(f => collection.Contains(f)))
+            foreach (string item in Funcs.SuggestedFonts.Where(collection.Contains))
             {
                 SuggestedList.Add(new SelectableItem()
                 {

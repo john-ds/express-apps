@@ -117,17 +117,17 @@ namespace Quota_Express
 
         private void LoadColourSchemes()
         {
-            List<AppDropdownItem> clrItems = new();
+            List<AppDropdownItem> clrItems = [];
             for (int i = 0; i < Funcs.ColourSchemes.Length; i++)
             {
-                List<SolidColorBrush> clrs = new();
+                List<SolidColorBrush> clrs = [];
                 foreach (var item in Funcs.ColourSchemes[i])
                     clrs.Add(Funcs.ColorToBrush(item));
 
                 clrItems.Add(new AppDropdownItem()
                 {
                     Content = Funcs.GetTypeColourSchemeName((ColourScheme)i),
-                    Colours = clrs.ToArray(),
+                    Colours = [.. clrs],
                     ShowColours = true
                 });
             }

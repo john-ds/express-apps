@@ -79,10 +79,7 @@ namespace ExpressControls
             }
         }
 
-        public static void HasContextMenuPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            bool b = Convert.ToBoolean(e.NewValue);
-        }
+        public static void HasContextMenuPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {}
 
         public static readonly DependencyProperty CornerRadiusProperty = DependencyProperty.Register(nameof(CornerRadius), typeof(CornerRadius), typeof(AppTextBox), new PropertyMetadata(null));
 
@@ -112,9 +109,6 @@ namespace ExpressControls
             }
         }
 
-        public static void IsWatermarkVisiblePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            bool b = Convert.ToBoolean(e.NewValue);
-        }
+        public static void IsWatermarkVisiblePropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {}
     }
 }

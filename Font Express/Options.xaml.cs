@@ -29,8 +29,8 @@ namespace Font_Express
         private readonly DispatcherTimer TempLblTimer = new() { Interval = new TimeSpan(0, 0, 0, 4) };
         private bool ImportOverride = false;
 
-        private ObservableCollection<SelectableItem> CategoryDisplayList { get; set; } = new();
-        private ObservableCollection<SelectableItem> SearchDisplayList { get; set; } = new();
+        private ObservableCollection<SelectableItem> CategoryDisplayList { get; set; } = [];
+        private ObservableCollection<SelectableItem> SearchDisplayList { get; set; } = [];
 
         public Options()
         {
@@ -172,7 +172,7 @@ namespace Font_Express
 
         private void StartFontSearch()
         {
-            fontItems ??= new FontItems();
+            fontItems ??= [];
             if (FontSearchTxt.Text.Length > 0)
             {
                 IEnumerable<string> results = fontItems.Where(x => {
@@ -297,7 +297,7 @@ namespace Font_Express
                 {
                     try
                     {
-                        List<string> chosenFonts = new();
+                        List<string> chosenFonts = [];
                         foreach (string fontname in File.ReadAllLines(Funcs.TextOpenDialog.FileName))
                         {
                             try
@@ -353,7 +353,7 @@ namespace Font_Express
                         var categories = MainWindow.GetSavedCategories(false);
                         int idx = categories.ToList().FindIndex(x => x.Name == (string)((AppDropdownItem)CategoryCombo.SelectedValue).Content);
 
-                        File.WriteAllLines(Funcs.TextSaveDialog.FileName, categories[idx].Fonts.ToArray(), Encoding.Unicode);
+                        File.WriteAllLines(Funcs.TextSaveDialog.FileName, [.. categories[idx].Fonts], Encoding.Unicode);
                     }
 
                     _ = Process.Start(new ProcessStartInfo()
@@ -375,7 +375,7 @@ namespace Font_Express
         {
             if (Funcs.TextSaveDialog.ShowDialog() == true)
             {
-                fontItems ??= new FontItems();
+                fontItems ??= [];
                 try
                 {
                     File.WriteAllLines(Funcs.TextSaveDialog.FileName, fontItems, Encoding.Unicode);
@@ -644,10 +644,10 @@ namespace Font_Express
     {
         [XmlArray("favourites")]
         [XmlArrayItem("data")]
-        public string[] FavouritesData { get; set; } = Array.Empty<string>();
+        public string[] FavouritesData { get; set; } = [];
 
         [XmlElement("category")]
-        public string[] CategoryData { get; set; } = Array.Empty<string>();
+        public string[] CategoryData { get; set; } = [];
     }
 
     public class GeneralOptions

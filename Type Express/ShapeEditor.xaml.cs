@@ -167,11 +167,11 @@ namespace Type_Express
                     }
 
                     if (DashRadio.IsChecked == true)
-                        SetDashArray(new DoubleCollection() { 4, 4 });
+                        SetDashArray([4, 4]);
                     else if (DotRadio.IsChecked == true)
-                        SetDashArray(new DoubleCollection() { 2, 2 });
+                        SetDashArray([2, 2]);
                     else if (DashDotRadio.IsChecked == true)
-                        SetDashArray(new DoubleCollection() { 4, 2, 2, 2 });
+                        SetDashArray([4, 2, 2, 2]);
                 }
                 
                 if (shape.Type == ShapeType.Rectangle || shape.Type == ShapeType.Triangle)
@@ -260,19 +260,19 @@ namespace Type_Express
                 case Polygon tri:
                     Path triPath = new()
                     {
-                        Data = new PathGeometry(new PathFigureCollection()
-                        {
+                        Data = new PathGeometry(
+                        [
                             new PathFigure()
                             {
-                                Segments = new PathSegmentCollection()
-                                {
+                                Segments =
+                                [
                                     new LineSegment() { Point = new Point(tri.Points[1].X, tri.Points[1].Y) },
                                     new LineSegment() { Point = new Point(tri.Points[2].X, tri.Points[2].Y) }
-                                },
+                                ],
                                 StartPoint = new Point(tri.Points[0].X, tri.Points[0].Y),
                                 IsClosed = true
                             }
-                        }),
+                        ]),
                         Fill = tri.Fill,
                         Stroke = tri.Stroke,
                         StrokeThickness = tri.StrokeThickness,
@@ -286,19 +286,19 @@ namespace Type_Express
                     Point point2 = new(TranslatePt(tri.Points[1].X, tempBounds.X), TranslatePt(tri.Points[1].Y, tempBounds.Y));
                     Point point3 = new(TranslatePt(tri.Points[2].X, tempBounds.X), TranslatePt(tri.Points[2].Y, tempBounds.Y));
 
-                    triPath.Data = new PathGeometry(new PathFigureCollection()
-                    {
+                    triPath.Data = new PathGeometry(
+                    [
                         new PathFigure()
                         {
-                            Segments = new PathSegmentCollection()
-                            {
+                            Segments =
+                            [
                                 new LineSegment() { Point = point2 },
                                 new LineSegment() { Point = point3 }
-                            },
+                            ],
                             StartPoint = point1,
                             IsClosed = true
                         }
-                    });
+                    ]);
 
                     bounds = triPath.Data.GetRenderBounds(new Pen(tri.Stroke, tri.StrokeThickness));
                     return Funcs.RenderControlAsImage(triPath, bounds);
@@ -415,8 +415,8 @@ namespace Type_Express
                         break;
 
                     case ShapeType.Triangle:
-                        List<double> shapepoints = new();
-                        PointCollection newpoints = new();
+                        List<double> shapepoints = [];
+                        PointCollection newpoints = [];
 
                         foreach (var pt in TriangleShape.Points)
                             shapepoints.Add(pt.X);
@@ -458,8 +458,8 @@ namespace Type_Express
                         break;
 
                     case ShapeType.Triangle:
-                        List<double> shapepoints = new();
-                        PointCollection newpoints = new();
+                        List<double> shapepoints = [];
+                        PointCollection newpoints = [];
 
                         foreach (var pt in TriangleShape.Points)
                             shapepoints.Add(pt.Y);
@@ -636,47 +636,47 @@ namespace Type_Express
                 DashSelectionPnl.Visibility = Visibility.Visible;
 
                 if (DashRadio.IsChecked == true)
-                    SetDashArray(new DoubleCollection() { 4, 4 });
+                    SetDashArray([4, 4]);
                 else if (DotRadio.IsChecked == true)
-                    SetDashArray(new DoubleCollection() { 2, 2 });
+                    SetDashArray([2, 2]);
                 else if (DashDotRadio.IsChecked == true)
-                    SetDashArray(new DoubleCollection() { 4, 2, 2, 2 });
+                    SetDashArray([4, 2, 2, 2]);
             }
             else
             {
                 DashSelectionPnl.Visibility = Visibility.Collapsed;
-                SetDashArray(new DoubleCollection() { 1, 0 });
+                SetDashArray([1, 0]);
             }
         }
 
         private void DashRadioBtns_Click(object sender, RoutedEventArgs e)
         {
             if (DashRadio.IsChecked == true)
-                SetDashArray(new DoubleCollection() { 4, 4 });
+                SetDashArray([4, 4]);
             else if (DotRadio.IsChecked == true)
-                SetDashArray(new DoubleCollection() { 2, 2 });
+                SetDashArray([2, 2]);
             else if (DashDotRadio.IsChecked == true)
-                SetDashArray(new DoubleCollection() { 4, 2, 2, 2 });
+                SetDashArray([4, 2, 2, 2]);
         }
 
         private static DoubleCollection GetDashArray(DashType dashes)
         {
             return dashes switch
             {
-                DashType.Dash => new DoubleCollection() { 4, 4 },
-                DashType.Dot => new DoubleCollection() { 2, 2 },
-                DashType.DashDot => new DoubleCollection() { 4, 2, 2, 2 },
-                _ => new DoubleCollection() { 1, 0 },
+                DashType.Dash => [4, 4],
+                DashType.Dot => [2, 2],
+                DashType.DashDot => [4, 2, 2, 2],
+                _ => [1, 0],
             };
         }
 
         public static DashType GetDashType(DoubleCollection db)
         {
-            if (Enumerable.SequenceEqual(new double[] { 4, 4 }, db))
+            if (Enumerable.SequenceEqual([4, 4], db))
                 return DashType.Dash;
-            else if (Enumerable.SequenceEqual(new double[] { 2, 2 }, db))
+            else if (Enumerable.SequenceEqual([2, 2], db))
                 return DashType.Dot;
-            else if (Enumerable.SequenceEqual(new double[] { 4, 2, 2, 2 }, db))
+            else if (Enumerable.SequenceEqual([4, 2, 2, 2], db))
                 return DashType.DashDot;
             else
                 return DashType.None;
@@ -737,19 +737,19 @@ namespace Type_Express
 
                     if (TriangleShape.Points[1].X == 0.0)
                         // triangle is: ◀ (pointing to the left): make triangle point down
-                        TriangleShape.Points = new PointCollection() { new Point(0.0, 0.0), new Point(width / 2, height), new Point(width, 0.0) };
+                        TriangleShape.Points = [new Point(0.0, 0.0), new Point(width / 2, height), new Point(width, 0.0)];
                     
                     else if (TriangleShape.Points[1].Y == 0.0)
                         // triangle is: ▲ (pointing to the top): make triangle point left
-                        TriangleShape.Points = new PointCollection() { new Point(width, 0.0), new Point(0.0, height / 2), new Point(width, height) };
+                        TriangleShape.Points = [new Point(width, 0.0), new Point(0.0, height / 2), new Point(width, height)];
                     
                     else if (TriangleShape.Points[1].Y < TriangleShape.Points[1].X)
                         // triangle is: ▶ (pointing to the right): make triangle point up
-                        TriangleShape.Points = new PointCollection() { new Point(0.0, height), new Point(width / 2, 0.0), new Point(width, height) };
+                        TriangleShape.Points = [new Point(0.0, height), new Point(width / 2, 0.0), new Point(width, height)];
                     
                     else
                         // triangle is: ▼ (pointing to the bottom): make triangle point right
-                        TriangleShape.Points = new PointCollection() { new Point(0.0, 0.0), new Point(width, height / 2), new Point(0.0, height) };
+                        TriangleShape.Points = [new Point(0.0, 0.0), new Point(width, height / 2), new Point(0.0, height)];
                     break;
 
                 default:
@@ -785,19 +785,19 @@ namespace Type_Express
 
                     if (TriangleShape.Points[1].X == 0.0)
                         // triangle is: ◀ (pointing to the left): make triangle point up
-                        TriangleShape.Points = new PointCollection() { new Point(0.0, height), new Point(width / 2, 0.0), new Point(width, height) };
+                        TriangleShape.Points = [new Point(0.0, height), new Point(width / 2, 0.0), new Point(width, height)];
 
                     else if (TriangleShape.Points[1].Y == 0.0)
                         // triangle is: ▲ (pointing to the top): make triangle point right
-                        TriangleShape.Points = new PointCollection() { new Point(0.0, 0.0), new Point(width, height / 2), new Point(0.0, height) };
+                        TriangleShape.Points = [new Point(0.0, 0.0), new Point(width, height / 2), new Point(0.0, height)];
 
                     else if (TriangleShape.Points[1].Y < TriangleShape.Points[1].X)
                         // triangle is: ▶ (pointing to the right): make triangle point down
-                        TriangleShape.Points = new PointCollection() { new Point(0.0, 0.0), new Point(width / 2, height), new Point(width, 0.0) };
+                        TriangleShape.Points = [new Point(0.0, 0.0), new Point(width / 2, height), new Point(width, 0.0)];
 
                     else
                         // triangle is: ▼ (pointing to the bottom): make triangle point left
-                        TriangleShape.Points = new PointCollection() { new Point(width, 0.0), new Point(0.0, height / 2), new Point(width, height) };
+                        TriangleShape.Points = [new Point(width, 0.0), new Point(0.0, height / 2), new Point(width, height)];
                     break;
 
                 default:

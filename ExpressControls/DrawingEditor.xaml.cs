@@ -65,7 +65,7 @@ namespace ExpressControls
                 Canvas.Background = new SolidColorBrush((Color)background);
 
             if (strokes != null)
-                Canvas.Strokes = strokes;
+                Canvas.Strokes = strokes.Clone();
 
             Canvas.DefaultDrawingAttributes = PenAttributes;
             SetEditingMode(InkCanvasEditingMode.Ink);

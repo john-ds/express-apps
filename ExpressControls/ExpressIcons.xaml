@@ -2,354 +2,12 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--#region White Icons-->
-    
-    <Viewbox x:Key="NewWhiteIcon" x:Shared="False" Stretch="Uniform">
-        <Canvas Width="26.458333" Height="26.458334">
-            <Canvas.RenderTransform>
-                <TranslateTransform X="0" Y="0"/>
-            </Canvas.RenderTransform>
-            <Canvas.Resources>
-                <!--Unknown tag: inkscape:perspective-->
-            </Canvas.Resources>
-            <!--Unknown tag: sodipodi:namedview-->
-            <!--Unknown tag: metadata-->
-            <Canvas>
-                <Canvas.RenderTransform>
-                    <TranslateTransform X="0" Y="-270.54165"/>
-                </Canvas.RenderTransform>
-                <Canvas Opacity="1">
-                    <Canvas.RenderTransform>
-                        <MatrixTransform Matrix="0.26458333 0 0 0.26458333 1.5591518 269.64396"/>
-                    </Canvas.RenderTransform>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Fill="#FFFFFFFF" StrokeThickness="8.05225277" StrokeMiterLimit="4" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Opacity="1">
-                        <Path.Data>
-                            <PathGeometry Figures="M 7.6777344 7.5 V 92.677734 H 92.322266 V 45.929688 l -36.105469 0.02539 A 3.0541637 3.0541637 0 0 1 53.160156 42.910156 L 53.054688 7.5507812 A 3.0541637 3.0541637 0 0 1 53.056641 7.5 Z m 52.7578126 0 0.04102 0.039063 L 69.26563 7.533203 69.220703 7.5 Z m -1.251953 7.310547 0.07422 25.035156 25.56836 -0.01758 z m 33.083984 9.976562 0.04102 13.808594 0.01367 0.01367 v -13.78125 z" FillRule="NonZero"/>
-                        </Path.Data>
-                        <Path.RenderTransform>
-                            <TranslateTransform X="-5.8928573" Y="3.3928441"/>
-                        </Path.RenderTransform>
-                    </Path>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Fill="#FFFFFFFF" StrokeThickness="6.10788536" StrokeMiterLimit="4" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Opacity="1">
-                        <Path.Data>
-                            <PathGeometry Figures="M 86.428568 46.242635 50.320349 46.268598 50.214765 10.909694 Z" FillRule="NonZero"/>
-                        </Path.Data>
-                    </Path>
-                </Canvas>
-            </Canvas>
-        </Canvas>
-    </Viewbox>
-
-    <Viewbox x:Key="OpenWhiteIcon" x:Shared="False" Stretch="Uniform">
-        <Canvas Width="26.458333" Height="26.458334">
-            <Canvas.RenderTransform>
-                <TranslateTransform X="0" Y="0"/>
-            </Canvas.RenderTransform>
-            <Canvas.Resources>
-                <!--Unknown tag: inkscape:perspective-->
-                <!--Unknown tag: inkscape:perspective-->
-            </Canvas.Resources>
-            <!--Unknown tag: sodipodi:namedview-->
-            <!--Unknown tag: metadata-->
-            <Canvas>
-                <Canvas.RenderTransform>
-                    <TranslateTransform X="0" Y="-270.54165"/>
-                </Canvas.RenderTransform>
-                <Canvas Opacity="1">
-                    <Canvas.RenderTransform>
-                        <MatrixTransform Matrix="0.26458333 0 0 0.26458333 1.5591518 269.64396"/>
-                    </Canvas.RenderTransform>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Fill="#FFFFFFFF" StrokeThickness="2.08333325">
-                        <Path.Data>
-                            <PathGeometry Figures="m 15.697266 18.005859 c -4.415685 0 -8.0273441 3.598866 -8.0273441 7.998047 v 47.992188 c 0 3.422026 2.1886985 6.351912 5.2382811 7.488281 l 6.824219 -37.392578 -0.0098 0.06641 c 0.827597 -5.221858 5.426154 -8.990234 10.626953 -8.990234 H 83.939419 V 34.00391 c 0 -4.399181 -3.611662 -8 -8.027344 -8 h -32.1152 l -8.027344 -7.998047 z m 14.652343 22.832032 c -2.426292 0 -4.650663 1.830303 -5.027343 4.207031 l -0.0059 0.0332 -6.220703 34.082031 h 60.228516 c 1.963868 0 3.776944 -1.209843 4.603515 -2.927734 0.0029 -0.07919 0.01172 -0.156231 0.01172 -0.236328 v -35.1582 z" FillRule="NonZero"/>
-                        </Path.Data>
-                        <Path.RenderTransform>
-                            <TranslateTransform X="-5.8928573" Y="3.3928441"/>
-                        </Path.RenderTransform>
-                    </Path>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Fill="#FFFFFFFF" StrokeThickness="2.08333325">
-                        <Path.Data>
-                            <PathGeometry Figures="M 78.448848 41.395078 H 24.45705 c -3.813546 0 -7.225667 2.799479 -7.827806 6.598772 L 9.8050027 85.38689 H 73.431017 c 3.813553 0 7.225668 -2.799473 7.827806 -6.598772 L 86.276654 50.79333 c 1.003559 -4.799108 -2.809984 -9.398252 -7.827806 -9.398252 z" FillRule="NonZero"/>
-                        </Path.Data>
-                    </Path>
-                </Canvas>
-            </Canvas>
-        </Canvas>
-    </Viewbox>
-
-    <Viewbox x:Key="SaveWhiteIcon" x:Shared="False" Stretch="Uniform">
-        <Canvas Name="esvg83" Width="26.458333" Height="26.458334">
-            <Canvas.RenderTransform>
-                <TranslateTransform X="0" Y="0"/>
-            </Canvas.RenderTransform>
-            <Canvas.Resources>
-                <!--Unknown tag: inkscape:perspective-->
-                <!--Unknown tag: inkscape:perspective-->
-            </Canvas.Resources>
-            <!--Unknown tag: sodipodi:namedview-->
-            <!--Unknown tag: metadata-->
-            <Canvas Name="elayer13">
-                <Canvas.RenderTransform>
-                    <TranslateTransform X="0" Y="-270.54165"/>
-                </Canvas.RenderTransform>
-                <Canvas Name="eflowRoot8193" Opacity="1">
-                    <Canvas.RenderTransform>
-                        <MatrixTransform Matrix="0.26458333 0 0 0.26458333 1.5591518 269.64396"/>
-                    </Canvas.RenderTransform>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="erect875" Fill="#FFFFFFFF" StrokeThickness="10.89637756" StrokeMiterLimit="4" StrokeLineJoin="Round" StrokeStartLineCap="Flat" StrokeEndLineCap="Flat" Opacity="1">
-                        <Path.Data>
-                            <PathGeometry Figures="M 7.6777344 7.5 V 81.785156 H 67.949219 C 65.85906 80.031735 63.773043 78.273635 61.689453 76.513672 H 18.619141 c -2.588264 0 -4.671875 -2.083612 -4.671875 -4.671875 V 47.851562 c 0 -2.588261 2.083611 -4.671874 4.671875 -4.671874 h 52.402343 c 2.588264 -10e-7 4.671875 2.083613 4.671875 4.671874 v 16.878907 c 2.090557 1.8077 4.181019 3.623622 6.269532 5.396484 V 19.128906 L 67.347656 7.5 h -4.492187 v 18.214844 1.25 c 0 2.473214 -1.989677 4.46289 -4.462891 4.46289 h -40 c -2.473214 0 -4.464844 -1.989676 -4.464844 -4.46289 v -1.25 V 7.5 Z M 63.029297 54.167969 c 1.489359 1.162819 2.952083 2.354047 4.404297 3.552734 -1.452413 -1.198777 -2.914755 -2.389772 -4.404297 -3.552734 z m 5.457031 4.423828 c 0.816663 0.681002 1.623102 1.369531 2.431641 2.056641 -0.809016 -0.68753 -1.614481 -1.375261 -2.431641 -2.056641 z m -8.853516 0.121094 c 1.220082 0.954089 2.428876 1.932998 3.634766 2.921875 -1.205534 -0.988736 -2.41463 -1.967744 -3.634766 -2.921875 z m 4.59375 3.71289 c 0.709263 0.587413 1.416378 1.183359 2.123047 1.779297 -0.706295 -0.595712 -1.414124 -1.192064 -2.123047 -1.779297 z m -8.697265 1.367188 c 2.300455 2.000271 4.635744 3.995979 6.982422 5.990234 -2.347295 -1.993891 -4.682172 -3.990141 -6.982422 -5.990234 z m -3.636719 4.347656 c 2.207383 1.91868 4.443769 3.828199 6.6875 5.734375 -2.241427 -1.905963 -4.479227 -3.814922 -6.6875 -5.734375 z" FillRule="NonZero"/>
-                        </Path.Data>
-                        <Path.RenderTransform>
-                            <TranslateTransform X="-5.8928573" Y="3.3928441"/>
-                        </Path.RenderTransform>
-                    </Path>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="erect924" Fill="#FFFFFFFF" StrokeThickness="10.89637756" StrokeMiterLimit="4" StrokeLineJoin="Round" StrokeStartLineCap="Flat" StrokeEndLineCap="Flat" Opacity="1">
-                        <Path.Data>
-                            <PathGeometry Figures="m 41.162106 15.004494 h 8.712565 v 14.520942 h -8.712565 z" FillRule="NonZero"/>
-                        </Path.Data>
-                    </Path>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="erect931" Fill="#FFFFFFFF" StrokeThickness="10.89637756" StrokeMiterLimit="4" StrokeLineJoin="Round" StrokeStartLineCap="Flat" StrokeEndLineCap="Flat" Opacity="1">
-                        <Path.Data>
-                            <PathGeometry Figures="m 23.796875 49.492188 v 4.292968 h 22.861328 a 2.8349292 2.8349292 0 0 1 2.882813 -3.158203 2.8349292 2.8349292 0 0 1 0.5625 0.07031 l 4.392578 1.001953 a 2.8349292 2.8349292 0 0 1 0.220703 0.0625 l 6.886719 1.58789 a 2.8349292 2.8349292 0 0 1 0.980468 0.435547 h 3.259766 v -4.292968 z" FillRule="NonZero"/>
-                        </Path.Data>
-                        <Path.RenderTransform>
-                            <TranslateTransform X="-5.8928573" Y="3.3928441"/>
-                        </Path.RenderTransform>
-                    </Path>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="erect9318" Fill="#FFFFFFFF" StrokeThickness="10.89637756" StrokeMiterLimit="4" StrokeLineJoin="Round" StrokeStartLineCap="Flat" StrokeEndLineCap="Flat" Opacity="1">
-                        <Path.Data>
-                            <PathGeometry Figures="m 23.796875 57.699219 v 4.292969 h 25.273437 l -1.287109 -4.292969 z m 29.904297 0 1.289062 4.292969 h 8.708985 c -1.347825 -1.111125 -2.700456 -2.21114 -4.066407 -3.279297 l -4.394531 -1.013672 z" FillRule="NonZero"/>
-                        </Path.Data>
-                        <Path.RenderTransform>
-                            <TranslateTransform X="-5.8928573" Y="3.3928441"/>
-                        </Path.RenderTransform>
-                    </Path>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="erect93183" Fill="#FFFFFFFF" StrokeThickness="10.89637756" StrokeMiterLimit="4" StrokeLineJoin="Round" StrokeStartLineCap="Flat" StrokeEndLineCap="Flat" Opacity="1">
-                        <Path.Data>
-                            <PathGeometry Figures="m 23.796875 66.091797 v 4.292969 h 30.707031 c -0.869559 -0.748544 -1.748034 -1.493757 -2.611328 -2.244141 a 2.8349292 2.8349292 0 0 1 -1.501953 -1.744141 l -0.0918 -0.304687 z m 34.40625 0 c 1.664053 1.432191 3.334366 2.863554 5.019531 4.292969 h 2.621094 v -4.292969 z" FillRule="NonZero"/>
-                        </Path.Data>
-                        <Path.RenderTransform>
-                            <TranslateTransform X="-5.8928573" Y="3.3928441"/>
-                        </Path.RenderTransform>
-                    </Path>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="erect21561" Fill="#FFFFFFFF" StrokeThickness="7.77489328" StrokeMiterLimit="4" StrokeLineJoin="Miter" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Opacity="1">
-                        <Path.Data>
-                            <PathGeometry Figures="m 11.127792 -122.51029 h 7.815898 c 1.228791 0 2.218034 0.98924 2.218034 2.21803 v 2.80427 c 0 1.22879 -0.989243 2.21804 -2.218034 2.21804 h -7.815898 c -1.228791 0 -2.2180344 -0.98925 -2.2180344 -2.21804 v -2.80427 c 0 -1.22879 0.9892434 -2.21803 2.2180344 -2.21803 z" FillRule="NonZero"/>
-                        </Path.Data>
-                        <Path.RenderTransform>
-                            <MatrixTransform Matrix="-0.64052005 0.76794144 -0.7586136 -0.6515408 0 0"/>
-                        </Path.RenderTransform>
-                    </Path>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="erect2173" Fill="#FFFFFFFF" StrokeThickness="7.77489328" StrokeMiterLimit="4" StrokeLineJoin="Miter" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Opacity="1">
-                        <Path.Data>
-                            <PathGeometry Figures="m 113.03069 9.1731853 h 4.93082 V 21.427057 h -4.93082 z" FillRule="NonZero"/>
-                        </Path.Data>
-                        <Path.RenderTransform>
-                            <MatrixTransform Matrix="0.76012161 0.64978084 -0.63873448 0.76942723 0 0"/>
-                        </Path.RenderTransform>
-                    </Path>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="erect861" Fill="#FFFFFFFF" StrokeThickness="10.89669037" StrokeMiterLimit="4" StrokeLineJoin="Round" StrokeStartLineCap="Flat" StrokeEndLineCap="Flat" Opacity="1">
-                        <Path.Data>
-                            <PathGeometry Figures="m -22.183928 80.257896 h 11.959034 c 0.09996 0 0.180426 0.08047 0.180426 0.180426 v 32.362608 c 0 0.1 -0.08047 0.18042 -0.180426 0.18042 h -11.959034 c -0.09995 0 -0.180425 -0.0805 -0.180425 -0.18042 V 80.438322 c 0 -0.09996 0.08047 -0.180426 0.180425 -0.180426 z" FillRule="NonZero"/>
-                        </Path.Data>
-                        <Path.RenderTransform>
-                            <MatrixTransform Matrix="0.63565717 -0.77197148 0.76510567 0.64390474 0 0"/>
-                        </Path.RenderTransform>
-                    </Path>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="epath2175" Fill="#FFFFFFFF" StrokeThickness="10.95701504" StrokeMiterLimit="4" StrokeLineJoin="Miter" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Opacity="1">
-                        <Path.Data>
-                            <PathGeometry Figures="M 6.0674578 94.807357 9.3331415 76.493341 23.560702 88.478514 Z" FillRule="NonZero"/>
-                        </Path.Data>
-                        <Path.RenderTransform>
-                            <MatrixTransform Matrix="-0.02070709 0.68470455 -0.63133025 -0.02260203 103.55997 54.842321"/>
-                        </Path.RenderTransform>
-                    </Path>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="epath21759" Fill="#FFFFFFFF" StrokeThickness="10.91154289" StrokeMiterLimit="4" StrokeLineJoin="Miter" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Opacity="1">
-                        <Path.Data>
-                            <PathGeometry Figures="M 6.0674578 94.807357 9.3331415 76.493341 23.560702 88.478514 Z" FillRule="NonZero"/>
-                        </Path.Data>
-                        <Path.RenderTransform>
-                            <MatrixTransform Matrix="-0.00791903 0.25891787 -0.24126647 -0.0085406 66.501463 56.092636"/>
-                        </Path.RenderTransform>
-                    </Path>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="erect980" Fill="#FFFFFFFF" StrokeThickness="1.88976383" StrokeMiterLimit="4" StrokeLineJoin="Round" StrokeStartLineCap="Flat" StrokeEndLineCap="Flat" Opacity="1">
-                        <Path.Data>
-                            <PathGeometry Figures="M 7.8454728 10.892844 H 57.064406 v 2.142858 H 7.8454728 Z" FillRule="NonZero"/>
-                        </Path.Data>
-                    </Path>
-                </Canvas>
-            </Canvas>
-        </Canvas>
-    </Viewbox>
-
-    <Viewbox x:Key="PrintWhiteIcon" x:Shared="False" Stretch="Uniform">
-        <Canvas Name="esvg84" Width="26.458333" Height="26.458334">
-            <Canvas.RenderTransform>
-                <TranslateTransform X="0" Y="0"/>
-            </Canvas.RenderTransform>
-            <Canvas.Resources>
-                <!--Unknown tag: inkscape:perspective-->
-                <!--Unknown tag: inkscape:perspective-->
-            </Canvas.Resources>
-            <!--Unknown tag: sodipodi:namedview-->
-            <!--Unknown tag: metadata-->
-            <Canvas Name="elayer14">
-                <Canvas.RenderTransform>
-                    <TranslateTransform X="0" Y="-270.54165"/>
-                </Canvas.RenderTransform>
-                <Canvas Name="eflowRoot8194" Opacity="1">
-                    <Canvas.RenderTransform>
-                        <MatrixTransform Matrix="0.26458333 0 0 0.26458333 1.5591518 269.64396"/>
-                    </Canvas.RenderTransform>
-                    <Rectangle xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Canvas.Left="16.498745" Canvas.Top="13.848907" Width="54.464287" Height="19.098167" Name="rect8510" Fill="#FFFFFFFF" StrokeThickness="10.89637756" StrokeMiterLimit="4" StrokeLineJoin="Round" StrokeStartLineCap="Flat" StrokeEndLineCap="Flat" Opacity="1"/>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="erect870" Fill="#FFFFFFFF" StrokeThickness="10.89637756" StrokeMiterLimit="4" StrokeLineJoin="Round" StrokeStartLineCap="Flat" StrokeEndLineCap="Flat" Opacity="1">
-                        <Path.Data>
-                            <PathGeometry Figures="m 15.507812 31.5625 c -4.33709 0 -7.8300776 3.491035 -7.8300776 7.828125 v 13.005859 c 0 4.33709 3.4929876 7.828125 7.8300776 7.828125 h 68.984376 c 4.33709 0 7.830078 -3.491035 7.830078 -7.828125 V 39.390625 c 0 -4.33709 -3.492988 -7.828125 -7.830078 -7.828125 z m 68.6875 5.224609 a 2.5889764 2.5889764 0 0 1 2.589844 2.587891 2.5889764 2.5889764 0 0 1 -2.589844 2.589844 2.5889764 2.5889764 0 0 1 -2.58789 -2.589844 2.5889764 2.5889764 0 0 1 2.58789 -2.587891 z" FillRule="NonZero"/>
-                        </Path.Data>
-                        <Path.RenderTransform>
-                            <TranslateTransform X="-5.8928573" Y="3.3928441"/>
-                        </Path.RenderTransform>
-                    </Path>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="erect8724" Fill="#FFFFFFFF" StrokeThickness="10.89637661" StrokeMiterLimit="4" StrokeLineJoin="Round" StrokeStartLineCap="Flat" StrokeEndLineCap="Flat" Opacity="1">
-                        <Path.Data>
-                            <PathGeometry Figures="m 7.6777344 51.386719 v 16.289062 h 0.1015625 c -0.059622 0.413067 -0.1015625 0.831626 -0.1015625 1.261719 0 4.826761 3.8861296 8.712891 8.7128906 8.712891 h 5.998047 V 67.539062 c -1.98666 -0.04755 -3.574219 -1.653845 -3.574219 -3.652343 0 -2.028639 1.633472 -3.66211 3.662109 -3.66211 h 55.052735 c 2.028639 0 3.662109 1.633471 3.662109 3.66211 0 2.028639 -1.63347 3.662109 -3.662109 3.662109 h -0.675781 v 10.101563 h 6.755859 c 4.826761 0 8.712891 -3.88613 8.712891 -8.712891 0 -0.430093 -0.04194 -0.848652 -0.101563 -1.261719 h 0.101563 V 51.386719 Z" FillRule="NonZero"/>
-                        </Path.Data>
-                        <Path.RenderTransform>
-                            <TranslateTransform X="-5.8928573" Y="3.3928441"/>
-                        </Path.RenderTransform>
-                    </Path>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="erect851" Fill="#FFFFFFFF" StrokeThickness="10.89637756" StrokeMiterLimit="4" StrokeLineJoin="Round" StrokeStartLineCap="Flat" StrokeEndLineCap="Flat" Opacity="1">
-                        <Path.Data>
-                            <PathGeometry Figures="M 22.388672 64.517578 V 90.287109 H 76.853516 V 64.517578 Z m 10.46875 6.554688 H 68.572266 V 75 H 32.857422 Z m -0.002 8.21289 h 27.5 v 3.929688 h -27.5 z" FillRule="NonZero"/>
-                        </Path.Data>
-                        <Path.RenderTransform>
-                            <TranslateTransform X="-5.8928573" Y="3.3928441"/>
-                        </Path.RenderTransform>
-                    </Path>
-                </Canvas>
-            </Canvas>
-        </Canvas>
-    </Viewbox>
-
-    <Viewbox x:Key="ShareWhiteIcon" x:Shared="False" Stretch="Uniform">
-        <Canvas Name="esvg85" Width="26.458333" Height="26.458334">
-            <Canvas.RenderTransform>
-                <TranslateTransform X="0" Y="0"/>
-            </Canvas.RenderTransform>
-            <Canvas.Resources>
-                <!--Unknown tag: inkscape:perspective-->
-            </Canvas.Resources>
-            <!--Unknown tag: sodipodi:namedview-->
-            <!--Unknown tag: metadata-->
-            <Canvas Name="elayer15">
-                <Canvas.RenderTransform>
-                    <TranslateTransform X="0" Y="-270.54165"/>
-                </Canvas.RenderTransform>
-                <Canvas Name="eflowRoot8195" Opacity="1">
-                    <Canvas.RenderTransform>
-                        <MatrixTransform Matrix="0.26458333 0 0 0.26458333 1.5591518 269.64396"/>
-                    </Canvas.RenderTransform>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="erect4588" Fill="#FFFFFFFF" StrokeThickness="1.00157475" StrokeMiterLimit="4" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Opacity="1">
-                        <Path.Data>
-                            <PathGeometry Figures="M -8.2205467 51.198215 H 35.350883 v 8.75 H -8.2205467 Z" FillRule="NonZero"/>
-                        </Path.Data>
-                        <Path.RenderTransform>
-                            <RotateTransform Angle="-37.351856"/>
-                        </Path.RenderTransform>
-                    </Path>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="erect45883" Fill="#FFFFFFFF" StrokeThickness="1.00157475" StrokeMiterLimit="4" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Opacity="1">
-                        <Path.Data>
-                            <PathGeometry Figures="m -100.4407 25.33415 h 43.571433 v 8.75 H -100.4407 Z" FillRule="NonZero"/>
-                        </Path.Data>
-                        <Path.RenderTransform>
-                            <MatrixTransform Matrix="-0.7949247 -0.6067081 -0.6067081 0.7949247 0 0"/>
-                        </Path.RenderTransform>
-                    </Path>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="epath45498" Fill="#FFFFFFFF" StrokeThickness="1.36721885" StrokeMiterLimit="4" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Opacity="1">
-                        <Path.Data>
-                            <PathGeometry Figures="M 73.550644 23.969601 A 13.152241 13.293827 0 0 1 60.496707 37.263056 13.152241 13.293827 0 0 1 47.247632 24.168319 13.152241 13.293827 0 0 1 60.103513 10.679116 13.152241 13.293827 0 0 1 73.544766 23.572208" FillRule="NonZero"/>
-                        </Path.Data>
-                    </Path>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="epath454983" Fill="#FFFFFFFF" StrokeThickness="1.36721885" StrokeMiterLimit="4" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Opacity="1">
-                        <Path.Data>
-                            <PathGeometry Figures="M 73.551781 82.684715 A 13.152241 13.293827 0 0 1 60.497844 95.978171 13.152241 13.293827 0 0 1 47.248769 82.883434 13.152241 13.293827 0 0 1 60.10465 69.39423 13.152241 13.293827 0 0 1 73.545903 82.287322" FillRule="NonZero"/>
-                        </Path.Data>
-                    </Path>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="epath4549" Fill="#FFFFFFFF" StrokeThickness="1.36721885" StrokeMiterLimit="4" StrokeLineJoin="Round" StrokeStartLineCap="Round" StrokeEndLineCap="Round" Opacity="1">
-                        <Path.Data>
-                            <PathGeometry Figures="M 36.080133 53.392845 A 13.152241 13.293827 0 0 1 23.026197 66.686301 13.152241 13.293827 0 0 1 9.7771214 53.591564 13.152241 13.293827 0 0 1 22.633003 40.10236 13.152241 13.293827 0 0 1 36.074256 52.995452" FillRule="NonZero"/>
-                        </Path.Data>
-                    </Path>
-                </Canvas>
-            </Canvas>
-        </Canvas>
-    </Viewbox>
-
-    <Viewbox x:Key="InfoWhiteIcon" x:Shared="False" Stretch="Uniform">
-        <Canvas Name="esvg86" Width="26.458333" Height="26.458334">
-            <Canvas.RenderTransform>
-                <TranslateTransform X="0" Y="0"/>
-            </Canvas.RenderTransform>
-            <Canvas.Resources>
-                <!--Unknown tag: inkscape:perspective-->
-                <!--Unknown tag: inkscape:perspective-->
-            </Canvas.Resources>
-            <!--Unknown tag: sodipodi:namedview-->
-            <!--Unknown tag: metadata-->
-            <Canvas Name="elayer16">
-                <Canvas.RenderTransform>
-                    <TranslateTransform X="0" Y="-270.54165"/>
-                </Canvas.RenderTransform>
-                <Canvas Name="eflowRoot8196" Opacity="1">
-                    <Canvas.RenderTransform>
-                        <MatrixTransform Matrix="0.26458333 0 0 0.26458333 1.5591518 269.64396"/>
-                    </Canvas.RenderTransform>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="epath26" Fill="#FFFFFFFF" StrokeThickness="2.08333325">
-                        <Path.Data>
-                            <PathGeometry Figures="m 50.119141 7.6191406 c -23.306263 0 -42.2031254 19.0165144 -42.2031254 42.4707034 0 23.454187 18.8968624 42.46875 42.2031254 42.46875 23.306263 0 42.203125 -19.014563 42.203125 -42.46875 0 -23.454189 -18.896862 -42.4707034 -42.203125 -42.4707034 z m 0 21.2343754 c 2.909854 0 5.27539 2.38027 5.27539 5.308593 0 2.928324 -2.365536 5.310547 -5.27539 5.310547 -2.909855 0 -5.275391 -2.382223 -5.275391 -5.310547 0 -2.928323 2.365536 -5.308593 5.275391 -5.308593 z m -4.220703 16.988281 h 8.441406 v 23.359375 h -8.441406 z" FillRule="NonZero"/>
-                        </Path.Data>
-                        <Path.RenderTransform>
-                            <TranslateTransform X="-5.8928573" Y="3.3928441"/>
-                        </Path.RenderTransform>
-                    </Path>
-                </Canvas>
-            </Canvas>
-        </Canvas>
-    </Viewbox>
-
-    <Viewbox x:Key="BackWhiteIcon" x:Shared="False" Stretch="Uniform">
-        <Canvas Width="26.458333" Height="26.458334">
-            <Canvas.RenderTransform>
-                <TranslateTransform X="0" Y="0"/>
-            </Canvas.RenderTransform>
-            <Canvas>
-                <Canvas.RenderTransform>
-                    <TranslateTransform X="0" Y="-270.54165"/>
-                </Canvas.RenderTransform>
-                <Canvas Opacity="1">
-                    <Canvas.RenderTransform>
-                        <MatrixTransform Matrix="0.26458333 0 0 0.26458333 1.5591518 269.64396"/>
-                    </Canvas.RenderTransform>
-                    <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Fill="#FFFFFFFF" StrokeThickness="1.5">
-                        <Path.Data>
-                            <PathGeometry Figures="m 44.107143 10.803559 c 2.502121 2.502121 5.004242 5.004241 7.506363 7.506362 -9.902009 9.919753 -19.804018 19.839507 -29.706027 29.75926 21.596316 0 43.192633 0 64.788949 0 0 3.549108 0 7.098215 0 10.647323 -21.596316 0 -43.192633 0 -64.788949 0 9.902009 9.919754 19.804018 19.839508 29.706027 29.759262 -2.502121 2.502122 -5.004242 5.004243 -7.506363 7.506365 C 29.910715 81.785701 15.714287 67.589272 1.517859 53.392842 15.714287 39.196414 29.910715 24.999987 44.107143 10.803559 Z" FillRule="NonZero"/>
-                        </Path.Data>
-                    </Path>
-                </Canvas>
-            </Canvas>
-        </Canvas>
-    </Viewbox>
 
     <Viewbox x:Key="CloseWhiteIcon" x:Shared="False" Stretch="Uniform">
         <Canvas Name="esvg87" Width="26.458333" Height="26.458334">
             <Canvas.RenderTransform>
                 <TranslateTransform X="0" Y="0"/>
             </Canvas.RenderTransform>
-            <Canvas.Resources>
-                <!--Unknown tag: inkscape:perspective-->
-            </Canvas.Resources>
-            <!--Unknown tag: sodipodi:namedview-->
-            <!--Unknown tag: metadata-->
             <Canvas Name="elayer17">
                 <Canvas.RenderTransform>
                     <TranslateTransform X="0" Y="-270.54165"/>
@@ -384,11 +42,6 @@
             <Canvas.RenderTransform>
                 <TranslateTransform X="0" Y="0"/>
             </Canvas.RenderTransform>
-            <Canvas.Resources>
-                <!--Unknown tag: inkscape:perspective-->
-            </Canvas.Resources>
-            <!--Unknown tag: sodipodi:namedview-->
-            <!--Unknown tag: metadata-->
             <Canvas Name="elayer18">
                 <Canvas.RenderTransform>
                     <TranslateTransform X="0" Y="-270.54165"/>
@@ -408,11 +61,6 @@
             <Canvas.RenderTransform>
                 <TranslateTransform X="0" Y="0"/>
             </Canvas.RenderTransform>
-            <Canvas.Resources>
-                <!--Unknown tag: inkscape:perspective-->
-            </Canvas.Resources>
-            <!--Unknown tag: sodipodi:namedview-->
-            <!--Unknown tag: metadata-->
             <Canvas Name="elayer19">
                 <Canvas.RenderTransform>
                     <TranslateTransform X="0" Y="-270.54165"/>
@@ -444,11 +92,6 @@
             <Canvas.RenderTransform>
                 <TranslateTransform X="0" Y="0"/>
             </Canvas.RenderTransform>
-            <Canvas.Resources>
-                <!--Unknown tag: inkscape:perspective-->
-            </Canvas.Resources>
-            <!--Unknown tag: sodipodi:namedview-->
-            <!--Unknown tag: metadata-->
             <Canvas Name="elayer10">
                 <Canvas.RenderTransform>
                     <TranslateTransform X="0" Y="-270.54165"/>
@@ -472,11 +115,6 @@
             <Canvas.RenderTransform>
                 <TranslateTransform X="0" Y="0"/>
             </Canvas.RenderTransform>
-            <Canvas.Resources>
-                <!--Unknown tag: inkscape:perspective-->
-            </Canvas.Resources>
-            <!--Unknown tag: sodipodi:namedview-->
-            <!--Unknown tag: metadata-->
             <Canvas Name="elayer111">
                 <Canvas.RenderTransform>
                     <TranslateTransform X="0" Y="-270.54165"/>
@@ -506,9 +144,6 @@
             <Canvas.RenderTransform>
                 <TranslateTransform X="0" Y="0"/>
             </Canvas.RenderTransform>
-            <Canvas.Resources/>
-            <!--Unknown tag: sodipodi:namedview-->
-            <!--Unknown tag: metadata-->
             <Canvas Name="layer11">
                 <Canvas.RenderTransform>
                     <TranslateTransform X="-13.073601" Y="-109.93997"/>
@@ -524,26 +159,6 @@
                         </Path.Data>
                     </Path>
                 </Canvas>
-            </Canvas>
-        </Canvas>
-    </Viewbox>
-
-    <Viewbox x:Key="MenuHover" x:Shared="False" Stretch="Uniform">
-        <Canvas x:Name="svg38" Width="44.979166" Height="10.054167">
-            <Canvas.RenderTransform>
-                <TranslateTransform X="0" Y="0"/>
-            </Canvas.RenderTransform>
-            <!--Unknown tag: sodipodi:namedview-->
-            <!--Unknown tag: metadata-->
-            <Canvas x:Name="layer144">
-                <Canvas.RenderTransform>
-                    <TranslateTransform X="0" Y="-286.94582"/>
-                </Canvas.RenderTransform>
-                <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Name="rect3815" Fill="{DynamicResource TertiaryColor}" StrokeThickness="2.8829999" StrokeMiterLimit="4" StrokeLineJoin="Round" StrokeStartLineCap="Flat" StrokeEndLineCap="Flat" Opacity="1">
-                    <Path.Data>
-                        <PathGeometry Figures="m 0 286.94582 v 10.05417 h 39.948673 c 2.786893 0 5.030493 -2.24208 5.030493 -5.02709 0 -2.785 -2.2436 -5.02708 -5.030493 -5.02708 z" FillRule="NonZero"/>
-                    </Path.Data>
-                </Path>
             </Canvas>
         </Canvas>
     </Viewbox>
@@ -846,8 +461,6 @@
                 <PathGeometry xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Key="clip13" Figures="M 447 85 H 741 V 578 H 447 Z" FillRule="EvenOdd"/>
                 <PathGeometry xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" x:Key="clip15" Figures="M 0 0 H 190 V 234 H 0 Z" FillRule="EvenOdd"/>
             </Canvas.Resources>
-            <!--Unknown tag: metadata-->
-            <!--Unknown tag: sodipodi:namedview-->
             <Path xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Name="path50" Fill="{StaticResource fill1}">
                 <Path.Data>
                     <PathGeometry Figures="m 38.044706 360.54471 c 0 -167.066 135.210004 -302.500004 302.000004 -302.500004 166.79 0 302 135.434004 302 302.500004 0 167.066 -135.21 302.5 -302 302.5 -166.79 0 -302.000004 -135.434 -302.000004 -302.5 z" FillRule="EvenOdd"/>

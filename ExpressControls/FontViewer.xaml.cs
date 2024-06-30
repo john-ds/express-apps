@@ -20,32 +20,17 @@ namespace ExpressControls
     public partial class FontViewer : Window
     {
         private bool IsGlyphsVisible = false;
-        private readonly Glyphs GlyphList = new();
+        private readonly Glyphs GlyphList = [];
         private int GlyphPage = 1;
         private readonly int GlyphPerPage = 66;
 
         private readonly string FontName = "";
-        public KeyValuePair<string, bool>[] CategoryChanges { get; set; } = Array.Empty<KeyValuePair<string, bool>>();
+        public KeyValuePair<string, bool>[] CategoryChanges { get; set; } = [];
         public bool IsFavourite { get; set; } = false;
 
         public FontViewer(string font, ExpressApp app, bool favourite, KeyValuePair<string, bool>[]? categories = null)
         {
-            InitializeComponent();
-
-            // Event handlers for all window types
-            CloseBtn.Click += Funcs.CloseEvent;
-            TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
-            Activated += Funcs.ActivatedEvent;
-            Deactivated += Funcs.DeactivatedEvent;
-
-            // Setup icons
-            BoldBtn.Icon = (Viewbox)TryFindResource(Funcs.ChooseIcon("BoldIcon"));
-            BoldGlyphBtn.Icon = (Viewbox)TryFindResource(Funcs.ChooseIcon("BoldIcon"));
-            ItalicBtn.Icon = (Viewbox)TryFindResource(Funcs.ChooseIcon("ItalicIcon"));
-            ItalicGlyphBtn.Icon = (Viewbox)TryFindResource(Funcs.ChooseIcon("ItalicIcon"));
-
-            // Setup font
-            FontNameTxt.Text = font;
+            Init(font);
             FontName = font;
             Title = font + " - " + Funcs.GetAppName(app);
 
@@ -68,7 +53,7 @@ namespace ExpressControls
             }
                 
 
-            if (app == ExpressApp.Type)
+            if (app == ExpressApp.Type || !CategoryPopupItems.HasItems)
                 CategoryBtn.Visibility = Visibility.Collapsed;
 
             if (favourite)
@@ -77,6 +62,38 @@ namespace ExpressControls
                 FavouriteBtn.ToolTip = Funcs.ChooseLang("RemoveFromFavsStr");
                 IsFavourite = true;
             }
+        }
+
+        public FontViewer(string fontname, FontFamily family)
+        {
+            Init(fontname);
+            FontName = fontname;
+            Title = fontname + " - Font Express";
+
+            DisplayTxt.FontFamily = family;
+            GlyphItems.FontFamily = family;
+
+            CategoryBtn.Visibility = Visibility.Collapsed;
+            FavouriteBtn.Visibility = Visibility.Collapsed;
+        }
+
+        private void Init(string font)
+        {
+            InitializeComponent();
+
+            // Event handlers for all window types
+            CloseBtn.Click += Funcs.CloseEvent;
+            TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
+            Activated += Funcs.ActivatedEvent;
+            Deactivated += Funcs.DeactivatedEvent;
+
+            // Setup icons
+            BoldBtn.Icon = (Viewbox)TryFindResource(Funcs.ChooseIcon("BoldIcon"));
+            BoldGlyphBtn.Icon = (Viewbox)TryFindResource(Funcs.ChooseIcon("BoldIcon"));
+            ItalicBtn.Icon = (Viewbox)TryFindResource(Funcs.ChooseIcon("ItalicIcon"));
+            ItalicGlyphBtn.Icon = (Viewbox)TryFindResource(Funcs.ChooseIcon("ItalicIcon"));
+
+            FontNameTxt.Text = font;
         }
 
         #region Menu Bar

@@ -45,12 +45,18 @@ namespace Present_Express
         private readonly DispatcherTimer EditingTimer = new() { Interval = new TimeSpan(0, 1, 0) };
         private readonly DispatcherTimer TempLblTimer = new() { Interval = new TimeSpan(0, 0, 4) };
 
-        public List<Slide> AllSlides = new();
-        private ObservableCollection<SlideDisplayItem> SlideUIList { get; set; } = new();
+        public List<Slide> AllSlides = [];
+        private ObservableCollection<SlideDisplayItem> SlideUIList { get; set; } = [];
         private int CurrentSlide = -1;
         private double DefaultTiming = 2;
-        private Transition DefaultTransition = new();
+        private readonly Transition DefaultTransition = new();
         private int CurrentMonitor = 0;
+
+        private readonly DropOutStack<Change> UndoStack = new(25);
+        private readonly DropOutStack<Change> RedoStack = new(25);
+        private bool IsUpdateUndoStack = true;
+        public bool HasChanges = false;
+        public MessageBoxResult? ClosingPromptResponse = null;
 
         private readonly BackgroundWorker ExportVideoWorker = new() { WorkerSupportsCancellation = true, WorkerReportsProgress = true };
         private readonly BackgroundWorker ExportImageWorker = new() { WorkerSupportsCancellation = true, WorkerReportsProgress = true };
@@ -87,7 +93,7 @@ namespace Present_Express
             Funcs.SetupDialogs();
 
             // Setup for scrollable ribbon menu
-            Funcs.Tabs = new string[] { "Menu", "Home", "Design", "Show" };
+            Funcs.Tabs = ["Menu", "Home", "Design", "Show"];
             Funcs.ScrollTimer.Tick += Funcs.ScrollTimer_Tick;
             DocTabs.SelectionChanged += Funcs.RibbonTabs_SelectionChanged;
 
@@ -109,7 +115,7 @@ namespace Present_Express
             HideSideBarBtn.Click += Funcs.HideSideBarBtn_Click;
 
             // Storyboard setup
-            string[] OverlayStoryboards = new string[] { "New", "Open", "Cloud", "Save", "Export", "Info" };
+            string[] OverlayStoryboards = ["New", "Open", "Cloud", "Save", "Export", "Info"];
 
             OverlayGrid.Visibility = Visibility.Collapsed;
             ((Storyboard)TryFindResource("OverlayOutStoryboard")).Completed += OverlayStoryboard_Completed;
@@ -215,13 +221,32 @@ namespace Present_Express
 
             Settings.Default.Save();
 
-            if (!IsSlideshowEmpty())
+            if ((ThisFile != "" && HasChanges) || (ThisFile == "" && !IsSlideshowEmpty()))
             {
                 MessageBoxResult SaveChoice = MessageBoxResult.No;
+                bool applySaveChoiceToAll;
 
-                if (Settings.Default.ShowClosingPrompt)
-                    SaveChoice = Funcs.ShowPromptRes("OnExitDescPStr", "OnExitStr",
-                        MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation);
+                if (ClosingPromptResponse != null)
+                {
+                    SaveChoice = (MessageBoxResult)ClosingPromptResponse;
+                }
+                else if (Settings.Default.ShowClosingPrompt)
+                {
+                    if (Application.Current.Windows.OfType<MainWindow>().Count() > 1)
+                    {
+                        (SaveChoice, applySaveChoiceToAll) = Funcs.ShowPromptResWithCheckbox(
+                            "OnExitDescPStr", "OnExitStr", MessageBoxButton.YesNoCancel,
+                            MessageBoxImage.Exclamation);
+
+                        if (applySaveChoiceToAll)
+                            ClosingPromptResponse = SaveChoice;
+                    }
+                    else
+                    {
+                        SaveChoice = Funcs.ShowPromptRes("OnExitDescPStr", "OnExitStr",
+                            MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation);
+                    }
+                }
 
                 if (SaveChoice == MessageBoxResult.Yes)
                 {
@@ -240,6 +265,23 @@ namespace Present_Express
                 }
                 else if (SaveChoice != MessageBoxResult.No)
                     e.Cancel = true;
+
+                if (e.Cancel)
+                    ClosingPromptResponse = null;
+            }
+        }
+
+        private void Main_Closed(object sender, EventArgs e)
+        {
+            if (ClosingPromptResponse != null)
+            {
+                // get next window and close it
+                var next = Application.Current.Windows.OfType<MainWindow>().Where(w => !w.Equals(this)).FirstOrDefault();
+                if (next != null)
+                {
+                    next.ClosingPromptResponse = ClosingPromptResponse;
+                    next.Close();
+                }
             }
         }
 
@@ -315,14 +357,25 @@ namespace Present_Express
                         ChartBtn_Click(ChartBtn, new());
                         break;
                     case "Save":
-                        DocTabs.SelectedIndex = 0;
-                        SavePopup.IsOpen = true;
+                        if (ThisFile == "" || IsSlideshowEmpty())
+                        {
+                            DocTabs.SelectedIndex = 0;
+                            SavePopup.IsOpen = true;
+                        }
+                        else
+                            SaveFile(ThisFile);
                         break;
                     case "Text":
                         TextBtn_Click(TextBtn, new());
                         break;
                     case "PrintPreview":
                         new PrintPreview(PrintDoc, Funcs.ChooseLang("PrintPreviewStr") + " - Present Express").ShowDialog();
+                        break;
+                    case "Undo":
+                        UndoBtn_Click(UndoBtn, new());
+                        break;
+                    case "Redo":
+                        RedoBtn_Click(RedoBtn, new());
                         break;
                     default:
                         break;
@@ -405,7 +458,7 @@ namespace Present_Express
 
                 TemplateLoadingGrid.Visibility = Visibility.Collapsed;
 
-                Random rnd = new Random();
+                Random rnd = new();
                 TemplateItems = new ObservableCollection<TemplateItem>(resp.OrderBy(x => rnd.Next()));
                 TemplateItemsView.Filter = new Predicate<object>(o =>
                 {
@@ -564,10 +617,10 @@ namespace Present_Express
                 slideshow = (SlideshowItem?)x.Deserialize(sr);
             }
 
-            if (slideshow == null || !slideshow.Slides.Any())
+            if (slideshow == null || slideshow.Slides.Count == 0)
                 throw new NullReferenceException();
 
-            List<Slide> invalid = new();
+            List<Slide> invalid = [];
             foreach (Slide item in slideshow.Slides)
             {
                 switch (item.GetSlideType())
@@ -619,9 +672,9 @@ namespace Present_Express
                 }
             }
 
-            slideshow.Slides.RemoveAll(x => invalid.Contains(x));
+            slideshow.Slides.RemoveAll(invalid.Contains);
 
-            if (!slideshow.Slides.Any())
+            if (slideshow.Slides.Count == 0)
                 throw new NullReferenceException();
 
             MainWindow targetWin = this;
@@ -629,6 +682,12 @@ namespace Present_Express
             {
                 targetWin = new();
                 targetWin.Show();
+            }
+            else
+            {
+                UndoStack.Clear();
+                RedoStack.Clear();
+                CheckStackButtons();
             }
 
             if (!filename.StartsWith("https://") && filename != "")
@@ -658,6 +717,7 @@ namespace Present_Express
                 targetWin.AddSlide(item);
 
             targetWin.SelectSlide(0);
+            targetWin.HasChanges = false;
 
             if (!filename.StartsWith("https://") && filename != "")
             {
@@ -730,7 +790,7 @@ namespace Present_Express
                 Settings.Default.Recents.RemoveAt(Settings.Default.Recents.Count - 1);
 
             Settings.Default.Save();
-            List<FileItem> fileItems = new();
+            List<FileItem> fileItems = [];
 
             foreach (string? item in Settings.Default.Recents)
             {
@@ -762,7 +822,7 @@ namespace Present_Express
 
         private void GetFavourites()
         {
-            List<FileItem> fileItems = new();
+            List<FileItem> fileItems = [];
 
             foreach (string? item in Settings.Default.Favourites)
             {
@@ -971,10 +1031,7 @@ namespace Present_Express
             {
                 try
                 {
-                    var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Present_Express.auth-dropbox.secret");
-                    if (info == null)
-                        throw new NullReferenceException();
-
+                    var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Present_Express.auth-dropbox.secret") ?? throw new NullReferenceException();
                     using var sr = new StreamReader(info);
                     string creds = sr.ReadToEnd();
                     DropboxApiKey = creds.Split(":")[0];
@@ -996,7 +1053,7 @@ namespace Present_Express
             }
             else
             {
-                string[] scopeList = new string[] { "files.metadata.read", "files.content.read", "files.content.write", "account_info.read" };
+                string[] scopeList = ["files.metadata.read", "files.content.read", "files.content.write", "account_info.read"];
                 _ = await AcquireAccessToken(scopeList, IncludeGrantedScopes.None);
                 DropboxUsername = await Funcs.GetCurrentAccount(dpxClient ?? GetDropboxClient());
 
@@ -1136,10 +1193,7 @@ namespace Present_Express
                     Funcs.DropboxListener.Start();
                     Process.Start(new ProcessStartInfo(authorizeUri.ToString()) { UseShellExecute = true });
 
-                    var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Present_Express.dropbox-index.html");
-                    if (info == null)
-                        throw new NullReferenceException();
-
+                    var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Present_Express.dropbox-index.html") ?? throw new NullReferenceException();
                     string indexHtml;
                     using (var sr = new StreamReader(info))
                         indexHtml = sr.ReadToEnd().Replace("Please wait...", Funcs.ChooseLang("PleaseWaitStr"));
@@ -1188,7 +1242,7 @@ namespace Present_Express
                 DropboxClient dbx = dpxClient ?? GetDropboxClient();
                 ListFolderResult files = await dbx.Files.ListFolderAsync(folder, includeNonDownloadableFiles: false);
 
-                List<FileItem> res = new();
+                List<FileItem> res = [];
                 if (folder != "")
                 {
                     string parent;
@@ -1327,7 +1381,7 @@ namespace Present_Express
         private byte[] SaveFile()
         {
             ZipFile zip = new();
-            byte[] output = Array.Empty<byte>();
+            byte[] output = [];
             SaveZIP(ref zip);
 
             using (MemoryStream mem = new())
@@ -1357,14 +1411,15 @@ namespace Present_Express
                 {
                     SetRecentFile(filename);
                     ThisFile = filename;
-
-                    Title = Path.GetFileName(filename) + " - Present Express";
                     SetUpInfo();
                 }
                 else
                 {
                     SetUpInfo(true);
                 }
+
+                Title = Path.GetFileName(filename) + " - Present Express";
+                HasChanges = false;
 
                 Funcs.StartStoryboard(this, "OverlayOutStoryboard");
                 CreateTempLabel(Funcs.ChooseLang("SavingCompleteStr"));
@@ -1386,7 +1441,7 @@ namespace Present_Express
 
         private void SaveZIP(ref ZipFile zip)
         {
-            List<string> doNotDelete = new() { "info.xml" };
+            List<string> doNotDelete = ["info.xml"];
 
             foreach (Slide item in AllSlides)
             {
@@ -1452,7 +1507,7 @@ namespace Present_Express
             using (var stream = new StringWriter())
                 using (var writer = XmlWriter.Create(stream, settings))
                 {
-                    xmlSerializer.Serialize(writer, slideshow, new XmlSerializerNamespaces(new[] { XmlQualifiedName.Empty }));
+                    xmlSerializer.Serialize(writer, slideshow, new XmlSerializerNamespaces([XmlQualifiedName.Empty]));
 
                     if (zip.EntryFileNames.Contains("info.xml"))
                         zip.UpdateEntry("info.xml", stream.ToString(), Encoding.UTF8);
@@ -1530,7 +1585,7 @@ namespace Present_Express
 
         private void GetPinned()
         {
-            List<FileItem> fileItems = new();
+            List<FileItem> fileItems = [];
 
             foreach (string? item in Settings.Default.Pinned)
             {
@@ -1697,7 +1752,7 @@ namespace Present_Express
                 catch (ApiException<GetMetadataError> ex)
                 {
                     if (!(ex.ErrorResponse.IsPath && ex.ErrorResponse.AsPath.Value.IsNotFound))
-                        throw ex;
+                        throw;
                 }
 
                 using (MemoryStream stream = new(SaveFile()))
@@ -1979,7 +2034,7 @@ namespace Present_Express
                 else
                     ExportVideoWorker.ReportProgress(0, "images");
 
-                List<string> frames = new();
+                List<string> frames = [];
                 int counter = 1;
                 for (int i = 0; i < config.Sequence.Length; i++)
                 {
@@ -2259,10 +2314,7 @@ namespace Present_Express
                     try
                     {
                         string template = "", css = "", js = "";
-                        var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Present_Express.export-index.html");
-                        if (info == null)
-                            throw new NullReferenceException();
-
+                        var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Present_Express.export-index.html") ?? throw new NullReferenceException();
                         using (var sr = new StreamReader(info))
                             template = sr.ReadToEnd();
 
@@ -2371,7 +2423,7 @@ namespace Present_Express
                 FilenameTxt.Text = Path.GetFileName(ThisFile);
 
                 string[] paths = ThisFile.Split(@"\").Reverse().ToArray();
-                List<FileItem> files = new();
+                List<FileItem> files = [];
 
                 for (int i = 1; i < Math.Min(5, paths.Length); i++)
                 {
@@ -2463,7 +2515,7 @@ namespace Present_Express
             }
             catch
             {
-                files = Array.Empty<string>();
+                files = [];
             }
 
             if (files.Length > 0)
@@ -2532,6 +2584,12 @@ namespace Present_Express
             TimingUpDown.Value = DefaultTiming;
             TimingUpDown.IsEnabled = false;
 
+            UndoStack.Clear();
+            RedoStack.Clear();
+            CheckStackButtons();
+
+            HasChanges = false;
+
             Title = Funcs.ChooseLang("TitlePStr");
             Funcs.CloseOverlayStoryboard(this, "Info");
         }
@@ -2559,11 +2617,13 @@ namespace Present_Express
         /// <param name="info">The <see cref="Slide">Slide</see> data.</param>
         /// <param name="position">The index of the new slide (or -1 to add to the end)</param>
         /// <param name="replace">Whether or not the slide at the specified <paramref name="position"/> should be replaced.</param>
-        public void AddSlide(Slide info, int position = -1, bool replace = true)
+        /// <param name="isDuplicate">Whether or not the new is slide is a duplicate of another.</param>
+        /// <param name="updateUndoStack">Whether or not to update the <see cref="UndoStack"/></param>
+        public void AddSlide(Slide info, int position = -1, bool replace = true, bool isDuplicate = false, bool updateUndoStack = true)
         {
             if (position == -1)
             {
-                // add to end
+                // entire slideshow is being loaded: add to end
                 AllSlides.Add(info);
                 GenerateSlideBitmap(ref info);
                 CreateSlide(info.Bitmap);
@@ -2572,12 +2632,22 @@ namespace Present_Express
             {
                 if (replace)
                 {
+                    // slide is being edited
                     AllSlides[position] = info;
                     GenerateSlideBitmap(ref info);
                     CreateSlide(info.Bitmap, position, true);
                 }
                 else
                 {
+                    // slide is being inserted in place
+                    if (updateUndoStack)
+                        AddActionToUndoStack(new AddSlideChange()
+                        {
+                            Slide = info,
+                            Position = position,
+                            IsDuplicate = isDuplicate
+                        });
+
                     AllSlides.Insert(position, info);
                     GenerateSlideBitmap(ref info);
                     CreateSlide(info.Bitmap, position);
@@ -2703,8 +2773,10 @@ namespace Present_Express
                 PhotoImg.Source = current.Bitmap;
                 EditSlideBtn.MoreVisibility = Visibility.Collapsed;
 
+                IsUpdateUndoStack = false;
                 TimingUpDown.IsEnabled = true;
                 TimingUpDown.Value = current.Timing;
+                IsUpdateUndoStack = true;
 
                 switch (current.GetSlideType())
                 {
@@ -2744,6 +2816,32 @@ namespace Present_Express
         }
 
         /// <summary>
+        /// Moves a slide from the old index to the new index in the slide list.
+        /// </summary>
+        /// <param name="oldIndex">The current index of the slide to be moved.</param>
+        /// <param name="newIndex">The new index where the slide will be placed.</param>
+        /// <param name="updateUndoStack">Whether or not to update the <see cref="UndoStack"/>.</param>
+        private void MoveSlide(int oldIndex, int newIndex, bool updateUndoStack = true)
+        {
+            Slide tempSlide = AllSlides[oldIndex];
+            AllSlides.RemoveAt(oldIndex);
+            AllSlides.Insert(newIndex, tempSlide);
+
+            SlideUIList.RemoveAt(oldIndex);
+            CreateSlide(tempSlide.Bitmap, newIndex);
+            SelectSlide(newIndex);
+
+            if (updateUndoStack)
+                AddActionToUndoStack(new PositionChange()
+                {
+                    OldPosition = oldIndex,
+                    NewPosition = newIndex
+                });
+
+            UpdateSlideNumbers(Math.Min(oldIndex, newIndex));
+        }
+
+        /// <summary>
         /// Checks if a name in <see cref="AllSlides"/> is a duplicate name.
         /// </summary>
         /// <param name="name">The name of the slide to check</param>
@@ -2770,7 +2868,7 @@ namespace Present_Express
 
         private bool IsSlideshowEmpty()
         {
-            return !AllSlides.Any();
+            return AllSlides.Count == 0;
         }
 
         private int GetImageWidth(bool hd = false)
@@ -2817,7 +2915,14 @@ namespace Present_Express
                             {
                                 textEditor.ChosenSlide.Name = textSlide.Name;
                                 textEditor.ChosenSlide.Timing = textSlide.Timing;
-                                textEditor.ChosenSlide.Transition = textSlide.Transition;
+                                textEditor.ChosenSlide.Transition = textSlide.Transition.Clone();
+
+                                AddActionToUndoStack(new PropertyChange()
+                                {
+                                    OldSlide = textSlide,
+                                    NewSlide = textEditor.ChosenSlide,
+                                    Position = CurrentSlide
+                                });
 
                                 AddSlide(textEditor.ChosenSlide, CurrentSlide);
                                 SelectSlide(CurrentSlide);
@@ -2838,6 +2943,14 @@ namespace Present_Express
 
                             if (editor.ShowDialog() == true && editor.ChosenScreenshot != null)
                             {
+                                AddActionToUndoStack(new PropertyChange<BitmapSource>()
+                                {
+                                    Property = SlideshowProperty.Bitmap,
+                                    OldValues = [screenshotSlide.Bitmap],
+                                    NewValues = [editor.ChosenScreenshot],
+                                    Position = CurrentSlide
+                                });
+
                                 screenshotSlide.Bitmap = editor.ChosenScreenshot;
                                 AddSlide(screenshotSlide, CurrentSlide);
                                 SelectSlide(CurrentSlide);
@@ -2858,6 +2971,14 @@ namespace Present_Express
 
                             if (editor.ShowDialog() == true && editor.ChartData != null)
                             {
+                                AddActionToUndoStack(new PropertyChange<ChartItem>()
+                                {
+                                    Property = SlideshowProperty.ChartData,
+                                    OldValues = [chartSlide.ChartData ?? new ChartItem()],
+                                    NewValues = [editor.ChartData],
+                                    Position = CurrentSlide
+                                });
+
                                 chartSlide.ChartData = editor.ChartData;
                                 AddSlide(chartSlide, CurrentSlide);
                                 SelectSlide(CurrentSlide);
@@ -2878,6 +2999,14 @@ namespace Present_Express
 
                             if (editor.ShowDialog() == true && editor.Strokes != null)
                             {
+                                AddActionToUndoStack(new PropertyChange<StrokeCollection>()
+                                {
+                                    Property = SlideshowProperty.Strokes,
+                                    OldValues = [drawingSlide.Strokes],
+                                    NewValues = [editor.Strokes],
+                                    Position = CurrentSlide
+                                });
+
                                 drawingSlide.Strokes = editor.Strokes;
                                 AddSlide(drawingSlide, CurrentSlide);
                                 SelectSlide(CurrentSlide);
@@ -2924,10 +3053,7 @@ namespace Present_Express
             int id = (int)((Button)cmu.PlacementTarget).Tag;
 
             Slide newSlide = AllSlides[id - 1].Clone();
-            GenerateSlideBitmap(ref newSlide);
-
-            AllSlides.Insert(id, newSlide);
-            CreateSlide(newSlide.Bitmap, id - 1);
+            AddSlide(newSlide, id, false, isDuplicate: true);
             SelectSlide(id);
         }
 
@@ -2938,14 +3064,7 @@ namespace Present_Express
 
             if (id > 1)
             {
-                Slide tempSlide = AllSlides[id - 1];
-                AllSlides.RemoveAt(id - 1);
-                AllSlides.Insert(0, tempSlide);
-
-                SlideUIList.RemoveAt(id - 1);
-                CreateSlide(tempSlide.Bitmap, 0);
-
-                SelectSlide(0);
+                MoveSlide(id - 1, 0);
                 SlideScroller.ScrollToTop();
             }
         }
@@ -2956,16 +3075,7 @@ namespace Present_Express
             int id = (int)((Button)cmu.PlacementTarget).Tag;
 
             if (id > 1)
-            {
-                Slide tempSlide = AllSlides[id - 1];
-                AllSlides.RemoveAt(id - 1);
-                AllSlides.Insert(id - 2, tempSlide);
-
-                SlideUIList.RemoveAt(id - 1);
-                CreateSlide(tempSlide.Bitmap, id - 2);
-
-                SelectSlide(id - 2);
-            }
+                MoveSlide(id - 1, id - 2);
         }
 
         private void DownBtn_Click(object sender, RoutedEventArgs e)
@@ -2974,17 +3084,7 @@ namespace Present_Express
             int id = (int)((Button)cmu.PlacementTarget).Tag;
 
             if (id < AllSlides.Count)
-            {
-                Slide tempSlide = AllSlides[id - 1];
-                AllSlides.RemoveAt(id - 1);
-                AllSlides.Insert(id, tempSlide);
-
-                SlideUIList.RemoveAt(id - 1);
-                CreateSlide(tempSlide.Bitmap, id);
-
-                SelectSlide(id);
-                UpdateSlideNumbers(id - 1);
-            }
+                MoveSlide(id - 1, id);
         }
 
         private void BottomBtn_Click(object sender, RoutedEventArgs e)
@@ -2994,29 +3094,30 @@ namespace Present_Express
 
             if (id < AllSlides.Count)
             {
-                Slide tempSlide = AllSlides[id - 1];
-                AllSlides.RemoveAt(id - 1);
-                AllSlides.Insert(AllSlides.Count, tempSlide);
-
-                SlideUIList.RemoveAt(id - 1);
-                CreateSlide(tempSlide.Bitmap, SlideUIList.Count);
-                UpdateSlideNumbers();
-
-                SelectSlide(AllSlides.Count - 1);
+                MoveSlide(id - 1, AllSlides.Count - 1);
                 SlideScroller.ScrollToBottom();
             }
         }
 
-        private void RemoveBtn_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Removes a slide at the specified position.
+        /// </summary>
+        /// <param name="position">The position of the slide to remove</param>
+        /// <param name="updateUndoStack">Whether or not to update the <see cref="UndoStack"/></param>
+        private void RemoveSlide(int position, bool updateUndoStack = true)
         {
-            ContextMenu cmu = (ContextMenu)((MenuItem)sender).Parent;
-            int id = (int)((Button)cmu.PlacementTarget).Tag;
+            if (updateUndoStack)
+                AddActionToUndoStack(new RemoveSlideChange()
+                {
+                    Slide = AllSlides[position],
+                    Position = position
+                });
 
-            AllSlides.RemoveAt(id - 1);
-            SlideUIList.RemoveAt(id - 1);
-            UpdateSlideNumbers(id - 1);
+            AllSlides.RemoveAt(position);
+            SlideUIList.RemoveAt(position);
+            UpdateSlideNumbers(position);
 
-            if (CurrentSlide == id - 1)
+            if (CurrentSlide == position)
             {
                 if (IsSlideshowEmpty())
                 {
@@ -3025,18 +3126,274 @@ namespace Present_Express
                     SlideView.Visibility = Visibility.Collapsed;
                     EditSlideBtn.Visibility = Visibility.Collapsed;
 
+                    IsUpdateUndoStack = false;
                     TimingUpDown.Value = DefaultTiming;
                     TimingUpDown.IsEnabled = false;
+                    IsUpdateUndoStack = true;
                 }
                 else if (CurrentSlide > AllSlides.Count - 1)
-                    SelectSlide(id - 2);
+                    SelectSlide(position - 1);
                 else
-                    SelectSlide(id - 1);
+                    SelectSlide(position);
             }
-            else if (CurrentSlide > id - 1)
+            else if (CurrentSlide > position)
                 SelectSlide(CurrentSlide - 1);
 
             CountLbl.Text = string.Format(Funcs.ChooseLang("SlideCounterStr"), (CurrentSlide + 1).ToString(), AllSlides.Count.ToString());
+        }
+
+        private void RemoveBtn_Click(object sender, RoutedEventArgs e)
+        {
+            ContextMenu cmu = (ContextMenu)((MenuItem)sender).Parent;
+            int id = (int)((Button)cmu.PlacementTarget).Tag;
+
+            RemoveSlide(id - 1);
+        }
+
+        #endregion
+        #region Home > Undo & Redo
+
+        private void PerformAction(Change action)
+        {
+            switch (action.Type)
+            {
+                case ChangeType.Add:
+                    {
+                        AddSlideChange change = (AddSlideChange)action;
+                        AddSlide(change.Slide, change.Position, false, updateUndoStack: false);
+                        SelectSlide(change.Position);
+                    }
+                    break;
+
+                case ChangeType.Remove:
+                    {
+                        RemoveSlideChange change = (RemoveSlideChange)action;
+                        RemoveSlide(change.Position, updateUndoStack: false);
+                    }
+                    break;
+
+                case ChangeType.Move:
+                    {
+                        PositionChange change = (PositionChange)action;
+                        MoveSlide(change.OldPosition, change.NewPosition, updateUndoStack: false);
+                    }
+                    break;
+
+                case ChangeType.Edit:
+                    {
+                        PropertyChange change = (PropertyChange)action;
+                        AddSlide(change.NewSlide, change.Position, updateUndoStack: false);
+                        SelectSlide(change.Position);
+                    }
+                    break;
+
+                case ChangeType.Property:
+                    {
+                        switch (action.Property)
+                        {
+                            case SlideshowProperty.Bitmap:
+                                {
+                                    PropertyChange<BitmapSource> change = (PropertyChange<BitmapSource>)action;
+                                    AllSlides[change.Position].Bitmap = change.NewValues[0];
+
+                                    AddSlide(AllSlides[change.Position], change.Position, updateUndoStack: false);
+                                    SelectSlide(change.Position);
+                                }
+                                break;
+
+                            case SlideshowProperty.ChartData:
+                                {
+                                    PropertyChange<ChartItem> change = (PropertyChange<ChartItem>)action;
+                                    ((ChartSlide)AllSlides[change.Position]).ChartData = change.NewValues[0];
+
+                                    AddSlide(AllSlides[change.Position], change.Position, updateUndoStack: false);
+                                    SelectSlide(change.Position);
+                                }
+                                break;
+
+                            case SlideshowProperty.Strokes:
+                                {
+                                    PropertyChange<StrokeCollection> change = (PropertyChange<StrokeCollection>)action;
+                                    ((DrawingSlide)AllSlides[change.Position]).Strokes = change.NewValues[0];
+
+                                    AddSlide(AllSlides[change.Position], change.Position, updateUndoStack: false);
+                                    SelectSlide(change.Position);
+                                }
+                                break;
+
+                            case SlideshowProperty.Filters:
+                                {
+                                    PropertyChange<FilterItem> change = (PropertyChange<FilterItem>)action;
+                                    ((ImageSlide)AllSlides[change.Position]).Filters = change.NewValues[0];
+
+                                    AddSlide(AllSlides[change.Position], change.Position, updateUndoStack: false);
+                                    SelectSlide(change.Position);
+                                }
+                                break;
+
+                            case SlideshowProperty.Timing:
+                                {
+                                    PropertyChange<double> change = (PropertyChange<double>)action;
+                                    if (change.Position == -1)
+                                    {
+                                        for (int i = 0; i < AllSlides.Count; i++)
+                                        {
+                                            double value = change.NewValues[change.NewValues.Length != AllSlides.Count ? 0 : i];
+                                            AllSlides[i].Timing = value;
+
+                                            if (i == CurrentSlide)
+                                            {
+                                                IsUpdateUndoStack = false;
+                                                TimingUpDown.Value = value;
+                                                IsUpdateUndoStack = true;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        AllSlides[change.Position].Timing = change.NewValues[0];
+
+                                        if (change.Position == CurrentSlide)
+                                        {
+                                            IsUpdateUndoStack = false;
+                                            TimingUpDown.Value = change.NewValues[0];
+                                            IsUpdateUndoStack = true;
+                                        }
+                                    }
+                                }
+                                break;
+
+                            case SlideshowProperty.Transition:
+                                {
+                                    PropertyChange<Transition> change = (PropertyChange<Transition>)action;
+                                    if (change.Position == -1)
+                                    {
+                                        for (int i = 0; i < AllSlides.Count; i++)
+                                        {
+                                            Transition value = change.NewValues[change.NewValues.Length != AllSlides.Count ? 0 : i];
+                                            AllSlides[i].Transition.Duration = value.Duration;
+                                            AllSlides[i].Transition.Type = value.Type;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        AllSlides[change.Position].Transition.Duration = change.NewValues[0].Duration;
+                                        AllSlides[change.Position].Transition.Type = change.NewValues[0].Type;
+                                    }
+                                }
+                                break;
+
+                            default:
+                                break;
+                        }
+                    }
+                    break;
+
+                case ChangeType.Slideshow:
+                    {
+                        switch (action.Property)
+                        {
+                            case SlideshowProperty.BackgroundColour:
+                                {
+                                    SlideshowChange<SolidColorBrush> change = (SlideshowChange<SolidColorBrush>)action;
+                                    Resources["SlideBackColour"] = change.NewValue;
+                                }
+                                break;
+
+                            case SlideshowProperty.SlideSize:
+                                {
+                                    SlideshowChange<double> change = (SlideshowChange<double>)action;
+                                    ChangeSlideSize(change.NewValue, updateUndoStack: false);
+
+                                    if (change.NewValue == 160.0)
+                                        WideBtn.IsChecked = true;
+                                    else
+                                        StandardBtn.IsChecked = true;
+                                }
+                                break;
+
+                            case SlideshowProperty.FitToSlide:
+                                {
+                                    SlideshowChange<Stretch> change = (SlideshowChange<Stretch>)action;
+                                    Resources["FitStretch"] = change.NewValue;
+                                    FitBtn.IsChecked = change.NewValue == Stretch.Uniform;
+                                }
+                                break;
+
+                            case SlideshowProperty.Loop:
+                                {
+                                    SlideshowChange<bool> change = (SlideshowChange<bool>)action;
+                                    LoopBtn.IsChecked = change.NewValue;
+                                }
+                                break;
+
+                            case SlideshowProperty.UseTimings:
+                                {
+                                    SlideshowChange<bool> change = (SlideshowChange<bool>)action;
+                                    UseTimingsBtn.IsChecked = change.NewValue;
+                                }
+                                break;
+
+                            default:
+                                break;
+                        }
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        private void AddActionToUndoStack(Change action)
+        {
+            UndoStack.Push(action);
+            RedoStack.Clear();
+            CheckStackButtons();
+
+            if (ThisFile != "" && !HasChanges)
+            {
+                Title = Path.GetFileName(ThisFile) + "* - Present Express";
+                HasChanges = true;
+            }
+        }
+
+        private void CheckStackButtons()
+        {
+            UndoBtn.IsEnabled = UndoStack.Any();
+            RedoBtn.IsEnabled = RedoStack.Any();
+        }
+
+        private void UndoBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Change? change = UndoStack.Pop();
+            if (change != null)
+            {
+                RedoStack.Push(change);
+                PerformAction(change.Reverse());
+                CheckStackButtons();
+            }
+        }
+
+        private void RedoBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Change? change = RedoStack.Pop();
+            if (change != null)
+            {
+                UndoStack.Push(change);
+                PerformAction(change);
+                CheckStackButtons();
+            }
+        }
+
+        private void UndoBtn_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            UndoBtn.Icon = (Viewbox)(UndoBtn.IsEnabled ? TryFindResource("UndoIcon") : TryFindResource("NoUndoIcon"));
+        }
+
+        private void RedoBtn_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            RedoBtn.Icon = (Viewbox)(RedoBtn.IsEnabled ? TryFindResource("RedoIcon") : TryFindResource("NoRedoIcon"));
         }
 
         #endregion
@@ -3054,10 +3411,7 @@ namespace Present_Express
         {
             try
             {
-                var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Present_Express.auth-photo.secret");
-                if (info == null)
-                    throw new NullReferenceException();
-
+                var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Present_Express.auth-photo.secret") ?? throw new NullReferenceException();
                 using var sr = new StreamReader(info);
                 PictureSelector pct = new(sr.ReadToEnd(), ExpressApp.Present);
 
@@ -3091,6 +3445,13 @@ namespace Present_Express
                         slide.Timing = AllSlides[CurrentSlide].Timing;
                         slide.Transition = AllSlides[CurrentSlide].Transition;
 
+                        AddActionToUndoStack(new PropertyChange()
+                        {
+                            OldSlide = AllSlides[CurrentSlide],
+                            NewSlide = slide,
+                            Position = CurrentSlide
+                        });
+
                         AddSlide(slide, CurrentSlide);
                         SelectSlide(CurrentSlide);
                     }
@@ -3119,7 +3480,7 @@ namespace Present_Express
             bool error = false;
 
             if (PhotoEditorBtn.Visibility == Visibility.Visible && Funcs.PictureOpenDialog.ShowDialog() == true)
-                filenames = new string[] { Funcs.PictureOpenDialog.FileName };
+                filenames = [Funcs.PictureOpenDialog.FileName];
             else if (Funcs.PicturesOpenDialog.ShowDialog() == true)
                 filenames = Funcs.PicturesOpenDialog.FileNames;
             else
@@ -3140,6 +3501,13 @@ namespace Present_Express
                         Transition = AllSlides[CurrentSlide].Transition,
                         Filters = ((ImageSlide)AllSlides[CurrentSlide]).Filters
                     };
+
+                    AddActionToUndoStack(new PropertyChange()
+                    {
+                        OldSlide = AllSlides[CurrentSlide],
+                        NewSlide = slide,
+                        Position = CurrentSlide
+                    });
 
                     AddSlide(slide, CurrentSlide);
                     SelectSlide(CurrentSlide);
@@ -3188,6 +3556,14 @@ namespace Present_Express
 
             if (editor.ShowDialog() == true)
             {
+                AddActionToUndoStack(new PropertyChange<FilterItem>()
+                {
+                    Property = SlideshowProperty.Filters,
+                    OldValues = [slide.Filters],
+                    NewValues = [editor.ChosenFilters],
+                    Position = CurrentSlide
+                });
+
                 slide.Filters = editor.ChosenFilters;
                 AddSlide(slide, CurrentSlide);
                 SelectSlide(CurrentSlide);
@@ -3318,6 +3694,21 @@ namespace Present_Express
                 Colour = new SolidColorBrush(c.Value)
             });
         }
+        
+        private void SetBackColour(SolidColorBrush brush)
+        {
+            SolidColorBrush oldValue = (SolidColorBrush)Resources["SlideBackColour"];
+
+            Resources["SlideBackColour"] = brush;
+            BackgroundPopup.IsOpen = false;
+
+            AddActionToUndoStack(new SlideshowChange<SolidColorBrush>()
+            {
+                Property = SlideshowProperty.BackgroundColour,
+                OldValue = oldValue,
+                NewValue = (SolidColorBrush)Resources["SlideBackColour"]
+            });
+        }
 
         private void BackColourBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -3327,14 +3718,12 @@ namespace Present_Express
 
         private void BackColourBtns_Click(object sender, RoutedEventArgs e)
         {
-            Resources["SlideBackColour"] = (SolidColorBrush)((Button)sender).Tag;
-            BackgroundPopup.IsOpen = false;
+            SetBackColour((SolidColorBrush)((Button)sender).Tag);
         }
 
         private void ApplyColourBtn_Click(object sender, RoutedEventArgs e)
         {
-            Resources["SlideBackColour"] = new SolidColorBrush(BackColourPicker.SelectedColor ?? Colors.White);
-            BackgroundPopup.IsOpen = false;
+            SetBackColour(new SolidColorBrush(BackColourPicker.SelectedColor ?? Colors.White));
         }
 
         #endregion
@@ -3391,8 +3780,8 @@ namespace Present_Express
                     {
                         TransitionOptionsCombo.ItemsSource = new AppDropdownItem[]
                         {
-                            new AppDropdownItem() { Content = Funcs.ChooseLang("FadeSmoothlyStr") },
-                            new AppDropdownItem() { Content = Funcs.ChooseLang("FadeThroughBlackStr") }
+                            new() { Content = Funcs.ChooseLang("FadeSmoothlyStr") },
+                            new() { Content = Funcs.ChooseLang("FadeThroughBlackStr") }
                         };
                     }
                     else
@@ -3418,12 +3807,40 @@ namespace Present_Express
             }
         }
 
+        /// <summary>
+        /// Changes the transition of the slide at the given position.
+        /// </summary>
+        /// <param name="changeFunc">Function to call to change the transition</param>
+        /// <param name="applyToAll">Whether or not to apply the change to all slides</param>
+        private void ChangeTransition(Action changeFunc, bool applyToAll = false)
+        {
+            Transition[] oldTrans;
+            if (applyToAll)
+                oldTrans = AllSlides.Select(x => x.Transition.Clone()).ToArray();
+            else
+                oldTrans = [AllSlides[CurrentSlide].Transition.Clone()];
+
+            changeFunc();
+
+            AddActionToUndoStack(new PropertyChange<Transition>()
+            {
+                Property = SlideshowProperty.Transition,
+                OldValues = oldTrans,
+                NewValues = [AllSlides[CurrentSlide].Transition.Clone()],
+                Position = applyToAll ? -1 : CurrentSlide
+            });
+        }
+
         private void TransitionCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (TransitionPopup.IsOpen == true && CurrentSlide >= 0 && !TransitionComboChange)
             {
                 TransitionComboChange = true;
-                AllSlides[CurrentSlide].Transition.Type = Funcs.GetTransitionType((TransitionCategory)TransitionCombo.SelectedIndex);
+
+                ChangeTransition(() =>
+                {
+                    AllSlides[CurrentSlide].Transition.Type = Funcs.GetTransitionType((TransitionCategory)TransitionCombo.SelectedIndex);
+                });
 
                 LoadTransitionsPopup(true);
                 TransitionComboChange = false;
@@ -3435,9 +3852,13 @@ namespace Present_Express
             if (TransitionPopup.IsOpen == true && CurrentSlide >= 0 && !TransitionComboChange)
             {
                 TransitionComboChange = true;
-                AllSlides[CurrentSlide].Transition.Type = 
-                    Funcs.GetTransitionType((TransitionCategory)TransitionCombo.SelectedIndex, TransitionOptionsCombo.SelectedIndex);
 
+                ChangeTransition(() =>
+                {
+                    AllSlides[CurrentSlide].Transition.Type =
+                        Funcs.GetTransitionType((TransitionCategory)TransitionCombo.SelectedIndex, TransitionOptionsCombo.SelectedIndex);
+                });
+                
                 TransitionComboChange = false;
             }
         }
@@ -3446,7 +3867,10 @@ namespace Present_Express
         {
             if (TransitionPopup.IsOpen == true && CurrentSlide >= 0 && !TransitionComboChange)
             {
-                AllSlides[CurrentSlide].Transition.Duration = TransitionDurationUpDown.Value ?? DefaultTransition.Duration;
+                ChangeTransition(() =>
+                {
+                    AllSlides[CurrentSlide].Transition.Duration = TransitionDurationUpDown.Value ?? DefaultTransition.Duration;
+                });
             }
         }
 
@@ -3456,14 +3880,19 @@ namespace Present_Express
             DefaultTransition.Type =
                 Funcs.GetTransitionType((TransitionCategory)TransitionCombo.SelectedIndex, TransitionOptionsCombo.SelectedIndex);
 
-            foreach (Slide item in AllSlides)
+            if (!IsSlideshowEmpty())
             {
-                item.Transition.Duration = TransitionDurationUpDown.Value ?? 1;
-                item.Transition.Type = 
-                    Funcs.GetTransitionType((TransitionCategory)TransitionCombo.SelectedIndex, TransitionOptionsCombo.SelectedIndex);
+                ChangeTransition(() =>
+                {
+                    foreach (Slide item in AllSlides)
+                    {
+                        item.Transition.Duration = TransitionDurationUpDown.Value ?? 1;
+                        item.Transition.Type =
+                            Funcs.GetTransitionType((TransitionCategory)TransitionCombo.SelectedIndex, TransitionOptionsCombo.SelectedIndex);
+                    }
+                }, true);
+                CreateTempLabel(Funcs.ChooseLang("TransitionsUpdatedStr"));
             }
-
-            CreateTempLabel(Funcs.ChooseLang("TransitionsUpdatedStr"));
         }
 
         #endregion
@@ -3474,19 +3903,26 @@ namespace Present_Express
             SlideSizePopup.IsOpen = true;
         }
 
-        private void SlideSizeBtns_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Changes the size of the slide to the specified width and height.
+        /// </summary>
+        /// <param name="width">The new width of the slide.</param>
+        /// <param name="height">The new height of the slide.</param>
+        /// <param name="updateUndoStack">Whether or not to update the <see cref="UndoStack"/>.</param>
+        private void ChangeSlideSize(double width, double height = 90.0, bool updateUndoStack = true)
         {
-            SlideSizePopup.IsOpen = false;
+            double oldValue = (double)Resources["ImageWidth"];
+            Resources["ImageWidth"] = width;
+            Resources["ImageHeight"] = height;
 
-            if ((string)((RadioButton)sender).Content == "16:9")
+            if (updateUndoStack)
             {
-                Resources["ImageWidth"] = 160.0;
-                Resources["ImageHeight"] = 90.0;
-            }
-            else
-            {
-                Resources["ImageWidth"] = 120.0;
-                Resources["ImageHeight"] = 90.0;
+                AddActionToUndoStack(new SlideshowChange<double>()
+                {
+                    Property = SlideshowProperty.SlideSize,
+                    OldValue = oldValue,
+                    NewValue = (double)Resources["ImageWidth"]
+                });
             }
 
             if (!IsSlideshowEmpty())
@@ -3506,9 +3942,23 @@ namespace Present_Express
             }
         }
 
+        private void SlideSizeBtns_Click(object sender, RoutedEventArgs e)
+        {
+            SlideSizePopup.IsOpen = false;
+            ChangeSlideSize((string)((RadioButton)sender).Content == "16:9" ? 160.0 : 120.0);
+        }
+
         private void FitBtn_Click(object sender, RoutedEventArgs e)
         {
+            Stretch oldValue = (Stretch)Resources["FitStretch"];
             Resources["FitStretch"] = FitBtn.IsChecked == true ? Stretch.Uniform : Stretch.Fill;
+
+            AddActionToUndoStack(new SlideshowChange<Stretch>()
+            {
+                Property = SlideshowProperty.FitToSlide,
+                OldValue = oldValue,
+                NewValue = (Stretch)Resources["FitStretch"]
+            });
         }
 
         #endregion
@@ -3517,15 +3967,36 @@ namespace Present_Express
         private void TimingUpDown_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             if (IsLoaded && CurrentSlide >= 0)
+            {
+                double oldValue = AllSlides[CurrentSlide].Timing;
                 AllSlides[CurrentSlide].Timing = TimingUpDown.Value ?? DefaultTiming;
+
+                if (IsUpdateUndoStack)
+                    AddActionToUndoStack(new PropertyChange<double>()
+                    {
+                        Property = SlideshowProperty.Timing,
+                        OldValues = [oldValue],
+                        NewValues = [AllSlides[CurrentSlide].Timing],
+                        Position = CurrentSlide
+                    });
+            }
         }
 
         private void ApplyAllBtn_Click(object sender, RoutedEventArgs e)
         {
+            double[] oldValues = AllSlides.Select(x => x.Timing).ToArray();
             DefaultTiming = TimingUpDown.Value ?? DefaultTiming;
 
             foreach (Slide item in AllSlides)
                 item.Timing = DefaultTiming;
+
+            AddActionToUndoStack(new PropertyChange<double>()
+            {
+                Property = SlideshowProperty.Timing,
+                OldValues = oldValues,
+                NewValues = [DefaultTiming],
+                Position = -1
+            });
 
             CreateTempLabel(Funcs.ChooseLang("TimingsUpdatedStr"));
         }
@@ -3594,6 +4065,29 @@ namespace Present_Express
         }
 
         #endregion
+        #region Show > Loop & Use Timings
+
+        private void LoopBtn_Click(object sender, RoutedEventArgs e)
+        {
+            AddActionToUndoStack(new SlideshowChange<bool>()
+            {
+                Property = SlideshowProperty.Loop,
+                OldValue = LoopBtn.IsChecked != true,
+                NewValue = LoopBtn.IsChecked == true
+            });
+        }
+
+        private void UseTimingsBtn_Click(object sender, RoutedEventArgs e)
+        {
+            AddActionToUndoStack(new SlideshowChange<bool>()
+            {
+                Property = SlideshowProperty.UseTimings,
+                OldValue = UseTimingsBtn.IsChecked != true,
+                NewValue = UseTimingsBtn.IsChecked == true
+            });
+        }
+
+        #endregion
         #region Show > Displays
 
         private void MonitorBtn_Click(object sender, RoutedEventArgs e)
@@ -3651,7 +4145,7 @@ namespace Present_Express
 
                 IEnumerable<ReleaseItem> updates = resp.Where(x =>
                 {
-                    return new Version(x.Version) > (Assembly.GetCallingAssembly().GetName().Version ?? new Version(1, 0, 0));
+                    return new Version(x.Version) > (Assembly.GetExecutingAssembly().GetName().Version ?? new Version(1, 0, 0));
 
                 }).OrderByDescending(x => new Version(x.Version));
 
@@ -3839,6 +4333,30 @@ namespace Present_Express
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return (double)value == 2;
+        }
+    }
+
+    public class DropOutStack<T>(int capacity) : LinkedList<T>
+    {
+        private readonly int _capacity = capacity;
+
+        public void Push(T item)
+        {
+            if (Count >= _capacity)
+                RemoveLast();
+
+            AddFirst(item);
+        }
+
+        public T? Pop()
+        {
+            var item = First;
+            if (item != null)
+            {
+                RemoveFirst();
+                return item.Value;
+            }
+            return default;
         }
     }
 }

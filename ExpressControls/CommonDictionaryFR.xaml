@@ -1644,8 +1644,8 @@ Si ce problème persiste, il se peut que nous rencontrions des difficultés. Veu
     <System:String x:Key="SearchHelpTextSlidesStr">texte police titre diapo</System:String>
     <System:String x:Key="SearchHelpDrawingsStr">dessin toile</System:String>
     <System:String x:Key="SearchHelpSlidesSetupDesignStr">design conception minut arrière couleur taille ajuste trans</System:String>
-    <System:String x:Key="MoveToTopStr">Déplacer vers le haut</System:String>
-    <System:String x:Key="MoveToBottomStr">Déplacer vers le bas</System:String>
+    <System:String x:Key="MoveToTopStr">Déplacer au début</System:String>
+    <System:String x:Key="MoveToBottomStr">Déplacer à la fin</System:String>
     <System:String x:Key="BusinessStr">Entreprise</System:String>
     <System:String x:Key="AlbumsStr">Albums</System:String>
     <System:String x:Key="DropboxOpenPresentStr">Sélectionnez un fichier PRESENT à ouvrir dans Present Express...</System:String>
@@ -1714,7 +1714,7 @@ Si le problème persiste, cliquez sur "Signaler" ci-dessous.</System:String>
     <System:String x:Key="TransitionBottomStr">À partir du bas</System:String>
     <System:String x:Key="TransitionsUpdatedStr">Transitions mises à jour pour toutes les diapositives</System:String>
     <System:String x:Key="SearchHelpFiltersCategoriesStr">filtre catégori organise favori</System:String>
-    <System:String x:Key="SearchHelpComparingFontsStr">compar paire police</System:String>
+    <System:String x:Key="SearchHelpComparingFontsStr">compar paire police télécharge google</System:String>
     <System:String x:Key="SearchHelpOptionsFStr">démarr vue import export paramètre option catégori organise favori police généra langue son noir sombre</System:String>
     <System:String x:Key="SearchHelpAnalysingStorageStr">dossier lecteur analyse stockage pourcentage fichier</System:String>
     <System:String x:Key="SearchHelpViewTabStr">dossier fichier tri filtre</System:String>
@@ -1751,7 +1751,7 @@ Si le problème persiste, cliquez sur "Signaler" ci-dessous.</System:String>
     <System:String x:Key="GnDisplayModeStr">Mode d'affichage par défaut</System:String>
     <System:String x:Key="HelpBrowsingFontsStr">Recherche de polices</System:String>
     <System:String x:Key="HelpFiltersCategoriesStr">Filtres et catégories</System:String>
-    <System:String x:Key="HelpComparingFontsStr">Comparaison des polices</System:String>
+    <System:String x:Key="HelpComparingFontsStr">Télécharger et comparer des polices</System:String>
     <System:String x:Key="HelpOptionsFStr">Paramètres et personnalisation</System:String>
     <System:String x:Key="SearchHelpBrowsingFontsStr">prise démar police parcourir gras italique taille list grille aper</System:String>
     <System:String x:Key="AboutQuotaStr">À propos de Quota Express</System:String>
@@ -1775,5 +1775,33 @@ Si le problème persiste, cliquez sur "Signaler" ci-dessous.</System:String>
     <System:String x:Key="HelpViewTabStr">L'onglet Affichage</System:String>
     <System:String x:Key="HelpExportingDataStr">Exportation de données</System:String>
     <System:String x:Key="HelpOptionsQStr">Paramètres et personnalisation</System:String>
+    <System:String x:Key="PageSimpleStr">Page {0}</System:String>
+    <System:String x:Key="DownloadFontsStr">Télécharger les polices</System:String>
+    <System:String x:Key="DownloadFontsToolStr">Téléchargez et installez des polices à partir de Google Fonts sans quitter l'application</System:String>
+    <System:String x:Key="DownloadFontsTitleStr">Télécharger des Polices - Font Express</System:String>
+    <System:String x:Key="NoNewFontsFoundStr">Nous n'avons pas trouvé de nouvelles polices. Veuillez essayer une autre recherche.</System:String>
+    <System:String x:Key="LoadingFontsStr">Chargement des polices...</System:String>
+    <System:String x:Key="SearchNewFontsStr">Rechercher de nouvelles polices</System:String>
+    <System:String x:Key="InstallStr">Installer</System:String>
+    <System:String x:Key="DownloadFontErrorDescStr" xml:space="preserve">Une erreur s'est produite lors du chargement des polices. Veuillez vérifier votre connexion Internet.
+
+Si ce problème persiste, il se peut que nous rencontrions des difficultés. Veuillez réessayer plus tard et vérifier les mises à jour de l'application.</System:String>
+    <System:String x:Key="DownloadFontErrorStr">Erreur de chargement de la police</System:String>
+    <System:String x:Key="InstalledStr">Installée</System:String>
+    <System:String x:Key="InstallFontErrorDescStr">Nous n'avons pas pu télécharger ou installer cette police. Si ce problème persiste, cliquez sur le bouton «&#160;Signaler&#160;» ci-dessous pour nous en informer.</System:String>
+    <System:String x:Key="InstallFontErrorStr">Erreur d'installation de la police</System:String>
+    <System:String x:Key="FnStyleStr">Style de police :</System:String>
+    <System:String x:Key="FnStyleSansStr">Sans serif</System:String>
+    <System:String x:Key="FnStyleSerifStr">Serif</System:String>
+    <System:String x:Key="FnStyleMonoStr">Largeur fixe</System:String>
+    <System:String x:Key="FnStyleHandStr">Manuscrit</System:String>
+    <System:String x:Key="FnStyleDisplayStr">Affichage</System:String>
+    <System:String x:Key="ApplyAllWindowsStr">Appliquer à toutes les fenêtres ouvertes</System:String>
+    <System:String x:Key="QuickTipStr">Petit conseil</System:String>
+    <System:String x:Key="InsightLargeFolderStr">Votre dossier "{0}" est assez volumineux ({1}). Considérez la suppression de tous les fichiers non nécessaires dedans.</System:String>
+    <System:String x:Key="InsightLargeFileStr">Votre fichier "{0}" est assez volumineux ({1}). Considérez de réduire sa taille pour économiser de l'espace.</System:String>
+    <System:String x:Key="InsightManyFilesStr">Vous avez {0} fichiers dans ce dossier. Considérez de les diviser en sous-dossiers.</System:String>
+    <System:String x:Key="InsightDiffTypesStr">Il existe de nombreux types de fichiers différents dans ce dossier. Considérez de les diviser en sous-dossiers.</System:String>
+    <System:String x:Key="InsightFileModifiedStr">{0} fichiers dans ce dossier n'ont pas été modifiés depuis plus de 2 ans. Considérez de les supprimer si vous n'en avez plus besoin.</System:String>
 
 </ResourceDictionary>

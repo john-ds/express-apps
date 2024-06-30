@@ -22,6 +22,7 @@
             <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" Margin="0,0,0,20">
                 <DockPanel Margin="0,0,0,10" DockPanel.Dock="Bottom">
                     <ContentControl x:Name="IconPic" HorizontalAlignment="Left" Margin="20,20,0,0" Width="32" Content="{DynamicResource InfoIcon}" Height="32" VerticalAlignment="Top" Focusable="False"/>
+                    <ex:AppCheckBox x:Name="ApplyToAllBtn" DockPanel.Dock="Bottom" Margin="20,20,20,0" Content="{DynamicResource ApplyAllWindowsStr}" HorizontalContentAlignment="Stretch" IsChecked="False" IconSize="20" FontSize="14" HorizontalAlignment="Left"/>
                     <ex:AppTextBox x:Name="InputTxt" DockPanel.Dock="Bottom" Margin="20,20,20,0" HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
                     <FlowDocumentScrollViewer Foreground="{DynamicResource TextColor}" Margin="20,27,25,0" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled">
                         <FlowDocument x:Name="FlowDoc" Style="{DynamicResource FlowStyle}">

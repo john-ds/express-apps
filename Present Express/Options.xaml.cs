@@ -430,7 +430,7 @@ namespace Present_Express
             UpdateSaveShortcut();
         }
 
-        private void UpdateSaveShortcut()
+        private static void UpdateSaveShortcut()
         {
             foreach (var win in Application.Current.Windows.OfType<MainWindow>())
             {
@@ -792,11 +792,11 @@ namespace Present_Express
 
         [XmlArray("fav-files")]
         [XmlArrayItem("data")]
-        public string[] FavouriteFiles { get; set; } = Array.Empty<string>();
+        public string[] FavouriteFiles { get; set; } = [];
 
         [XmlArray("pinned-folders")]
         [XmlArrayItem("data")]
-        public string[] PinnedFolders { get; set; } = Array.Empty<string>();
+        public string[] PinnedFolders { get; set; } = [];
     }
 
     public class AppearanceOptions

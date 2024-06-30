@@ -8,7 +8,7 @@
         xmlns:ex="clr-namespace:ExpressControls;assembly=ExpressControls"
         xmlns:controls1="clr-namespace:WpfToolkit.Controls;assembly=VirtualizingWrapPanel"
         mc:Ignorable="d" xmlns:System="clr-namespace:System;assembly=mscorlib" x:Name="Main"
-        Title="{DynamicResource TitlePStr}" Loaded="Main_Loaded" Closing="Main_Closing" Height="680" Width="1180" MinWidth="600" d:FontFamily="Inter" MinHeight="415" Style="{DynamicResource ChromeWindowStyle}">
+        Title="{DynamicResource TitlePStr}" Loaded="Main_Loaded" Closing="Main_Closing" Closed="Main_Closed" Height="680" Width="1180" MinWidth="600" d:FontFamily="Inter" MinHeight="415" Style="{DynamicResource ChromeWindowStyle}">
     <Window.Resources>
         <SolidColorBrush x:Key="SlideBackColour" Color="White"/>
         <System:Double x:Key="ImageWidth">160</System:Double>
@@ -297,6 +297,8 @@
         <CommandBinding Command="ApplicationCommands.Save" Executed="CommandBinding_Executed"/>
         <CommandBinding Command="{StaticResource TextCommand}" Executed="CommandBinding_Executed"/>
         <CommandBinding Command="ApplicationCommands.PrintPreview" Executed="CommandBinding_Executed"/>
+        <CommandBinding Command="ApplicationCommands.Undo" Executed="CommandBinding_Executed"/>
+        <CommandBinding Command="ApplicationCommands.Redo" Executed="CommandBinding_Executed"/>
     </Window.CommandBindings>
     <Window.InputBindings>
         <KeyBinding Key="F12" Command="ApplicationCommands.SaveAs" />
@@ -373,6 +375,8 @@
                                     </Style>
                                 </ScrollViewer.Resources>
                                 <StackPanel x:Name="HomePnl" Margin="12,4,2,0" Background="{DynamicResource SecondaryColor}" Orientation="Horizontal" CanHorizontallyScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" HorizontalAlignment="Left">
+                                    <ex:MenuButton x:Name="UndoBtn" Click="UndoBtn_Click" IsEnabledChanged="UndoBtn_IsEnabledChanged" TextVisibility="Collapsed" Icon="{DynamicResource NoUndoIcon}" ToolTip="{DynamicResource UndoStr}" IsEnabled="False"/>
+                                    <ex:MenuButton x:Name="RedoBtn" Click="RedoBtn_Click" IsEnabledChanged="RedoBtn_IsEnabledChanged" TextVisibility="Collapsed" Icon="{DynamicResource NoRedoIcon}" ToolTip="{DynamicResource RedoStr}" IsEnabled="False"/>
                                     <ex:MenuButton x:Name="SlidesBtn" Click="SlidesBtn_Click" Text="{DynamicResource SlidesStr}" Icon="{DynamicResource PictureFileIcon}" ToolTip="{DynamicResource SlidesToolStr}"/>
                                     <ex:MenuButton x:Name="EditSlideBtn" Click="EditSlideBtn_Click" Text="Edit this slide" Icon="{DynamicResource EditIcon}" Visibility="Collapsed"/>
                                     <Separator Style="{StaticResource VerticalSeparator}"/>
@@ -459,8 +463,8 @@
                                     <ex:MenuButton x:Name="RunBtn" Click="RunBtn_Click" IsRSquared="True" Text="{DynamicResource RunStr}" Icon="{DynamicResource PlayIcon}" ToolTip="{DynamicResource RunToolStr}"/>
                                     <Separator Style="{StaticResource VerticalSeparator}" Margin="-12,0" Width="15"/>
                                     <ex:MenuButton x:Name="RunOptionsBtn" Click="RunOptionsBtn_Click" IsLSquared="True" TextVisibility="Collapsed" Icon="{DynamicResource DownIcon}" IsMini="True" ToolTip="{DynamicResource RunOptionsStr}" Padding="2,0,6,0" Height="32"/>
-                                    <ex:AppCheckBox x:Name="LoopBtn" Content="{DynamicResource LoopStr}" ToolTip="{DynamicResource LoopToolStr}" IsChecked="True"/>
-                                    <ex:AppCheckBox x:Name="UseTimingsBtn" Content="{DynamicResource SlideTimingsStr}" ToolTip="{DynamicResource SlideTimingsToolStr}" IsChecked="True"/>
+                                    <ex:AppCheckBox x:Name="LoopBtn" Click="LoopBtn_Click" Content="{DynamicResource LoopStr}" ToolTip="{DynamicResource LoopToolStr}" IsChecked="True"/>
+                                    <ex:AppCheckBox x:Name="UseTimingsBtn" Click="UseTimingsBtn_Click" Content="{DynamicResource SlideTimingsStr}" ToolTip="{DynamicResource SlideTimingsToolStr}" IsChecked="True"/>
                                     <Separator Style="{StaticResource VerticalSeparator}"/>
                                     <ex:MenuButton x:Name="MonitorBtn" Click="MonitorBtn_Click" Text="{DynamicResource ChooseMonitorStr}" Icon="{DynamicResource MonitorIcon}" ToolTip="{DynamicResource ChooseMonitorToolStr}" MoreVisibility="Visible"/>
                                 </StackPanel>

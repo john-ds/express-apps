@@ -92,10 +92,7 @@ namespace ExpressControls
             }
         }
 
-        public static void ShowColoursPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            bool b = Convert.ToBoolean(e.NewValue);
-        }
+        public static void ShowColoursPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {}
 
         public static readonly DependencyProperty ColoursProperty = DependencyProperty.Register(nameof(Colours), typeof(SolidColorBrush[]), typeof(AppDropdownItem), new PropertyMetadata(null));
 

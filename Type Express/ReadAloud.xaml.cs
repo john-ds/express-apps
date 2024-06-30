@@ -62,10 +62,10 @@ namespace Type_Express
                     Content = $"{voice.VoiceInfo.Name} — {voice.VoiceInfo.Culture.DisplayName}",
                     Tag = voice.VoiceInfo.Name
                 };
-            }).Concat(new AppDropdownItem[]
-            {
-                new AppDropdownItem() { Content = Funcs.ChooseLang("GetMoreVoicesStr"), Tag = "/more/" }
-            });
+            }).Concat(
+            [
+                new() { Content = Funcs.ChooseLang("GetMoreVoicesStr"), Tag = "/more/" }
+            ]);
 
             VoiceCombo.SelectedIndex = selectedIdx;
             SpeechTTS.SelectVoice((string)((AppDropdownItem)VoiceCombo.SelectedItem).Tag);
@@ -124,7 +124,7 @@ namespace Type_Express
                 TTSTxt.Selection.Select(tr.Start, tr.End);
         }
 
-        private TextRange? FindWordFromPosition(TextPointer position, string word)
+        private static TextRange? FindWordFromPosition(TextPointer position, string word)
         {
             while (position != null)
             {

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ExpressControls
+﻿namespace ExpressControls
 {
     public enum ExpressApp
     {
@@ -172,6 +166,11 @@ namespace ExpressControls
         None, A, B, C, F, T, M, Star
     }
 
+    public enum FontCategoryType
+    {
+        Unknown, SansSerif, Serif, Monospace, Handwriting, Display
+    }
+
     public enum PreviewTextOption
     {
         Word, Sentence, Paragraph, Custom
@@ -190,5 +189,16 @@ namespace ExpressControls
     public enum FolderTypeCategory
     {
         None, Documents, Pictures, Music, Video
+    }
+
+    public enum ChangeType
+    {
+        Unknown, Add, Remove, Move, Edit, Property, Slideshow
+    }
+
+    public enum SlideshowProperty
+    {
+        Unknown, BackgroundColour, SlideSize, FitToSlide, Loop, UseTimings,
+        Timing, Transition, Bitmap, ChartData, Strokes, Filters
     }
 }

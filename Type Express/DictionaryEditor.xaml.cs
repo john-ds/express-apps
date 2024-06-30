@@ -62,18 +62,13 @@ namespace Type_Express
 
         private StringCollection GetDictionary()
         {
-            switch (ChosenLanguage)
+            return ChosenLanguage switch
             {
-                case Languages.French:
-                    return Settings.Default.DictFR;
-                case Languages.Spanish:
-                    return Settings.Default.DictES;
-                case Languages.Italian:
-                    return Settings.Default.DictIT;
-                case Languages.English:
-                default:
-                    return Settings.Default.DictEN;
-            }
+                Languages.French => Settings.Default.DictFR,
+                Languages.Spanish => Settings.Default.DictES,
+                Languages.Italian => Settings.Default.DictIT,
+                _ => Settings.Default.DictEN,
+            };
         }
 
         private void LangCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)

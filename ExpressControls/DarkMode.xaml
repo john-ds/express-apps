@@ -5,9 +5,9 @@
     <Color x:Key="BackDirectColor" R="38" G="38" B="38" A="255"/>
     <Color x:Key="BackTransDirectColor" R="38" G="38" B="38" A="0"/>
     <SolidColorBrush x:Key="TextColor" Color="#FFFFFFFF"/>
-    <SolidColorBrush x:Key="BackSpecialColor" Color="#FF3E3E3E"/>
-    <SolidColorBrush x:Key="SecondaryColor" Color="#FF3E3E3E"/>
-    <SolidColorBrush x:Key="TertiaryColor" Color="#FF555555"/>
+    <SolidColorBrush x:Key="BackSpecialColor" Color="#FF253441"/>
+    <SolidColorBrush x:Key="SecondaryColor" Color="#FF253441"/>
+    <SolidColorBrush x:Key="TertiaryColor" Color="#FF3E3E3E"/>
     <SolidColorBrush x:Key="AcryllicColor" Opacity="0.6" Color="#FF262626"/>
     <SolidColorBrush x:Key="Gray1" Color="#FF888888"/>
     <SolidColorBrush x:Key="Gray2" Color="#FFAEAEAE"/>

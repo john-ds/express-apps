@@ -278,9 +278,15 @@
                                                     </ContextMenu>
                                                 </ex:AppButton.ContextMenu>
                                             </ex:AppButton>
+                                            <StackPanel x:Name="InsightStack" Margin="0,0,0,10" Visibility="Collapsed">
+                                                <Rectangle Fill="{DynamicResource AppColor}" Height="2" Width="50" Margin="0,10"/>
+                                                <ContentControl Width="32" Height="32" Margin="10,5,10,0" HorizontalAlignment="Center" Focusable="False" Content="{DynamicResource StarIcon}"/>
+                                                <TextBlock Margin="10,5,10,0" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap" Text="{DynamicResource QuickTipStr}" HorizontalAlignment="Center" TextAlignment="Center"/>
+                                                <TextBlock x:Name="InsightTxt" Margin="10,10,10,5" FontSize="14" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center"/>
+                                            </StackPanel>
                                             <StackPanel x:Name="BreakdownStack" Margin="0,0,0,10" Visibility="Collapsed">
                                                 <Rectangle Fill="{DynamicResource AppColor}" Height="2" Width="50" Margin="0,10"/>
-                                                <TextBlock Margin="10,10,10,0" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap" Text="{DynamicResource BreakdownStr}" HorizontalAlignment="Center"/>
+                                                <TextBlock Margin="10,10,10,0" FontSize="15" FontWeight="SemiBold" TextWrapping="Wrap" Text="{DynamicResource BreakdownStr}" HorizontalAlignment="Center" TextAlignment="Center"/>
                                                 <ItemsControl x:Name="BreakdownItems" Margin="10">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>

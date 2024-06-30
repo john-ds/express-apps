@@ -23,7 +23,7 @@
             <SolidColorBrush x:Key="AppHoverColor" Color="#26FF9E1F"/>
             <SolidColorBrush x:Key="AppPressedColor" Color="#59FF9E1F"/>
             <SolidColorBrush x:Key="AppLightColor" Color="#FFFFAB58"/>
-            <SolidColorBrush x:Key="AppLinkColor" Color="#FFC17100"/>
+            <SolidColorBrush x:Key="AppLinkColor" Color="#FFA05E00"/>
             <Color x:Key="AppDirectColor" R="255" G="141" B="42" A="255"/>
 
         </ResourceDictionary>

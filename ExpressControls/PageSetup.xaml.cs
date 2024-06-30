@@ -21,7 +21,7 @@ namespace ExpressControls
     public partial class PageSetup : Window
     {
         public PrintDocument document;
-        readonly List<PaperSize> PaperSizes = new();
+        readonly List<PaperSize> PaperSizes = [];
         readonly Margins PageMargins;
         private bool UsingMilimetres = true;
 
@@ -39,7 +39,7 @@ namespace ExpressControls
             document = doc;
 
             // Setup paper sizes
-            List<AppDropdownItem> pageSizes = new();
+            List<AppDropdownItem> pageSizes = [];
             AppDropdownItem? selectedPaper = null;
             string currentPaper = document.DefaultPageSettings.PaperSize.PaperName;
 

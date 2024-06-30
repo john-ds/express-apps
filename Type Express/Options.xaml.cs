@@ -159,17 +159,17 @@ namespace Type_Express
 
         private void LoadColourSchemes()
         {
-            List<AppDropdownItem> clrItems = new();
+            List<AppDropdownItem> clrItems = [];
             for (int i = 0; i < Funcs.ColourSchemes.Length; i++)
             {
-                List<SolidColorBrush> clrs = new();
+                List<SolidColorBrush> clrs = [];
                 foreach (var item in Funcs.ColourSchemes[i])
                     clrs.Add(Funcs.ColorToBrush(item));
 
                 clrItems.Add(new AppDropdownItem()
                 {
                     Content = Funcs.GetTypeColourSchemeName((ColourScheme)i),
-                    Colours = clrs.ToArray(),
+                    Colours = [.. clrs],
                     ShowColours = true
                 });
             }
@@ -177,14 +177,14 @@ namespace Type_Express
             Color[]? customColours = MainWindow.GetCustomColours();
             if (customColours != null)
             {
-                List<SolidColorBrush> clrs = new();
+                List<SolidColorBrush> clrs = [];
                 foreach (var item in customColours)
                     clrs.Add(Funcs.ColorToBrush(item));
 
                 clrItems.Add(new AppDropdownItem()
                 {
                     Content = Funcs.GetTypeColourSchemeName(ColourScheme.Custom),
-                    Colours = clrs.ToArray(),
+                    Colours = [.. clrs],
                     ShowColours = true
                 });
             }
@@ -611,7 +611,7 @@ namespace Type_Express
             }
         }
 
-        private void UpdateWordCounts()
+        private static void UpdateWordCounts()
         {
             foreach (var win in Application.Current.Windows.OfType<MainWindow>())
             {
@@ -633,7 +633,7 @@ namespace Type_Express
             UpdateSaveShortcut();
         }
 
-        private void UpdateSaveShortcut()
+        private static void UpdateSaveShortcut()
         {
             foreach (var win in Application.Current.Windows.OfType<MainWindow>())
             {
@@ -672,7 +672,7 @@ namespace Type_Express
 
         private void StartFontSearch()
         {
-            fontItems ??= new FontItems();
+            fontItems ??= [];
             if (FontSearchTxt.Text.Length > 0)
             {
                 FontExitSearchBtn.Visibility = Visibility.Visible;
@@ -683,7 +683,7 @@ namespace Type_Express
                     return x.Contains(FontSearchTxt.Text, StringComparison.CurrentCultureIgnoreCase);
                 });
 
-                if (results.Count() == 0)
+                if (!results.Any())
                 {
                     FontSearchHeaderLbl.Text = Funcs.ChooseLang("NoSearchResultsStr");
                     FavouriteList.ItemsSource = null;
@@ -789,7 +789,7 @@ namespace Type_Express
         {
             if (Funcs.TextSaveDialog.ShowDialog() == true)
             {
-                fontItems ??= new FontItems();
+                fontItems ??= [];
                 File.WriteAllLines(Funcs.TextSaveDialog.FileName, fontItems, Encoding.Unicode);
 
                 _ = Process.Start(new ProcessStartInfo()
@@ -832,11 +832,7 @@ namespace Type_Express
             if (settings.Defaults.CustomColourScheme != null)
             {
                 Settings.Default.CustomColourScheme.Clear();
-                Settings.Default.CustomColourScheme.AddRange(settings.Defaults.CustomColourScheme.Select(x =>
-                {
-                    return Funcs.ColorHex(x);
-
-                }).ToArray());
+                Settings.Default.CustomColourScheme.AddRange(settings.Defaults.CustomColourScheme.Select(Funcs.ColorHex).ToArray());
             }
             else
                 Settings.Default.CustomColourScheme.Clear();
@@ -1192,7 +1188,7 @@ namespace Type_Express
 
         [XmlArray("custom-colour-scheme")]
         [XmlArrayItem("data")]
-        public string[] CustomColourSchemeStrings { get; set; } = Array.Empty<string>();
+        public string[] CustomColourSchemeStrings { get; set; } = [];
 
         [XmlIgnore]
         public Color[]? CustomColourScheme
@@ -1204,11 +1200,7 @@ namespace Type_Express
                     if (CustomColourSchemeStrings.Length != 8)
                         return null;
 
-                    return CustomColourSchemeStrings.Select(x =>
-                    {
-                        return Funcs.HexColor(x);
-
-                    }).ToArray();
+                    return CustomColourSchemeStrings.Select(Funcs.HexColor).ToArray();
                 }
                 catch
                 {
@@ -1218,13 +1210,9 @@ namespace Type_Express
             set
             {
                 if (value == null || value.Length != 8)
-                    CustomColourSchemeStrings = Array.Empty<string>();
+                    CustomColourSchemeStrings = [];
                 else
-                    CustomColourSchemeStrings = value.Select(x =>
-                    {
-                        return Funcs.ColorHex(x);
-
-                    }).ToArray();
+                    CustomColourSchemeStrings = value.Select(Funcs.ColorHex).ToArray();
             }
         }
     }
@@ -1245,19 +1233,19 @@ namespace Type_Express
 
         [XmlArray("dict-en")]
         [XmlArrayItem("word")]
-        public string[] DictEN { get; set; } = Array.Empty<string>();
+        public string[] DictEN { get; set; } = [];
 
         [XmlArray("dict-fr")]
         [XmlArrayItem("word")]
-        public string[] DictFR { get; set; } = Array.Empty<string>();
+        public string[] DictFR { get; set; } = [];
 
         [XmlArray("dict-es")]
         [XmlArrayItem("word")]
-        public string[] DictES { get; set; } = Array.Empty<string>();
+        public string[] DictES { get; set; } = [];
 
         [XmlArray("dict-it")]
         [XmlArrayItem("word")]
-        public string[] DictIT { get; set; } = Array.Empty<string>();
+        public string[] DictIT { get; set; } = [];
 
         [XmlElement("save-charts")]
         public string SaveChartsString { get; set; } = "true";
@@ -1279,23 +1267,23 @@ namespace Type_Express
 
         [XmlArray("saved-charts")]
         [XmlArrayItem("data")]
-        public string[] SavedCharts { get; set; } = Array.Empty<string>();
+        public string[] SavedCharts { get; set; } = [];
 
         [XmlArray("saved-shapes")]
         [XmlArrayItem("data")]
-        public string[] SavedShapes { get; set; } = Array.Empty<string>();
+        public string[] SavedShapes { get; set; } = [];
 
         [XmlArray("saved-fonts")]
         [XmlArrayItem("data")]
-        public string[] SavedFonts { get; set; } = Array.Empty<string>();
+        public string[] SavedFonts { get; set; } = [];
 
         [XmlArray("fav-files")]
         [XmlArrayItem("data")]
-        public string[] FavouriteFiles { get; set; } = Array.Empty<string>();
+        public string[] FavouriteFiles { get; set; } = [];
 
         [XmlArray("pinned-folders")]
         [XmlArrayItem("data")]
-        public string[] PinnedFolders { get; set; } = Array.Empty<string>();
+        public string[] PinnedFolders { get; set; } = [];
     }
 
     public class AppearanceOptions
@@ -1433,6 +1421,6 @@ namespace Type_Express
     {
         [XmlArray("fav-fonts")]
         [XmlArrayItem("font")]
-        public string[] FavouriteFonts { get; set; } = Array.Empty<string>();
+        public string[] FavouriteFonts { get; set; } = [];
     }
 }

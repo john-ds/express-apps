@@ -191,10 +191,7 @@ namespace ExpressControls
             }
         }
 
-        public static void NoShadowPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            bool b = Convert.ToBoolean(e.NewValue);
-        }
+        public static void NoShadowPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {}
 
         public static readonly DependencyProperty TextWrappingProperty = DependencyProperty.Register(nameof(TextWrapping), typeof(TextWrapping), typeof(AppButton), new PropertyMetadata(null));
 
@@ -238,10 +235,7 @@ namespace ExpressControls
             }
         }
 
-        public static void IsUpFacingMenuPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            bool b = Convert.ToBoolean(e.NewValue);
-        }
+        public static void IsUpFacingMenuPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {}
 
         public static readonly DependencyProperty IsInTitleBarProperty = DependencyProperty.Register(nameof(IsInTitleBar), typeof(bool), typeof(AppButton), new FrameworkPropertyMetadata(IsInTitleBarPropertyChanged));
 
@@ -257,10 +251,7 @@ namespace ExpressControls
             }
         }
 
-        public static void IsInTitleBarPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            bool b = Convert.ToBoolean(e.NewValue);
-        }
+        public static void IsInTitleBarPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {}
 
         public static readonly DependencyProperty IsCloseBtnProperty = DependencyProperty.Register(nameof(IsCloseBtn), typeof(bool), typeof(AppButton), new FrameworkPropertyMetadata(IsCloseBtnPropertyChanged));
 
@@ -276,10 +267,7 @@ namespace ExpressControls
             }
         }
 
-        public static void IsCloseBtnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            bool b = Convert.ToBoolean(e.NewValue);
-        }
+        public static void IsCloseBtnPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {}
 
         public static readonly DependencyProperty HasNoEffectsProperty = DependencyProperty.Register(nameof(HasNoEffects), typeof(bool), typeof(AppButton), new FrameworkPropertyMetadata(HasNoEffectsPropertyChanged));
 
@@ -295,10 +283,7 @@ namespace ExpressControls
             }
         }
 
-        public static void HasNoEffectsPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            bool b = Convert.ToBoolean(e.NewValue);
-        }
+        public static void HasNoEffectsPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {}
 
         public static readonly DependencyProperty TextAlignProperty = DependencyProperty.Register(nameof(TextAlign), typeof(Dock), typeof(AppButton), new PropertyMetadata(null));
 

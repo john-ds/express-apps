@@ -25,10 +25,10 @@ namespace ExpressControls
     public partial class PictureSelector : Window
     {
         private readonly string PictureAPIKey = "";
-        private IEnumerable<ImageItem> QueriedPictures = Array.Empty<ImageItem>();
+        private IEnumerable<ImageItem> QueriedPictures = [];
         public ImageItem? ChosenPicture { get; set; } = null;
 
-        private readonly List<string> CancellationTokens = new();
+        private readonly List<string> CancellationTokens = [];
         private string CurrentCancellationToken = "";
 
         private int CurrentPage = 1;
@@ -218,7 +218,7 @@ namespace ExpressControls
         private void ShowNoResults()
         {
             PicturePnl.ItemsSource = null;
-            QueriedPictures = Array.Empty<ImageItem>();
+            QueriedPictures = [];
 
             MenuPnl.IsEnabled = true;
             PicturePnl.Visibility = Visibility.Collapsed;
@@ -358,7 +358,7 @@ namespace ExpressControls
         public int TotalCount { get; set; } = 0;
 
         [JsonProperty("results")]
-        public PictureItemResponse[] Pictures { get; set; } = Array.Empty<PictureItemResponse>();
+        public PictureItemResponse[] Pictures { get; set; } = [];
     }
 
     public class PictureItemResponse

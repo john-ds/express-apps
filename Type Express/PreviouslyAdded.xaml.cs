@@ -28,7 +28,7 @@ namespace Type_Express
         public Shape? ChosenShape { get; set; } = null;
         public ChartItem? ChosenChart { get; set; } = null;
 
-        private readonly Color[] ColourScheme = Array.Empty<Color>();
+        private readonly Color[] ColourScheme = [];
         private readonly ColourScheme ColourSchemeEnum;
 
         public PreviouslyAdded(ShapeItem[] items, Color[] colourScheme)

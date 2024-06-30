@@ -1,17 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <RootNamespace>Present_Express</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>icon.ico</ApplicationIcon>
-    <AssemblyVersion>3.0.0</AssemblyVersion>
-    <FileVersion>3.0.0</FileVersion>
+    <AssemblyVersion>3.1.0</AssemblyVersion>
+    <FileVersion>3.1.0</FileVersion>
     <RollForward>Major</RollForward>
   </PropertyGroup>
-
   <ItemGroup>
     <None Remove="auth-dropbox.secret" />
     <None Remove="auth-photo.secret" />
@@ -41,7 +39,6 @@
     <None Remove="fonts\Inter-SemiBold.ttf" />
     <None Remove="splash.png" />
   </ItemGroup>
-
   <ItemGroup>
     <Content Include="ffmpeg\avcodec-59.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -87,7 +84,6 @@
     </Content>
     <Content Include="icon.ico" />
   </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="auth-dropbox.secret" />
     <EmbeddedResource Include="auth-photo.secret" />
@@ -96,23 +92,19 @@
     <EmbeddedResource Include="dropbox-index.html" />
     <EmbeddedResource Include="export-index.html" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="DotNetZip" Version="1.16.0" />
     <PackageReference Include="FFMpegCore" Version="5.1.0" />
     <PackageReference Include="WindowsDisplayAPI" Version="1.3.0.13" />
   </ItemGroup>
-
   <ItemGroup>
     <Page Include="..\ExpressControls\ExpressStyles.xaml" Link="ExpressStyles.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\ExpressControls\ExpressControls.csproj" />
   </ItemGroup>
-
   <ItemGroup>
     <Resource Include="filters\blackwhite.jpg" />
     <Resource Include="filters\bluetint.jpg" />
@@ -121,11 +113,9 @@
     <Resource Include="filters\redtint.jpg" />
     <Resource Include="filters\sepia.jpg" />
   </ItemGroup>
-
   <ItemGroup>
     <SplashScreen Include="splash.png" />
   </ItemGroup>
-
   <ItemGroup>
     <Compile Update="Properties\Settings.Designer.cs">
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
@@ -133,12 +123,10 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
   </ItemGroup>
-
   <ItemGroup>
     <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
-
 </Project>
