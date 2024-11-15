@@ -1536,7 +1536,7 @@ namespace ExpressControls
         [XmlArrayItem("file", typeof(ExportableFileItem))]
         [XmlArrayItem("folder", typeof(ExportableFolderItem))]
         [JsonProperty("files")]
-        public ExportableItem[] Files { get; set; } = Array.Empty<ExportableFileItem>();
+        public ExportableItem[] Files { get; set; } = [];
     }
 
     public class ExportableItem

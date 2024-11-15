@@ -570,7 +570,7 @@ namespace Font_Express
 
         public static void AddFontsToCategory(string font, int category)
         {
-            AddFontsToCategory(new string[] { font }, category);
+            AddFontsToCategory([font], category);
         }
 
         public static void RemoveFontsFromCategory(IEnumerable<string> fonts, int category)
@@ -583,7 +583,7 @@ namespace Font_Express
 
         public static void RemoveFontsFromCategory(string font, int category)
         {
-            RemoveFontsFromCategory(new string[] { font }, category);
+            RemoveFontsFromCategory([font], category);
         }
 
         public static void ClearCategoryFonts(int category)

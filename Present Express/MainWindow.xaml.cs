@@ -1,7 +1,7 @@
 ﻿using Dropbox.Api.Files;
 using Dropbox.Api;
 using ExpressControls;
-using Ionic.Zip;
+using ICSharpCode.SharpZipLib.Zip;
 using Present_Express.Properties;
 using System;
 using System.Collections.Generic;
@@ -20,13 +20,11 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Ink;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Xml.Serialization;
 using WinDrawing = System.Drawing;
 using Microsoft.WindowsAPICodePack.Dialogs;
@@ -524,14 +522,11 @@ namespace Present_Express
         /// <param name="bytes">The byte array representing the PRESENT file</param>
         private bool LoadFile(byte[] bytes)
         {
-            ZipFile zip = new();
-            MemoryStream stream = new();
             bool result = false;
-
             try
             {
-                stream = new(bytes);
-                zip = ZipFile.Read(stream);
+                using MemoryStream stream = new(bytes);
+                using ZipInputStream zip = new(stream);
 
                 OpenZIP("", zip);
                 return true;
@@ -541,11 +536,6 @@ namespace Present_Express
                 Funcs.ShowMessage(
                     $"{Funcs.ChooseLang("OpenFileErrorDescStr")}{Environment.NewLine}{Environment.NewLine}{Funcs.ChooseLang("TryAgainStr")}",
                     Funcs.ChooseLang("OpenFileErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
-            }
-            finally
-            {
-                zip.Dispose();
-                stream.Dispose();
             }
 
             return result;
@@ -567,22 +557,26 @@ namespace Present_Express
                 }
             }
 
-            ZipFile zip = new();
-            MemoryStream stream = new();
             bool result = false;
-
             try
             {
                 if (filename.StartsWith("https://"))
                 {
-                    stream = new(await Funcs.GetBytesAsync(filename));
-                    zip = ZipFile.Read(stream);
+                    byte[] data = await Funcs.GetBytesAsync(filename);
+                    using MemoryStream stream = new(data);
+                    using ZipInputStream zip = new(stream);
+
+                    OpenZIP(filename, zip);
+                    return true;
                 }
                 else
-                    zip = ZipFile.Read(filename);
-                
-                OpenZIP(filename, zip);
-                return true;
+                {
+                    using FileStream fs = new(filename, FileMode.Open, FileAccess.Read);
+                    using ZipInputStream zip = new(fs);
+
+                    OpenZIP(filename, zip);
+                    return true;
+                }
             }
             catch (Exception ex)
             {
@@ -595,24 +589,37 @@ namespace Present_Express
                     Funcs.ChooseLang("OpenFileErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error,
                     Funcs.GenerateErrorReport(ex, !filename.StartsWith("https://") ? Funcs.ChooseLang("ReportEmailAttachStr") : ""));
             }
-            finally
-            {
-                zip.Dispose();
-                stream.Dispose();
-            }
 
             return result;
         }
 
-        private void OpenZIP(string filename, ZipFile zip)
+        private void OpenZIP(string filename, ZipInputStream zip)
         {
-            SlideshowItem? slideshow;
-            using (MemoryStream mem = new())
-            {
-                zip["info.xml"].Extract(mem);
-                mem.Position = 0;
+            Dictionary<string, byte[]> entries = [];
+            ZipEntry entry;
 
-                using StreamReader sr = new(mem);
+            while ((entry = zip.GetNextEntry()) != null)
+            {
+                if (!entry.IsFile) continue;
+
+                using MemoryStream ms = new();
+                byte[] buffer = new byte[4096];
+                int count;
+
+                while ((count = zip.Read(buffer, 0, buffer.Length)) != 0)
+                {
+                    ms.Write(buffer, 0, count);
+                }
+                entries[entry.Name] = ms.ToArray();
+            }
+
+            if (!entries.TryGetValue("info.xml", out byte[]? value))
+                throw new NullReferenceException();
+
+            SlideshowItem? slideshow;
+            using (MemoryStream mem = new(value))
+            using (StreamReader sr = new(mem))
+            {
                 XmlSerializer x = new(typeof(SlideshowItem));
                 slideshow = (SlideshowItem?)x.Deserialize(sr);
             }
@@ -629,9 +636,7 @@ namespace Present_Express
                     case SlideType.Screenshot:
                         try
                         {
-                            using MemoryStream mem = new();
-                            zip[item.Name].Extract(mem);
-                            mem.Position = 0;
+                            using MemoryStream mem = new(entries[item.Name]);
 
                             if (item.GetSlideType() == SlideType.Image)
                                 ((ImageSlide)item).Original = Funcs.StreamToBitmap(mem);
@@ -654,9 +659,7 @@ namespace Present_Express
                         DrawingSlide drawingSlide = (DrawingSlide)item;
                         try
                         {
-                            using MemoryStream mem = new();
-                            zip[drawingSlide.Name].Extract(mem);
-                            mem.Position = 0;
+                            using MemoryStream mem = new(entries[drawingSlide.Name]);
                             drawingSlide.Strokes = new StrokeCollection(mem);
                         }
                         catch
@@ -1380,17 +1383,18 @@ namespace Present_Express
         /// </summary>
         private byte[] SaveFile()
         {
-            ZipFile zip = new();
-            byte[] output = [];
-            SaveZIP(ref zip);
-
+            byte[] output;
             using (MemoryStream mem = new())
             {
-                zip.Save(mem);
+                using (ZipOutputStream zip = new(mem))
+                {
+                    zip.SetLevel(9);
+                    SaveZIP(zip);
+                    zip.Finish();
+                    zip.Close();
+                }
                 output = mem.ToArray();
             }
-
-            zip.Dispose();
             return output;
         }
 
@@ -1400,12 +1404,16 @@ namespace Present_Express
         /// <param name="filename">The name of the file to save to</param>
         private bool SaveFile(string filename)
         {
-            ZipFile zip = new();
             try
             {
-                zip = new(filename);
-                SaveZIP(ref zip);
-                zip.Save();
+                using (FileStream fs = new(filename, FileMode.Create))
+                using (ZipOutputStream zip = new(fs))
+                {
+                    zip.SetLevel(9);
+                    SaveZIP(zip);
+                    zip.Finish();
+                    zip.Close();
+                }
 
                 if (ThisFile != filename)
                 {
@@ -1433,16 +1441,10 @@ namespace Present_Express
 
                 return false;
             }
-            finally
-            {
-                zip.Dispose();
-            }
         }
 
-        private void SaveZIP(ref ZipFile zip)
+        private void SaveZIP(ZipOutputStream zip)
         {
-            List<string> doNotDelete = ["info.xml"];
-
             foreach (Slide item in AllSlides)
             {
                 if (item.Name == "")
@@ -1460,24 +1462,19 @@ namespace Present_Express
 
                 if (item.GetSlideType() == SlideType.Image)
                 {
-                    SaveImageToZip(((ImageSlide)item).Original, ref zip, item.Name, ((ImageSlide)item).GetImageFormat(), ref doNotDelete);
+                    SaveImageToZip(((ImageSlide)item).Original, zip, item.Name, ((ImageSlide)item).GetImageFormat());
                     continue;
                 }
                 else if (item.GetSlideType() == SlideType.Drawing)
                 {
-                    using var mem = new MemoryStream();
-                    ((DrawingSlide)item).Strokes.Save(mem);
-
-                    if (zip.EntryFileNames.Contains(item.Name))
-                        zip.UpdateEntry(item.Name, mem.ToArray());
-                    else
-                        zip.AddEntry(item.Name, mem.ToArray());
+                    using (var mem = new MemoryStream())
+                    {
+                        ((DrawingSlide)item).Strokes.Save(mem);
+                        AddOrUpdateEntry(zip, item.Name, mem.ToArray());
+                    }
 
                     string prender = item.Name.Replace(".isf", "-prender.png", StringComparison.InvariantCultureIgnoreCase);
-                    SaveImageToZip(((DrawingSlide)item).Bitmap, ref zip, prender, ImageFormat.Png, ref doNotDelete);
-
-                    doNotDelete.Add(item.Name);
-                    doNotDelete.Add(prender);
+                    SaveImageToZip(((DrawingSlide)item).Bitmap, zip, prender, ImageFormat.Png);
                     continue;
                 }
                 else if (item.GetSlideType() == SlideType.Chart)
@@ -1485,7 +1482,7 @@ namespace Present_Express
                     ((ChartSlide)item).DowngradeChartToLegacy();
                 }
 
-                SaveImageToZip(item.Bitmap, ref zip, item.GetSlideType() == SlideType.Screenshot ? item.Name : item.Name + "-prender.png", ImageFormat.Png, ref doNotDelete);
+                SaveImageToZip(item.Bitmap, zip, item.GetSlideType() == SlideType.Screenshot ? item.Name : item.Name + "-prender.png", ImageFormat.Png);
             }
 
             SlideshowItem slideshow = new()
@@ -1504,45 +1501,40 @@ namespace Present_Express
             XmlSerializer xmlSerializer = new(typeof(SlideshowItem));
             XmlWriterSettings settings = new() { OmitXmlDeclaration = true };
 
-            using (var stream = new StringWriter())
-                using (var writer = XmlWriter.Create(stream, settings))
-                {
-                    xmlSerializer.Serialize(writer, slideshow, new XmlSerializerNamespaces([XmlQualifiedName.Empty]));
+            using var stream = new StringWriter();
+            using var writer = XmlWriter.Create(stream, settings);
 
-                    if (zip.EntryFileNames.Contains("info.xml"))
-                        zip.UpdateEntry("info.xml", stream.ToString(), Encoding.UTF8);
-                    else
-                        zip.AddEntry("info.xml", stream.ToString(), Encoding.UTF8);
-                }
-
-            foreach (string item in zip.EntryFileNames.ToList())
-            {
-                if (!doNotDelete.Contains(item))
-                    zip.RemoveEntry(item);
-            }
+            xmlSerializer.Serialize(writer, slideshow, new XmlSerializerNamespaces([XmlQualifiedName.Empty]));
+            AddOrUpdateEntry(zip, "info.xml", Encoding.UTF8.GetBytes(stream.ToString()));
         }
 
-        private static void SaveImageToZip(BitmapSource bmp, ref ZipFile zip, string name, ImageFormat format, ref List<string> doNotDelete)
+        private static void AddOrUpdateEntry(ZipOutputStream zip, string name, byte[] data)
         {
-            using (var mem = new MemoryStream())
+            ZipEntry entry = new(name)
             {
-                BitmapEncoder enc = format.ToString() switch
-                {
-                    "Jpeg" => new JpegBitmapEncoder(),
-                    "Bmp" => new BmpBitmapEncoder(),
-                    "Gif" => new GifBitmapEncoder(),
-                    _ => new PngBitmapEncoder()
-                };
-                enc.Frames.Add(BitmapFrame.Create(bmp));
-                enc.Save(mem);
+                DateTime = DateTime.Now,
+                Size = data.Length
+            };
 
-                if (zip.EntryFileNames.Contains(name))
-                    zip.UpdateEntry(name, mem.ToArray());
-                else
-                    zip.AddEntry(name, mem.ToArray());
-            }
+            zip.PutNextEntry(entry);
+            zip.Write(data, 0, data.Length);
+            zip.CloseEntry();
+        }
 
-            doNotDelete.Add(name);
+        private static void SaveImageToZip(BitmapSource bmp, ZipOutputStream zip, string name, ImageFormat format)
+        {
+            using var mem = new MemoryStream();
+            BitmapEncoder enc = format.ToString() switch
+            {
+                "Jpeg" => new JpegBitmapEncoder(),
+                "Bmp" => new BmpBitmapEncoder(),
+                "Gif" => new GifBitmapEncoder(),
+                _ => new PngBitmapEncoder()
+            };
+            enc.Frames.Add(BitmapFrame.Create(bmp));
+            enc.Save(mem);
+
+            AddOrUpdateEntry(zip, name, mem.ToArray());
         }
 
         private void BrowseSaveBtn_Click(object sender, RoutedEventArgs e)
