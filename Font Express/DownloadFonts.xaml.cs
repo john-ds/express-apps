@@ -1,30 +1,26 @@
-﻿using ExpressControls;
-using Microsoft.WindowsAPICodePack.Dialogs;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing.Text;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Text;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using ExpressControls;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using Newtonsoft.Json;
 
 namespace Font_Express
 {
     /// <summary>
     /// Interaction logic for DownloadFonts.xaml
     /// </summary>
-    public partial class DownloadFonts : Window
+    public partial class DownloadFonts : ExpressWindow
     {
         private IEnumerable<DownloadableFontResponseItem> AllFonts = [];
         private IEnumerable<DownloadableFontResponseItem> QueriedFonts = [];
@@ -46,73 +42,67 @@ namespace Font_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             TempFilePath = tempPath;
 
             FontStyleCombo.ItemsSource = new AppDropdownItem[]
             {
-                new()
-                {
-                    Content = Funcs.ChooseLang("FnAllStr"),
-                    Tag = null
-                }
-            }.Concat(Enum.GetValues(typeof(FontCategoryType)).Cast<FontCategoryType>()
-                .Where(x => x != FontCategoryType.Unknown).Select(x =>
-                {
-                    return new AppDropdownItem()
+                new() { Content = Funcs.ChooseLang("FnAllStr"), Tag = null },
+            }.Concat(
+                Enum.GetValues(typeof(FontCategoryType))
+                    .Cast<FontCategoryType>()
+                    .Where(x => x != FontCategoryType.Unknown)
+                    .Select(x =>
                     {
-                        Content = Funcs.ChooseLang(x switch
+                        return new AppDropdownItem()
                         {
-                            FontCategoryType.SansSerif => "FnStyleSansStr",
-                            FontCategoryType.Serif => "FnStyleSerifStr",
-                            FontCategoryType.Monospace => "FnStyleMonoStr",
-                            FontCategoryType.Handwriting => "FnStyleHandStr",
-                            FontCategoryType.Display => "FnStyleDisplayStr",
-                            _ => "",
-                        }),
-                        Tag = x
-                    };
-                }));
+                            Content = Funcs.ChooseLang(
+                                x switch
+                                {
+                                    FontCategoryType.SansSerif => "FnStyleSansStr",
+                                    FontCategoryType.Serif => "FnStyleSerifStr",
+                                    FontCategoryType.Monospace => "FnStyleMonoStr",
+                                    FontCategoryType.Handwriting => "FnStyleHandStr",
+                                    FontCategoryType.Display => "FnStyleDisplayStr",
+                                    _ => "",
+                                }
+                            ),
+                            Tag = x,
+                        };
+                    })
+            );
             FontStyleCombo.SelectedIndex = 0;
         }
 
         private async void Dwn_Loaded(object sender, RoutedEventArgs e)
         {
-            string apiKey = "";
+            HttpResponseMessage? response = null;
             try
             {
-                var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Font_Express.auth-fonts.secret") ?? throw new NullReferenceException();
-                using var sr = new StreamReader(info);
-                apiKey = sr.ReadToEnd();
-            }
-            catch (Exception ex)
-            {
-                Funcs.ShowMessageRes("APIKeyNotFoundStr", "CriticalErrorStr", MessageBoxButton.OK, MessageBoxImage.Error,
-                    Funcs.GenerateErrorReport(ex, Funcs.ChooseLang("ReportEmailInfoStr")));
+                response = await Funcs.SendAPIRequest("fonts");
+                response.EnsureSuccessStatusCode();
 
-                Close();
-                return;
-            }
+                string content = await response.Content.ReadAsStringAsync();
+                DownloadableFontResponseItem[]? results =
+                    JsonConvert.DeserializeObject<DownloadableFontResponseItem[]>(content);
 
-            try
-            {
-                UriBuilder ub = new("https://www.googleapis.com/webfonts/v1/webfonts") { Port = -1 };
+                if (results == null || results.Length == 0)
+                    throw new Exception("No fonts found in response.");
 
-                var query = HttpUtility.ParseQueryString(ub.Query);
-                query["key"] = apiKey;
-                query["sort"] = "popularity";
-                query["subset"] = "latin";
-                ub.Query = query.ToString();
-
-                AllFonts = (await Funcs.GetJsonAsync<DownloadableFontResponse>(ub.Uri.ToString())).Items
-                    .Where(f => !Funcs.IsValidFont(f.Name)).Take(TotalCount);
-
+                AllFonts = results.Where(f => !Funcs.IsValidFont(f.Name)).Take(TotalCount);
                 LoadFonts();
             }
             catch (Exception ex)
             {
-                Funcs.ShowMessageRes("DownloadFontErrorDescStr", "DownloadFontErrorStr", MessageBoxButton.OK,
-                    MessageBoxImage.Exclamation, Funcs.GenerateErrorReport(ex));
+                if (response == null || response.StatusCode != HttpStatusCode.Unauthorized)
+                    Funcs.ShowMessageRes(
+                        "DownloadFontErrorDescStr",
+                        "DownloadFontErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Exclamation,
+                        Funcs.GenerateErrorReport(ex, PageID, "DownloadFontErrorDescStr")
+                    );
 
                 Close();
             }
@@ -133,14 +123,24 @@ namespace Font_Express
 
             bool moreFonts = await Task.Run(async () =>
             {
-                QueriedFonts = AllFonts.Where((item) =>
-                {
-                    if (CurrentQuery != "" && !item.Name.Contains(CurrentQuery, StringComparison.InvariantCultureIgnoreCase))
-                        return false;
+                QueriedFonts = AllFonts
+                    .Where(
+                        (item) =>
+                        {
+                            if (
+                                CurrentQuery != ""
+                                && !item.Name.Contains(
+                                    CurrentQuery,
+                                    StringComparison.InvariantCultureIgnoreCase
+                                )
+                            )
+                                return false;
 
-                    return CurrentFilter == null || item.Category == CurrentFilter;
-
-                }).Skip(PerPage * (CurrentPage - 1)).Take(PerPage + 1);
+                            return CurrentFilter == null || item.Category == CurrentFilter;
+                        }
+                    )
+                    .Skip(PerPage * (CurrentPage - 1))
+                    .Take(PerPage + 1);
 
                 if (QueriedFonts.Any())
                 {
@@ -153,7 +153,9 @@ namespace Font_Express
                             break;
 
                         string fontName = await DownloadPreviewFontFile(font);
-                        font.Preview = new FontFamily($"file:///{TempFilePath.Replace("\\", "/")}/{font.Name}/#{fontName}");
+                        font.Preview = new FontFamily(
+                            $"file:///{TempFilePath.Replace("\\", "/")}/{font.Name}/#{fontName}"
+                        );
                         count++;
                     }
 
@@ -180,7 +182,10 @@ namespace Font_Express
                 else
                 {
                     PagePnl.Visibility = Visibility.Visible;
-                    PageLbl.Text = string.Format(Funcs.ChooseLang("PageSimpleStr"), CurrentPage.ToString());
+                    PageLbl.Text = string.Format(
+                        Funcs.ChooseLang("PageSimpleStr"),
+                        CurrentPage.ToString()
+                    );
 
                     if (CurrentPage == 1)
                     {
@@ -199,7 +204,6 @@ namespace Font_Express
                     }
                 }
             }
-
         }
 
         private async Task<string> DownloadPreviewFontFile(DownloadableFontResponseItem font)
@@ -214,7 +218,11 @@ namespace Font_Express
 
                 Directory.CreateDirectory(Path.Combine(TempFilePath, font.Name));
 
-                string filename = Path.Combine(TempFilePath, font.Name, font.Name + Path.GetExtension(fontFile));
+                string filename = Path.Combine(
+                    TempFilePath,
+                    font.Name,
+                    font.Name + Path.GetExtension(fontFile)
+                );
                 if (Path.Exists(filename))
                     return GetFontName(filename) ?? font.Name;
 
@@ -230,7 +238,10 @@ namespace Font_Express
             }
         }
 
-        private async Task<bool> DownloadFontFiles(DownloadableFontResponseItem font, string folderPath = "")
+        private async Task<bool> DownloadFontFiles(
+            DownloadableFontResponseItem font,
+            string folderPath = ""
+        )
         {
             try
             {
@@ -246,7 +257,10 @@ namespace Font_Express
                     filePath = Path.Combine(folderPath, font.Name);
 
                     while (Directory.Exists(filePath))
-                        filePath = Path.Combine(folderPath, font.Name + " (" + count++.ToString() + ")");
+                        filePath = Path.Combine(
+                            folderPath,
+                            font.Name + " (" + count++.ToString() + ")"
+                        );
                 }
 
                 Directory.CreateDirectory(filePath);
@@ -254,17 +268,22 @@ namespace Font_Express
                 foreach (KeyValuePair<string, string> f in font.Files)
                 {
                     using Stream s = await Funcs.httpClient.GetStreamAsync(new Uri(f.Value));
-                    using FileStream fs = new(Path.Combine(filePath, font.Name + "-" + f.Key + Path.GetExtension(f.Value)), FileMode.Create);
+                    using FileStream fs = new(
+                        Path.Combine(
+                            filePath,
+                            font.Name + "-" + f.Key + Path.GetExtension(f.Value)
+                        ),
+                        FileMode.Create
+                    );
                     await s.CopyToAsync(fs);
                 }
 
                 if (folderPath != "")
-                    _ = Process.Start(new ProcessStartInfo()
-                    {
-                        FileName = filePath,
-                        UseShellExecute = true
-                    });
+                    _ = Process.Start(
+                        new ProcessStartInfo() { FileName = filePath, UseShellExecute = true }
+                    );
 
+                Funcs.LogDownload(PageID, $"{font.Name}.ttf", "Google Fonts");
                 return true;
             }
             catch
@@ -344,12 +363,29 @@ namespace Font_Express
         {
             string font = (string)((AppButton)sender).Tag;
 
-            if (Funcs.FolderBrowserDialog.ShowDialog() == CommonFileDialogResult.Ok && Funcs.FolderBrowserDialog.FileName != null)
+            if (
+                Funcs.FolderBrowserDialog.ShowDialog() == CommonFileDialogResult.Ok
+                && Funcs.FolderBrowserDialog.FileName != null
+            )
             {
-                if (!await DownloadFontFiles(QueriedFonts.Where(f => f.Name == font).First(), Funcs.FolderBrowserDialog.FileName))
+                if (
+                    !await DownloadFontFiles(
+                        QueriedFonts.Where(f => f.Name == font).First(),
+                        Funcs.FolderBrowserDialog.FileName
+                    )
+                )
                 {
-                    Funcs.ShowMessageRes("InstallFontErrorDescStr", "InstallFontErrorStr", MessageBoxButton.OK,
-                        MessageBoxImage.Error, Funcs.GenerateErrorReport(new Exception("Download file error")));
+                    Funcs.ShowMessageRes(
+                        "InstallFontErrorDescStr",
+                        "InstallFontErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(
+                            new Exception("Download file error"),
+                            PageID,
+                            "InstallFontErrorDescStr"
+                        )
+                    );
                 }
             }
         }
@@ -365,16 +401,19 @@ namespace Font_Express
 
                 ProcessStartInfo info = new()
                 {
-                    FileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "fontreg\\FontReg.exe"),
+                    FileName = Path.Combine(
+                        AppDomain.CurrentDomain.BaseDirectory,
+                        "fontreg\\FontReg.exe"
+                    ),
                     Arguments = "/copy",
                     UseShellExecute = true,
                     WindowStyle = ProcessWindowStyle.Hidden,
-                    WorkingDirectory = Path.Combine(TempFilePath, font, "download")
+                    WorkingDirectory = Path.Combine(TempFilePath, font, "download"),
                 };
 
                 Process p = Process.Start(info) ?? throw new NullReferenceException("Process null");
                 await p.WaitForExitAsync();
-                
+
                 AllFonts = AllFonts.Select(f =>
                 {
                     if (f.Name == font)
@@ -392,15 +431,24 @@ namespace Font_Express
             }
             catch (Exception ex)
             {
-                Funcs.ShowMessageRes("InstallFontErrorDescStr", "InstallFontErrorStr", MessageBoxButton.OK,
-                    MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                Funcs.ShowMessageRes(
+                    "InstallFontErrorDescStr",
+                    "InstallFontErrorStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    Funcs.GenerateErrorReport(ex, PageID, "InstallFontErrorDescStr")
+                );
             }
         }
 
         private void ExpandBtns_Click(object sender, RoutedEventArgs e)
         {
             string font = (string)((AppButton)sender).Tag;
-            _ = new FontViewer(font, QueriedFonts.First((item) => item.Name == font).Preview ?? new FontFamily("Segoe UI")).ShowDialog();
+            _ = new FontViewer(
+                font,
+                QueriedFonts.First((item) => item.Name == font).Preview
+                    ?? new FontFamily("Segoe UI")
+            ).ShowDialog();
         }
 
         private void CopyBtns_Click(object sender, RoutedEventArgs e)
@@ -410,12 +458,6 @@ namespace Font_Express
         }
 
         #endregion
-    }
-
-    public class DownloadableFontResponse
-    {
-        [JsonProperty("items")]
-        public IEnumerable<DownloadableFontResponseItem> Items { get; set; } = [];
     }
 
     public class DownloadableFontResponseItem
@@ -441,7 +483,7 @@ namespace Font_Express
                     "monospace" => FontCategoryType.Monospace,
                     "handwriting" => FontCategoryType.Handwriting,
                     "display" => FontCategoryType.Display,
-                    _ => FontCategoryType.Unknown
+                    _ => FontCategoryType.Unknown,
                 };
             }
             set
@@ -453,7 +495,7 @@ namespace Font_Express
                     FontCategoryType.Monospace => "monospace",
                     FontCategoryType.Handwriting => "handwriting",
                     FontCategoryType.Display => "display",
-                    _ => ""
+                    _ => "",
                 };
             }
         }

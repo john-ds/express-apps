@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel;
+using System.Drawing.Imaging;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows;
 using System.Windows.Media.Imaging;
-using System.Drawing.Imaging;
-using System.ComponentModel;
 
 namespace ExpressControls
 {
@@ -81,6 +78,16 @@ namespace ExpressControls
             }
         }
 
+        public string AutomationName
+        {
+            get
+            {
+                string selectedStr = Selected ? "Selected" : "Unselected";
+                string typeStr = IsFolder ? "Folder" : "File";
+                return $"{Funcs.ChooseLang($"{selectedStr}{typeStr}Str")} '{FileName}'";
+            }
+        }
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected virtual void OnPropertyChanged(string propertyName)
@@ -119,10 +126,19 @@ namespace ExpressControls
         public bool Selected { get; set; } = false;
     }
 
-    public class MarkerItem
+    public class MarkerItem(TextMarkerStyle marker = TextMarkerStyle.None)
     {
-        public string Name { get; set; } = "";
-        public TextMarkerStyle Marker { get; set; } = TextMarkerStyle.None;
+        public TextMarkerStyle Marker { get; set; } = marker;
+
+        public string AutomationName
+        {
+            get
+            {
+                return Funcs.ChooseLang(
+                    $"Marker{Enum.GetName(typeof(TextMarkerStyle), Marker)}Str"
+                );
+            }
+        }
     }
 
     public class ImageItem
@@ -140,6 +156,11 @@ namespace ExpressControls
         public string SmallURL { get; set; } = "";
         public string RegularURL { get; set; } = "";
         public string LargeURL { get; set; } = "";
+
+        public string AutomationName
+        {
+            get { return $"{Funcs.ChooseLang("SelectItemStr")}: {Description}"; }
+        }
     }
 
     public class GridItem
@@ -201,32 +222,16 @@ namespace ExpressControls
         public Color Colour { get; set; } = Colors.Black;
     }
 
-    public class WordItem
-    {
-        public string Word { get; set; } = "";
-        public List<WordTypeItem> Types { get; set; } = [];
-    }
-
-    public class WordTypeItem
-    {
-        public string Type { get; set; } = "";
-        public bool OnlySynonyms { get; set; } = false;
-        public List<WordTypeDefItem> Definitions { get; set; } = [];
-    }
-
-    public class WordTypeDefItem
-    {
-        public int ID { get; set; } = 0;
-        public string Definition { get; set; } = "";
-        public bool Subsense { get; set; } = false;
-        public List<string> Synonyms { get; set; } = [];
-    }
-
     public class SlideDisplayItem
     {
         public int ID { get; set; } = 0;
         public ImageSource? Image { get; set; } = null;
         public bool Selected { get; set; } = false;
+
+        public string AutomationName
+        {
+            get { return $"{Funcs.ChooseLang("SlideStr")} {ID}"; }
+        }
     }
 
     public class SlideshowConfig
@@ -310,11 +315,7 @@ namespace ExpressControls
 
         public override RemoveSlideChange Reverse()
         {
-            return new RemoveSlideChange()
-            {
-                Slide = Slide,
-                Position = Position
-            };
+            return new RemoveSlideChange() { Slide = Slide, Position = Position };
         }
     }
 
@@ -327,11 +328,7 @@ namespace ExpressControls
 
         public override AddSlideChange Reverse()
         {
-            return new AddSlideChange()
-            {
-                Slide = Slide,
-                Position = Position
-            };
+            return new AddSlideChange() { Slide = Slide, Position = Position };
         }
     }
 
@@ -354,11 +351,7 @@ namespace ExpressControls
 
         public override PositionChange Reverse()
         {
-            return new PositionChange()
-            {
-                OldPosition = NewPosition,
-                NewPosition = OldPosition
-            };
+            return new PositionChange() { OldPosition = NewPosition, NewPosition = OldPosition };
         }
     }
 
@@ -390,7 +383,7 @@ namespace ExpressControls
             {
                 OldSlide = NewSlide,
                 NewSlide = OldSlide,
-                Position = Position
+                Position = Position,
             };
         }
     }
@@ -429,7 +422,7 @@ namespace ExpressControls
                 Property = Property,
                 OldValues = NewValues,
                 NewValues = OldValues,
-                Position = Position
+                Position = Position,
             };
         }
     }
@@ -462,7 +455,7 @@ namespace ExpressControls
             {
                 Property = Property,
                 OldValue = NewValue,
-                NewValue = OldValue
+                NewValue = OldValue,
             };
         }
     }

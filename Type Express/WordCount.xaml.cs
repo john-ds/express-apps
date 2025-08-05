@@ -1,24 +1,12 @@
-﻿using ExpressControls;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+﻿using System.Windows;
+using ExpressControls;
 
 namespace Type_Express
 {
     /// <summary>
     /// Interaction logic for WordCount.xaml
     /// </summary>
-    public partial class WordCount : Window
+    public partial class WordCount : ExpressWindow
     {
         public WordCount(params int[] stats)
         {
@@ -29,6 +17,7 @@ namespace Type_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             WordLbl.Text = stats[0].ToString();
             CharNoSpaceLbl.Text = stats[1].ToString();

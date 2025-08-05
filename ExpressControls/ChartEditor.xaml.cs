@@ -1,4 +1,14 @@
-﻿using LiveChartsCore;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
+using LiveChartsCore;
 using LiveChartsCore.Measure;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
@@ -9,29 +19,13 @@ using LiveChartsCore.SkiaSharpView.WPF;
 using SkiaSharp;
 using SkiaSharp.Views.Desktop;
 using SkiaSharp.Views.WPF;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Markup;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using System.Windows.Threading;
 
 namespace ExpressControls
 {
     /// <summary>
     /// Interaction logic for ChartEditor.xaml
     /// </summary>
-    public partial class ChartEditor : Window
+    public partial class ChartEditor : ExpressWindow
     {
         public ChartItem? ChartData { get; set; }
         private ColourScheme Colours = ColourScheme.Basic;
@@ -42,9 +36,17 @@ namespace ExpressControls
         private bool IsDoughnut = false;
         private readonly int DefaultFontSize = 16;
 
-        private readonly DispatcherTimer FontLoadTimer = new() { Interval = new TimeSpan(0, 0, 0, 0, 300) };
+        private readonly DispatcherTimer FontLoadTimer = new()
+        {
+            Interval = new TimeSpan(0, 0, 0, 0, 300),
+        };
 
-        public ChartEditor(ExpressApp app, ChartItem? data = null, ColourScheme scheme = ColourScheme.Custom, SolidColorBrush? backColor = null)
+        public ChartEditor(
+            ExpressApp app,
+            ChartItem? data = null,
+            ColourScheme scheme = ColourScheme.Custom,
+            SolidColorBrush? backColor = null
+        )
         {
             InitializeComponent();
 
@@ -53,6 +55,7 @@ namespace ExpressControls
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             // Event handlers for maximisable windows
             MaxBtn.Click += Funcs.MaxRestoreEvent;
@@ -60,6 +63,7 @@ namespace ExpressControls
             StateChanged += Funcs.StateChangedEvent;
 
             FontLoadTimer.Tick += FontLoadTimer_Tick;
+            Funcs.RegisterPopups(WindowGrid);
 
             CurrentApp = app;
             switch (app)
@@ -106,36 +110,44 @@ namespace ExpressControls
             PieChrt.Visibility = Visibility.Visible;
             PolarChrt.Visibility = Visibility.Visible;
 
-            AxisFormatCombo.ItemsSource = Enum.GetValues(typeof(AxisFormat)).Cast<AxisFormat>().Select(x =>
-            {
-                return new AppDropdownItem()
+            AxisFormatCombo.ItemsSource = Enum.GetValues(typeof(AxisFormat))
+                .Cast<AxisFormat>()
+                .Select(x =>
                 {
-                    Content = Funcs.ChooseLang(x switch
+                    return new AppDropdownItem()
                     {
-                        AxisFormat.Pound => "PoundStr",
-                        AxisFormat.Dollar => "DollarStr",
-                        AxisFormat.Euro => "EuroStr",
-                        AxisFormat.Yen => "YenStr",
-                        _ => "DefStr",
-                    })
-                };
-            });
+                        Content = Funcs.ChooseLang(
+                            x switch
+                            {
+                                AxisFormat.Pound => "PoundStr",
+                                AxisFormat.Dollar => "DollarStr",
+                                AxisFormat.Euro => "EuroStr",
+                                AxisFormat.Yen => "YenStr",
+                                _ => "DefStr",
+                            }
+                        ),
+                    };
+                });
             AxisFormatCombo.SelectedIndex = 0;
 
-            LegendCombo.ItemsSource = Enum.GetValues(typeof(LegendPosition)).Cast<LegendPosition>().Select(x =>
-            {
-                return new AppDropdownItem()
+            LegendCombo.ItemsSource = Enum.GetValues(typeof(LegendPosition))
+                .Cast<LegendPosition>()
+                .Select(x =>
                 {
-                    Content = Funcs.ChooseLang(x switch
+                    return new AppDropdownItem()
                     {
-                        LegendPosition.Top => "LegendTopStr",
-                        LegendPosition.Left => "LegendLeftStr",
-                        LegendPosition.Right => "LegendRightStr",
-                        LegendPosition.Bottom => "LegendBottomStr",
-                        _ => "LegendHiddenStr"
-                    })
-                };
-            });
+                        Content = Funcs.ChooseLang(
+                            x switch
+                            {
+                                LegendPosition.Top => "LegendTopStr",
+                                LegendPosition.Left => "LegendLeftStr",
+                                LegendPosition.Right => "LegendRightStr",
+                                LegendPosition.Bottom => "LegendBottomStr",
+                                _ => "LegendHiddenStr",
+                            }
+                        ),
+                    };
+                });
             LegendCombo.SelectedIndex = 0;
 
             List<AppDropdownItem> clrItems = [];
@@ -145,12 +157,14 @@ namespace ExpressControls
                 foreach (var item in Funcs.ColourSchemes[i])
                     clrs.Add(Funcs.ColorToBrush(item));
 
-                clrItems.Add(new AppDropdownItem()
-                {
-                    Content = Funcs.GetTypeColourSchemeName((ColourScheme)i),
-                    Colours = [.. clrs],
-                    ShowColours = true
-                });
+                clrItems.Add(
+                    new AppDropdownItem()
+                    {
+                        Content = Funcs.GetTypeColourSchemeName((ColourScheme)i),
+                        Colours = [.. clrs],
+                        ShowColours = true,
+                    }
+                );
             }
 
             ColourSchemeCombo.ItemsSource = clrItems;
@@ -178,8 +192,8 @@ namespace ExpressControls
                     {
                         Name = "",
                         Type = SeriesType.Column,
-                        Values = [4]
-                    }
+                        Values = [4],
+                    },
                 ];
 
                 SetChartType(ChartType.Cartesian);
@@ -224,7 +238,12 @@ namespace ExpressControls
             }
         }
 
-        public static BitmapImage RenderChart(ChartItem data, int width = 0, int height = 0, int fontSize = 0)
+        public static BitmapImage RenderChart(
+            ChartItem data,
+            int width = 0,
+            int height = 0,
+            int fontSize = 0
+        )
         {
             Chart chart;
             InMemorySkiaSharpChart skChart;
@@ -234,28 +253,26 @@ namespace ExpressControls
             SolidColorPaint font = new()
             {
                 FontFamily = data.FontName,
-                Color = data.FontColor.ToSKColor()
+                Color = data.FontColor.ToSKColor(),
             };
 
-            LabelVisual? title = string.IsNullOrWhiteSpace(data.ChartTitle) ? null : new()
-            {
-                Text = data.ChartTitle,
-                TextSize = fontSize + 4,
-                Padding = new LiveChartsCore.Drawing.Padding(15),
-                Paint = font
-            };
+            LabelVisual? title = string.IsNullOrWhiteSpace(data.ChartTitle)
+                ? null
+                : new()
+                {
+                    Text = data.ChartTitle,
+                    TextSize = fontSize + 4,
+                    Padding = new LiveChartsCore.Drawing.Padding(15),
+                    Paint = font,
+                };
 
             SolidColorPaint gridlines = new(SKColors.LightSlateGray)
             {
                 StrokeThickness = 1,
-                PathEffect = new DashEffect([3, 3])
+                PathEffect = new DashEffect([3, 3]),
             };
 
-            SKDefaultLegend legend = new()
-            {
-                TextSize = fontSize,
-                FontPaint = font
-            };
+            SKDefaultLegend legend = new() { TextSize = fontSize, FontPaint = font };
 
             if (width == 0)
                 width = data.Width;
@@ -273,37 +290,59 @@ namespace ExpressControls
                         {
                             new()
                             {
-                                Name = string.IsNullOrWhiteSpace(data.AxisXTitle) ? null : data.AxisXTitle,
+                                Name = string.IsNullOrWhiteSpace(data.AxisXTitle)
+                                    ? null
+                                    : data.AxisXTitle,
                                 Labels = data.Series[0].Type == SeriesType.Bar ? null : data.Labels,
-                                Labeler = data.Series[0].Type == SeriesType.Bar ? GetLabelersFunc(data.AxisFormatType) : Labelers.Default,
+                                Labeler =
+                                    data.Series[0].Type == SeriesType.Bar
+                                        ? GetLabelersFunc(data.AxisFormatType)
+                                        : Labelers.Default,
                                 SeparatorsPaint = data.HorizontalGridlines ? gridlines : null,
                                 NameTextSize = fontSize,
                                 TextSize = fontSize,
                                 LabelsPaint = font,
-                                NamePaint = font
-                            }
+                                NamePaint = font,
+                            },
                         },
                         YAxes = new List<Axis>()
                         {
                             new()
                             {
-                                Name = string.IsNullOrWhiteSpace(data.AxisYTitle) ? null : data.AxisYTitle,
+                                Name = string.IsNullOrWhiteSpace(data.AxisYTitle)
+                                    ? null
+                                    : data.AxisYTitle,
                                 Labels = data.Series[0].Type != SeriesType.Bar ? null : data.Labels,
-                                Labeler = data.Series[0].Type == SeriesType.Bar ? Labelers.Default : GetLabelersFunc(data.AxisFormatType),
+                                Labeler =
+                                    data.Series[0].Type == SeriesType.Bar
+                                        ? Labelers.Default
+                                        : GetLabelersFunc(data.AxisFormatType),
                                 SeparatorsPaint = data.VerticalGridlines ? gridlines : null,
                                 NameTextSize = fontSize,
                                 TextSize = fontSize,
                                 LabelsPaint = font,
-                                NamePaint = font
-                            }
+                                NamePaint = font,
+                            },
                         },
-                        Series = GetSeries(data.Series, data.Type, data.Labels, font, fontSize, data.ColourTheme),
+                        Series = GetSeries(
+                            data.Series,
+                            data.Type,
+                            data.Labels,
+                            font,
+                            fontSize,
+                            data.ColourTheme
+                        ),
                         Title = title,
                         LegendPosition = data.LegendPlacement,
-                        Legend = legend
+                        Legend = legend,
                     };
-                    
-                    skChart = new SKCartesianChart((CartesianChart)chart) { Width = width, Height = height, Legend = legend };
+
+                    skChart = new SKCartesianChart((CartesianChart)chart)
+                    {
+                        Width = width,
+                        Height = height,
+                        Legend = legend,
+                    };
                     break;
 
                 case ChartType.Pie:
@@ -311,19 +350,35 @@ namespace ExpressControls
                     {
                         Width = width,
                         Height = height,
-                        Series = GetSeries(data.Series, data.Type, data.Labels, font, fontSize, data.ColourTheme),
+                        Series = GetSeries(
+                            data.Series,
+                            data.Type,
+                            data.Labels,
+                            font,
+                            fontSize,
+                            data.ColourTheme
+                        ),
                         Title = title,
                         LegendPosition = data.LegendPlacement,
-                        Legend = legend
+                        Legend = legend,
                     };
 
                     if (data.Series[0].DoughnutChart)
                     {
-                        foreach (PieSeries<double> item in ((List<ISeries>)((PieChart)chart).Series).Cast<PieSeries<double>>())
+                        foreach (
+                            PieSeries<double> item in (
+                                (List<ISeries>)((PieChart)chart).Series
+                            ).Cast<PieSeries<double>>()
+                        )
                             item.InnerRadius = Math.Min(width, height) * 0.2;
                     }
 
-                    skChart = new SKPieChart((PieChart)chart) { Width = width, Height = height, Legend = legend };
+                    skChart = new SKPieChart((PieChart)chart)
+                    {
+                        Width = width,
+                        Height = height,
+                        Legend = legend,
+                    };
                     break;
 
                 case ChartType.Polar:
@@ -337,8 +392,8 @@ namespace ExpressControls
                             {
                                 Labels = data.Labels,
                                 TextSize = fontSize,
-                                LabelsPaint = font
-                            }
+                                LabelsPaint = font,
+                            },
                         },
                         RadiusAxes = new List<PolarAxis>()
                         {
@@ -346,16 +401,28 @@ namespace ExpressControls
                             {
                                 Labeler = GetLabelersFunc(data.AxisFormatType),
                                 TextSize = fontSize,
-                                LabelsPaint = font
-                            }
+                                LabelsPaint = font,
+                            },
                         },
-                        Series = GetSeries(data.Series, data.Type, data.Labels, font, fontSize, data.ColourTheme),
+                        Series = GetSeries(
+                            data.Series,
+                            data.Type,
+                            data.Labels,
+                            font,
+                            fontSize,
+                            data.ColourTheme
+                        ),
                         Title = title,
                         LegendPosition = data.LegendPlacement,
-                        Legend = legend
+                        Legend = legend,
                     };
 
-                    skChart = new SKPolarChart((PolarChart)chart) { Width = width, Height = height, Legend = legend };
+                    skChart = new SKPolarChart((PolarChart)chart)
+                    {
+                        Width = width,
+                        Height = height,
+                        Legend = legend,
+                    };
                     break;
 
                 case ChartType.Unknown:
@@ -366,15 +433,15 @@ namespace ExpressControls
             skChart.Background = Colors.Transparent.ToSKColor();
 
             using (var image = skChart.GetImage())
-                using (var encoded = image.Encode())
-                    using (Stream stream = encoded.AsStream())
-                    {
-                        bitmap.BeginInit();
-                        bitmap.StreamSource = stream;
-                        bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                        bitmap.EndInit();
-                        bitmap.Freeze();
-                    }
+            using (var encoded = image.Encode())
+            using (Stream stream = encoded.AsStream())
+            {
+                bitmap.BeginInit();
+                bitmap.StreamSource = stream;
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.EndInit();
+                bitmap.Freeze();
+            }
 
             return bitmap;
         }
@@ -385,22 +452,34 @@ namespace ExpressControls
             {
                 Type = GetCurrentChartType(),
                 Labels = CurrentLabels,
-                Series = GetCurrentChartType() == ChartType.Pie ? [CurrentSeries.First()] : CurrentSeries.ToList(),
+                Series =
+                    GetCurrentChartType() == ChartType.Pie
+                        ? [CurrentSeries.First()]
+                        : [.. CurrentSeries],
                 ChartTitle = string.IsNullOrWhiteSpace(TitleTxt.Text) ? "" : TitleTxt.Text,
                 AxisXTitle = GetCurrentChartType() == ChartType.Cartesian ? XAxisTxt.Text : "",
                 AxisYTitle = GetCurrentChartType() == ChartType.Cartesian ? YAxisTxt.Text : "",
                 AxisFormatType = (AxisFormat)AxisFormatCombo.SelectedIndex,
-                VerticalGridlines = GetCurrentChartType() == ChartType.Pie || VerticalGridlineCheckBox.IsChecked == true,
-                HorizontalGridlines = GetCurrentChartType() == ChartType.Pie || HorizontalGridlineCheckBox.IsChecked == true,
+                VerticalGridlines =
+                    GetCurrentChartType() == ChartType.Pie
+                    || VerticalGridlineCheckBox.IsChecked == true,
+                HorizontalGridlines =
+                    GetCurrentChartType() == ChartType.Pie
+                    || HorizontalGridlineCheckBox.IsChecked == true,
                 LegendPlacement = (LegendPosition)LegendCombo.SelectedIndex,
                 FontName = FontStyleTxt.Text,
                 FontSize = FontSizeUpDown.Value ?? DefaultFontSize,
                 FontColor = TextColourPicker.SelectedColor ?? Colors.Black,
                 ColourTheme = (ColourScheme)ColourSchemeCombo.SelectedIndex,
                 Width = WidthUpDown.Value ?? 400,
-                Height = HeightUpDown.Value ?? 400
+                Height = HeightUpDown.Value ?? 400,
             };
 
+            Funcs.LogConversion(
+                PageID,
+                LoggingProperties.Conversion.CreateChart,
+                Enum.GetName(GetCurrentChartType()) ?? ""
+            );
             DialogResult = true;
             Close();
         }
@@ -427,7 +506,7 @@ namespace ExpressControls
             CartesianChrt.Visibility = Visibility.Collapsed;
             PieChrt.Visibility = Visibility.Collapsed;
             PolarChrt.Visibility = Visibility.Collapsed;
-            
+
             int leftMargin = 34;
             int width = 36 + 8;
 
@@ -498,11 +577,14 @@ namespace ExpressControls
 
         private void ForceUpdateChart()
         {
-            GetCurrentChart().CoreChart.Update(new LiveChartsCore.Kernel.ChartUpdateParams()
-            {
-                IsAutomaticUpdate = true,
-                Throttling = false
-            });
+            GetCurrentChart()
+                .CoreChart.Update(
+                    new LiveChartsCore.Kernel.ChartUpdateParams()
+                    {
+                        IsAutomaticUpdate = true,
+                        Throttling = false,
+                    }
+                );
         }
 
         #endregion
@@ -510,12 +592,18 @@ namespace ExpressControls
 
         private void EditDataBtn_Click(object sender, RoutedEventArgs e)
         {
-            ChartDataEditor data = new(CurrentApp, GetCurrentChartType(), CurrentLabels, CurrentSeries.Where((series, idx) =>
-            {
-                // only one series item allowed for pie charts
-                return !(GetCurrentChartType() == ChartType.Pie && idx > 0);
-
-            }));
+            ChartDataEditor data = new(
+                CurrentApp,
+                GetCurrentChartType(),
+                CurrentLabels,
+                CurrentSeries.Where(
+                    (series, idx) =>
+                    {
+                        // only one series item allowed for pie charts
+                        return !(GetCurrentChartType() == ChartType.Pie && idx > 0);
+                    }
+                )
+            );
 
             if (data.ShowDialog() == true)
             {
@@ -535,7 +623,7 @@ namespace ExpressControls
             SolidColorPaint font = new()
             {
                 FontFamily = FontStyleTxt.Text,
-                Color = (TextColourPicker.SelectedColor ?? Colors.Black).ToSKColor()
+                Color = (TextColourPicker.SelectedColor ?? Colors.Black).ToSKColor(),
             };
 
             switch (GetCurrentChartType())
@@ -552,18 +640,39 @@ namespace ExpressControls
                         GetYAxis().Labels = null;
                     }
 
-                    CartesianChrt.Series = GetSeries(data, GetCurrentChartType(), labels, font, fontSize, Colours);
+                    CartesianChrt.Series = GetSeries(
+                        data,
+                        GetCurrentChartType(),
+                        labels,
+                        font,
+                        fontSize,
+                        Colours
+                    );
                     break;
 
                 case ChartType.Pie:
                     IsDoughnut = data.First().DoughnutChart;
-                    PieChrt.Series = GetSeries(data, GetCurrentChartType(), labels, font, fontSize, Colours);
+                    PieChrt.Series = GetSeries(
+                        data,
+                        GetCurrentChartType(),
+                        labels,
+                        font,
+                        fontSize,
+                        Colours
+                    );
                     CalculateDoughnutRadius();
                     break;
 
                 case ChartType.Polar:
                     GetPolarAngleAxis().Labels = labels;
-                    PolarChrt.Series = GetSeries(data, GetCurrentChartType(), labels, font, fontSize, Colours);
+                    PolarChrt.Series = GetSeries(
+                        data,
+                        GetCurrentChartType(),
+                        labels,
+                        font,
+                        fontSize,
+                        Colours
+                    );
                     break;
 
                 default:
@@ -574,8 +683,14 @@ namespace ExpressControls
             ForceUpdateChart();
         }
 
-        public static List<ISeries> GetSeries(IEnumerable<SeriesItem> data, ChartType type, 
-            List<string> labels, SolidColorPaint font, int fontSize, ColourScheme scheme)
+        public static List<ISeries> GetSeries(
+            IEnumerable<SeriesItem> data,
+            ChartType type,
+            List<string> labels,
+            SolidColorPaint font,
+            int fontSize,
+            ColourScheme scheme
+        )
         {
             List<ISeries> series = [];
             switch (type)
@@ -586,15 +701,22 @@ namespace ExpressControls
                         int count = 0;
                         foreach (SeriesItem item in data)
                         {
-                            series.Add(new RowSeries<double>
-                            {
-                                Name = item.Name == "" ? Funcs.ChooseLang("SeriesStr") + " " + (count + 1).ToString() : item.Name,
-                                Values = item.Values,
-                                Fill = new SolidColorPaint(GetSKColour(count, scheme)),
-                                DataLabelsPaint = item.ShowValueLabels ? font : null,
-                                DataLabelsPosition = item.DataLabelsPlacement,
-                                DataLabelsSize = fontSize
-                            });
+                            series.Add(
+                                new RowSeries<double>
+                                {
+                                    Name =
+                                        item.Name == ""
+                                            ? Funcs.ChooseLang("SeriesStr")
+                                                + " "
+                                                + (count + 1).ToString()
+                                            : item.Name,
+                                    Values = item.Values,
+                                    Fill = new SolidColorPaint(GetSKColour(count, scheme)),
+                                    DataLabelsPaint = item.ShowValueLabels ? font : null,
+                                    DataLabelsPosition = item.DataLabelsPlacement,
+                                    DataLabelsSize = fontSize,
+                                }
+                            );
                         }
                     }
                     else
@@ -605,62 +727,109 @@ namespace ExpressControls
                             switch (item.Type)
                             {
                                 case SeriesType.Line:
-                                    series.Add(new LineSeries<double>
-                                    {
-                                        Name = item.Name == "" ? Funcs.ChooseLang("SeriesStr") + " " + (count + 1).ToString() : item.Name,
-                                        Values = item.Values,
-                                        Fill = null,
-                                        Stroke = new SolidColorPaint(GetSKColour(count, scheme)) { StrokeThickness = item.StrokeThickness },
-                                        GeometryStroke = new SolidColorPaint(GetSKColour(count, scheme)) { StrokeThickness = item.StrokeThickness },
-                                        LineSmoothness = item.SmoothLines ? 1 : 0,
-                                        GeometrySize = item.ShowValueLabels ? 14 : 0,
-                                        DataLabelsPaint = item.ShowValueLabels ? font : null,
-                                        DataLabelsPosition = item.DataLabelsPlacement,
-                                        DataLabelsSize = fontSize
-                                    });
+                                    series.Add(
+                                        new LineSeries<double>
+                                        {
+                                            Name =
+                                                item.Name == ""
+                                                    ? Funcs.ChooseLang("SeriesStr")
+                                                        + " "
+                                                        + (count + 1).ToString()
+                                                    : item.Name,
+                                            Values = item.Values,
+                                            Fill = null,
+                                            Stroke = new SolidColorPaint(GetSKColour(count, scheme))
+                                            {
+                                                StrokeThickness = item.StrokeThickness,
+                                            },
+                                            GeometryStroke = new SolidColorPaint(
+                                                GetSKColour(count, scheme)
+                                            )
+                                            {
+                                                StrokeThickness = item.StrokeThickness,
+                                            },
+                                            LineSmoothness = item.SmoothLines ? 1 : 0,
+                                            GeometrySize = item.ShowValueLabels ? 14 : 0,
+                                            DataLabelsPaint = item.ShowValueLabels ? font : null,
+                                            DataLabelsPosition = item.DataLabelsPlacement,
+                                            DataLabelsSize = fontSize,
+                                        }
+                                    );
                                     break;
 
                                 case SeriesType.Area:
-                                    series.Add(new LineSeries<double>
-                                    {
-                                        Name = item.Name == "" ? Funcs.ChooseLang("SeriesStr") + " " + (count + 1).ToString() : item.Name,
-                                        Values = item.Values,
-                                        Fill = new SolidColorPaint(GetSKColour(count, scheme)),
-                                        LineSmoothness = item.SmoothLines ? 1 : 0,
-                                        Stroke = null,
-                                        GeometrySize = item.ShowValueLabels ? 14 : 0,
-                                        GeometryStroke = new SolidColorPaint(GetSKColour(count, scheme)) { StrokeThickness = 4 },
-                                        DataLabelsPaint = item.ShowValueLabels ? font : null,
-                                        DataLabelsPosition = item.DataLabelsPlacement,
-                                        DataLabelsSize = fontSize
-                                    });
+                                    series.Add(
+                                        new LineSeries<double>
+                                        {
+                                            Name =
+                                                item.Name == ""
+                                                    ? Funcs.ChooseLang("SeriesStr")
+                                                        + " "
+                                                        + (count + 1).ToString()
+                                                    : item.Name,
+                                            Values = item.Values,
+                                            Fill = new SolidColorPaint(GetSKColour(count, scheme)),
+                                            LineSmoothness = item.SmoothLines ? 1 : 0,
+                                            Stroke = null,
+                                            GeometrySize = item.ShowValueLabels ? 14 : 0,
+                                            GeometryStroke = new SolidColorPaint(
+                                                GetSKColour(count, scheme)
+                                            )
+                                            {
+                                                StrokeThickness = 4,
+                                            },
+                                            DataLabelsPaint = item.ShowValueLabels ? font : null,
+                                            DataLabelsPosition = item.DataLabelsPlacement,
+                                            DataLabelsSize = fontSize,
+                                        }
+                                    );
                                     break;
 
                                 case SeriesType.Scatter:
-                                    series.Add(new ScatterSeries<double>
-                                    {
-                                        Name = item.Name == "" ? Funcs.ChooseLang("SeriesStr") + " " + (count + 1).ToString() : item.Name,
-                                        Values = item.Values,
-                                        Fill = item.ScatterFilled ? new SolidColorPaint(GetSKColour(count, scheme)) : null,
-                                        Stroke = item.ScatterFilled ? null :
-                                            new SolidColorPaint(GetSKColour(count, scheme)) { StrokeThickness = item.StrokeThickness },
-                                        DataLabelsPaint = item.ShowValueLabels ? font : null,
-                                        DataLabelsPosition = item.DataLabelsPlacement,
-                                        DataLabelsSize = fontSize
-                                    });
+                                    series.Add(
+                                        new ScatterSeries<double>
+                                        {
+                                            Name =
+                                                item.Name == ""
+                                                    ? Funcs.ChooseLang("SeriesStr")
+                                                        + " "
+                                                        + (count + 1).ToString()
+                                                    : item.Name,
+                                            Values = item.Values,
+                                            Fill = item.ScatterFilled
+                                                ? new SolidColorPaint(GetSKColour(count, scheme))
+                                                : null,
+                                            Stroke = item.ScatterFilled
+                                                ? null
+                                                : new SolidColorPaint(GetSKColour(count, scheme))
+                                                {
+                                                    StrokeThickness = item.StrokeThickness,
+                                                },
+                                            DataLabelsPaint = item.ShowValueLabels ? font : null,
+                                            DataLabelsPosition = item.DataLabelsPlacement,
+                                            DataLabelsSize = fontSize,
+                                        }
+                                    );
                                     break;
 
                                 case SeriesType.Column:
                                 default:
-                                    series.Add(new ColumnSeries<double>
-                                    {
-                                        Name = item.Name == "" ? Funcs.ChooseLang("SeriesStr") + " " + (count + 1).ToString() : item.Name,
-                                        Values = item.Values,
-                                        Fill = new SolidColorPaint(GetSKColour(count, scheme)),
-                                        DataLabelsPaint = item.ShowValueLabels ? font : null,
-                                        DataLabelsPosition = item.DataLabelsPlacement,
-                                        DataLabelsSize = fontSize
-                                    });
+                                    series.Add(
+                                        new ColumnSeries<double>
+                                        {
+                                            Name =
+                                                item.Name == ""
+                                                    ? Funcs.ChooseLang("SeriesStr")
+                                                        + " "
+                                                        + (count + 1).ToString()
+                                                    : item.Name,
+                                            Values = item.Values,
+                                            Fill = new SolidColorPaint(GetSKColour(count, scheme)),
+                                            DataLabelsPaint = item.ShowValueLabels ? font : null,
+                                            DataLabelsPosition = item.DataLabelsPlacement,
+                                            DataLabelsSize = fontSize,
+                                        }
+                                    );
                                     break;
                             }
                             count++;
@@ -673,15 +842,17 @@ namespace ExpressControls
 
                     for (int i = 0; i < labels.Count; i++)
                     {
-                        series.Add(new PieSeries<double>
-                        {
-                            Name = labels[i],
-                            Fill = new SolidColorPaint(GetSKColour(i, scheme)),
-                            Values = [pieItem.Values[i]],
-                            DataLabelsPaint = pieItem.ShowValueLabels ? font : null,
-                            DataLabelsPosition = PolarLabelsPosition.Middle,
-                            DataLabelsSize = fontSize
-                        });
+                        series.Add(
+                            new PieSeries<double>
+                            {
+                                Name = labels[i],
+                                Fill = new SolidColorPaint(GetSKColour(i, scheme)),
+                                Values = [pieItem.Values[i]],
+                                DataLabelsPaint = pieItem.ShowValueLabels ? font : null,
+                                DataLabelsPosition = PolarLabelsPosition.Middle,
+                                DataLabelsSize = fontSize,
+                            }
+                        );
                     }
                     return series;
 
@@ -689,21 +860,35 @@ namespace ExpressControls
                     int counter = 0;
                     foreach (SeriesItem polarItem in data)
                     {
-                        series.Add(new PolarLineSeries<double>
-                        {
-                            Name = polarItem.Name == "" ? Funcs.ChooseLang("SeriesStr") + " " + (counter + 1).ToString() : polarItem.Name,
-                            Values = polarItem.Values,
-                            Fill = polarItem.PolarFilled ? new SolidColorPaint(GetSKPolarColour(counter, scheme)) : null,
-                            Stroke = polarItem.PolarFilled ? null : new SolidColorPaint(GetSKColour(counter, scheme)) { StrokeThickness = polarItem.StrokeThickness },
-                            GeometrySize = 0,
-                            GeometryFill = new SolidColorPaint(GetSKColour(counter, scheme)),
-                            GeometryStroke = null,
-                            LineSmoothness = 0,
-                            IsClosed = true,
-                            DataLabelsPaint = polarItem.ShowValueLabels ? font : null,
-                            DataLabelsPosition = PolarLabelsPosition.Middle,
-                            DataLabelsSize = fontSize
-                        });
+                        series.Add(
+                            new PolarLineSeries<double>
+                            {
+                                Name =
+                                    polarItem.Name == ""
+                                        ? Funcs.ChooseLang("SeriesStr")
+                                            + " "
+                                            + (counter + 1).ToString()
+                                        : polarItem.Name,
+                                Values = polarItem.Values,
+                                Fill = polarItem.PolarFilled
+                                    ? new SolidColorPaint(GetSKPolarColour(counter, scheme))
+                                    : null,
+                                Stroke = polarItem.PolarFilled
+                                    ? null
+                                    : new SolidColorPaint(GetSKColour(counter, scheme))
+                                    {
+                                        StrokeThickness = polarItem.StrokeThickness,
+                                    },
+                                GeometrySize = 0,
+                                GeometryFill = new SolidColorPaint(GetSKColour(counter, scheme)),
+                                GeometryStroke = null,
+                                LineSmoothness = 0,
+                                IsClosed = true,
+                                DataLabelsPaint = polarItem.ShowValueLabels ? font : null,
+                                DataLabelsPosition = PolarLabelsPosition.Middle,
+                                DataLabelsSize = fontSize,
+                            }
+                        );
                         counter++;
                     }
                     return series;
@@ -720,12 +905,16 @@ namespace ExpressControls
                 {
                     var series = (PieSeries<double>)((List<ISeries>)PieChrt.Series)[0];
 
-                    foreach (PieSeries<double> item in ((List<ISeries>)PieChrt.Series).Cast<PieSeries<double>>())
-                        item.InnerRadius = Math.Min(PieChrt.ActualWidth, PieChrt.ActualHeight) * 0.2;
+                    foreach (
+                        PieSeries<double> item in ((List<ISeries>)PieChrt.Series).Cast<
+                            PieSeries<double>
+                        >()
+                    )
+                        item.InnerRadius =
+                            Math.Min(PieChrt.ActualWidth, PieChrt.ActualHeight) * 0.2;
                 }
                 catch { }
         }
-
 
         private void PieChrt_SizeChanged(object sender, SizeChangedEventArgs e)
         {
@@ -758,8 +947,8 @@ namespace ExpressControls
                     Paint = new SolidColorPaint()
                     {
                         FontFamily = FontStyleTxt.Text,
-                        Color = (TextColourPicker.SelectedColor ?? Colors.Black).ToSKColor()
-                    }
+                        Color = (TextColourPicker.SelectedColor ?? Colors.Black).ToSKColor(),
+                    },
                 };
             }
 
@@ -821,8 +1010,13 @@ namespace ExpressControls
         {
             Func<double, string> func = Labelers.Default;
             if (format != AxisFormat.Default)
-                func = x => Labelers.FormatCurrency(x, Funcs.GetThousandsSeparator(),
-                    Funcs.GetDecimalSeparator(), GetCurrencySymbol(format));
+                func = x =>
+                    Labelers.FormatCurrency(
+                        x,
+                        Funcs.GetThousandsSeparator(),
+                        Funcs.GetDecimalSeparator(),
+                        GetCurrencySymbol(format)
+                    );
 
             return func;
         }
@@ -877,10 +1071,11 @@ namespace ExpressControls
             SolidColorPaint paint = new(SKColors.LightSlateGray)
             {
                 StrokeThickness = 1,
-                PathEffect = new DashEffect([3, 3])
+                PathEffect = new DashEffect([3, 3]),
             };
-  
-            GetXAxis().SeparatorsPaint = HorizontalGridlineCheckBox.IsChecked == true ? paint : null;
+
+            GetXAxis().SeparatorsPaint =
+                HorizontalGridlineCheckBox.IsChecked == true ? paint : null;
             GetYAxis().SeparatorsPaint = VerticalGridlineCheckBox.IsChecked == true ? paint : null;
         }
 
@@ -908,13 +1103,13 @@ namespace ExpressControls
             SolidColorPaint font = new()
             {
                 FontFamily = FontStyleTxt.Text,
-                Color = (TextColourPicker.SelectedColor ?? Colors.Black).ToSKColor()
+                Color = (TextColourPicker.SelectedColor ?? Colors.Black).ToSKColor(),
             };
 
             GetCurrentChart().Legend = new SKDefaultLegend()
             {
                 TextSize = fontSize,
-                FontPaint = font
+                FontPaint = font,
             };
 
             GetXAxis().NameTextSize = fontSize;
@@ -937,7 +1132,10 @@ namespace ExpressControls
             ForceUpdateChart();
         }
 
-        private void FontSizeUpDown_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        private void FontSizeUpDown_ValueChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<object> e
+        )
         {
             if (IsLoaded)
                 SetChartType(GetCurrentChartType());
@@ -965,7 +1163,7 @@ namespace ExpressControls
         private void FontLoadTimer_Tick(object? sender, EventArgs e)
         {
             FontLoadTimer.Stop();
-            FontsStack.ItemsSource = new FontItems();
+            FontsStack.ItemsSource = new FontItems(true);
 
             LoadingFontsLbl.Visibility = Visibility.Collapsed;
             FontsStack.Visibility = Visibility.Visible;
@@ -985,7 +1183,10 @@ namespace ExpressControls
                 SetChartType(GetCurrentChartType());
         }
 
-        private void TextColourPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
+        private void TextColourPicker_SelectedColorChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<Color?> e
+        )
         {
             if (IsLoaded)
                 SetChartType(GetCurrentChartType());
@@ -1012,8 +1213,12 @@ namespace ExpressControls
             if (iters == 0)
                 return Funcs.ColourSchemes[(int)scheme][idx].ToSKColor();
             else
-                return System.Windows.Forms.ControlPaint.Dark(
-                    Funcs.ConvertMediaToDrawingColor(Funcs.ColourSchemes[(int)scheme][idx]), iters / 10f).ToSKColor();
+                return System
+                    .Windows.Forms.ControlPaint.Dark(
+                        Funcs.ConvertMediaToDrawingColor(Funcs.ColourSchemes[(int)scheme][idx]),
+                        iters / 10f
+                    )
+                    .ToSKColor();
         }
 
         private static SKColor GetSKPolarColour(int num, ColourScheme scheme)

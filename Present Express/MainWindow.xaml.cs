@@ -1,15 +1,11 @@
-﻿using Dropbox.Api.Files;
-using Dropbox.Api;
-using ExpressControls;
-using ICSharpCode.SharpZipLib.Zip;
-using Present_Express.Properties;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing.Imaging;
+using System.Drawing.Printing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -25,20 +21,24 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-using System.Xml.Serialization;
-using WinDrawing = System.Drawing;
-using Microsoft.WindowsAPICodePack.Dialogs;
-using System.Xml;
-using System.Drawing.Printing;
-using FFMpegCore;
 using System.Windows.Threading;
+using System.Xml;
+using System.Xml.Serialization;
+using Dropbox.Api;
+using Dropbox.Api.Files;
+using ExpressControls;
+using FFMpegCore;
+using ICSharpCode.SharpZipLib.Zip;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using Present_Express.Properties;
+using WinDrawing = System.Drawing;
 
 namespace Present_Express
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : ExpressWindow
     {
         private readonly DispatcherTimer EditingTimer = new() { Interval = new TimeSpan(0, 1, 0) };
         private readonly DispatcherTimer TempLblTimer = new() { Interval = new TimeSpan(0, 0, 4) };
@@ -56,8 +56,16 @@ namespace Present_Express
         public bool HasChanges = false;
         public MessageBoxResult? ClosingPromptResponse = null;
 
-        private readonly BackgroundWorker ExportVideoWorker = new() { WorkerSupportsCancellation = true, WorkerReportsProgress = true };
-        private readonly BackgroundWorker ExportImageWorker = new() { WorkerSupportsCancellation = true, WorkerReportsProgress = true };
+        private readonly BackgroundWorker ExportVideoWorker = new()
+        {
+            WorkerSupportsCancellation = true,
+            WorkerReportsProgress = true,
+        };
+        private readonly BackgroundWorker ExportImageWorker = new()
+        {
+            WorkerSupportsCancellation = true,
+            WorkerReportsProgress = true,
+        };
 
         public MainWindow()
         {
@@ -68,6 +76,7 @@ namespace Present_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             // Event handlers for maximisable windows
             MaxBtn.Click += Funcs.MaxRestoreEvent;
@@ -89,6 +98,7 @@ namespace Present_Express
 
             Funcs.SetLang(Settings.Default.Language);
             Funcs.SetupDialogs();
+            Funcs.RegisterPopups(WindowGrid);
 
             // Setup for scrollable ribbon menu
             Funcs.Tabs = ["Menu", "Home", "Design", "Show"];
@@ -104,7 +114,8 @@ namespace Present_Express
                 ((Button)FindName(tab + "RightBtn")).PreviewMouseUp += Funcs.ScrollBtns_MouseUp;
 
                 ((StackPanel)FindName(tab + "Pnl")).MouseWheel += Funcs.ScrollRibbon_MouseWheel;
-                ((ScrollViewer)FindName(tab + "ScrollViewer")).SizeChanged += Funcs.DocScrollPnl_SizeChanged;
+                ((ScrollViewer)FindName(tab + "ScrollViewer")).SizeChanged +=
+                    Funcs.DocScrollPnl_SizeChanged;
 
                 ((RadioButton)FindName(tab + "Btn")).Click += Funcs.RibbonTabs_Click;
             }
@@ -116,11 +127,13 @@ namespace Present_Express
             string[] OverlayStoryboards = ["New", "Open", "Cloud", "Save", "Export", "Info"];
 
             OverlayGrid.Visibility = Visibility.Collapsed;
-            ((Storyboard)TryFindResource("OverlayOutStoryboard")).Completed += OverlayStoryboard_Completed;
+            ((Storyboard)TryFindResource("OverlayOutStoryboard")).Completed +=
+                OverlayStoryboard_Completed;
 
             foreach (string k in OverlayStoryboards)
             {
-                ((Storyboard)TryFindResource(k + "OverlayOutStoryboard")).Completed += OverlayStoryboard_Completed;
+                ((Storyboard)TryFindResource(k + "OverlayOutStoryboard")).Completed +=
+                    OverlayStoryboard_Completed;
                 ((Button)FindName(k + "OverlayCloseBtn")).Click += Funcs.OverlayCloseBtns_Click;
             }
 
@@ -156,7 +169,9 @@ namespace Present_Express
             }
 
             if (Settings.Default.DefaultSaveLocation == "")
-                Funcs.PRESENTSaveDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                Funcs.PRESENTSaveDialog.InitialDirectory = Environment.GetFolderPath(
+                    Environment.SpecialFolder.MyDocuments
+                );
             else
                 Funcs.PRESENTSaveDialog.InitialDirectory = Settings.Default.DefaultSaveLocation;
 
@@ -194,6 +209,7 @@ namespace Present_Express
             SlideStack.ItemsSource = SlideUIList;
 
             LoadTransitionsPopup();
+            TitleOverride = "Present Express";
         }
 
         private async void Main_Loaded(object sender, RoutedEventArgs e)
@@ -211,7 +227,7 @@ namespace Present_Express
                 await GetNotifications();
         }
 
-        private void Main_Closing(object sender, CancelEventArgs e)
+        private async void Main_Closing(object sender, CancelEventArgs e)
         {
             Settings.Default.Height = ActualHeight;
             Settings.Default.Width = ActualWidth;
@@ -233,16 +249,23 @@ namespace Present_Express
                     if (Application.Current.Windows.OfType<MainWindow>().Count() > 1)
                     {
                         (SaveChoice, applySaveChoiceToAll) = Funcs.ShowPromptResWithCheckbox(
-                            "OnExitDescPStr", "OnExitStr", MessageBoxButton.YesNoCancel,
-                            MessageBoxImage.Exclamation);
+                            "OnExitDescPStr",
+                            "OnExitStr",
+                            MessageBoxButton.YesNoCancel,
+                            MessageBoxImage.Exclamation
+                        );
 
                         if (applySaveChoiceToAll)
                             ClosingPromptResponse = SaveChoice;
                     }
                     else
                     {
-                        SaveChoice = Funcs.ShowPromptRes("OnExitDescPStr", "OnExitStr",
-                            MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation);
+                        SaveChoice = Funcs.ShowPromptRes(
+                            "OnExitDescPStr",
+                            "OnExitStr",
+                            MessageBoxButton.YesNoCancel,
+                            MessageBoxImage.Exclamation
+                        );
                     }
                 }
 
@@ -267,6 +290,14 @@ namespace Present_Express
                 if (e.Cancel)
                     ClosingPromptResponse = null;
             }
+
+            if (!e.Cancel)
+            {
+                Funcs.LogWindowClose(PageID);
+
+                if (Application.Current.Windows.OfType<MainWindow>().Count() <= 1)
+                    await Funcs.LogApplicationEnd();
+            }
         }
 
         private void Main_Closed(object sender, EventArgs e)
@@ -274,7 +305,10 @@ namespace Present_Express
             if (ClosingPromptResponse != null)
             {
                 // get next window and close it
-                var next = Application.Current.Windows.OfType<MainWindow>().Where(w => !w.Equals(this)).FirstOrDefault();
+                var next = Application
+                    .Current.Windows.OfType<MainWindow>()
+                    .Where(w => !w.Equals(this))
+                    .FirstOrDefault();
                 if (next != null)
                 {
                     next.ClosingPromptResponse = ClosingPromptResponse;
@@ -317,7 +351,12 @@ namespace Present_Express
                         break;
                     case "Export":
                         if (IsSlideshowEmpty())
-                            Funcs.ShowMessageRes("NoSlidesDescStr", "NoSlidesStr", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                            Funcs.ShowMessageRes(
+                                "NoSlidesDescStr",
+                                "NoSlidesStr",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Exclamation
+                            );
                         else
                         {
                             DocTabs.SelectedIndex = 0;
@@ -344,7 +383,12 @@ namespace Present_Express
                         break;
                     case "Print":
                         if (IsSlideshowEmpty())
-                            Funcs.ShowMessageRes("NoSlidesDescStr", "NoSlidesStr", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                            Funcs.ShowMessageRes(
+                                "NoSlidesDescStr",
+                                "NoSlidesStr",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Exclamation
+                            );
                         else
                             StartPrinting();
                         break;
@@ -367,7 +411,10 @@ namespace Present_Express
                         TextBtn_Click(TextBtn, new());
                         break;
                     case "PrintPreview":
-                        new PrintPreview(PrintDoc, Funcs.ChooseLang("PrintPreviewStr") + " - Present Express").ShowDialog();
+                        new PrintPreview(
+                            PrintDoc,
+                            Funcs.ChooseLang("PrintPreviewStr") + " - Present Express"
+                        ).ShowDialog();
                         break;
                     case "Undo":
                         UndoBtn_Click(UndoBtn, new());
@@ -442,8 +489,10 @@ namespace Present_Express
         {
             try
             {
-                TemplateItem[] resp = await Funcs.GetJsonAsync<TemplateItem[]>("https://api.johnjds.co.uk/express/v2/present/templates");
-               
+                TemplateItem[] resp = await Funcs.GetJsonAsync<TemplateItem[]>(
+                    $"{Funcs.APIEndpoint}/express/v2/present/templates"
+                );
+
                 if (resp.Length == 0)
                     throw new ArgumentNullException(nameof(resp));
 
@@ -457,10 +506,13 @@ namespace Present_Express
                 TemplateLoadingGrid.Visibility = Visibility.Collapsed;
 
                 Random rnd = new();
-                TemplateItems = new ObservableCollection<TemplateItem>(resp.OrderBy(x => rnd.Next()));
+                TemplateItems = new ObservableCollection<TemplateItem>(
+                    resp.OrderBy(x => rnd.Next())
+                );
                 TemplateItemsView.Filter = new Predicate<object>(o =>
                 {
-                    return TemplateFilter == PresentTemplateCategory.All || TemplateFilter == ((TemplateItem)o).PresentCategory;
+                    return TemplateFilter == PresentTemplateCategory.All
+                        || TemplateFilter == ((TemplateItem)o).PresentCategory;
                 });
 
                 TemplateItemsView.CollectionChanged += TemplateItemsView_CollectionChanged;
@@ -468,15 +520,23 @@ namespace Present_Express
             }
             catch (Exception ex)
             {
-                Funcs.ShowMessageRes("TemplateErrorStr", "NoInternetStr", MessageBoxButton.OK,
-                    MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                Funcs.ShowMessageRes(
+                    "TemplateErrorStr",
+                    "NoInternetStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    Funcs.GenerateErrorReport(ex, PageID, "TemplateErrorStr")
+                );
 
                 TemplateLoadingGrid.Visibility = Visibility.Collapsed;
                 NoTemplateGrid.Visibility = Visibility.Visible;
             }
         }
 
-        private void TemplateItemsView_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private void TemplateItemsView_CollectionChanged(
+            object? sender,
+            NotifyCollectionChangedEventArgs e
+        )
         {
             if (TemplateGrid.Items.Count == 0)
                 NoTemplateGrid.Visibility = Visibility.Visible;
@@ -494,7 +554,8 @@ namespace Present_Express
         private void TemplateFilterBtns_Click(object sender, RoutedEventArgs e)
         {
             string tag = (string)((RadioButton)sender).Tag;
-            TemplateFilter = (PresentTemplateCategory)Enum.Parse(typeof(PresentTemplateCategory), tag, true);
+            TemplateFilter = (PresentTemplateCategory)
+                Enum.Parse(typeof(PresentTemplateCategory), tag, true);
         }
 
         private async void TemplateBtns_Click(object sender, RoutedEventArgs e)
@@ -535,7 +596,11 @@ namespace Present_Express
             {
                 Funcs.ShowMessage(
                     $"{Funcs.ChooseLang("OpenFileErrorDescStr")}{Environment.NewLine}{Environment.NewLine}{Funcs.ChooseLang("TryAgainStr")}",
-                    Funcs.ChooseLang("OpenFileErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                    Funcs.ChooseLang("OpenFileErrorStr"),
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    Funcs.GenerateErrorReport(ex, PageID, "OpenFileErrorDescStr")
+                );
             }
 
             return result;
@@ -567,6 +632,7 @@ namespace Present_Express
                     using ZipInputStream zip = new(stream);
 
                     OpenZIP(filename, zip);
+                    Funcs.LogDownload(PageID, filename, "template");
                     return true;
                 }
                 else
@@ -586,8 +652,16 @@ namespace Present_Express
 
                 Funcs.ShowMessage(
                     $"{Funcs.ChooseLang("OpenFileErrorDescStr")}{fileInfo}{Environment.NewLine}{Environment.NewLine}{Funcs.ChooseLang("TryAgainStr")}",
-                    Funcs.ChooseLang("OpenFileErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error,
-                    Funcs.GenerateErrorReport(ex, !filename.StartsWith("https://") ? Funcs.ChooseLang("ReportEmailAttachStr") : ""));
+                    Funcs.ChooseLang("OpenFileErrorStr"),
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    Funcs.GenerateErrorReport(
+                        ex,
+                        PageID,
+                        "OpenFileErrorDescStr",
+                        !filename.StartsWith("https://") ? "ReportEmailAttachStr" : ""
+                    )
+                );
             }
 
             return result;
@@ -600,7 +674,8 @@ namespace Present_Express
 
             while ((entry = zip.GetNextEntry()) != null)
             {
-                if (!entry.IsFile) continue;
+                if (!entry.IsFile)
+                    continue;
 
                 using MemoryStream ms = new();
                 byte[] buffer = new byte[4096];
@@ -783,7 +858,7 @@ namespace Present_Express
                 FileName = filename,
                 FilePath = path,
                 FilePathFormatted = formatted,
-                Icon = (Viewbox)TryFindResource("PictureFileIcon")
+                Icon = (Viewbox)TryFindResource("PictureFileIcon"),
             };
         }
 
@@ -886,8 +961,14 @@ namespace Present_Express
                 await LoadFile(path);
             else
             {
-                if (Funcs.ShowPromptRes("FileNotFoundDescStr", "FileNotFoundStr",
-                    MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+                if (
+                    Funcs.ShowPromptRes(
+                        "FileNotFoundDescStr",
+                        "FileNotFoundStr",
+                        MessageBoxButton.YesNoCancel,
+                        MessageBoxImage.Exclamation
+                    ) == MessageBoxResult.Yes
+                )
                 {
                     if (RecentsTabBtn.IsChecked == true)
                         RemoveRecentFile(path);
@@ -917,17 +998,25 @@ namespace Present_Express
                 if (!File.Exists(path))
                     throw new FileNotFoundException();
 
-                _ = Process.Start(new ProcessStartInfo()
-                {
-                    FileName = "explorer.exe",
-                    Arguments = "/select," + path,
-                    UseShellExecute = true
-                });
+                _ = Process.Start(
+                    new ProcessStartInfo()
+                    {
+                        FileName = "explorer.exe",
+                        Arguments = "/select," + path,
+                        UseShellExecute = true,
+                    }
+                );
             }
             catch
             {
-                if (Funcs.ShowPromptRes("DirNotFoundDescStr", "DirNotFoundStr",
-                    MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+                if (
+                    Funcs.ShowPromptRes(
+                        "DirNotFoundDescStr",
+                        "DirNotFoundStr",
+                        MessageBoxButton.YesNoCancel,
+                        MessageBoxImage.Exclamation
+                    ) == MessageBoxResult.Yes
+                )
                 {
                     if (RecentsTabBtn.IsChecked == true)
                         RemoveRecentFile(path);
@@ -955,8 +1044,14 @@ namespace Present_Express
 
         private void ClearRecentsBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (Funcs.ShowPromptRes("ConfirmRecentsDeleteStr", "AreYouSureStr",
-                MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+            if (
+                Funcs.ShowPromptRes(
+                    "ConfirmRecentsDeleteStr",
+                    "AreYouSureStr",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Exclamation
+                ) == MessageBoxResult.Yes
+            )
             {
                 Settings.Default.Recents.Clear();
                 Settings.Default.Save();
@@ -981,8 +1076,14 @@ namespace Present_Express
 
         private void ClearFavouritesBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (Funcs.ShowPromptRes("ConfirmFavsDeleteStr", "AreYouSureStr",
-                MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+            if (
+                Funcs.ShowPromptRes(
+                    "ConfirmFavsDeleteStr",
+                    "AreYouSureStr",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Exclamation
+                ) == MessageBoxResult.Yes
+            )
             {
                 Settings.Default.Favourites.Clear();
                 Settings.Default.Save();
@@ -1034,7 +1135,11 @@ namespace Present_Express
             {
                 try
                 {
-                    var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Present_Express.auth-dropbox.secret") ?? throw new NullReferenceException();
+                    var info =
+                        Assembly
+                            .GetExecutingAssembly()
+                            .GetManifestResourceStream("Present_Express.auth-dropbox.secret")
+                        ?? throw new NullReferenceException();
                     using var sr = new StreamReader(info);
                     string creds = sr.ReadToEnd();
                     DropboxApiKey = creds.Split(":")[0];
@@ -1042,8 +1147,18 @@ namespace Present_Express
                 }
                 catch (Exception ex)
                 {
-                    Funcs.ShowMessageRes("APIKeyNotFoundStr", "CriticalErrorStr", MessageBoxButton.OK, MessageBoxImage.Error,
-                        Funcs.GenerateErrorReport(ex, Funcs.ChooseLang("ReportEmailInfoStr")));
+                    Funcs.ShowMessageRes(
+                        "APIKeyNotFoundStr",
+                        "CriticalErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(
+                            ex,
+                            PageID,
+                            "APIKeyNotFoundStr",
+                            "ReportEmailInfoStr"
+                        )
+                    );
                     return;
                 }
             }
@@ -1056,14 +1171,25 @@ namespace Present_Express
             }
             else
             {
-                string[] scopeList = ["files.metadata.read", "files.content.read", "files.content.write", "account_info.read"];
+                string[] scopeList =
+                [
+                    "files.metadata.read",
+                    "files.content.read",
+                    "files.content.write",
+                    "account_info.read",
+                ];
                 _ = await AcquireAccessToken(scopeList, IncludeGrantedScopes.None);
                 DropboxUsername = await Funcs.GetCurrentAccount(dpxClient ?? GetDropboxClient());
 
                 if (DropboxUsername == "")
                 {
                     // User disconnected
-                    Funcs.ShowMessageRes("DropboxDisconnectedStr", "DropboxErrorStr", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Funcs.ShowMessageRes(
+                        "DropboxDisconnectedStr",
+                        "DropboxErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error
+                    );
 
                     Settings.Default.DropboxAccessToken = "";
                     Settings.Default.DropboxRefreshToken = "";
@@ -1082,8 +1208,17 @@ namespace Present_Express
 
         private static DropboxClient GetDropboxClient()
         {
-            DropboxClientConfig config = new("Express Apps") { HttpClient = Funcs.httpClientWithTimeout };
-            dpxClient = new(Settings.Default.DropboxAccessToken, Settings.Default.DropboxRefreshToken, DropboxApiKey, DropboxApiSecret, config);
+            DropboxClientConfig config = new("Express Apps")
+            {
+                HttpClient = Funcs.httpClientWithTimeout,
+            };
+            dpxClient = new(
+                Settings.Default.DropboxAccessToken,
+                Settings.Default.DropboxRefreshToken,
+                DropboxApiKey,
+                DropboxApiSecret,
+                config
+            );
             return dpxClient;
         }
 
@@ -1092,7 +1227,13 @@ namespace Present_Express
             try
             {
                 SetupDropboxConnectingScreen();
-                var newScopes = new string[] { "files.metadata.read", "files.content.read", "files.content.write", "account_info.read" };
+                var newScopes = new string[]
+                {
+                    "files.metadata.read",
+                    "files.content.read",
+                    "files.content.write",
+                    "account_info.read",
+                };
                 var token = await AcquireAccessToken(newScopes, IncludeGrantedScopes.None);
 
                 // Use a new DropboxClient
@@ -1102,14 +1243,30 @@ namespace Present_Express
                 {
                     SetupUserDropbox();
                     Activate();
+
+                    Funcs.LogConversion(
+                        PageID,
+                        LoggingProperties.Conversion.AccountConnected,
+                        "Dropbox"
+                    );
                 }
                 else if (!DropboxConnectionStopped)
                     throw new HttpRequestException();
             }
             catch (Exception ex)
             {
-                Funcs.ShowMessageRes("DropboxErrorInfoStr", "DropboxErrorStr", MessageBoxButton.OK, MessageBoxImage.Error,
-                    Funcs.GenerateErrorReport(ex, Funcs.ChooseLang("ReportEmailInfoStr")));
+                Funcs.ShowMessageRes(
+                    "DropboxErrorInfoStr",
+                    "DropboxErrorStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    Funcs.GenerateErrorReport(
+                        ex,
+                        PageID,
+                        "DropboxErrorInfoStr",
+                        "ReportEmailInfoStr"
+                    )
+                );
             }
         }
 
@@ -1126,11 +1283,17 @@ namespace Present_Express
                 DropboxExtLbl.Visibility = Visibility.Visible;
                 DropboxSaveBtn.Visibility = Visibility.Visible;
 
-                DropboxInfoLbl.Text = string.Format(Funcs.ChooseLang("DropboxUsernameStr"), DropboxUsername);
+                DropboxInfoLbl.Text = string.Format(
+                    Funcs.ChooseLang("DropboxUsernameStr"),
+                    DropboxUsername
+                );
             }
             else
             {
-                DropboxInfoLbl.Text = string.Format(Funcs.ChooseLang("DropboxUsernameStr"), DropboxUsername) + " " + Funcs.ChooseLang("DropboxOpenPresentStr");
+                DropboxInfoLbl.Text =
+                    string.Format(Funcs.ChooseLang("DropboxUsernameStr"), DropboxUsername)
+                    + " "
+                    + Funcs.ChooseLang("DropboxOpenPresentStr");
             }
 
             CloudFilesInfoLbl.Visibility = Visibility.Visible;
@@ -1172,9 +1335,17 @@ namespace Present_Express
             Settings.Default.Save();
 
             InitDropbox();
+            Funcs.LogClick(
+                PageID,
+                nameof(DropboxDisconnectBtn),
+                Funcs.ChooseLang("DisconnectDropboxStr")
+            );
         }
 
-        private static async Task<string?> AcquireAccessToken(string[] scopeList, IncludeGrantedScopes includeGrantedScopes)
+        private static async Task<string?> AcquireAccessToken(
+            string[] scopeList,
+            IncludeGrantedScopes includeGrantedScopes
+        )
         {
             string accessToken = Settings.Default.DropboxAccessToken;
             string refreshToken;
@@ -1184,8 +1355,15 @@ namespace Present_Express
                 try
                 {
                     var state = Guid.NewGuid().ToString("N");
-                    var authorizeUri = DropboxOAuth2Helper.GetAuthorizeUri(OAuthResponseType.Code, DropboxApiKey, Funcs.RedirectUri,
-                        state: state, tokenAccessType: TokenAccessType.Offline, scopeList: scopeList, includeGrantedScopes: includeGrantedScopes);
+                    var authorizeUri = DropboxOAuth2Helper.GetAuthorizeUri(
+                        OAuthResponseType.Code,
+                        DropboxApiKey,
+                        Funcs.RedirectUri,
+                        state: state,
+                        tokenAccessType: TokenAccessType.Offline,
+                        scopeList: scopeList,
+                        includeGrantedScopes: includeGrantedScopes
+                    );
 
                     if (!Funcs.DropboxListener.Prefixes.Contains(Funcs.LoopbackHost))
                         Funcs.DropboxListener.Prefixes.Add(Funcs.LoopbackHost);
@@ -1194,20 +1372,32 @@ namespace Present_Express
                         Funcs.DropboxListener.Stop();
 
                     Funcs.DropboxListener.Start();
-                    Process.Start(new ProcessStartInfo(authorizeUri.ToString()) { UseShellExecute = true });
+                    Process.Start(
+                        new ProcessStartInfo(authorizeUri.ToString()) { UseShellExecute = true }
+                    );
 
-                    var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Present_Express.dropbox-index.html") ?? throw new NullReferenceException();
+                    var info =
+                        Assembly
+                            .GetExecutingAssembly()
+                            .GetManifestResourceStream("Present_Express.dropbox-index.html")
+                        ?? throw new NullReferenceException();
                     string indexHtml;
                     using (var sr = new StreamReader(info))
-                        indexHtml = sr.ReadToEnd().Replace("Please wait...", Funcs.ChooseLang("PleaseWaitStr"));
+                        indexHtml = sr.ReadToEnd()
+                            .Replace("Please wait...", Funcs.ChooseLang("PleaseWaitStr"));
 
                     // Handle OAuth redirect and send URL fragment to local server using JS
                     await Funcs.HandleOAuth2Redirect(Funcs.DropboxListener, indexHtml);
 
                     // Handle redirect from JS and process OAuth response
                     var redirectUri = await Funcs.HandleJSRedirect(Funcs.DropboxListener);
-                    var tokenResult = await DropboxOAuth2Helper.ProcessCodeFlowAsync(redirectUri,
-                        DropboxApiKey, DropboxApiSecret, Funcs.RedirectUri.ToString(), state);
+                    var tokenResult = await DropboxOAuth2Helper.ProcessCodeFlowAsync(
+                        redirectUri,
+                        DropboxApiKey,
+                        DropboxApiSecret,
+                        Funcs.RedirectUri.ToString(),
+                        state
+                    );
 
                     accessToken = tokenResult.AccessToken;
                     refreshToken = tokenResult.RefreshToken;
@@ -1233,7 +1423,8 @@ namespace Present_Express
 
         private async Task LoadDropboxDirectory(string folder = "")
         {
-            if (folder == "/") folder = "";
+            if (folder == "/")
+                folder = "";
             CloudFilesInfoLbl.Visibility = Visibility.Collapsed;
 
             try
@@ -1243,7 +1434,10 @@ namespace Present_Express
                 DropboxSaveBtn.IsEnabled = false;
 
                 DropboxClient dbx = dpxClient ?? GetDropboxClient();
-                ListFolderResult files = await dbx.Files.ListFolderAsync(folder, includeNonDownloadableFiles: false);
+                ListFolderResult files = await dbx.Files.ListFolderAsync(
+                    folder,
+                    includeNonDownloadableFiles: false
+                );
 
                 List<FileItem> res = [];
                 if (folder != "")
@@ -1253,15 +1447,20 @@ namespace Present_Express
                     if (parentDir == null)
                         parent = "";
                     else
-                        parent = parentDir.ToString().Replace(parentDir.Root.Name, "/").Replace("\\", "/");
+                        parent = parentDir
+                            .ToString()
+                            .Replace(parentDir.Root.Name, "/")
+                            .Replace("\\", "/");
 
-                    res.Add(new FileItem()
-                    {
-                        FileName = Funcs.ChooseLang("BackStr"),
-                        Icon = (Viewbox)TryFindResource("UndoIcon"),
-                        FilePath = parent,
-                        IsFolder = true
-                    });
+                    res.Add(
+                        new FileItem()
+                        {
+                            FileName = Funcs.ChooseLang("BackStr"),
+                            Icon = (Viewbox)TryFindResource("UndoIcon"),
+                            FilePath = parent,
+                            IsFolder = true,
+                        }
+                    );
                 }
 
                 foreach (Metadata item in files.Entries)
@@ -1278,13 +1477,15 @@ namespace Present_Express
                             continue;
                     }
 
-                    res.Add(new FileItem()
-                    {
-                        FileName = item.Name,
-                        Icon = (Viewbox)TryFindResource(icn),
-                        FilePath = item.PathDisplay,
-                        IsFolder = item.IsFolder
-                    });
+                    res.Add(
+                        new FileItem()
+                        {
+                            FileName = item.Name,
+                            Icon = (Viewbox)TryFindResource(icn),
+                            FilePath = item.PathDisplay,
+                            IsFolder = item.IsFolder,
+                        }
+                    );
                 }
 
                 CloudFilesPnl.ItemsSource = res;
@@ -1310,8 +1511,18 @@ namespace Present_Express
             }
             catch (Exception ex)
             {
-                Funcs.ShowMessageRes("DropboxErrorInfoStr", "DropboxErrorStr", MessageBoxButton.OK, MessageBoxImage.Error,
-                    Funcs.GenerateErrorReport(ex, Funcs.ChooseLang("ReportEmailInfoStr")));
+                Funcs.ShowMessageRes(
+                    "DropboxErrorInfoStr",
+                    "DropboxErrorStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    Funcs.GenerateErrorReport(
+                        ex,
+                        PageID,
+                        "DropboxErrorInfoStr",
+                        "ReportEmailInfoStr"
+                    )
+                );
 
                 DropboxSaveBtn.Visibility = Visibility.Collapsed;
             }
@@ -1352,8 +1563,18 @@ namespace Present_Express
             }
             catch (Exception ex)
             {
-                Funcs.ShowMessageRes("DropboxOpenErrorStr", "DropboxErrorStr", MessageBoxButton.OK, MessageBoxImage.Error,
-                    Funcs.GenerateErrorReport(ex, Funcs.ChooseLang("ReportEmailAttachStr")));
+                Funcs.ShowMessageRes(
+                    "DropboxOpenErrorStr",
+                    "DropboxErrorStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    Funcs.GenerateErrorReport(
+                        ex,
+                        PageID,
+                        "DropboxOpenErrorStr",
+                        "ReportEmailAttachStr"
+                    )
+                );
             }
             finally
             {
@@ -1431,13 +1652,18 @@ namespace Present_Express
 
                 Funcs.StartStoryboard(this, "OverlayOutStoryboard");
                 CreateTempLabel(Funcs.ChooseLang("SavingCompleteStr"));
+                Funcs.LogConversion(PageID, LoggingProperties.Conversion.FileSaved, "PC");
                 return true;
             }
             catch (Exception ex)
             {
-                Funcs.ShowMessage(string.Format(Funcs.ChooseLang("SavingErrorDescStr"), $"**{filename}**"),
-                    Funcs.ChooseLang("SavingErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error,
-                    Funcs.GenerateErrorReport(ex));
+                Funcs.ShowMessage(
+                    string.Format(Funcs.ChooseLang("SavingErrorDescStr"), $"**{filename}**"),
+                    Funcs.ChooseLang("SavingErrorStr"),
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    Funcs.GenerateErrorReport(ex, PageID, "SavingErrorStr")
+                );
 
                 return false;
             }
@@ -1454,7 +1680,7 @@ namespace Present_Express
                         SlideType.Text => "text1",
                         SlideType.Chart => "chart1",
                         SlideType.Drawing => "drawing.isf",
-                        _ => "slide.png"
+                        _ => "slide.png",
                     };
                 }
 
@@ -1462,7 +1688,12 @@ namespace Present_Express
 
                 if (item.GetSlideType() == SlideType.Image)
                 {
-                    SaveImageToZip(((ImageSlide)item).Original, zip, item.Name, ((ImageSlide)item).GetImageFormat());
+                    SaveImageToZip(
+                        ((ImageSlide)item).Original,
+                        zip,
+                        item.Name,
+                        ((ImageSlide)item).GetImageFormat()
+                    );
                     continue;
                 }
                 else if (item.GetSlideType() == SlideType.Drawing)
@@ -1473,7 +1704,11 @@ namespace Present_Express
                         AddOrUpdateEntry(zip, item.Name, mem.ToArray());
                     }
 
-                    string prender = item.Name.Replace(".isf", "-prender.png", StringComparison.InvariantCultureIgnoreCase);
+                    string prender = item.Name.Replace(
+                        ".isf",
+                        "-prender.png",
+                        StringComparison.InvariantCultureIgnoreCase
+                    );
                     SaveImageToZip(((DrawingSlide)item).Bitmap, zip, prender, ImageFormat.Png);
                     continue;
                 }
@@ -1482,7 +1717,14 @@ namespace Present_Express
                     ((ChartSlide)item).DowngradeChartToLegacy();
                 }
 
-                SaveImageToZip(item.Bitmap, zip, item.GetSlideType() == SlideType.Screenshot ? item.Name : item.Name + "-prender.png", ImageFormat.Png);
+                SaveImageToZip(
+                    item.Bitmap,
+                    zip,
+                    item.GetSlideType() == SlideType.Screenshot
+                        ? item.Name
+                        : item.Name + "-prender.png",
+                    ImageFormat.Png
+                );
             }
 
             SlideshowItem slideshow = new()
@@ -1493,9 +1735,9 @@ namespace Present_Express
                     Width = (double)Resources["ImageWidth"],
                     FitToSlide = FitBtn.IsChecked == true,
                     Loop = LoopBtn.IsChecked == true,
-                    UseTimings = UseTimingsBtn.IsChecked == true
+                    UseTimings = UseTimingsBtn.IsChecked == true,
                 },
-                Slides = AllSlides
+                Slides = AllSlides,
             };
 
             XmlSerializer xmlSerializer = new(typeof(SlideshowItem));
@@ -1504,24 +1746,29 @@ namespace Present_Express
             using var stream = new StringWriter();
             using var writer = XmlWriter.Create(stream, settings);
 
-            xmlSerializer.Serialize(writer, slideshow, new XmlSerializerNamespaces([XmlQualifiedName.Empty]));
+            xmlSerializer.Serialize(
+                writer,
+                slideshow,
+                new XmlSerializerNamespaces([XmlQualifiedName.Empty])
+            );
             AddOrUpdateEntry(zip, "info.xml", Encoding.UTF8.GetBytes(stream.ToString()));
         }
 
         private static void AddOrUpdateEntry(ZipOutputStream zip, string name, byte[] data)
         {
-            ZipEntry entry = new(name)
-            {
-                DateTime = DateTime.Now,
-                Size = data.Length
-            };
+            ZipEntry entry = new(name) { DateTime = DateTime.Now, Size = data.Length };
 
             zip.PutNextEntry(entry);
             zip.Write(data, 0, data.Length);
             zip.CloseEntry();
         }
 
-        private static void SaveImageToZip(BitmapSource bmp, ZipOutputStream zip, string name, ImageFormat format)
+        private static void SaveImageToZip(
+            BitmapSource bmp,
+            ZipOutputStream zip,
+            string name,
+            ImageFormat format
+        )
         {
             using var mem = new MemoryStream();
             BitmapEncoder enc = format.ToString() switch
@@ -1529,7 +1776,7 @@ namespace Present_Express
                 "Jpeg" => new JpegBitmapEncoder(),
                 "Bmp" => new BmpBitmapEncoder(),
                 "Gif" => new GifBitmapEncoder(),
-                _ => new PngBitmapEncoder()
+                _ => new PngBitmapEncoder(),
             };
             enc.Frames.Add(BitmapFrame.Create(bmp));
             enc.Save(mem);
@@ -1540,8 +1787,12 @@ namespace Present_Express
         private void BrowseSaveBtn_Click(object sender, RoutedEventArgs e)
         {
             if (IsSlideshowEmpty())
-                Funcs.ShowMessageRes("NoSlidesDescStr", "NoSlidesStr", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-
+                Funcs.ShowMessageRes(
+                    "NoSlidesDescStr",
+                    "NoSlidesStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Exclamation
+                );
             else if (Funcs.PRESENTSaveDialog.ShowDialog() == true)
                 SaveFile(Funcs.PRESENTSaveDialog.FileName);
         }
@@ -1571,7 +1822,7 @@ namespace Present_Express
                 FileName = filename,
                 FilePath = path,
                 FilePathFormatted = formatted,
-                Icon = (Viewbox)TryFindResource(icon)
+                Icon = (Viewbox)TryFindResource(icon),
             };
         }
 
@@ -1615,8 +1866,14 @@ namespace Present_Express
 
         private void ClearPinnedBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (Funcs.ShowPromptRes("ConfirmPinnedDeleteStr", "AreYouSureStr",
-                MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+            if (
+                Funcs.ShowPromptRes(
+                    "ConfirmPinnedDeleteStr",
+                    "AreYouSureStr",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Exclamation
+                ) == MessageBoxResult.Yes
+            )
             {
                 Settings.Default.Pinned.Clear();
                 Settings.Default.Save();
@@ -1638,7 +1895,12 @@ namespace Present_Express
         private void SavePinned(string folder)
         {
             if (IsSlideshowEmpty())
-                Funcs.ShowMessageRes("NoSlidesDescStr", "NoSlidesStr", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                Funcs.ShowMessageRes(
+                    "NoSlidesDescStr",
+                    "NoSlidesStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Exclamation
+                );
             else
             {
                 Funcs.PRESENTSaveDialog.InitialDirectory = folder;
@@ -1656,16 +1918,20 @@ namespace Present_Express
                 if (!Directory.Exists(path))
                     throw new FileNotFoundException();
 
-                _ = Process.Start(new ProcessStartInfo()
-                {
-                    FileName = path,
-                    UseShellExecute = true
-                });
+                _ = Process.Start(
+                    new ProcessStartInfo() { FileName = path, UseShellExecute = true }
+                );
             }
             catch
             {
-                if (Funcs.ShowPromptRes("DirNotFoundDescStr", "DirNotFoundStr",
-                    MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+                if (
+                    Funcs.ShowPromptRes(
+                        "DirNotFoundDescStr",
+                        "DirNotFoundStr",
+                        MessageBoxButton.YesNoCancel,
+                        MessageBoxImage.Exclamation
+                    ) == MessageBoxResult.Yes
+                )
                 {
                     RemovePinnedFolder(path);
                 }
@@ -1701,17 +1967,32 @@ namespace Present_Express
         {
             if (IsSlideshowEmpty())
             {
-                Funcs.ShowMessageRes("NoSlidesDescStr", "NoSlidesStr", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                Funcs.ShowMessageRes(
+                    "NoSlidesDescStr",
+                    "NoSlidesStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Exclamation
+                );
                 return;
             }
             if (DropboxFilenameTxt.Text == "")
             {
-                Funcs.ShowMessageRes("NoFilenameEnteredStr", "NoFilenameStr", MessageBoxButton.OK, MessageBoxImage.Error);
+                Funcs.ShowMessageRes(
+                    "NoFilenameEnteredStr",
+                    "NoFilenameStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
                 return;
             }
             if (DropboxFilenameTxt.Text.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
             {
-                Funcs.ShowMessageRes("InvalidFilenameDescStr", "InvalidFilenameStr", MessageBoxButton.OK, MessageBoxImage.Error);
+                Funcs.ShowMessageRes(
+                    "InvalidFilenameDescStr",
+                    "InvalidFilenameStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
                 return;
             }
 
@@ -1736,10 +2017,15 @@ namespace Present_Express
                 {
                     await dbx.Files.GetMetadataAsync(filepath);
 
-                    if (Funcs.ShowPrompt(string.Format(Funcs.ChooseLang("ExistingFileDescStr"), filename),
-                        Funcs.ChooseLang("ExistingFileStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) != MessageBoxResult.Yes)
+                    if (
+                        Funcs.ShowPrompt(
+                            string.Format(Funcs.ChooseLang("ExistingFileDescStr"), filename),
+                            Funcs.ChooseLang("ExistingFileStr"),
+                            MessageBoxButton.YesNoCancel,
+                            MessageBoxImage.Exclamation
+                        ) != MessageBoxResult.Yes
+                    )
                         return;
-
                 }
                 catch (ApiException<GetMetadataError> ex)
                 {
@@ -1749,16 +2035,31 @@ namespace Present_Express
 
                 using (MemoryStream stream = new(SaveFile()))
                 {
-                    _ = await dbx.Files.UploadAsync(filepath, WriteMode.Overwrite.Instance, body: stream);
+                    _ = await dbx.Files.UploadAsync(
+                        filepath,
+                        WriteMode.Overwrite.Instance,
+                        body: stream
+                    );
                 }
 
-                Funcs.ShowMessageRes("FileUploadedStr", "SuccessStr", MessageBoxButton.OK, MessageBoxImage.Information);
+                Funcs.LogConversion(PageID, LoggingProperties.Conversion.FileSaved, "Dropbox");
+                Funcs.ShowMessageRes(
+                    "FileUploadedStr",
+                    "SuccessStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information
+                );
                 Funcs.StartStoryboard(this, "OverlayOutStoryboard");
             }
             catch (Exception ex)
             {
-                Funcs.ShowMessageRes("DropboxSaveErrorStr", "DropboxErrorStr", MessageBoxButton.OK, MessageBoxImage.Error,
-                    Funcs.GenerateErrorReport(ex));
+                Funcs.ShowMessageRes(
+                    "DropboxSaveErrorStr",
+                    "DropboxErrorStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    Funcs.GenerateErrorReport(ex, PageID, "DropboxSaveErrorStr")
+                );
             }
             finally
             {
@@ -1777,8 +2078,12 @@ namespace Present_Express
         private void PrintBtn_Click(object sender, RoutedEventArgs e)
         {
             if (IsSlideshowEmpty())
-                Funcs.ShowMessageRes("NoSlidesDescStr", "NoSlidesStr", MessageBoxButton.OK, MessageBoxImage.Exclamation);
-
+                Funcs.ShowMessageRes(
+                    "NoSlidesDescStr",
+                    "NoSlidesStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Exclamation
+                );
             else
                 StartPrinting();
         }
@@ -1806,12 +2111,24 @@ namespace Present_Express
 
         private void PrintDoc_PrintPage(object sender, PrintPageEventArgs e)
         {
-            WinDrawing.Bitmap img = Funcs.ConvertBitmapImage(AllSlides[checkPrint].Bitmap, AllSlides[checkPrint].GetImageFormat());
-            double adjustment = Math.Min(Convert.ToDouble(e.MarginBounds.Height) / Convert.ToDouble(img.Height), 
-                Convert.ToDouble(e.MarginBounds.Width) / Convert.ToDouble(img.Width));
+            WinDrawing.Bitmap img = Funcs.ConvertBitmapImage(
+                AllSlides[checkPrint].Bitmap,
+                AllSlides[checkPrint].GetImageFormat()
+            );
+            double adjustment = Math.Min(
+                Convert.ToDouble(e.MarginBounds.Height) / Convert.ToDouble(img.Height),
+                Convert.ToDouble(e.MarginBounds.Width) / Convert.ToDouble(img.Width)
+            );
 
-            e.Graphics?.DrawImage(img, new WinDrawing.Rectangle(e.MarginBounds.X, e.MarginBounds.Y, 
-                (int)(Convert.ToDouble(img.Width) * adjustment), (int)(Convert.ToDouble(img.Height * adjustment))));
+            e.Graphics?.DrawImage(
+                img,
+                new WinDrawing.Rectangle(
+                    e.MarginBounds.X,
+                    e.MarginBounds.Y,
+                    (int)(Convert.ToDouble(img.Width) * adjustment),
+                    (int)(Convert.ToDouble(img.Height * adjustment))
+                )
+            );
 
             checkPrint++;
 
@@ -1830,13 +2147,19 @@ namespace Present_Express
         private void PageSetupBtn_Click(object sender, RoutedEventArgs e)
         {
             PrintPopup.IsOpen = false;
-            new PageSetup(PrintDoc, Funcs.ChooseLang("PageSetupStr") + " - Present Express").ShowDialog();
+            new PageSetup(
+                PrintDoc,
+                Funcs.ChooseLang("PageSetupStr") + " - Present Express"
+            ).ShowDialog();
         }
 
         private void PrintPreviewBtn_Click(object sender, RoutedEventArgs e)
         {
             PrintPopup.IsOpen = false;
-            new PrintPreview(PrintDoc, Funcs.ChooseLang("PrintPreviewStr") + " - Present Express").ShowDialog();
+            new PrintPreview(
+                PrintDoc,
+                Funcs.ChooseLang("PrintPreviewStr") + " - Present Express"
+            ).ShowDialog();
         }
 
         #endregion
@@ -1855,13 +2178,22 @@ namespace Present_Express
 
         private void ExportWithTimingsBtn_Click(object sender, RoutedEventArgs e)
         {
-            ExportTimingsPnl.Visibility = ExportWithTimingsBtn.IsChecked == true ? Visibility.Collapsed : Visibility.Visible;
+            ExportTimingsPnl.Visibility =
+                ExportWithTimingsBtn.IsChecked == true ? Visibility.Collapsed : Visibility.Visible;
         }
 
         private void ExportSlideshowBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (ExportCustomRadioBtn.IsChecked == true && (SlideFromUpDown.Value > SlideToUpDown.Value))
-                Funcs.ShowMessageRes("ExportRangeErrorStr", "ExportErrorStr", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+            if (
+                ExportCustomRadioBtn.IsChecked == true
+                && (SlideFromUpDown.Value > SlideToUpDown.Value)
+            )
+                Funcs.ShowMessageRes(
+                    "ExportRangeErrorStr",
+                    "ExportErrorStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Exclamation
+                );
             else if (VideoTabBtn.IsChecked == true)
                 StartVideoExport();
             else if (ImagesTabBtn.IsChecked == true)
@@ -1881,20 +2213,21 @@ namespace Present_Express
             ExportIntroLbl.Text = Funcs.ChooseLang("ExportVideoDescStr");
 
             ExportFormatLbl.Text = Funcs.ChooseLang("ResolutionStr");
-            ExportFormatCombo.ItemsSource = Enum.GetValues<ExportVideoRes>().Select(x =>
-            {
-                return new AppDropdownItem()
+            ExportFormatCombo.ItemsSource = Enum.GetValues<ExportVideoRes>()
+                .Select(x =>
                 {
-                    Content = x switch
+                    return new AppDropdownItem()
                     {
-                        ExportVideoRes.QuadHD => "1440p (Quad HD)",
-                        ExportVideoRes.FullHD => "1080p (Full HD)",
-                        ExportVideoRes.HD => "720p (HD)",
-                        ExportVideoRes.SD => "460p (SD)",
-                        _ => ""
-                    }
-                };
-            });
+                        Content = x switch
+                        {
+                            ExportVideoRes.QuadHD => "1440p (Quad HD)",
+                            ExportVideoRes.FullHD => "1080p (Full HD)",
+                            ExportVideoRes.HD => "720p (HD)",
+                            ExportVideoRes.SD => "460p (SD)",
+                            _ => "",
+                        },
+                    };
+                });
             ExportFormatCombo.SelectedIndex = 0;
 
             ExportAllRadioBtn.IsChecked = true;
@@ -1918,7 +2251,12 @@ namespace Present_Express
             ExportPopup.IsOpen = false;
 
             if (IsSlideshowEmpty())
-                Funcs.ShowMessageRes("NoSlidesDescStr", "NoSlidesStr", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                Funcs.ShowMessageRes(
+                    "NoSlidesDescStr",
+                    "NoSlidesStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Exclamation
+                );
             else
             {
                 Funcs.StartOverlayStoryboard(this, "Export");
@@ -1954,25 +2292,37 @@ namespace Present_Express
                     slideTo = SlideToUpDown.Value ?? 1;
                 }
 
-                ExportVideoWorker.RunWorkerAsync(new SlideshowConfig()
-                {
-                    Filename = Funcs.MP4SaveDialog.FileName,
-                    Resolution = (ExportVideoRes)ExportFormatCombo.SelectedIndex,
-                    Widescreen = IsWidescreen(),
-                    FitToSlide = FitBtn.IsChecked == true,
-                    Sequence = AllSlides.GetRange(slideFrom - 1, slideTo - slideFrom + 1).Select(x =>
+                ExportVideoWorker.RunWorkerAsync(
+                    new SlideshowConfig()
                     {
-                        return new SlideshowSequenceItem()
-                        {
-                            Bitmap = x.Bitmap.Clone(),
-                            Format = x.GetImageFormat(),
-                            Duration = ExportWithTimingsBtn.IsChecked == true ? x.Timing : SecondsPerSlideUpDown.Value ?? 2,
-                            Background = ((SolidColorBrush)Resources["SlideBackColour"]).Color,
-                            Transition = x.Transition.Type,
-                            TransitionDuration = x.Transition.Duration
-                        };
-                    }).ToArray()
-                });
+                        Filename = Funcs.MP4SaveDialog.FileName,
+                        Resolution = (ExportVideoRes)ExportFormatCombo.SelectedIndex,
+                        Widescreen = IsWidescreen(),
+                        FitToSlide = FitBtn.IsChecked == true,
+                        Sequence =
+                        [
+                            .. AllSlides
+                                .GetRange(slideFrom - 1, slideTo - slideFrom + 1)
+                                .Select(x =>
+                                {
+                                    return new SlideshowSequenceItem()
+                                    {
+                                        Bitmap = x.Bitmap.Clone(),
+                                        Format = x.GetImageFormat(),
+                                        Duration =
+                                            ExportWithTimingsBtn.IsChecked == true
+                                                ? x.Timing
+                                                : SecondsPerSlideUpDown.Value ?? 2,
+                                        Background = (
+                                            (SolidColorBrush)Resources["SlideBackColour"]
+                                        ).Color,
+                                        Transition = x.Transition.Type,
+                                        TransitionDuration = x.Transition.Duration,
+                                    };
+                                }),
+                        ],
+                    }
+                );
             }
         }
 
@@ -1988,15 +2338,21 @@ namespace Present_Express
             try
             {
                 SlideshowConfig config = (SlideshowConfig?)e.Argument ?? new();
-                GlobalFFOptions.Configure(new FFOptions
-                {
-                    BinaryFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ffmpeg")
-                });
+                GlobalFFOptions.Configure(
+                    new FFOptions
+                    {
+                        BinaryFolder = Path.Combine(
+                            AppDomain.CurrentDomain.BaseDirectory,
+                            "ffmpeg"
+                        ),
+                    }
+                );
 
                 tempFolderName = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
                 Directory.CreateDirectory(tempFolderName);
 
-                int outputWidth, outputHeight;
+                int outputWidth,
+                    outputHeight;
                 switch (config.Resolution)
                 {
                     case ExportVideoRes.QuadHD:
@@ -2033,14 +2389,36 @@ namespace Present_Express
                     SlideshowSequenceItem item = config.Sequence[i];
                     SlideshowSequenceItem? prevItem = i == 0 ? null : config.Sequence[i - 1];
 
-                    Funcs.SaveSlideTransitionAsImages(prevItem, item, outputWidth, outputHeight, tempFolderName, ref counter, config.FitToSlide);
+                    Funcs.SaveSlideTransitionAsImages(
+                        prevItem,
+                        item,
+                        outputWidth,
+                        outputHeight,
+                        tempFolderName,
+                        ref counter,
+                        config.FitToSlide
+                    );
 
-                    string destinationPath = Path.Combine(tempFolderName, $"{counter++.ToString().PadLeft(9, '0')}.png");
-                    Funcs.SaveSlideAsImage(item.Bitmap, ImageFormat.Png, item.Background, outputWidth, outputHeight, destinationPath, config.FitToSlide);
+                    string destinationPath = Path.Combine(
+                        tempFolderName,
+                        $"{counter++.ToString().PadLeft(9, '0')}.png"
+                    );
+                    Funcs.SaveSlideAsImage(
+                        item.Bitmap,
+                        ImageFormat.Png,
+                        item.Background,
+                        outputWidth,
+                        outputHeight,
+                        destinationPath,
+                        config.FitToSlide
+                    );
 
                     for (int j = 0; j < (int)Math.Round(item.Duration * 30) - 1; j++)
                     {
-                        string copyDestinationPath = Path.Combine(tempFolderName, $"{counter++.ToString().PadLeft(9, '0')}.png");
+                        string copyDestinationPath = Path.Combine(
+                            tempFolderName,
+                            $"{counter++.ToString().PadLeft(9, '0')}.png"
+                        );
                         File.Copy(destinationPath, copyDestinationPath);
                     }
 
@@ -2050,7 +2428,10 @@ namespace Present_Express
                         throw new TaskCanceledException();
                     }
                     else
-                        ExportVideoWorker.ReportProgress((int)Math.Round((double)(i + 1) / config.Sequence.Length * 100), "images");
+                        ExportVideoWorker.ReportProgress(
+                            (int)Math.Round((double)(i + 1) / config.Sequence.Length * 100),
+                            "images"
+                        );
                 }
 
                 if (ExportVideoWorker.CancellationPending)
@@ -2063,13 +2444,18 @@ namespace Present_Express
 
                 FFMpegArguments
                     .FromFileInput(Path.Combine(tempFolderName, "%09d.png"), false)
-                    .OutputToFile(config.Filename, true, options => options
-                        .ForcePixelFormat("yuv420p")
-                        .Resize(outputWidth, outputHeight)
-                        .WithVideoFilters(filters => filters
-                            .Scale(outputWidth, outputHeight)
-                        )
-                        .WithFramerate(30))
+                    .OutputToFile(
+                        config.Filename,
+                        true,
+                        options =>
+                            options
+                                .ForcePixelFormat("yuv420p")
+                                .Resize(outputWidth, outputHeight)
+                                .WithVideoFilters(filters =>
+                                    filters.Scale(outputWidth, outputHeight)
+                                )
+                                .WithFramerate(30)
+                    )
                     .ProcessSynchronously();
             }
             catch (Exception ex)
@@ -2087,7 +2473,8 @@ namespace Present_Express
         private void ExportVideoWorker_ProgressChanged(object? sender, ProgressChangedEventArgs e)
         {
             if ((string?)e.UserState == "images")
-                ExportLoadingLbl.Text = Funcs.ChooseLang("GeneratingSlidesStr") + $" ({e.ProgressPercentage}%)...";
+                ExportLoadingLbl.Text =
+                    Funcs.ChooseLang("GeneratingSlidesStr") + $" ({e.ProgressPercentage}%)...";
             else
             {
                 ExportLoadingLbl.Text = Funcs.ChooseLang("VideoProcessingStr");
@@ -2095,7 +2482,10 @@ namespace Present_Express
             }
         }
 
-        private void ExportVideoWorker_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
+        private void ExportVideoWorker_RunWorkerCompleted(
+            object? sender,
+            RunWorkerCompletedEventArgs e
+        )
         {
             ExportMainPnl.Visibility = Visibility.Visible;
             ExportTabPnl.Visibility = Visibility.Visible;
@@ -2104,10 +2494,27 @@ namespace Present_Express
             if (!e.Cancelled)
             {
                 if (e.Result != null)
-                    Funcs.ShowMessageRes("ExportVideoErrorDescStr", "ExportErrorStr", MessageBoxButton.OK, MessageBoxImage.Error,
-                        Funcs.GenerateErrorReport((Exception)e.Result));
+                    Funcs.ShowMessageRes(
+                        "ExportVideoErrorDescStr",
+                        "ExportErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(
+                            (Exception)e.Result,
+                            PageID,
+                            "ExportVideoErrorDescStr"
+                        )
+                    );
                 else
-                    Funcs.ShowMessageRes("VideoSuccessStr", "SuccessStr", MessageBoxButton.OK, MessageBoxImage.Information);
+                {
+                    Funcs.ShowMessageRes(
+                        "VideoSuccessStr",
+                        "SuccessStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information
+                    );
+                    Funcs.LogConversion(PageID, LoggingProperties.Conversion.FileExported, "video");
+                }
             }
         }
 
@@ -2119,19 +2526,20 @@ namespace Present_Express
             ExportIntroLbl.Text = Funcs.ChooseLang("ExportImagesDescStr");
 
             ExportFormatLbl.Text = Funcs.ChooseLang("FormatStr");
-            ExportFormatCombo.ItemsSource = Enum.GetValues<ExportImageFormat>().Select(x =>
-            {
-                return new AppDropdownItem()
+            ExportFormatCombo.ItemsSource = Enum.GetValues<ExportImageFormat>()
+                .Select(x =>
                 {
-                    Content = x switch
+                    return new AppDropdownItem()
                     {
-                        ExportImageFormat.Default => Funcs.ChooseLang("DefStr"),
-                        ExportImageFormat.JPG => "JPG",
-                        ExportImageFormat.PNG => "PNG",
-                        _ => ""
-                    }
-                };
-            });
+                        Content = x switch
+                        {
+                            ExportImageFormat.Default => Funcs.ChooseLang("DefStr"),
+                            ExportImageFormat.JPG => "JPG",
+                            ExportImageFormat.PNG => "PNG",
+                            _ => "",
+                        },
+                    };
+                });
             ExportFormatCombo.SelectedIndex = 0;
 
             ExportAllRadioBtn.IsChecked = true;
@@ -2154,7 +2562,12 @@ namespace Present_Express
             ExportPopup.IsOpen = false;
 
             if (IsSlideshowEmpty())
-                Funcs.ShowMessageRes("NoSlidesDescStr", "NoSlidesStr", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                Funcs.ShowMessageRes(
+                    "NoSlidesDescStr",
+                    "NoSlidesStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Exclamation
+                );
             else
             {
                 Funcs.StartOverlayStoryboard(this, "Export");
@@ -2190,28 +2603,38 @@ namespace Present_Express
                     slideTo = SlideToUpDown.Value ?? 1;
                 }
 
-                ExportImageWorker.RunWorkerAsync(new SlideshowConfig()
-                {
-                    Filename = Path.Combine(Funcs.FolderBrowserDialog.FileName ?? "", Title),
-                    Resolution = ExportVideoRes.FullHD,
-                    Widescreen = IsWidescreen(),
-                    FitToSlide = FitBtn.IsChecked == true,
-                    Sequence = AllSlides.GetRange(slideFrom - 1, slideTo - slideFrom + 1).Select(x =>
+                ExportImageWorker.RunWorkerAsync(
+                    new SlideshowConfig()
                     {
-                        return new SlideshowSequenceItem()
-                        {
-                            Bitmap = x.Bitmap.Clone(),
-                            Format = (ExportImageFormat)ExportFormatCombo.SelectedIndex switch
-                            {
-                                ExportImageFormat.JPG => ImageFormat.Jpeg,
-                                ExportImageFormat.PNG => ImageFormat.Png,
-                                _ => x.GetImageFormat()
-                            },
-                            Duration = 0,
-                            Background = ((SolidColorBrush)Resources["SlideBackColour"]).Color
-                        };
-                    }).ToArray()
-                });
+                        Filename = Path.Combine(Funcs.FolderBrowserDialog.FileName ?? "", Title),
+                        Resolution = ExportVideoRes.FullHD,
+                        Widescreen = IsWidescreen(),
+                        FitToSlide = FitBtn.IsChecked == true,
+                        Sequence =
+                        [
+                            .. AllSlides
+                                .GetRange(slideFrom - 1, slideTo - slideFrom + 1)
+                                .Select(x =>
+                                {
+                                    return new SlideshowSequenceItem()
+                                    {
+                                        Bitmap = x.Bitmap.Clone(),
+                                        Format = (ExportImageFormat)
+                                            ExportFormatCombo.SelectedIndex switch
+                                        {
+                                            ExportImageFormat.JPG => ImageFormat.Jpeg,
+                                            ExportImageFormat.PNG => ImageFormat.Png,
+                                            _ => x.GetImageFormat(),
+                                        },
+                                        Duration = 0,
+                                        Background = (
+                                            (SolidColorBrush)Resources["SlideBackColour"]
+                                        ).Color,
+                                    };
+                                }),
+                        ],
+                    }
+                );
             }
         }
 
@@ -2247,11 +2670,22 @@ namespace Present_Express
                         "Jpeg" => ".jpg",
                         "Bmp" => ".bmp",
                         "Gif" => ".gif",
-                        _ => ".png"
+                        _ => ".png",
                     };
-                    string destinationPath = Path.Combine(folderPath, $"{counter.ToString().PadLeft(3, '0')}{ext}");
+                    string destinationPath = Path.Combine(
+                        folderPath,
+                        $"{counter.ToString().PadLeft(3, '0')}{ext}"
+                    );
 
-                    Funcs.SaveSlideAsImage(item.Bitmap, item.Format, item.Background, outputWidth, outputHeight, destinationPath, config.FitToSlide);
+                    Funcs.SaveSlideAsImage(
+                        item.Bitmap,
+                        item.Format,
+                        item.Background,
+                        outputWidth,
+                        outputHeight,
+                        destinationPath,
+                        config.FitToSlide
+                    );
                     counter++;
 
                     if (ExportImageWorker.CancellationPending)
@@ -2260,7 +2694,10 @@ namespace Present_Express
                         throw new TaskCanceledException();
                     }
                     else
-                        ExportImageWorker.ReportProgress((int)Math.Round(Convert.ToDouble(counter) / config.Sequence.Length * 100));
+                        ExportImageWorker.ReportProgress(
+                            (int)
+                                Math.Round(Convert.ToDouble(counter) / config.Sequence.Length * 100)
+                        );
                 }
             }
             catch (Exception ex)
@@ -2271,10 +2708,14 @@ namespace Present_Express
 
         private void ExportImageWorker_ProgressChanged(object? sender, ProgressChangedEventArgs e)
         {
-            ExportLoadingLbl.Text = Funcs.ChooseLang("GeneratingSlidesStr") + $" ({e.ProgressPercentage}%)...";
+            ExportLoadingLbl.Text =
+                Funcs.ChooseLang("GeneratingSlidesStr") + $" ({e.ProgressPercentage}%)...";
         }
 
-        private void ExportImageWorker_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
+        private void ExportImageWorker_RunWorkerCompleted(
+            object? sender,
+            RunWorkerCompletedEventArgs e
+        )
         {
             ExportMainPnl.Visibility = Visibility.Visible;
             ExportTabPnl.Visibility = Visibility.Visible;
@@ -2283,10 +2724,27 @@ namespace Present_Express
             if (!e.Cancelled)
             {
                 if (e.Result != null)
-                    Funcs.ShowMessageRes("ExportErrorDescStr", "ExportErrorStr", MessageBoxButton.OK, MessageBoxImage.Error,
-                        Funcs.GenerateErrorReport((Exception)e.Result));
+                    Funcs.ShowMessageRes(
+                        "ExportErrorDescStr",
+                        "ExportErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport((Exception)e.Result, PageID, "ExportErrorDescStr")
+                    );
                 else
-                    Funcs.ShowMessageRes("ImagesExportedStr", "SuccessStr", MessageBoxButton.OK, MessageBoxImage.Information);
+                {
+                    Funcs.ShowMessageRes(
+                        "ImagesExportedStr",
+                        "SuccessStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information
+                    );
+                    Funcs.LogConversion(
+                        PageID,
+                        LoggingProperties.Conversion.FileExported,
+                        "images"
+                    );
+                }
             }
         }
 
@@ -2298,26 +2756,41 @@ namespace Present_Express
             ExportPopup.IsOpen = false;
 
             if (IsSlideshowEmpty())
-                Funcs.ShowMessageRes("NoSlidesDescStr", "NoSlidesStr", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                Funcs.ShowMessageRes(
+                    "NoSlidesDescStr",
+                    "NoSlidesStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Exclamation
+                );
             else
             {
                 if (Funcs.FolderBrowserDialog.ShowDialog() == CommonFileDialogResult.Ok)
                 {
                     try
                     {
-                        string template = "", css = "", js = "";
-                        var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Present_Express.export-index.html") ?? throw new NullReferenceException();
+                        string template = "",
+                            css = "",
+                            js = "";
+                        var info =
+                            Assembly
+                                .GetExecutingAssembly()
+                                .GetManifestResourceStream("Present_Express.export-index.html")
+                            ?? throw new NullReferenceException();
                         using (var sr = new StreamReader(info))
                             template = sr.ReadToEnd();
 
-                        info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Present_Express.bootstrap.min.css");
+                        info = Assembly
+                            .GetExecutingAssembly()
+                            .GetManifestResourceStream("Present_Express.bootstrap.min.css");
                         if (info == null)
                             throw new NullReferenceException();
 
                         using (var sr = new StreamReader(info))
                             css = sr.ReadToEnd();
 
-                        info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Present_Express.bootstrap.min.js");
+                        info = Assembly
+                            .GetExecutingAssembly()
+                            .GetManifestResourceStream("Present_Express.bootstrap.min.js");
                         if (info == null)
                             throw new NullReferenceException();
 
@@ -2325,10 +2798,17 @@ namespace Present_Express
                             js = sr.ReadToEnd();
 
                         int count = 1;
-                        string folderPath = Path.Combine(Funcs.FolderBrowserDialog.FileName ?? "", Title);
+                        string folderPath = Path.Combine(
+                            Funcs.FolderBrowserDialog.FileName ?? "",
+                            Title
+                        );
                         while (Directory.Exists(folderPath))
                         {
-                            folderPath = Path.Combine(Funcs.FolderBrowserDialog.FileName ?? "", Title) + " (" + count.ToString() + ")";
+                            folderPath =
+                                Path.Combine(Funcs.FolderBrowserDialog.FileName ?? "", Title)
+                                + " ("
+                                + count.ToString()
+                                + ")";
                             count++;
                         }
                         Directory.CreateDirectory(folderPath);
@@ -2336,8 +2816,12 @@ namespace Present_Express
                         Directory.CreateDirectory(Path.Combine(folderPath, "bootstrap"));
 
                         string indent = "        ";
-                        string indicators = indent + @"<ol class=""carousel-indicators"">" + Environment.NewLine;
-                        string carousel = indent + @"<div class=""carousel-inner"" role=""listbox"">" + Environment.NewLine;
+                        string indicators =
+                            indent + @"<ol class=""carousel-indicators"">" + Environment.NewLine;
+                        string carousel =
+                            indent
+                            + @"<div class=""carousel-inner"" role=""listbox"">"
+                            + Environment.NewLine;
 
                         int outputWidth = IsWidescreen() ? 1920 : 1440;
                         int outputHeight = 1080;
@@ -2351,19 +2835,35 @@ namespace Present_Express
                                 "Jpeg" => ".jpg",
                                 "Bmp" => ".bmp",
                                 "Gif" => ".gif",
-                                _ => ".png"
+                                _ => ".png",
                             };
 
                             string filename = $"{counter.ToString().PadLeft(3, '0')}{ext}";
                             string destinationPath = Path.Combine(folderPath, "images", filename);
 
-                            Funcs.SaveSlideAsImage(item.Bitmap, item.GetImageFormat(), clr, outputWidth, outputHeight, destinationPath, FitBtn.IsChecked == true);
+                            Funcs.SaveSlideAsImage(
+                                item.Bitmap,
+                                item.GetImageFormat(),
+                                clr,
+                                outputWidth,
+                                outputHeight,
+                                destinationPath,
+                                FitBtn.IsChecked == true
+                            );
 
-                            indicators += indent + @$"  <li data-target=""#carousel-generic"" data-slide-to=""{counter}""" +
-                                (counter == 0 ? @" class=""active""" : "") + @"></li>" + Environment.NewLine;
+                            indicators +=
+                                indent
+                                + @$"  <li data-target=""#carousel-generic"" data-slide-to=""{counter}"""
+                                + (counter == 0 ? @" class=""active""" : "")
+                                + @"></li>"
+                                + Environment.NewLine;
 
-                            carousel += indent + @"  <div class=""item" + (counter == 0 ? " active" : "") + 
-                                @$""" style=""background-image:url('images/{filename}');""></div>" + Environment.NewLine;
+                            carousel +=
+                                indent
+                                + @"  <div class=""item"
+                                + (counter == 0 ? " active" : "")
+                                + @$""" style=""background-image:url('images/{filename}');""></div>"
+                                + Environment.NewLine;
 
                             counter++;
                         }
@@ -2371,20 +2871,54 @@ namespace Present_Express
                         indicators += indent + "</ol>" + Environment.NewLine;
                         carousel += indent + "</div>";
 
-                        template = template.Replace("{{lang}}", Funcs.GetCurrentLang()).Replace("{{title}}", Funcs.EscapeChars(Title))
-                            .Replace("{{content}}", indicators + carousel).Replace("{{prev}}", Funcs.ChooseLang("PreviousStr"))
-                            .Replace("{{next}}", Funcs.ChooseLang("NextStr")).Replace("{{attr}}", string.Format(Funcs.ChooseLang("HTMLSlidesStr"), "<br/>"));
+                        template = template
+                            .Replace("{{lang}}", Funcs.GetCurrentLang())
+                            .Replace("{{title}}", Funcs.EscapeChars(Title))
+                            .Replace("{{content}}", indicators + carousel)
+                            .Replace("{{prev}}", Funcs.ChooseLang("PreviousStr"))
+                            .Replace("{{next}}", Funcs.ChooseLang("NextStr"))
+                            .Replace(
+                                "{{attr}}",
+                                string.Format(Funcs.ChooseLang("HTMLSlidesStr"), "<br/>")
+                            );
 
-                        File.WriteAllText(Path.Combine(folderPath, "index.html"), template, Encoding.UTF8);
-                        File.WriteAllText(Path.Combine(folderPath, "bootstrap", "bootstrap.min.css"), css, Encoding.UTF8);
-                        File.WriteAllText(Path.Combine(folderPath, "bootstrap", "bootstrap.min.js"), js, Encoding.UTF8);
+                        File.WriteAllText(
+                            Path.Combine(folderPath, "index.html"),
+                            template,
+                            Encoding.UTF8
+                        );
+                        File.WriteAllText(
+                            Path.Combine(folderPath, "bootstrap", "bootstrap.min.css"),
+                            css,
+                            Encoding.UTF8
+                        );
+                        File.WriteAllText(
+                            Path.Combine(folderPath, "bootstrap", "bootstrap.min.js"),
+                            js,
+                            Encoding.UTF8
+                        );
 
-                        Funcs.ShowMessageRes("HTMLSlideshowExportedStr", "SuccessStr", MessageBoxButton.OK, MessageBoxImage.Information);
+                        Funcs.ShowMessageRes(
+                            "HTMLSlideshowExportedStr",
+                            "SuccessStr",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information
+                        );
+                        Funcs.LogConversion(
+                            PageID,
+                            LoggingProperties.Conversion.FileExported,
+                            "html"
+                        );
                     }
                     catch (Exception ex)
                     {
-                        Funcs.ShowMessageRes("SlideshowExportErrorStr", "ExportErrorStr", 
-                            MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                        Funcs.ShowMessageRes(
+                            "SlideshowExportErrorStr",
+                            "ExportErrorStr",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error,
+                            Funcs.GenerateErrorReport(ex, PageID, "SlideshowExportErrorStr")
+                        );
                     }
                 }
             }
@@ -2414,21 +2948,28 @@ namespace Present_Express
                 PropertiesPnl.Visibility = Visibility.Visible;
                 FilenameTxt.Text = Path.GetFileName(ThisFile);
 
-                string[] paths = ThisFile.Split(@"\").Reverse().ToArray();
+                string[] paths = [.. ThisFile.Split(@"\").Reverse()];
                 List<FileItem> files = [];
 
                 for (int i = 1; i < Math.Min(5, paths.Length); i++)
                 {
-                    List<string> dir = paths.Reverse().ToList();
+                    List<string> dir = [.. paths.Reverse()];
                     dir.RemoveRange(dir.Count - i, i);
 
-                    files.Add(new FileItem()
-                    {
-                        FileName = paths[i],
-                        FilePath = string.Join(@"\", dir),
-                        Indent = new Thickness(10 + (34 * (Math.Min(4, paths.Length) - i)), 0, 10, 0),
-                        IsFolder = true
-                    });
+                    files.Add(
+                        new FileItem()
+                        {
+                            FileName = paths[i],
+                            FilePath = string.Join(@"\", dir),
+                            Indent = new Thickness(
+                                10 + (34 * (Math.Min(4, paths.Length) - i)),
+                                0,
+                                10,
+                                0
+                            ),
+                            IsFolder = true,
+                        }
+                    );
                 }
 
                 files.Reverse();
@@ -2477,17 +3018,23 @@ namespace Present_Express
         {
             try
             {
-                _ = Process.Start(new ProcessStartInfo()
-                {
-                    FileName = "explorer.exe",
-                    Arguments = "/select," + ThisFile,
-                    UseShellExecute = true
-                });
+                _ = Process.Start(
+                    new ProcessStartInfo()
+                    {
+                        FileName = "explorer.exe",
+                        Arguments = "/select," + ThisFile,
+                        UseShellExecute = true,
+                    }
+                );
             }
             catch
             {
-                Funcs.ShowMessageRes("AccessDeniedDescStr", "AccessDeniedStr",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                Funcs.ShowMessageRes(
+                    "AccessDeniedDescStr",
+                    "AccessDeniedStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
             }
         }
 
@@ -2499,11 +3046,12 @@ namespace Present_Express
 
             try
             {
-                files = Directory.GetFiles(dir).Where(file =>
-                {
-                    return (file.ToLower().EndsWith(".present")) && file != ThisFile;
-
-                }).ToArray();
+                files =
+                [
+                    .. Directory
+                        .GetFiles(dir)
+                        .Where(file => file.ToLower().EndsWith(".present") && file != ThisFile),
+                ];
             }
             catch
             {
@@ -2514,11 +3062,7 @@ namespace Present_Express
             {
                 InfoStack.ItemsSource = files.Select(f =>
                 {
-                    return new FileItem()
-                    {
-                        FilePath = f,
-                        FileName = Path.GetFileName(f)
-                    };
+                    return new FileItem() { FilePath = f, FileName = Path.GetFileName(f) };
                 });
 
                 NoInfoFilesTxt.Visibility = Visibility.Collapsed;
@@ -2593,11 +3137,13 @@ namespace Present_Express
 
         private void ExpressWebBtn_Click(object sender, RoutedEventArgs e)
         {
-            _ = Process.Start(new ProcessStartInfo()
-            {
-                FileName = "https://express.johnjds.co.uk",
-                UseShellExecute = true
-            });
+            _ = Process.Start(
+                new ProcessStartInfo()
+                {
+                    FileName = "https://express.johnjds.co.uk",
+                    UseShellExecute = true,
+                }
+            );
         }
 
         #endregion
@@ -2611,7 +3157,13 @@ namespace Present_Express
         /// <param name="replace">Whether or not the slide at the specified <paramref name="position"/> should be replaced.</param>
         /// <param name="isDuplicate">Whether or not the new is slide is a duplicate of another.</param>
         /// <param name="updateUndoStack">Whether or not to update the <see cref="UndoStack"/></param>
-        public void AddSlide(Slide info, int position = -1, bool replace = true, bool isDuplicate = false, bool updateUndoStack = true)
+        public void AddSlide(
+            Slide info,
+            int position = -1,
+            bool replace = true,
+            bool isDuplicate = false,
+            bool updateUndoStack = true
+        )
         {
             if (position == -1)
             {
@@ -2633,12 +3185,14 @@ namespace Present_Express
                 {
                     // slide is being inserted in place
                     if (updateUndoStack)
-                        AddActionToUndoStack(new AddSlideChange()
-                        {
-                            Slide = info,
-                            Position = position,
-                            IsDuplicate = isDuplicate
-                        });
+                        AddActionToUndoStack(
+                            new AddSlideChange()
+                            {
+                                Slide = info,
+                                Position = position,
+                                IsDuplicate = isDuplicate,
+                            }
+                        );
 
                     AllSlides.Insert(position, info);
                     GenerateSlideBitmap(ref info);
@@ -2655,15 +3209,32 @@ namespace Present_Express
                     if (imageSlide.Filters.HasNoFilters())
                         imageSlide.Bitmap = imageSlide.Original;
                     else
-                        imageSlide.Bitmap = Funcs.ApplyImageFilters(imageSlide.Original, imageSlide.Filters, imageSlide.GetImageFormat());
+                        imageSlide.Bitmap = Funcs.ApplyImageFilters(
+                            imageSlide.Original,
+                            imageSlide.Filters,
+                            imageSlide.GetImageFormat()
+                        );
                     break;
 
                 case TextSlide textSlide:
-                    textSlide.Bitmap = Funcs.GenerateTextBmp(textSlide.Content, textSlide.GetFont(), textSlide.FontColour.Color, GetImageWidth());
+                    textSlide.Bitmap = Funcs.GenerateTextBmp(
+                        textSlide.Content,
+                        textSlide.GetFont(),
+                        textSlide.FontColour.Color,
+                        GetImageWidth()
+                    );
                     break;
 
                 case ChartSlide chartSlide:
-                    chartSlide.Bitmap = Funcs.AddPadding(ChartEditor.RenderChart(chartSlide.ChartData ?? new(), GetImageWidth(true), 1080, 34), 40);
+                    chartSlide.Bitmap = Funcs.AddPadding(
+                        ChartEditor.RenderChart(
+                            chartSlide.ChartData ?? new(),
+                            GetImageWidth(true),
+                            1080,
+                            34
+                        ),
+                        40
+                    );
                     break;
 
                 case DrawingSlide drawingSlide:
@@ -2683,7 +3254,7 @@ namespace Present_Express
                 EditingMode = InkCanvasEditingMode.None,
                 Strokes = strokes,
                 Height = 462,
-                Width = 616
+                Width = 616,
             };
 
             return Funcs.RenderControlAsImage(canv);
@@ -2699,19 +3270,32 @@ namespace Present_Express
         {
             if (position == -1)
             {
-                SlideUIList.Add(new SlideDisplayItem()
-                {
-                    ID = SlideUIList.Count + 1,
-                    Image = Funcs.ResizeImage(bmp, (double)Resources["ImageWidth"], (double)Resources["ImageHeight"])
-                });
+                SlideUIList.Add(
+                    new SlideDisplayItem()
+                    {
+                        ID = SlideUIList.Count + 1,
+                        Image = Funcs.ResizeImage(
+                            bmp,
+                            (double)Resources["ImageWidth"],
+                            (double)Resources["ImageHeight"]
+                        ),
+                    }
+                );
             }
             else if (!replace)
             {
-                SlideUIList.Insert(position, new SlideDisplayItem()
-                {
-                    ID = position + 1,
-                    Image = Funcs.ResizeImage(bmp, (double)Resources["ImageWidth"], (double)Resources["ImageHeight"])
-                });
+                SlideUIList.Insert(
+                    position,
+                    new SlideDisplayItem()
+                    {
+                        ID = position + 1,
+                        Image = Funcs.ResizeImage(
+                            bmp,
+                            (double)Resources["ImageWidth"],
+                            (double)Resources["ImageHeight"]
+                        ),
+                    }
+                );
 
                 UpdateSlideNumbers(position + 1);
             }
@@ -2720,13 +3304,21 @@ namespace Present_Express
                 SlideUIList[position] = new SlideDisplayItem()
                 {
                     ID = SlideUIList[position].ID,
-                    Image = Funcs.ResizeImage(bmp, (double)Resources["ImageWidth"], (double)Resources["ImageHeight"]),
-                    Selected = SlideUIList[position].Selected
+                    Image = Funcs.ResizeImage(
+                        bmp,
+                        (double)Resources["ImageWidth"],
+                        (double)Resources["ImageHeight"]
+                    ),
+                    Selected = SlideUIList[position].Selected,
                 };
             }
 
             Funcs.OpenSidePane(this);
-            CountLbl.Text = string.Format(Funcs.ChooseLang("SlideCounterStr"), (CurrentSlide + 1).ToString(), AllSlides.Count.ToString());
+            CountLbl.Text = string.Format(
+                Funcs.ChooseLang("SlideCounterStr"),
+                (CurrentSlide + 1).ToString(),
+                AllSlides.Count.ToString()
+            );
         }
 
         /// <summary>
@@ -2744,7 +3336,7 @@ namespace Present_Express
                         {
                             ID = SlideUIList[i].ID,
                             Image = SlideUIList[i].Image,
-                            Selected = false
+                            Selected = false,
                         };
                 }
 
@@ -2752,14 +3344,18 @@ namespace Present_Express
                 {
                     ID = SlideUIList[index].ID,
                     Image = SlideUIList[index].Image,
-                    Selected = true
+                    Selected = true,
                 };
 
                 CurrentSlide = index;
                 StartGrid.Visibility = Visibility.Collapsed;
                 SlideView.Visibility = Visibility.Visible;
                 EditSlideBtn.Visibility = Visibility.Visible;
-                CountLbl.Text = string.Format(Funcs.ChooseLang("SlideCounterStr"), (CurrentSlide + 1).ToString(), AllSlides.Count.ToString());
+                CountLbl.Text = string.Format(
+                    Funcs.ChooseLang("SlideCounterStr"),
+                    (CurrentSlide + 1).ToString(),
+                    AllSlides.Count.ToString()
+                );
 
                 Slide current = AllSlides[index];
                 PhotoImg.Source = current.Bitmap;
@@ -2802,7 +3398,7 @@ namespace Present_Express
                 {
                     ID = i + 1,
                     Image = SlideUIList[i].Image,
-                    Selected = SlideUIList[i].Selected
+                    Selected = SlideUIList[i].Selected,
                 };
             }
         }
@@ -2824,11 +3420,9 @@ namespace Present_Express
             SelectSlide(newIndex);
 
             if (updateUndoStack)
-                AddActionToUndoStack(new PositionChange()
-                {
-                    OldPosition = oldIndex,
-                    NewPosition = newIndex
-                });
+                AddActionToUndoStack(
+                    new PositionChange() { OldPosition = oldIndex, NewPosition = newIndex }
+                );
 
             UpdateSlideNumbers(Math.Min(oldIndex, newIndex));
         }
@@ -2901,7 +3495,11 @@ namespace Present_Express
                         try
                         {
                             TextSlide textSlide = (TextSlide)AllSlides[CurrentSlide];
-                            TextEditor textEditor = new((SolidColorBrush)Resources["SlideBackColour"], IsWidescreen(), textSlide);
+                            TextEditor textEditor = new(
+                                (SolidColorBrush)Resources["SlideBackColour"],
+                                IsWidescreen(),
+                                textSlide
+                            );
 
                             if (textEditor.ShowDialog() == true)
                             {
@@ -2909,12 +3507,14 @@ namespace Present_Express
                                 textEditor.ChosenSlide.Timing = textSlide.Timing;
                                 textEditor.ChosenSlide.Transition = textSlide.Transition.Clone();
 
-                                AddActionToUndoStack(new PropertyChange()
-                                {
-                                    OldSlide = textSlide,
-                                    NewSlide = textEditor.ChosenSlide,
-                                    Position = CurrentSlide
-                                });
+                                AddActionToUndoStack(
+                                    new PropertyChange()
+                                    {
+                                        OldSlide = textSlide,
+                                        NewSlide = textEditor.ChosenSlide,
+                                        Position = CurrentSlide,
+                                    }
+                                );
 
                                 AddSlide(textEditor.ChosenSlide, CurrentSlide);
                                 SelectSlide(CurrentSlide);
@@ -2922,26 +3522,34 @@ namespace Present_Express
                         }
                         catch (Exception ex)
                         {
-                            Funcs.ShowMessageRes("TextErrorDescStr", "TextErrorStr",
-                                MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                            Funcs.ShowMessageRes(
+                                "TextErrorDescStr",
+                                "TextErrorStr",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error,
+                                Funcs.GenerateErrorReport(ex, PageID, "TextErrorDescStr")
+                            );
                         }
                         break;
 
                     case SlideType.Screenshot:
                         try
                         {
-                            ScreenshotSlide screenshotSlide = (ScreenshotSlide)AllSlides[CurrentSlide];
+                            ScreenshotSlide screenshotSlide = (ScreenshotSlide)
+                                AllSlides[CurrentSlide];
                             Screenshot editor = new(ExpressApp.Present);
 
                             if (editor.ShowDialog() == true && editor.ChosenScreenshot != null)
                             {
-                                AddActionToUndoStack(new PropertyChange<BitmapSource>()
-                                {
-                                    Property = SlideshowProperty.Bitmap,
-                                    OldValues = [screenshotSlide.Bitmap],
-                                    NewValues = [editor.ChosenScreenshot],
-                                    Position = CurrentSlide
-                                });
+                                AddActionToUndoStack(
+                                    new PropertyChange<BitmapSource>()
+                                    {
+                                        Property = SlideshowProperty.Bitmap,
+                                        OldValues = [screenshotSlide.Bitmap],
+                                        NewValues = [editor.ChosenScreenshot],
+                                        Position = CurrentSlide,
+                                    }
+                                );
 
                                 screenshotSlide.Bitmap = editor.ChosenScreenshot;
                                 AddSlide(screenshotSlide, CurrentSlide);
@@ -2950,8 +3558,13 @@ namespace Present_Express
                         }
                         catch (Exception ex)
                         {
-                            Funcs.ShowMessageRes("ScreenshotErrorDescStr", "ScreenshotErrorStr",
-                                MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                            Funcs.ShowMessageRes(
+                                "ScreenshotErrorDescStr",
+                                "ScreenshotErrorStr",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error,
+                                Funcs.GenerateErrorReport(ex, PageID, "ScreenshotErrorDescStr")
+                            );
                         }
                         break;
 
@@ -2959,17 +3572,23 @@ namespace Present_Express
                         try
                         {
                             ChartSlide chartSlide = (ChartSlide)AllSlides[CurrentSlide];
-                            ChartEditor editor = new(ExpressApp.Present, chartSlide.ChartData, backColor: (SolidColorBrush)Resources["SlideBackColour"]);
+                            ChartEditor editor = new(
+                                ExpressApp.Present,
+                                chartSlide.ChartData,
+                                backColor: (SolidColorBrush)Resources["SlideBackColour"]
+                            );
 
                             if (editor.ShowDialog() == true && editor.ChartData != null)
                             {
-                                AddActionToUndoStack(new PropertyChange<ChartItem>()
-                                {
-                                    Property = SlideshowProperty.ChartData,
-                                    OldValues = [chartSlide.ChartData ?? new ChartItem()],
-                                    NewValues = [editor.ChartData],
-                                    Position = CurrentSlide
-                                });
+                                AddActionToUndoStack(
+                                    new PropertyChange<ChartItem>()
+                                    {
+                                        Property = SlideshowProperty.ChartData,
+                                        OldValues = [chartSlide.ChartData ?? new ChartItem()],
+                                        NewValues = [editor.ChartData],
+                                        Position = CurrentSlide,
+                                    }
+                                );
 
                                 chartSlide.ChartData = editor.ChartData;
                                 AddSlide(chartSlide, CurrentSlide);
@@ -2978,8 +3597,13 @@ namespace Present_Express
                         }
                         catch (Exception ex)
                         {
-                            Funcs.ShowMessageRes("ChartErrorDescStr", "ChartErrorStr",
-                                MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                            Funcs.ShowMessageRes(
+                                "ChartErrorDescStr",
+                                "ChartErrorStr",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error,
+                                Funcs.GenerateErrorReport(ex, PageID, "ChartErrorDescStr")
+                            );
                         }
                         break;
 
@@ -2987,17 +3611,23 @@ namespace Present_Express
                         try
                         {
                             DrawingSlide drawingSlide = (DrawingSlide)AllSlides[CurrentSlide];
-                            DrawingEditor editor = new(ExpressApp.Present, ((SolidColorBrush)Resources["SlideBackColour"]).Color, drawingSlide.Strokes);
+                            DrawingEditor editor = new(
+                                ExpressApp.Present,
+                                ((SolidColorBrush)Resources["SlideBackColour"]).Color,
+                                drawingSlide.Strokes
+                            );
 
                             if (editor.ShowDialog() == true && editor.Strokes != null)
                             {
-                                AddActionToUndoStack(new PropertyChange<StrokeCollection>()
-                                {
-                                    Property = SlideshowProperty.Strokes,
-                                    OldValues = [drawingSlide.Strokes],
-                                    NewValues = [editor.Strokes],
-                                    Position = CurrentSlide
-                                });
+                                AddActionToUndoStack(
+                                    new PropertyChange<StrokeCollection>()
+                                    {
+                                        Property = SlideshowProperty.Strokes,
+                                        OldValues = [drawingSlide.Strokes],
+                                        NewValues = [editor.Strokes],
+                                        Position = CurrentSlide,
+                                    }
+                                );
 
                                 drawingSlide.Strokes = editor.Strokes;
                                 AddSlide(drawingSlide, CurrentSlide);
@@ -3006,8 +3636,13 @@ namespace Present_Express
                         }
                         catch (Exception ex)
                         {
-                            Funcs.ShowMessageRes("DrawingErrorDescStr", "DrawingErrorStr",
-                                MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                            Funcs.ShowMessageRes(
+                                "DrawingErrorDescStr",
+                                "DrawingErrorStr",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error,
+                                Funcs.GenerateErrorReport(ex, PageID, "DrawingErrorDescStr")
+                            );
                         }
                         break;
 
@@ -3099,11 +3734,9 @@ namespace Present_Express
         private void RemoveSlide(int position, bool updateUndoStack = true)
         {
             if (updateUndoStack)
-                AddActionToUndoStack(new RemoveSlideChange()
-                {
-                    Slide = AllSlides[position],
-                    Position = position
-                });
+                AddActionToUndoStack(
+                    new RemoveSlideChange() { Slide = AllSlides[position], Position = position }
+                );
 
             AllSlides.RemoveAt(position);
             SlideUIList.RemoveAt(position);
@@ -3131,7 +3764,11 @@ namespace Present_Express
             else if (CurrentSlide > position)
                 SelectSlide(CurrentSlide - 1);
 
-            CountLbl.Text = string.Format(Funcs.ChooseLang("SlideCounterStr"), (CurrentSlide + 1).ToString(), AllSlides.Count.ToString());
+            CountLbl.Text = string.Format(
+                Funcs.ChooseLang("SlideCounterStr"),
+                (CurrentSlide + 1).ToString(),
+                AllSlides.Count.ToString()
+            );
         }
 
         private void RemoveBtn_Click(object sender, RoutedEventArgs e)
@@ -3185,40 +3822,63 @@ namespace Present_Express
                         {
                             case SlideshowProperty.Bitmap:
                                 {
-                                    PropertyChange<BitmapSource> change = (PropertyChange<BitmapSource>)action;
+                                    PropertyChange<BitmapSource> change =
+                                        (PropertyChange<BitmapSource>)action;
                                     AllSlides[change.Position].Bitmap = change.NewValues[0];
 
-                                    AddSlide(AllSlides[change.Position], change.Position, updateUndoStack: false);
+                                    AddSlide(
+                                        AllSlides[change.Position],
+                                        change.Position,
+                                        updateUndoStack: false
+                                    );
                                     SelectSlide(change.Position);
                                 }
                                 break;
 
                             case SlideshowProperty.ChartData:
                                 {
-                                    PropertyChange<ChartItem> change = (PropertyChange<ChartItem>)action;
-                                    ((ChartSlide)AllSlides[change.Position]).ChartData = change.NewValues[0];
+                                    PropertyChange<ChartItem> change =
+                                        (PropertyChange<ChartItem>)action;
+                                    ((ChartSlide)AllSlides[change.Position]).ChartData =
+                                        change.NewValues[0];
 
-                                    AddSlide(AllSlides[change.Position], change.Position, updateUndoStack: false);
+                                    AddSlide(
+                                        AllSlides[change.Position],
+                                        change.Position,
+                                        updateUndoStack: false
+                                    );
                                     SelectSlide(change.Position);
                                 }
                                 break;
 
                             case SlideshowProperty.Strokes:
                                 {
-                                    PropertyChange<StrokeCollection> change = (PropertyChange<StrokeCollection>)action;
-                                    ((DrawingSlide)AllSlides[change.Position]).Strokes = change.NewValues[0];
+                                    PropertyChange<StrokeCollection> change =
+                                        (PropertyChange<StrokeCollection>)action;
+                                    ((DrawingSlide)AllSlides[change.Position]).Strokes =
+                                        change.NewValues[0];
 
-                                    AddSlide(AllSlides[change.Position], change.Position, updateUndoStack: false);
+                                    AddSlide(
+                                        AllSlides[change.Position],
+                                        change.Position,
+                                        updateUndoStack: false
+                                    );
                                     SelectSlide(change.Position);
                                 }
                                 break;
 
                             case SlideshowProperty.Filters:
                                 {
-                                    PropertyChange<FilterItem> change = (PropertyChange<FilterItem>)action;
-                                    ((ImageSlide)AllSlides[change.Position]).Filters = change.NewValues[0];
+                                    PropertyChange<FilterItem> change =
+                                        (PropertyChange<FilterItem>)action;
+                                    ((ImageSlide)AllSlides[change.Position]).Filters =
+                                        change.NewValues[0];
 
-                                    AddSlide(AllSlides[change.Position], change.Position, updateUndoStack: false);
+                                    AddSlide(
+                                        AllSlides[change.Position],
+                                        change.Position,
+                                        updateUndoStack: false
+                                    );
                                     SelectSlide(change.Position);
                                 }
                                 break;
@@ -3230,7 +3890,9 @@ namespace Present_Express
                                     {
                                         for (int i = 0; i < AllSlides.Count; i++)
                                         {
-                                            double value = change.NewValues[change.NewValues.Length != AllSlides.Count ? 0 : i];
+                                            double value = change.NewValues[
+                                                change.NewValues.Length != AllSlides.Count ? 0 : i
+                                            ];
                                             AllSlides[i].Timing = value;
 
                                             if (i == CurrentSlide)
@@ -3257,20 +3919,27 @@ namespace Present_Express
 
                             case SlideshowProperty.Transition:
                                 {
-                                    PropertyChange<Transition> change = (PropertyChange<Transition>)action;
+                                    PropertyChange<Transition> change =
+                                        (PropertyChange<Transition>)action;
                                     if (change.Position == -1)
                                     {
                                         for (int i = 0; i < AllSlides.Count; i++)
                                         {
-                                            Transition value = change.NewValues[change.NewValues.Length != AllSlides.Count ? 0 : i];
+                                            Transition value = change.NewValues[
+                                                change.NewValues.Length != AllSlides.Count ? 0 : i
+                                            ];
                                             AllSlides[i].Transition.Duration = value.Duration;
                                             AllSlides[i].Transition.Type = value.Type;
                                         }
                                     }
                                     else
                                     {
-                                        AllSlides[change.Position].Transition.Duration = change.NewValues[0].Duration;
-                                        AllSlides[change.Position].Transition.Type = change.NewValues[0].Type;
+                                        AllSlides[change.Position].Transition.Duration = change
+                                            .NewValues[0]
+                                            .Duration;
+                                        AllSlides[change.Position].Transition.Type = change
+                                            .NewValues[0]
+                                            .Type;
                                     }
                                 }
                                 break;
@@ -3287,14 +3956,16 @@ namespace Present_Express
                         {
                             case SlideshowProperty.BackgroundColour:
                                 {
-                                    SlideshowChange<SolidColorBrush> change = (SlideshowChange<SolidColorBrush>)action;
+                                    SlideshowChange<SolidColorBrush> change =
+                                        (SlideshowChange<SolidColorBrush>)action;
                                     Resources["SlideBackColour"] = change.NewValue;
                                 }
                                 break;
 
                             case SlideshowProperty.SlideSize:
                                 {
-                                    SlideshowChange<double> change = (SlideshowChange<double>)action;
+                                    SlideshowChange<double> change =
+                                        (SlideshowChange<double>)action;
                                     ChangeSlideSize(change.NewValue, updateUndoStack: false);
 
                                     if (change.NewValue == 160.0)
@@ -3306,7 +3977,8 @@ namespace Present_Express
 
                             case SlideshowProperty.FitToSlide:
                                 {
-                                    SlideshowChange<Stretch> change = (SlideshowChange<Stretch>)action;
+                                    SlideshowChange<Stretch> change =
+                                        (SlideshowChange<Stretch>)action;
                                     Resources["FitStretch"] = change.NewValue;
                                     FitBtn.IsChecked = change.NewValue == Stretch.Uniform;
                                 }
@@ -3380,12 +4052,16 @@ namespace Present_Express
 
         private void UndoBtn_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            UndoBtn.Icon = (Viewbox)(UndoBtn.IsEnabled ? TryFindResource("UndoIcon") : TryFindResource("NoUndoIcon"));
+            UndoBtn.Icon = (Viewbox)(
+                UndoBtn.IsEnabled ? TryFindResource("UndoIcon") : TryFindResource("NoUndoIcon")
+            );
         }
 
         private void RedoBtn_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            RedoBtn.Icon = (Viewbox)(RedoBtn.IsEnabled ? TryFindResource("RedoIcon") : TryFindResource("NoRedoIcon"));
+            RedoBtn.Icon = (Viewbox)(
+                RedoBtn.IsEnabled ? TryFindResource("RedoIcon") : TryFindResource("NoRedoIcon")
+            );
         }
 
         #endregion
@@ -3401,69 +4077,61 @@ namespace Present_Express
 
         private async void OnlinePicturesBtn_Click(object sender, RoutedEventArgs e)
         {
-            try
+            PictureSelector pct = new(ExpressApp.Present);
+
+            if (pct.ShowDialog() == true && pct.ChosenPicture != null)
             {
-                var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Present_Express.auth-photo.secret") ?? throw new NullReferenceException();
-                using var sr = new StreamReader(info);
-                PictureSelector pct = new(sr.ReadToEnd(), ExpressApp.Present);
+                IsEnabled = false;
+                CreateTempLabel(Funcs.ChooseLang("PleaseWaitStr"));
 
-                if (pct.ShowDialog() == true && pct.ChosenPicture != null)
+                var buffer = await Funcs.GetBytesAsync(
+                    PictureSelector.ResizeImage(pct.ChosenPicture.RegularURL, 2560, 1440).ToString()
+                );
+                BitmapImage image = new();
+                using (MemoryStream stream = new(buffer))
                 {
-                    IsEnabled = false;
-                    CreateTempLabel(Funcs.ChooseLang("PleaseWaitStr"));
+                    image.BeginInit();
+                    image.CacheOption = BitmapCacheOption.OnLoad;
+                    image.StreamSource = stream;
+                    image.EndInit();
+                }
 
-                    var buffer = await Funcs.GetBytesAsync(PictureSelector.ResizeImage(pct.ChosenPicture.RegularURL, 2560, 1440).ToString());
-                    BitmapImage image = new();
-                    using (MemoryStream stream = new(buffer))
-                    {
-                        image.BeginInit();
-                        image.CacheOption = BitmapCacheOption.OnLoad;
-                        image.StreamSource = stream;
-                        image.EndInit();
-                    }
+                ImageSlide slide = new()
+                {
+                    Name = Funcs.GetNewSlideName("photo", ".jpg"),
+                    Original = image,
+                    Timing = DefaultTiming,
+                    Transition = DefaultTransition.Clone(),
+                };
 
-                    ImageSlide slide = new()
-                    {
-                        Name = Funcs.GetNewSlideName("photo", ".jpg"),
-                        Original = image,
-                        Timing = DefaultTiming,
-                        Transition = DefaultTransition.Clone()
-                    };
+                if (PhotoEditorBtn.Visibility == Visibility.Visible)
+                {
+                    // edit picture
+                    slide.Filters = ((ImageSlide)AllSlides[CurrentSlide]).Filters;
+                    slide.Timing = AllSlides[CurrentSlide].Timing;
+                    slide.Transition = AllSlides[CurrentSlide].Transition;
 
-                    if (PhotoEditorBtn.Visibility == Visibility.Visible)
-                    {
-                        // edit picture
-                        slide.Filters = ((ImageSlide)AllSlides[CurrentSlide]).Filters;
-                        slide.Timing = AllSlides[CurrentSlide].Timing;
-                        slide.Transition = AllSlides[CurrentSlide].Transition;
-
-                        AddActionToUndoStack(new PropertyChange()
+                    AddActionToUndoStack(
+                        new PropertyChange()
                         {
                             OldSlide = AllSlides[CurrentSlide],
                             NewSlide = slide,
-                            Position = CurrentSlide
-                        });
+                            Position = CurrentSlide,
+                        }
+                    );
 
-                        AddSlide(slide, CurrentSlide);
-                        SelectSlide(CurrentSlide);
-                    }
-                    else
-                    {
-                        // add picture
-                        AddSlide(slide, CurrentSlide + 1, false);
-                        SelectSlide(CurrentSlide + 1);
-                    }
+                    AddSlide(slide, CurrentSlide);
+                    SelectSlide(CurrentSlide);
+                }
+                else
+                {
+                    // add picture
+                    AddSlide(slide, CurrentSlide + 1, false);
+                    SelectSlide(CurrentSlide + 1);
                 }
             }
-            catch (Exception ex)
-            {
-                Funcs.ShowMessageRes("APIKeyNotFoundStr", "CriticalErrorStr", MessageBoxButton.OK, MessageBoxImage.Error,
-                    Funcs.GenerateErrorReport(ex, Funcs.ChooseLang("ReportEmailInfoStr")));
-            }
-            finally
-            {
-                IsEnabled = true;
-            }
+
+            IsEnabled = true;
         }
 
         private void OfflinePicturesBtn_Click(object sender, RoutedEventArgs e)
@@ -3471,7 +4139,10 @@ namespace Present_Express
             string[] filenames;
             bool error = false;
 
-            if (PhotoEditorBtn.Visibility == Visibility.Visible && Funcs.PictureOpenDialog.ShowDialog() == true)
+            if (
+                PhotoEditorBtn.Visibility == Visibility.Visible
+                && Funcs.PictureOpenDialog.ShowDialog() == true
+            )
                 filenames = [Funcs.PictureOpenDialog.FileName];
             else if (Funcs.PicturesOpenDialog.ShowDialog() == true)
                 filenames = Funcs.PicturesOpenDialog.FileNames;
@@ -3491,15 +4162,17 @@ namespace Present_Express
                         Original = new BitmapImage(new Uri(filenames[0])),
                         Timing = AllSlides[CurrentSlide].Timing,
                         Transition = AllSlides[CurrentSlide].Transition,
-                        Filters = ((ImageSlide)AllSlides[CurrentSlide]).Filters
+                        Filters = ((ImageSlide)AllSlides[CurrentSlide]).Filters,
                     };
 
-                    AddActionToUndoStack(new PropertyChange()
-                    {
-                        OldSlide = AllSlides[CurrentSlide],
-                        NewSlide = slide,
-                        Position = CurrentSlide
-                    });
+                    AddActionToUndoStack(
+                        new PropertyChange()
+                        {
+                            OldSlide = AllSlides[CurrentSlide],
+                            NewSlide = slide,
+                            Position = CurrentSlide,
+                        }
+                    );
 
                     AddSlide(slide, CurrentSlide);
                     SelectSlide(CurrentSlide);
@@ -3514,13 +4187,13 @@ namespace Present_Express
                             error = true;
                             continue;
                         }
-                        
+
                         ImageSlide slide = new()
                         {
                             Name = Path.GetFileName(filenames[i]),
                             Original = new BitmapImage(new Uri(filenames[i])),
                             Timing = DefaultTiming,
-                            Transition = DefaultTransition.Clone()
+                            Transition = DefaultTransition.Clone(),
                         };
 
                         AddSlide(slide, CurrentSlide + i + 1, false);
@@ -3537,8 +4210,14 @@ namespace Present_Express
             }
 
             if (error)
-                Funcs.ShowMessageRes(PhotoEditorBtn.Visibility == Visibility.Visible ? "ImageErrorDescStr" : "ImageMultipleErrorDescStr",
-                    "ImageErrorStr", MessageBoxButton.OK, MessageBoxImage.Error);
+                Funcs.ShowMessageRes(
+                    PhotoEditorBtn.Visibility == Visibility.Visible
+                        ? "ImageErrorDescStr"
+                        : "ImageMultipleErrorDescStr",
+                    "ImageErrorStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
         }
 
         private void PhotoEditorBtn_Click(object sender, RoutedEventArgs e)
@@ -3548,13 +4227,15 @@ namespace Present_Express
 
             if (editor.ShowDialog() == true)
             {
-                AddActionToUndoStack(new PropertyChange<FilterItem>()
-                {
-                    Property = SlideshowProperty.Filters,
-                    OldValues = [slide.Filters],
-                    NewValues = [editor.ChosenFilters],
-                    Position = CurrentSlide
-                });
+                AddActionToUndoStack(
+                    new PropertyChange<FilterItem>()
+                    {
+                        Property = SlideshowProperty.Filters,
+                        OldValues = [slide.Filters],
+                        NewValues = [editor.ChosenFilters],
+                        Position = CurrentSlide,
+                    }
+                );
 
                 slide.Filters = editor.ChosenFilters;
                 AddSlide(slide, CurrentSlide);
@@ -3581,8 +4262,13 @@ namespace Present_Express
                 }
                 catch (Exception ex)
                 {
-                    Funcs.ShowMessageRes("TextErrorDescStr", "TextErrorStr",
-                        MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                    Funcs.ShowMessageRes(
+                        "TextErrorDescStr",
+                        "TextErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(ex, PageID, "TextErrorDescStr")
+                    );
                 }
             }
         }
@@ -3602,7 +4288,7 @@ namespace Present_Express
                         Name = Funcs.GetNewSlideName("screenshot"),
                         Bitmap = editor.ChosenScreenshot,
                         Timing = DefaultTiming,
-                        Transition = DefaultTransition.Clone()
+                        Transition = DefaultTransition.Clone(),
                     };
 
                     AddSlide(slide, CurrentSlide + 1, false);
@@ -3610,8 +4296,13 @@ namespace Present_Express
                 }
                 catch (Exception ex)
                 {
-                    Funcs.ShowMessageRes("ScreenshotErrorDescStr", "ScreenshotErrorStr",
-                        MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                    Funcs.ShowMessageRes(
+                        "ScreenshotErrorDescStr",
+                        "ScreenshotErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(ex, PageID, "ScreenshotErrorDescStr")
+                    );
                 }
             }
         }
@@ -3621,7 +4312,10 @@ namespace Present_Express
 
         private void ChartBtn_Click(object sender, RoutedEventArgs e)
         {
-            ChartEditor editor = new(ExpressApp.Present, backColor: (SolidColorBrush)Resources["SlideBackColour"]);
+            ChartEditor editor = new(
+                ExpressApp.Present,
+                backColor: (SolidColorBrush)Resources["SlideBackColour"]
+            );
             if (editor.ShowDialog() == true && editor.ChartData != null)
             {
                 try
@@ -3631,7 +4325,7 @@ namespace Present_Express
                         Name = Funcs.GetNewSlideName("chart"),
                         Timing = DefaultTiming,
                         ChartData = editor.ChartData,
-                        Transition = DefaultTransition.Clone()
+                        Transition = DefaultTransition.Clone(),
                     };
 
                     AddSlide(slide, CurrentSlide + 1, false);
@@ -3639,8 +4333,13 @@ namespace Present_Express
                 }
                 catch (Exception ex)
                 {
-                    Funcs.ShowMessageRes("ChartErrorDescStr", "ChartErrorStr",
-                        MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                    Funcs.ShowMessageRes(
+                        "ChartErrorDescStr",
+                        "ChartErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(ex, PageID, "ChartErrorDescStr")
+                    );
                 }
             }
         }
@@ -3650,7 +4349,10 @@ namespace Present_Express
 
         private void DrawingsBtn_Click(object sender, RoutedEventArgs e)
         {
-            DrawingEditor editor = new(ExpressApp.Present, ((SolidColorBrush)Resources["SlideBackColour"]).Color);
+            DrawingEditor editor = new(
+                ExpressApp.Present,
+                ((SolidColorBrush)Resources["SlideBackColour"]).Color
+            );
             if (editor.ShowDialog() == true && editor.Strokes != null)
             {
                 try
@@ -3660,7 +4362,7 @@ namespace Present_Express
                         Name = Funcs.GetNewSlideName("drawing", ".isf"),
                         Timing = DefaultTiming,
                         Strokes = editor.Strokes,
-                        Transition = DefaultTransition.Clone()
+                        Transition = DefaultTransition.Clone(),
                     };
 
                     AddSlide(slide, CurrentSlide + 1, false);
@@ -3668,8 +4370,13 @@ namespace Present_Express
                 }
                 catch (Exception ex)
                 {
-                    Funcs.ShowMessageRes("DrawingErrorDescStr", "DrawingErrorStr",
-                        MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                    Funcs.ShowMessageRes(
+                        "DrawingErrorDescStr",
+                        "DrawingErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(ex, PageID, "DrawingErrorDescStr")
+                    );
                 }
             }
         }
@@ -3683,10 +4390,10 @@ namespace Present_Express
             BackColourItems.ItemsSource = clrs.Select(c => new ColourItem()
             {
                 Name = Funcs.ChooseLang(c.Key),
-                Colour = new SolidColorBrush(c.Value)
+                Colour = new SolidColorBrush(c.Value),
             });
         }
-        
+
         private void SetBackColour(SolidColorBrush brush)
         {
             SolidColorBrush oldValue = (SolidColorBrush)Resources["SlideBackColour"];
@@ -3694,12 +4401,14 @@ namespace Present_Express
             Resources["SlideBackColour"] = brush;
             BackgroundPopup.IsOpen = false;
 
-            AddActionToUndoStack(new SlideshowChange<SolidColorBrush>()
-            {
-                Property = SlideshowProperty.BackgroundColour,
-                OldValue = oldValue,
-                NewValue = (SolidColorBrush)Resources["SlideBackColour"]
-            });
+            AddActionToUndoStack(
+                new SlideshowChange<SolidColorBrush>()
+                {
+                    Property = SlideshowProperty.BackgroundColour,
+                    OldValue = oldValue,
+                    NewValue = (SolidColorBrush)Resources["SlideBackColour"],
+                }
+            );
         }
 
         private void BackColourBtn_Click(object sender, RoutedEventArgs e)
@@ -3726,7 +4435,12 @@ namespace Present_Express
         private void TransitionBtn_Click(object sender, RoutedEventArgs e)
         {
             if (IsSlideshowEmpty())
-                Funcs.ShowMessageRes("NoSlidesDescStr", "NoSlidesStr", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                Funcs.ShowMessageRes(
+                    "NoSlidesDescStr",
+                    "NoSlidesStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Exclamation
+                );
             else
             {
                 LoadTransitionsPopup();
@@ -3737,22 +4451,25 @@ namespace Present_Express
         private void LoadTransitionsPopup(bool skipMain = false)
         {
             if (!skipMain)
-                TransitionCombo.ItemsSource = Enum.GetValues<TransitionCategory>().Select(x =>
-                {
-                    return new AppDropdownItem()
+                TransitionCombo.ItemsSource = Enum.GetValues<TransitionCategory>()
+                    .Select(x =>
                     {
-                        Content = Funcs.ChooseLang(x switch
+                        return new AppDropdownItem()
                         {
-                            TransitionCategory.None => "NoTransitionStr",
-                            TransitionCategory.Fade => "FadeTransitionStr",
-                            TransitionCategory.Push => "PushTransitionStr",
-                            TransitionCategory.Wipe => "WipeTransitionStr",
-                            TransitionCategory.Uncover => "UncoverTransitionStr",
-                            TransitionCategory.Cover => "CoverTransitionStr",
-                            _ => ""
-                        })
-                    };
-                });
+                            Content = Funcs.ChooseLang(
+                                x switch
+                                {
+                                    TransitionCategory.None => "NoTransitionStr",
+                                    TransitionCategory.Fade => "FadeTransitionStr",
+                                    TransitionCategory.Push => "PushTransitionStr",
+                                    TransitionCategory.Wipe => "WipeTransitionStr",
+                                    TransitionCategory.Uncover => "UncoverTransitionStr",
+                                    TransitionCategory.Cover => "CoverTransitionStr",
+                                    _ => "",
+                                }
+                            ),
+                        };
+                    });
 
             if (CurrentSlide >= 0)
             {
@@ -3773,25 +4490,28 @@ namespace Present_Express
                         TransitionOptionsCombo.ItemsSource = new AppDropdownItem[]
                         {
                             new() { Content = Funcs.ChooseLang("FadeSmoothlyStr") },
-                            new() { Content = Funcs.ChooseLang("FadeThroughBlackStr") }
+                            new() { Content = Funcs.ChooseLang("FadeThroughBlackStr") },
                         };
                     }
                     else
                     {
-                        TransitionOptionsCombo.ItemsSource = Enum.GetValues<TransitionDirection>().Select(x =>
-                        {
-                            return new AppDropdownItem()
+                        TransitionOptionsCombo.ItemsSource = Enum.GetValues<TransitionDirection>()
+                            .Select(x =>
                             {
-                                Content = Funcs.ChooseLang(x switch
+                                return new AppDropdownItem()
                                 {
-                                    TransitionDirection.Left => "TransitionLeftStr",
-                                    TransitionDirection.Right => "TransitionRightStr",
-                                    TransitionDirection.Top => "TransitionTopStr",
-                                    TransitionDirection.Bottom => "TransitionBottomStr",
-                                    _ => ""
-                                })
-                            };
-                        });
+                                    Content = Funcs.ChooseLang(
+                                        x switch
+                                        {
+                                            TransitionDirection.Left => "TransitionLeftStr",
+                                            TransitionDirection.Right => "TransitionRightStr",
+                                            TransitionDirection.Top => "TransitionTopStr",
+                                            TransitionDirection.Bottom => "TransitionBottomStr",
+                                            _ => "",
+                                        }
+                                    ),
+                                };
+                            });
                     }
 
                     TransitionOptionsCombo.SelectedIndex = Funcs.GetTransitionInc(trans.Type);
@@ -3808,19 +4528,21 @@ namespace Present_Express
         {
             Transition[] oldTrans;
             if (applyToAll)
-                oldTrans = AllSlides.Select(x => x.Transition.Clone()).ToArray();
+                oldTrans = [.. AllSlides.Select(x => x.Transition.Clone())];
             else
                 oldTrans = [AllSlides[CurrentSlide].Transition.Clone()];
 
             changeFunc();
 
-            AddActionToUndoStack(new PropertyChange<Transition>()
-            {
-                Property = SlideshowProperty.Transition,
-                OldValues = oldTrans,
-                NewValues = [AllSlides[CurrentSlide].Transition.Clone()],
-                Position = applyToAll ? -1 : CurrentSlide
-            });
+            AddActionToUndoStack(
+                new PropertyChange<Transition>()
+                {
+                    Property = SlideshowProperty.Transition,
+                    OldValues = oldTrans,
+                    NewValues = [AllSlides[CurrentSlide].Transition.Clone()],
+                    Position = applyToAll ? -1 : CurrentSlide,
+                }
+            );
         }
 
         private void TransitionCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -3831,7 +4553,9 @@ namespace Present_Express
 
                 ChangeTransition(() =>
                 {
-                    AllSlides[CurrentSlide].Transition.Type = Funcs.GetTransitionType((TransitionCategory)TransitionCombo.SelectedIndex);
+                    AllSlides[CurrentSlide].Transition.Type = Funcs.GetTransitionType(
+                        (TransitionCategory)TransitionCombo.SelectedIndex
+                    );
                 });
 
                 LoadTransitionsPopup(true);
@@ -3839,7 +4563,10 @@ namespace Present_Express
             }
         }
 
-        private void TransitionOptionsCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void TransitionOptionsCombo_SelectionChanged(
+            object sender,
+            SelectionChangedEventArgs e
+        )
         {
             if (TransitionPopup.IsOpen == true && CurrentSlide >= 0 && !TransitionComboChange)
             {
@@ -3847,21 +4574,27 @@ namespace Present_Express
 
                 ChangeTransition(() =>
                 {
-                    AllSlides[CurrentSlide].Transition.Type =
-                        Funcs.GetTransitionType((TransitionCategory)TransitionCombo.SelectedIndex, TransitionOptionsCombo.SelectedIndex);
+                    AllSlides[CurrentSlide].Transition.Type = Funcs.GetTransitionType(
+                        (TransitionCategory)TransitionCombo.SelectedIndex,
+                        TransitionOptionsCombo.SelectedIndex
+                    );
                 });
-                
+
                 TransitionComboChange = false;
             }
         }
 
-        private void TransitionDurationUpDown_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        private void TransitionDurationUpDown_ValueChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<object> e
+        )
         {
             if (TransitionPopup.IsOpen == true && CurrentSlide >= 0 && !TransitionComboChange)
             {
                 ChangeTransition(() =>
                 {
-                    AllSlides[CurrentSlide].Transition.Duration = TransitionDurationUpDown.Value ?? DefaultTransition.Duration;
+                    AllSlides[CurrentSlide].Transition.Duration =
+                        TransitionDurationUpDown.Value ?? DefaultTransition.Duration;
                 });
             }
         }
@@ -3869,20 +4602,27 @@ namespace Present_Express
         private void TransitionApplyAllBtn_Click(object sender, RoutedEventArgs e)
         {
             DefaultTransition.Duration = TransitionDurationUpDown.Value ?? 1;
-            DefaultTransition.Type =
-                Funcs.GetTransitionType((TransitionCategory)TransitionCombo.SelectedIndex, TransitionOptionsCombo.SelectedIndex);
+            DefaultTransition.Type = Funcs.GetTransitionType(
+                (TransitionCategory)TransitionCombo.SelectedIndex,
+                TransitionOptionsCombo.SelectedIndex
+            );
 
             if (!IsSlideshowEmpty())
             {
-                ChangeTransition(() =>
-                {
-                    foreach (Slide item in AllSlides)
+                ChangeTransition(
+                    () =>
                     {
-                        item.Transition.Duration = TransitionDurationUpDown.Value ?? 1;
-                        item.Transition.Type =
-                            Funcs.GetTransitionType((TransitionCategory)TransitionCombo.SelectedIndex, TransitionOptionsCombo.SelectedIndex);
-                    }
-                }, true);
+                        foreach (Slide item in AllSlides)
+                        {
+                            item.Transition.Duration = TransitionDurationUpDown.Value ?? 1;
+                            item.Transition.Type = Funcs.GetTransitionType(
+                                (TransitionCategory)TransitionCombo.SelectedIndex,
+                                TransitionOptionsCombo.SelectedIndex
+                            );
+                        }
+                    },
+                    true
+                );
                 CreateTempLabel(Funcs.ChooseLang("TransitionsUpdatedStr"));
             }
         }
@@ -3901,7 +4641,11 @@ namespace Present_Express
         /// <param name="width">The new width of the slide.</param>
         /// <param name="height">The new height of the slide.</param>
         /// <param name="updateUndoStack">Whether or not to update the <see cref="UndoStack"/>.</param>
-        private void ChangeSlideSize(double width, double height = 90.0, bool updateUndoStack = true)
+        private void ChangeSlideSize(
+            double width,
+            double height = 90.0,
+            bool updateUndoStack = true
+        )
         {
             double oldValue = (double)Resources["ImageWidth"];
             Resources["ImageWidth"] = width;
@@ -3909,12 +4653,14 @@ namespace Present_Express
 
             if (updateUndoStack)
             {
-                AddActionToUndoStack(new SlideshowChange<double>()
-                {
-                    Property = SlideshowProperty.SlideSize,
-                    OldValue = oldValue,
-                    NewValue = (double)Resources["ImageWidth"]
-                });
+                AddActionToUndoStack(
+                    new SlideshowChange<double>()
+                    {
+                        Property = SlideshowProperty.SlideSize,
+                        OldValue = oldValue,
+                        NewValue = (double)Resources["ImageWidth"],
+                    }
+                );
             }
 
             if (!IsSlideshowEmpty())
@@ -3945,18 +4691,23 @@ namespace Present_Express
             Stretch oldValue = (Stretch)Resources["FitStretch"];
             Resources["FitStretch"] = FitBtn.IsChecked == true ? Stretch.Uniform : Stretch.Fill;
 
-            AddActionToUndoStack(new SlideshowChange<Stretch>()
-            {
-                Property = SlideshowProperty.FitToSlide,
-                OldValue = oldValue,
-                NewValue = (Stretch)Resources["FitStretch"]
-            });
+            AddActionToUndoStack(
+                new SlideshowChange<Stretch>()
+                {
+                    Property = SlideshowProperty.FitToSlide,
+                    OldValue = oldValue,
+                    NewValue = (Stretch)Resources["FitStretch"],
+                }
+            );
         }
 
         #endregion
         #region Design > Timings
 
-        private void TimingUpDown_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        private void TimingUpDown_ValueChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<object> e
+        )
         {
             if (IsLoaded && CurrentSlide >= 0)
             {
@@ -3964,31 +4715,35 @@ namespace Present_Express
                 AllSlides[CurrentSlide].Timing = TimingUpDown.Value ?? DefaultTiming;
 
                 if (IsUpdateUndoStack)
-                    AddActionToUndoStack(new PropertyChange<double>()
-                    {
-                        Property = SlideshowProperty.Timing,
-                        OldValues = [oldValue],
-                        NewValues = [AllSlides[CurrentSlide].Timing],
-                        Position = CurrentSlide
-                    });
+                    AddActionToUndoStack(
+                        new PropertyChange<double>()
+                        {
+                            Property = SlideshowProperty.Timing,
+                            OldValues = [oldValue],
+                            NewValues = [AllSlides[CurrentSlide].Timing],
+                            Position = CurrentSlide,
+                        }
+                    );
             }
         }
 
         private void ApplyAllBtn_Click(object sender, RoutedEventArgs e)
         {
-            double[] oldValues = AllSlides.Select(x => x.Timing).ToArray();
+            double[] oldValues = [.. AllSlides.Select(x => x.Timing)];
             DefaultTiming = TimingUpDown.Value ?? DefaultTiming;
 
             foreach (Slide item in AllSlides)
                 item.Timing = DefaultTiming;
 
-            AddActionToUndoStack(new PropertyChange<double>()
-            {
-                Property = SlideshowProperty.Timing,
-                OldValues = oldValues,
-                NewValues = [DefaultTiming],
-                Position = -1
-            });
+            AddActionToUndoStack(
+                new PropertyChange<double>()
+                {
+                    Property = SlideshowProperty.Timing,
+                    OldValues = oldValues,
+                    NewValues = [DefaultTiming],
+                    Position = -1,
+                }
+            );
 
             CreateTempLabel(Funcs.ChooseLang("TimingsUpdatedStr"));
         }
@@ -3999,18 +4754,27 @@ namespace Present_Express
         private void RunSlideshow(int from = 0)
         {
             if (IsSlideshowEmpty())
-                Funcs.ShowMessageRes("NoSlidesDescStr", "NoSlidesStr", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                Funcs.ShowMessageRes(
+                    "NoSlidesDescStr",
+                    "NoSlidesStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Exclamation
+                );
             else
             {
-                Slideshow sld = new(AllSlides, new SlideshowInfo()
-                {
-                    BackColour = (SolidColorBrush)Resources["SlideBackColour"],
-                    Width = (double)Resources["ImageWidth"],
-                    FitToSlide = FitBtn.IsChecked == true,
-                    Loop = LoopBtn.IsChecked == true,
-                    UseTimings = UseTimingsBtn.IsChecked == true
-
-                }, CurrentMonitor, from);
+                Slideshow sld = new(
+                    AllSlides,
+                    new SlideshowInfo()
+                    {
+                        BackColour = (SolidColorBrush)Resources["SlideBackColour"],
+                        Width = (double)Resources["ImageWidth"],
+                        FitToSlide = FitBtn.IsChecked == true,
+                        Loop = LoopBtn.IsChecked == true,
+                        UseTimings = UseTimingsBtn.IsChecked == true,
+                    },
+                    CurrentMonitor,
+                    from
+                );
 
                 SlideshowGrid.Visibility = Visibility.Visible;
                 MenuBtn.Visibility = Visibility.Collapsed;
@@ -4061,22 +4825,26 @@ namespace Present_Express
 
         private void LoopBtn_Click(object sender, RoutedEventArgs e)
         {
-            AddActionToUndoStack(new SlideshowChange<bool>()
-            {
-                Property = SlideshowProperty.Loop,
-                OldValue = LoopBtn.IsChecked != true,
-                NewValue = LoopBtn.IsChecked == true
-            });
+            AddActionToUndoStack(
+                new SlideshowChange<bool>()
+                {
+                    Property = SlideshowProperty.Loop,
+                    OldValue = LoopBtn.IsChecked != true,
+                    NewValue = LoopBtn.IsChecked == true,
+                }
+            );
         }
 
         private void UseTimingsBtn_Click(object sender, RoutedEventArgs e)
         {
-            AddActionToUndoStack(new SlideshowChange<bool>()
-            {
-                Property = SlideshowProperty.UseTimings,
-                OldValue = UseTimingsBtn.IsChecked != true,
-                NewValue = UseTimingsBtn.IsChecked == true
-            });
+            AddActionToUndoStack(
+                new SlideshowChange<bool>()
+                {
+                    Property = SlideshowProperty.UseTimings,
+                    OldValue = UseTimingsBtn.IsChecked != true,
+                    NewValue = UseTimingsBtn.IsChecked == true,
+                }
+            );
         }
 
         #endregion
@@ -4084,27 +4852,35 @@ namespace Present_Express
 
         private void MonitorBtn_Click(object sender, RoutedEventArgs e)
         {
-            var s = WindowsDisplayAPI.DisplayConfig.PathDisplayTarget.GetDisplayTargets().Where(x => x.IsAvailable);
-            
+            var s = WindowsDisplayAPI
+                .DisplayConfig.PathDisplayTarget.GetDisplayTargets()
+                .Where(x => x.IsAvailable);
+
             if (CurrentMonitor >= s.Count())
                 CurrentMonitor = 0;
 
-            MonitorPnl.ItemsSource = s.Select((x, idx) =>
-            {
-                string displayName = "";
-                try
+            MonitorPnl.ItemsSource = s.Select(
+                (x, idx) =>
                 {
-                    displayName = x.FriendlyName != "" ? ": " + x.FriendlyName : "";
-                }
-                catch { }
+                    string displayName = "";
+                    try
+                    {
+                        displayName = x.FriendlyName != "" ? ": " + x.FriendlyName : "";
+                    }
+                    catch { }
 
-                return new SelectableItem()
-                {
-                    ID = idx,
-                    Name = Funcs.ChooseLang("DisplayStr") + " " + (idx + 1).ToString() + displayName,
-                    Selected = idx == CurrentMonitor
-                };
-            });
+                    return new SelectableItem()
+                    {
+                        ID = idx,
+                        Name =
+                            Funcs.ChooseLang("DisplayStr")
+                            + " "
+                            + (idx + 1).ToString()
+                            + displayName,
+                        Selected = idx == CurrentMonitor,
+                    };
+                }
+            );
 
             MonitorPopup.IsOpen = true;
         }
@@ -4130,16 +4906,22 @@ namespace Present_Express
         {
             try
             {
-                ReleaseItem[] resp = await Funcs.GetJsonAsync<ReleaseItem[]>("https://api.johnjds.co.uk/express/v2/present/updates");
+                ReleaseItem[] resp = await Funcs.GetJsonAsync<ReleaseItem[]>(
+                    $"{Funcs.APIEndpoint}/express/v2/present/updates"
+                );
 
                 if (resp.Length == 0)
                     throw new NullReferenceException();
 
                 IEnumerable<ReleaseItem> updates = resp.Where(x =>
-                {
-                    return new Version(x.Version) > (Assembly.GetExecutingAssembly().GetName().Version ?? new Version(1, 0, 0));
-
-                }).OrderByDescending(x => new Version(x.Version));
+                    {
+                        return new Version(x.Version)
+                            > (
+                                Assembly.GetExecutingAssembly().GetName().Version
+                                ?? new Version(1, 0, 0)
+                            );
+                    })
+                    .OrderByDescending(x => new Version(x.Version));
 
                 if (!updates.Any())
                 {
@@ -4170,8 +4952,13 @@ namespace Present_Express
                 if (NotificationsPopup.IsOpen)
                 {
                     NotificationsPopup.IsOpen = false;
-                    Funcs.ShowMessageRes("NotificationErrorStr", "NoInternetStr",
-                        MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                    Funcs.ShowMessageRes(
+                        "NotificationErrorStr",
+                        "NoInternetStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(ex, PageID, "NotificationErrorStr")
+                    );
                 }
             }
         }
@@ -4179,11 +4966,15 @@ namespace Present_Express
         private void UpdateBtn_Click(object sender, RoutedEventArgs e)
         {
             NotificationsPopup.IsOpen = false;
-            _ = Process.Start(new ProcessStartInfo()
-            {
-                FileName = Funcs.GetAppUpdateLink(ExpressApp.Present),
-                UseShellExecute = true
-            });
+            Funcs.LogConversion(PageID, LoggingProperties.Conversion.UpdatePageVisit);
+
+            _ = Process.Start(
+                new ProcessStartInfo()
+                {
+                    FileName = Funcs.GetAppUpdateLink(ExpressApp.Present),
+                    UseShellExecute = true,
+                }
+            );
         }
 
         private async void UpdateInfoBtn_Click(object sender, RoutedEventArgs e)
@@ -4235,7 +5026,7 @@ namespace Present_Express
             { "HelpNavigatingUIStr", "PaneIcon" },
             { "HelpShortcutsStr", "CtrlIcon" },
             { "HelpNewComingSoonStr", "PresentExpressIcon" },
-            { "HelpTroubleshootingStr", "FeedbackIcon" }
+            { "HelpTroubleshootingStr", "FeedbackIcon" },
         };
 
         private void HelpBtn_Click(object sender, RoutedEventArgs e)
@@ -4253,7 +5044,7 @@ namespace Present_Express
         private void HelpLinkBtn_Click(object sender, RoutedEventArgs e)
         {
             HelpPopup.IsOpen = false;
-            Funcs.GetHelp(ExpressApp.Present);
+            Funcs.GetHelp(ExpressApp.Present, PageID);
         }
 
         private void HelpSearchTxt_TextChanged(object sender, TextChangedEventArgs e)
@@ -4270,7 +5061,7 @@ namespace Present_Express
         private void HelpTopicBtns_Click(object sender, RoutedEventArgs e)
         {
             HelpPopup.IsOpen = false;
-            Funcs.GetHelp(ExpressApp.Present, (int)((Button)sender).Tag);
+            Funcs.GetHelp(ExpressApp.Present, PageID, (int)((Button)sender).Tag);
         }
 
         #endregion
@@ -4283,7 +5074,12 @@ namespace Present_Express
             return Math.Max(Math.Min(1470, (double)value - 130), 0);
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return (double)value + 130;
         }
@@ -4296,7 +5092,12 @@ namespace Present_Express
             return (bool)value ? new Thickness(-1, 9, 0, 9) : new Thickness(0, 10, 0, 10);
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return ((Thickness)value).Top == 9;
         }
@@ -4306,12 +5107,20 @@ namespace Present_Express
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return (bool)value ? Application.Current.Resources["AppColor"] : Application.Current.Resources["Gray1"];
+            return (bool)value
+                ? Application.Current.Resources["AppColor"]
+                : Application.Current.Resources["Gray1"];
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
-            return ((SolidColorBrush)value).Color == ((SolidColorBrush)Application.Current.Resources["AppColor"]).Color;
+            return ((SolidColorBrush)value).Color
+                == ((SolidColorBrush)Application.Current.Resources["AppColor"]).Color;
         }
     }
 
@@ -4322,7 +5131,12 @@ namespace Present_Express
             return (bool)value ? 2 : 1;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return (double)value == 2;
         }

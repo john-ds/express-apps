@@ -1,17 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace ExpressControls
 {
@@ -19,14 +8,14 @@ namespace ExpressControls
     /// Follow steps 1a or 1b and then 2 to use this custom control in a XAML file.
     ///
     /// Step 1a) Using this custom control in a XAML file that exists in the current project.
-    /// Add this XmlNamespace attribute to the root element of the markup file where it is 
+    /// Add this XmlNamespace attribute to the root element of the markup file where it is
     /// to be used:
     ///
     ///     xmlns:MyNamespace="clr-namespace:ExpressControls"
     ///
     ///
     /// Step 1b) Using this custom control in a XAML file that exists in a different project.
-    /// Add this XmlNamespace attribute to the root element of the markup file where it is 
+    /// Add this XmlNamespace attribute to the root element of the markup file where it is
     /// to be used:
     ///
     ///     xmlns:MyNamespace="clr-namespace:ExpressControls;assembly=ExpressControls"
@@ -48,49 +37,50 @@ namespace ExpressControls
     {
         static AppRadioButton()
         {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(AppRadioButton), new FrameworkPropertyMetadata(typeof(AppRadioButton)));
+            DefaultStyleKeyProperty.OverrideMetadata(
+                typeof(AppRadioButton),
+                new FrameworkPropertyMetadata(typeof(AppRadioButton))
+            );
         }
 
-        public static readonly DependencyProperty CornerRadiusProperty = DependencyProperty.Register(nameof(CornerRadius), typeof(CornerRadius), typeof(AppRadioButton), new PropertyMetadata(null));
+        public static readonly DependencyProperty CornerRadiusProperty =
+            DependencyProperty.Register(
+                nameof(CornerRadius),
+                typeof(CornerRadius),
+                typeof(AppRadioButton),
+                new PropertyMetadata(null)
+            );
 
         public CornerRadius CornerRadius
         {
-            get
-            {
-                return (CornerRadius)GetValue(CornerRadiusProperty);
-            }
-            set
-            {
-                SetValue(CornerRadiusProperty, value);
-            }
+            get { return (CornerRadius)GetValue(CornerRadiusProperty); }
+            set { SetValue(CornerRadiusProperty, value); }
         }
 
-        public static readonly DependencyProperty GapMarginProperty = DependencyProperty.Register(nameof(GapMargin), typeof(Thickness), typeof(AppRadioButton), new PropertyMetadata(null));
+        public static readonly DependencyProperty GapMarginProperty = DependencyProperty.Register(
+            nameof(GapMargin),
+            typeof(Thickness),
+            typeof(AppRadioButton),
+            new PropertyMetadata(null)
+        );
 
         public Thickness GapMargin
         {
-            get
-            {
-                return (Thickness)GetValue(GapMarginProperty);
-            }
-            set
-            {
-                SetValue(GapMarginProperty, value);
-            }
+            get { return (Thickness)GetValue(GapMarginProperty); }
+            set { SetValue(GapMarginProperty, value); }
         }
 
-        public static readonly DependencyProperty IconSizeProperty = DependencyProperty.Register(nameof(IconSize), typeof(double), typeof(AppRadioButton), new PropertyMetadata(null));
+        public static readonly DependencyProperty IconSizeProperty = DependencyProperty.Register(
+            nameof(IconSize),
+            typeof(double),
+            typeof(AppRadioButton),
+            new PropertyMetadata(null)
+        );
 
         public double IconSize
         {
-            get
-            {
-                return Convert.ToDouble(GetValue(IconSizeProperty));
-            }
-            set
-            {
-                SetValue(IconSizeProperty, value);
-            }
+            get { return Convert.ToDouble(GetValue(IconSizeProperty)); }
+            set { SetValue(IconSizeProperty, value); }
         }
     }
 }

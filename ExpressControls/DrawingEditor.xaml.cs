@@ -2,30 +2,24 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Ink;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace ExpressControls
 {
     /// <summary>
     /// Interaction logic for DrawingEditor.xaml
     /// </summary>
-    public partial class DrawingEditor : Window
+    public partial class DrawingEditor : ExpressWindow
     {
         private readonly DrawingAttributes PenAttributes = new()
         {
             Color = Colors.Red,
             Height = 2,
-            Width = 2
+            Width = 2,
         };
 
         private readonly DrawingAttributes HighlighterAttributes = new()
@@ -35,12 +29,16 @@ namespace ExpressControls
             Width = 2,
             IgnorePressure = true,
             IsHighlighter = true,
-            StylusTip = StylusTip.Rectangle
+            StylusTip = StylusTip.Rectangle,
         };
 
         public StrokeCollection? Strokes { get; set; } = null;
-    
-        public DrawingEditor(ExpressApp app, Color? background = null, StrokeCollection? strokes = null)
+
+        public DrawingEditor(
+            ExpressApp app,
+            Color? background = null,
+            StrokeCollection? strokes = null
+        )
         {
             InitializeComponent();
 
@@ -49,6 +47,7 @@ namespace ExpressControls
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             if (app == ExpressApp.Type)
             {
@@ -108,13 +107,15 @@ namespace ExpressControls
             {
                 Name = Funcs.ChooseLang(c.Key),
                 Colour = new SolidColorBrush(c.Value),
-                Selected = c.Value == HighlighterAttributes.Color
+                Selected = c.Value == HighlighterAttributes.Color,
             });
         }
 
         private void AddBtn_Click(object sender, RoutedEventArgs e)
         {
             Strokes = Canvas.Strokes;
+            Funcs.LogConversion(PageID, LoggingProperties.Conversion.CreateDrawing);
+
             DialogResult = true;
             Close();
         }
@@ -135,13 +136,19 @@ namespace ExpressControls
             Canvas.DefaultDrawingAttributes = PenAttributes;
         }
 
-        private void PenColourPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
+        private void PenColourPicker_SelectedColorChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<Color?> e
+        )
         {
             if (IsLoaded && PenColourPicker.SelectedColor != null)
                 PenAttributes.Color = (Color)PenColourPicker.SelectedColor;
         }
 
-        private void ThicknessSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void ThicknessSlider_ValueChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<double> e
+        )
         {
             if (IsLoaded)
             {
@@ -178,9 +185,15 @@ namespace ExpressControls
 
         private void EraseRadioBtns_Click(object sender, RoutedEventArgs e)
         {
-            if (Canvas.EditingMode == InkCanvasEditingMode.EraseByPoint && FullEraseRadio.IsChecked == true)
+            if (
+                Canvas.EditingMode == InkCanvasEditingMode.EraseByPoint
+                && FullEraseRadio.IsChecked == true
+            )
                 SetEditingMode(InkCanvasEditingMode.EraseByStroke);
-            else if (Canvas.EditingMode == InkCanvasEditingMode.EraseByStroke && PartialEraseRadio.IsChecked == true)
+            else if (
+                Canvas.EditingMode == InkCanvasEditingMode.EraseByStroke
+                && PartialEraseRadio.IsChecked == true
+            )
                 SetEditingMode(InkCanvasEditingMode.EraseByPoint);
         }
 
@@ -194,7 +207,12 @@ namespace ExpressControls
             return (bool)value ? 3 : 1;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return (double)value == 3;
         }
@@ -204,10 +222,17 @@ namespace ExpressControls
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return (bool)value ? Application.Current.Resources["AppColor"] : new SolidColorBrush(Funcs.HexColor("#FFABADB3"));
+            return (bool)value
+                ? Application.Current.Resources["AppColor"]
+                : new SolidColorBrush(Funcs.HexColor("#FFABADB3"));
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return ((SolidColorBrush)value).Color != Funcs.HexColor("#FFABADB3");
         }

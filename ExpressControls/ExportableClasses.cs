@@ -1,17 +1,15 @@
-﻿using LiveChartsCore.Measure;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Ink;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Xml.Serialization;
+using LiveChartsCore.Measure;
+using Newtonsoft.Json;
 using WinDrawing = System.Drawing;
 
 namespace ExpressControls
@@ -117,10 +115,7 @@ namespace ExpressControls
                 else
                     return ShapeType.Unknown;
             }
-            set
-            {
-                TypeID = (int)value;
-            }
+            set { TypeID = (int)value; }
         }
 
         [JsonIgnore]
@@ -129,10 +124,7 @@ namespace ExpressControls
         [JsonProperty("width")]
         public int Width
         {
-            get
-            {
-                return _width;
-            }
+            get { return _width; }
             set
             {
                 if (value < 0)
@@ -150,10 +142,7 @@ namespace ExpressControls
         [JsonProperty("height")]
         public int Height
         {
-            get
-            {
-                return _height;
-            }
+            get { return _height; }
             set
             {
                 if (value < 0)
@@ -171,14 +160,8 @@ namespace ExpressControls
         [JsonIgnore]
         public Color FillColour
         {
-            get
-            {
-                return Funcs.HexColor(FillString);
-            }
-            set
-            {
-                FillString = Funcs.ColorHex(value);
-            }
+            get { return Funcs.HexColor(FillString); }
+            set { FillString = Funcs.ColorHex(value); }
         }
 
         [JsonProperty("outline")]
@@ -187,14 +170,8 @@ namespace ExpressControls
         [JsonIgnore]
         public Color OutlineColour
         {
-            get
-            {
-                return Funcs.HexColor(OutlineString);
-            }
-            set
-            {
-                OutlineString = Funcs.ColorHex(value);
-            }
+            get { return Funcs.HexColor(OutlineString); }
+            set { OutlineString = Funcs.ColorHex(value); }
         }
 
         [JsonIgnore]
@@ -203,10 +180,7 @@ namespace ExpressControls
         [JsonProperty("thickness")]
         public int Thickness
         {
-            get
-            {
-                return _thickness;
-            }
+            get { return _thickness; }
             set
             {
                 if (value < 0)
@@ -231,10 +205,7 @@ namespace ExpressControls
                 else
                     return DashType.None;
             }
-            set
-            {
-                DashesID = (int)value;
-            }
+            set { DashesID = (int)value; }
         }
 
         [JsonProperty("join")]
@@ -250,10 +221,7 @@ namespace ExpressControls
                 else
                     return JoinType.Normal;
             }
-            set
-            {
-                LineJoinID = (int)value;
-            }
+            set { LineJoinID = (int)value; }
         }
 
         [JsonProperty("points")]
@@ -272,7 +240,8 @@ namespace ExpressControls
                     PointCollection pts = [];
                     foreach (string item in PointsData.Split(" "))
                     {
-                        double x = 0, y = 0;
+                        double x = 0,
+                            y = 0;
                         if (!Funcs.ConvertDouble(item.Split(",")[0], ref x))
                             throw new Exception();
 
@@ -297,7 +266,11 @@ namespace ExpressControls
                 {
                     List<string> result = [];
                     foreach (Point item in value)
-                        result.Add(item.X.ToString(CultureInfo.InvariantCulture) + "," + item.Y.ToString(CultureInfo.InvariantCulture));
+                        result.Add(
+                            item.X.ToString(CultureInfo.InvariantCulture)
+                                + ","
+                                + item.Y.ToString(CultureInfo.InvariantCulture)
+                        );
 
                     PointsData = string.Join(" ", result);
 
@@ -316,7 +289,7 @@ namespace ExpressControls
             {
                 Type = Type,
                 Labels = [.. Labels],
-                Series = Series.Select(x => x.Clone()).ToList(),
+                Series = [.. Series.Select(x => x.Clone())],
                 ChartTitle = ChartTitle,
                 AxisXTitle = AxisXTitle,
                 AxisYTitle = AxisYTitle,
@@ -329,7 +302,7 @@ namespace ExpressControls
                 FontColor = FontColor,
                 ColourTheme = ColourTheme,
                 Width = Width,
-                Height = Height
+                Height = Height,
             };
         }
 
@@ -352,10 +325,7 @@ namespace ExpressControls
                 else
                     return ChartType.Unknown;
             }
-            set
-            {
-                TypeID = (int)value;
-            }
+            set { TypeID = (int)value; }
         }
 
         [JsonProperty("labels")]
@@ -395,10 +365,7 @@ namespace ExpressControls
                 else
                     return AxisFormat.Default;
             }
-            set
-            {
-                AxisFormatTypeID = (int)value;
-            }
+            set { AxisFormatTypeID = (int)value; }
         }
 
         [JsonProperty("vgridlines")]
@@ -424,10 +391,7 @@ namespace ExpressControls
                 else
                     return LegendPosition.Hidden;
             }
-            set
-            {
-                LegendPlacementID = (int)value;
-            }
+            set { LegendPlacementID = (int)value; }
         }
 
         [JsonProperty("fontname")]
@@ -442,10 +406,7 @@ namespace ExpressControls
         [XmlIgnore]
         public int FontSize
         {
-            get
-            {
-                return _fontsize;
-            }
+            get { return _fontsize; }
             set
             {
                 if (value < 8)
@@ -465,14 +426,8 @@ namespace ExpressControls
         [XmlIgnore]
         public Color FontColor
         {
-            get
-            {
-                return Funcs.HexColor(FontColorString);
-            }
-            set
-            {
-                FontColorString = Funcs.ColorHex(value);
-            }
+            get { return Funcs.HexColor(FontColorString); }
+            set { FontColorString = Funcs.ColorHex(value); }
         }
 
         [JsonProperty("theme")]
@@ -485,15 +440,15 @@ namespace ExpressControls
         {
             get
             {
-                if (Enum.IsDefined(typeof(ColourScheme), ColourThemeID) && ColourThemeID != (int)ColourScheme.Custom)
+                if (
+                    Enum.IsDefined(typeof(ColourScheme), ColourThemeID)
+                    && ColourThemeID != (int)ColourScheme.Custom
+                )
                     return (ColourScheme)ColourThemeID;
                 else
                     return ColourScheme.Basic;
             }
-            set
-            {
-                ColourThemeID = (int)value;
-            }
+            set { ColourThemeID = (int)value; }
         }
 
         [JsonIgnore]
@@ -504,10 +459,7 @@ namespace ExpressControls
         [XmlIgnore]
         public int Width
         {
-            get
-            {
-                return _width;
-            }
+            get { return _width; }
             set
             {
                 if (value < 150)
@@ -527,10 +479,7 @@ namespace ExpressControls
         [XmlIgnore]
         public int Height
         {
-            get
-            {
-                return _height;
-            }
+            get { return _height; }
             set
             {
                 if (value < 150)
@@ -558,7 +507,7 @@ namespace ExpressControls
                 SmoothLines = SmoothLines,
                 ScatterFilled = ScatterFilled,
                 PolarFilled = PolarFilled,
-                DoughnutChart = DoughnutChart
+                DoughnutChart = DoughnutChart,
             };
         }
 
@@ -577,10 +526,7 @@ namespace ExpressControls
                 else
                     return SeriesType.Default;
             }
-            set
-            {
-                TypeID = (int)value;
-            }
+            set { TypeID = (int)value; }
         }
 
         [JsonProperty("name")]
@@ -606,16 +552,18 @@ namespace ExpressControls
         {
             get
             {
-                if (Enum.IsDefined(typeof(DataLabelsPosition), DataLabelsPlacementID) &&
-                    (DataLabelsPlacementID != (int)DataLabelsPosition.Start || DataLabelsPlacementID != (int)DataLabelsPosition.End))
+                if (
+                    Enum.IsDefined(typeof(DataLabelsPosition), DataLabelsPlacementID)
+                    && (
+                        DataLabelsPlacementID != (int)DataLabelsPosition.Start
+                        || DataLabelsPlacementID != (int)DataLabelsPosition.End
+                    )
+                )
                     return (DataLabelsPosition)DataLabelsPlacementID;
                 else
                     return DataLabelsPosition.Top;
             }
-            set
-            {
-                DataLabelsPlacementID = (int)value;
-            }
+            set { DataLabelsPlacementID = (int)value; }
         }
 
         [JsonIgnore]
@@ -626,10 +574,7 @@ namespace ExpressControls
         [XmlElement("thickness")]
         public int StrokeThickness
         {
-            get
-            {
-                return _thickness;
-            }
+            get { return _thickness; }
             set
             {
                 if (value < 1)
@@ -681,14 +626,8 @@ namespace ExpressControls
         [JsonIgnore]
         public FontWeight FontWeight
         {
-            get
-            {
-                return IsBold ? FontWeights.Bold : FontWeights.Normal;
-            }
-            set
-            {
-                IsBold = value == FontWeights.Bold;
-            }
+            get { return IsBold ? FontWeights.Bold : FontWeights.Normal; }
+            set { IsBold = value == FontWeights.Bold; }
         }
 
         [JsonProperty("italic")]
@@ -697,14 +636,8 @@ namespace ExpressControls
         [JsonIgnore]
         public FontStyle FontStyle
         {
-            get
-            {
-                return IsItalic ? FontStyles.Italic : FontStyles.Normal;
-            }
-            set
-            {
-                IsItalic = value == FontStyles.Italic;
-            }
+            get { return IsItalic ? FontStyles.Italic : FontStyles.Normal; }
+            set { IsItalic = value == FontStyles.Italic; }
         }
 
         [JsonProperty("underline")]
@@ -730,7 +663,9 @@ namespace ExpressControls
             set
             {
                 IsUnderlined = value.Any((td) => td.Location == TextDecorationLocation.Underline);
-                IsStrikethrough = value.Any((td) => td.Location == TextDecorationLocation.Strikethrough);
+                IsStrikethrough = value.Any(
+                    (td) => td.Location == TextDecorationLocation.Strikethrough
+                );
             }
         }
 
@@ -740,14 +675,8 @@ namespace ExpressControls
         [JsonIgnore]
         public SolidColorBrush FontColour
         {
-            get
-            {
-                return new SolidColorBrush(Funcs.HexColor(FontColourString));
-            }
-            set
-            {
-                FontColourString = Funcs.ColorHex(value.Color);
-            }
+            get { return new SolidColorBrush(Funcs.HexColor(FontColourString)); }
+            set { FontColourString = Funcs.ColorHex(value.Color); }
         }
 
         [JsonIgnore]
@@ -777,10 +706,7 @@ namespace ExpressControls
         [XmlElement("width")]
         public double Width
         {
-            get
-            {
-                return _width;
-            }
+            get { return _width; }
             set
             {
                 if (value == 120)
@@ -806,33 +732,39 @@ namespace ExpressControls
         [XmlIgnore]
         public SolidColorBrush BackColour
         {
-            get
-            {
-                return new SolidColorBrush(Funcs.RGBColor(BackColourString));
-            }
-            set
-            {
-                BackColourString = Funcs.ColorRGB(value.Color);
-            }
+            get { return new SolidColorBrush(Funcs.RGBColor(BackColourString)); }
+            set { BackColourString = Funcs.ColorRGB(value.Color); }
         }
 
         [XmlElement("fit")]
         public string FitToSlideString { get; set; } = "true";
 
         [XmlIgnore]
-        public bool FitToSlide { get { return Funcs.CheckBoolean(FitToSlideString) ?? true; } set { FitToSlideString = value.ToString(); } }
+        public bool FitToSlide
+        {
+            get { return Funcs.CheckBoolean(FitToSlideString) ?? true; }
+            set { FitToSlideString = value.ToString(); }
+        }
 
         [XmlElement("loop")]
         public string LoopString { get; set; } = "true";
 
         [XmlIgnore]
-        public bool Loop { get { return Funcs.CheckBoolean(LoopString) ?? true; } set { LoopString = value.ToString(); } }
+        public bool Loop
+        {
+            get { return Funcs.CheckBoolean(LoopString) ?? true; }
+            set { LoopString = value.ToString(); }
+        }
 
         [XmlElement("timings")]
         public string UseTimingsString { get; set; } = "true";
 
         [XmlIgnore]
-        public bool UseTimings { get { return Funcs.CheckBoolean(UseTimingsString) ?? true; } set { UseTimingsString = value.ToString(); } }
+        public bool UseTimings
+        {
+            get { return Funcs.CheckBoolean(UseTimingsString) ?? true; }
+            set { UseTimingsString = value.ToString(); }
+        }
     }
 
     public abstract class Slide
@@ -853,10 +785,7 @@ namespace ExpressControls
         [XmlElement("timing")]
         public double Timing
         {
-            get
-            {
-                return _timing;
-            }
+            get { return _timing; }
             set
             {
                 if (value < 0.5)
@@ -876,11 +805,7 @@ namespace ExpressControls
     {
         public Transition Clone()
         {
-            return new Transition()
-            {
-                Type = Type,
-                Duration = Duration
-            };
+            return new Transition() { Type = Type, Duration = Duration };
         }
 
         [XmlElement("type")]
@@ -896,10 +821,7 @@ namespace ExpressControls
                 else
                     return TransitionType.None;
             }
-            set
-            {
-                TypeID = (int)value;
-            }
+            set { TypeID = (int)value; }
         }
 
         [XmlIgnore]
@@ -908,10 +830,7 @@ namespace ExpressControls
         [XmlElement("duration")]
         public double Duration
         {
-            get
-            {
-                return _duration;
-            }
+            get { return _duration; }
             set
             {
                 if (value < 0.1)
@@ -930,8 +849,10 @@ namespace ExpressControls
 
         public override ImageFormat GetImageFormat()
         {
-            if (Name.EndsWith(".jpg", StringComparison.InvariantCultureIgnoreCase) || 
-                Name.EndsWith(".jpeg", StringComparison.InvariantCultureIgnoreCase))
+            if (
+                Name.EndsWith(".jpg", StringComparison.InvariantCultureIgnoreCase)
+                || Name.EndsWith(".jpeg", StringComparison.InvariantCultureIgnoreCase)
+            )
             {
                 return ImageFormat.Jpeg;
             }
@@ -953,17 +874,20 @@ namespace ExpressControls
         {
             return new ImageSlide()
             {
-                Name = Funcs.GetNewSlideName("image", GetImageFormat().ToString() switch
-                {
-                    "Jpeg" => ".jpg",
-                    "Bmp" => ".bmp",
-                    "Gif" => ".gif",
-                    _ => ".png"
-                }),
+                Name = Funcs.GetNewSlideName(
+                    "image",
+                    GetImageFormat().ToString() switch
+                    {
+                        "Jpeg" => ".jpg",
+                        "Bmp" => ".bmp",
+                        "Gif" => ".gif",
+                        _ => ".png",
+                    }
+                ),
                 Timing = Timing,
                 Transition = Transition.Clone(),
                 Filters = Filters.Clone(),
-                Original = Original.Clone()
+                Original = Original.Clone(),
             };
         }
 
@@ -978,7 +902,12 @@ namespace ExpressControls
     {
         public bool HasNoFilters()
         {
-            return Filter == ImageFilter.None && Brightness == 0 && Contrast == 0 && Rotation == 0 && !FlipHorizontal && !FlipVertical;
+            return Filter == ImageFilter.None
+                && Brightness == 0
+                && Contrast == 0
+                && Rotation == 0
+                && !FlipHorizontal
+                && !FlipVertical;
         }
 
         public FilterItem Clone()
@@ -990,7 +919,7 @@ namespace ExpressControls
                 Contrast = Contrast,
                 Rotation = Rotation,
                 FlipHorizontal = FlipHorizontal,
-                FlipVertical = FlipVertical
+                FlipVertical = FlipVertical,
             };
         }
 
@@ -1007,10 +936,7 @@ namespace ExpressControls
                 else
                     return ImageFilter.None;
             }
-            set
-            {
-                FilterID = Enum.GetName(typeof(ImageFilter), value) ?? "None";
-            }
+            set { FilterID = Enum.GetName(typeof(ImageFilter), value) ?? "None"; }
         }
 
         [XmlIgnore]
@@ -1019,10 +945,7 @@ namespace ExpressControls
         [XmlElement("brightness")]
         public float Brightness
         {
-            get
-            {
-                return _brightness;
-            }
+            get { return _brightness; }
             set
             {
                 if (value < -0.5f)
@@ -1040,10 +963,7 @@ namespace ExpressControls
         [XmlElement("contrast")]
         public float Contrast
         {
-            get
-            {
-                return _contrast;
-            }
+            get { return _contrast; }
             set
             {
                 if (value < 0f)
@@ -1061,10 +981,7 @@ namespace ExpressControls
         [XmlElement("rotation")]
         public int Rotation
         {
-            get
-            {
-                return _rotation;
-            }
+            get { return _rotation; }
             set
             {
                 List<int> possibleValues = [0, 90, 180, 270];
@@ -1076,18 +993,27 @@ namespace ExpressControls
         public string FlipHorizontalString { get; set; } = "false";
 
         [XmlIgnore]
-        public bool FlipHorizontal { get { return Funcs.CheckBoolean(FlipHorizontalString) ?? true; } set { FlipHorizontalString = value.ToString(); } }
+        public bool FlipHorizontal
+        {
+            get { return Funcs.CheckBoolean(FlipHorizontalString) ?? true; }
+            set { FlipHorizontalString = value.ToString(); }
+        }
 
         [XmlElement("flipv")]
         public string FlipVerticalString { get; set; } = "false";
 
         [XmlIgnore]
-        public bool FlipVertical { get { return Funcs.CheckBoolean(FlipVerticalString) ?? true; } set { FlipVerticalString = value.ToString(); } }
+        public bool FlipVertical
+        {
+            get { return Funcs.CheckBoolean(FlipVerticalString) ?? true; }
+            set { FlipVerticalString = value.ToString(); }
+        }
     }
 
     public class TextSlide : Slide
     {
         public override SlideType GetSlideType() => SlideType.Text;
+
         public override ImageFormat GetImageFormat() => ImageFormat.Png;
 
         public override TextSlide Clone()
@@ -1103,7 +1029,7 @@ namespace ExpressControls
                 IsItalic = IsItalic,
                 IsUnderlined = IsUnderlined,
                 FontColour = FontColour,
-                FontSize = FontSize
+                FontSize = FontSize,
             };
         }
 
@@ -1129,10 +1055,7 @@ namespace ExpressControls
         [XmlElement("content")]
         public string Content
         {
-            get
-            {
-                return _content;
-            }
+            get { return _content; }
             set
             {
                 if (value.Length > 100)
@@ -1148,10 +1071,7 @@ namespace ExpressControls
         [XmlElement("fontname")]
         public string FontName
         {
-            get
-            {
-                return _fontname;
-            }
+            get { return _fontname; }
             set
             {
                 if (Funcs.IsValidFont(value))
@@ -1163,45 +1083,45 @@ namespace ExpressControls
         public string IsBoldString { get; set; } = "false";
 
         [XmlIgnore]
-        public bool IsBold { get { return Funcs.CheckBoolean(IsBoldString) ?? true; } set { IsBoldString = value.ToString(); } }
+        public bool IsBold
+        {
+            get { return Funcs.CheckBoolean(IsBoldString) ?? true; }
+            set { IsBoldString = value.ToString(); }
+        }
 
         [XmlIgnore]
         public FontWeight FontWeight
         {
-            get
-            {
-                return IsBold ? FontWeights.Bold : FontWeights.Normal;
-            }
-            set
-            {
-                IsBold = value == FontWeights.Bold;
-            }
+            get { return IsBold ? FontWeights.Bold : FontWeights.Normal; }
+            set { IsBold = value == FontWeights.Bold; }
         }
 
         [XmlElement("italic")]
         public string IsItalicString { get; set; } = "false";
 
         [XmlIgnore]
-        public bool IsItalic { get { return Funcs.CheckBoolean(IsItalicString) ?? true; } set { IsItalicString = value.ToString(); } }
+        public bool IsItalic
+        {
+            get { return Funcs.CheckBoolean(IsItalicString) ?? true; }
+            set { IsItalicString = value.ToString(); }
+        }
 
         [XmlIgnore]
         public FontStyle FontStyle
         {
-            get
-            {
-                return IsItalic ? FontStyles.Italic : FontStyles.Normal;
-            }
-            set
-            {
-                IsItalic = value == FontStyles.Italic;
-            }
+            get { return IsItalic ? FontStyles.Italic : FontStyles.Normal; }
+            set { IsItalic = value == FontStyles.Italic; }
         }
 
         [XmlElement("underline")]
         public string IsUnderlinedString { get; set; } = "false";
 
         [XmlIgnore]
-        public bool IsUnderlined { get { return Funcs.CheckBoolean(IsUnderlinedString) ?? true; } set { IsUnderlinedString = value.ToString(); } }
+        public bool IsUnderlined
+        {
+            get { return Funcs.CheckBoolean(IsUnderlinedString) ?? true; }
+            set { IsUnderlinedString = value.ToString(); }
+        }
 
         [XmlIgnore]
         public TextDecorationCollection FontDecorations
@@ -1225,14 +1145,8 @@ namespace ExpressControls
         [XmlIgnore]
         public SolidColorBrush FontColour
         {
-            get
-            {
-                return new SolidColorBrush(Funcs.RGBColor(FontColourString));
-            }
-            set
-            {
-                FontColourString = Funcs.ColorRGB(value.Color);
-            }
+            get { return new SolidColorBrush(Funcs.RGBColor(FontColourString)); }
+            set { FontColourString = Funcs.ColorRGB(value.Color); }
         }
 
         [XmlIgnore]
@@ -1241,10 +1155,7 @@ namespace ExpressControls
         [XmlElement("fontsize")]
         public int FontSize
         {
-            get
-            {
-                return _fontsize;
-            }
+            get { return _fontsize; }
             set
             {
                 List<int> possibleValues = [50, 75, 100, 125, 150, 175, 200];
@@ -1256,6 +1167,7 @@ namespace ExpressControls
     public class ScreenshotSlide : Slide
     {
         public override SlideType GetSlideType() => SlideType.Screenshot;
+
         public override ImageFormat GetImageFormat() => ImageFormat.Png;
 
         public override ScreenshotSlide Clone()
@@ -1265,7 +1177,7 @@ namespace ExpressControls
                 Name = Funcs.GetNewSlideName("screenshot"),
                 Timing = Timing,
                 Transition = Transition.Clone(),
-                Bitmap = Bitmap.Clone()
+                Bitmap = Bitmap.Clone(),
             };
         }
     }
@@ -1273,6 +1185,7 @@ namespace ExpressControls
     public class ChartSlide : Slide
     {
         public override SlideType GetSlideType() => SlideType.Chart;
+
         public override ImageFormat GetImageFormat() => ImageFormat.Png;
 
         public override ChartSlide Clone()
@@ -1283,13 +1196,13 @@ namespace ExpressControls
                 Timing = Timing,
                 Transition = Transition.Clone(),
                 ChartData = ChartData == null ? new() : ChartData.Clone(),
-                LegacyData = LegacyData.Select(x => x.Clone()).ToArray(),
+                LegacyData = [.. LegacyData.Select(x => x.Clone())],
                 LegacyChartType = LegacyChartType,
                 LegacyShowValues = LegacyShowValues,
                 LegacyTheme = LegacyTheme,
                 LegacyXLabel = LegacyXLabel,
                 LegacyYLabel = LegacyYLabel,
-                LegacyTitle = LegacyTitle
+                LegacyTitle = LegacyTitle,
             };
         }
 
@@ -1310,9 +1223,9 @@ namespace ExpressControls
                     {
                         "Pie" => ChartType.Pie,
                         "Doughnut" => ChartType.Pie,
-                        _ => ChartType.Cartesian
+                        _ => ChartType.Cartesian,
                     },
-                    Labels = LegacyData.Select(x => x.Label).ToList(),
+                    Labels = [.. LegacyData.Select(x => x.Label)],
                     ChartTitle = LegacyTitle,
                     AxisXTitle = LegacyXLabel,
                     AxisYTitle = LegacyYLabel,
@@ -1324,7 +1237,7 @@ namespace ExpressControls
                         "Fire" => ColourScheme.RedOrange,
                         "Grayscale" => ColourScheme.Grayscale,
                         "SeaGreen" => ColourScheme.Green,
-                        _ => ColourScheme.Basic
+                        _ => ColourScheme.Basic,
                     },
                     Series =
                     [
@@ -1332,17 +1245,17 @@ namespace ExpressControls
                         {
                             Type = LegacyChartType switch
                             {
-                                "Column" => SeriesType.Column, 
+                                "Column" => SeriesType.Column,
                                 "Bar" => SeriesType.Bar,
                                 "Line" => SeriesType.Line,
-                                _ => SeriesType.Default
+                                _ => SeriesType.Default,
                             },
-                            Values = LegacyData.Select(x => x.Value).ToList(),
+                            Values = [.. LegacyData.Select(x => x.Value)],
                             ShowValueLabels = LegacyShowValues,
                             SmoothLines = false,
                             DoughnutChart = LegacyChartType == "Doughnut",
-                        }
-                    ]
+                        },
+                    ],
                 };
             }
             else
@@ -1364,12 +1277,20 @@ namespace ExpressControls
                     return;
                 }
 
-                SeriesItem? series = ChartData.Series.Where(x =>
-                {
-                    return (ChartData.Type == ChartType.Pie && x.Type == SeriesType.Default) || (ChartData.Type == ChartType.Cartesian &&
-                        (x.Type == SeriesType.Column || x.Type == SeriesType.Bar || x.Type == SeriesType.Line));
-
-                }).FirstOrDefault(defaultValue: null);
+                SeriesItem? series = ChartData
+                    .Series.Where(x =>
+                    {
+                        return (ChartData.Type == ChartType.Pie && x.Type == SeriesType.Default)
+                            || (
+                                ChartData.Type == ChartType.Cartesian
+                                && (
+                                    x.Type == SeriesType.Column
+                                    || x.Type == SeriesType.Bar
+                                    || x.Type == SeriesType.Line
+                                )
+                            );
+                    })
+                    .FirstOrDefault(defaultValue: null);
 
                 if (series == null || ChartData.Labels.Count != series.Values.Count)
                 {
@@ -1404,11 +1325,13 @@ namespace ExpressControls
                     List<LabelValueItem> data = [];
                     for (int i = 0; i < ChartData.Labels.Count; i++)
                     {
-                        data.Add(new LabelValueItem()
-                        {
-                            Label = ChartData.Labels[i],
-                            Value = series.Values[i]
-                        });
+                        data.Add(
+                            new LabelValueItem()
+                            {
+                                Label = ChartData.Labels[i],
+                                Value = series.Values[i],
+                            }
+                        );
                     }
                     LegacyData = [.. data];
 
@@ -1423,7 +1346,7 @@ namespace ExpressControls
                         ColourScheme.RedOrange => "Fire",
                         ColourScheme.Violet => "Berry",
                         ColourScheme.Grayscale => "Grayscale",
-                        _ => "BrightPastel"
+                        _ => "BrightPastel",
                     };
                 }
             }
@@ -1444,7 +1367,11 @@ namespace ExpressControls
         public string LegacyShowValuesString { get; set; } = "false";
 
         [XmlIgnore]
-        public bool LegacyShowValues { get { return Funcs.CheckBoolean(LegacyShowValuesString) ?? true; } set { LegacyShowValuesString = value.ToString(); } }
+        public bool LegacyShowValues
+        {
+            get { return Funcs.CheckBoolean(LegacyShowValuesString) ?? true; }
+            set { LegacyShowValuesString = value.ToString(); }
+        }
 
         [XmlElement("theme")]
         public string LegacyTheme { get; set; } = "";
@@ -1463,11 +1390,7 @@ namespace ExpressControls
     {
         public LabelValueItem Clone()
         {
-            return new LabelValueItem()
-            {
-                Label = Label,
-                Value = Value
-            };
+            return new LabelValueItem() { Label = Label, Value = Value };
         }
 
         [XmlElement("label")]
@@ -1480,6 +1403,7 @@ namespace ExpressControls
     public class DrawingSlide : Slide
     {
         public override SlideType GetSlideType() => SlideType.Drawing;
+
         public override ImageFormat GetImageFormat() => ImageFormat.Png;
 
         public override DrawingSlide Clone()
@@ -1489,7 +1413,7 @@ namespace ExpressControls
                 Name = Funcs.GetNewSlideName("drawing"),
                 Timing = Timing,
                 Transition = Transition.Clone(),
-                Strokes = Strokes.Clone()
+                Strokes = Strokes.Clone(),
             };
         }
 
@@ -1515,10 +1439,7 @@ namespace ExpressControls
                 else
                     return FontCategoryIcon.A;
             }
-            set
-            {
-                IconID = (int)value;
-            }
+            set { IconID = (int)value; }
         }
 
         [JsonProperty("fonts")]
@@ -1551,7 +1472,10 @@ namespace ExpressControls
 
         [XmlIgnore]
         [JsonIgnore]
-        public bool SizeSpecified { get { return Size != null; } }
+        public bool SizeSpecified
+        {
+            get { return Size != null; }
+        }
 
         [XmlElement("date")]
         [JsonProperty("date")]
@@ -1559,5 +1483,48 @@ namespace ExpressControls
     }
 
     public class ExportableFileItem : ExportableItem { }
+
     public class ExportableFolderItem : ExportableItem { }
+
+    public class WordItem
+    {
+        [JsonProperty("word")]
+        public string Word { get; set; } = "";
+
+        [JsonProperty("types")]
+        public List<WordTypeItem> Types { get; set; } = [];
+    }
+
+    public class WordTypeItem
+    {
+        [JsonProperty("type")]
+        public string Type { get; set; } = "";
+
+        [JsonProperty("onlySynonyms")]
+        public bool OnlySynonyms { get; set; } = false;
+
+        [JsonProperty("definitions")]
+        public List<WordTypeDefItem> Definitions { get; set; } = [];
+    }
+
+    public class WordTypeDefItem
+    {
+        [JsonProperty("id")]
+        public int ID { get; set; } = 0;
+
+        [JsonProperty("definition")]
+        public string Definition { get; set; } = "";
+
+        [JsonProperty("subsense")]
+        public bool Subsense { get; set; } = false;
+
+        [JsonProperty("synonyms")]
+        public List<string> Synonyms { get; set; } = [];
+    }
+
+    public class TranslatorResult
+    {
+        [JsonProperty("text")]
+        public string Text { get; set; } = "";
+    }
 }

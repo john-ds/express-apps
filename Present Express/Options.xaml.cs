@@ -1,22 +1,15 @@
-﻿using ExpressControls;
-using Microsoft.WindowsAPICodePack.Dialogs;
-using Present_Express.Properties;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.Xml.Serialization;
+using ExpressControls;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using Present_Express.Properties;
 using WinDrawing = System.Drawing;
 
 namespace Present_Express
@@ -24,10 +17,16 @@ namespace Present_Express
     /// <summary>
     /// Interaction logic for Options.xaml
     /// </summary>
-    public partial class Options : Window
+    public partial class Options : ExpressWindow
     {
-        private readonly DispatcherTimer TempLblTimer = new() { Interval = new TimeSpan(0, 0, 0, 4) };
-        private readonly DispatcherTimer FontLoadTimer = new() { Interval = new TimeSpan(0, 0, 0, 0, 300) };
+        private readonly DispatcherTimer TempLblTimer = new()
+        {
+            Interval = new TimeSpan(0, 0, 0, 4),
+        };
+        private readonly DispatcherTimer FontLoadTimer = new()
+        {
+            Interval = new TimeSpan(0, 0, 0, 0, 300),
+        };
 
         public Options()
         {
@@ -38,6 +37,7 @@ namespace Present_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             // Timer event handlers
             TempLblTimer.Tick += TempLblTimer_Tick;
@@ -48,15 +48,21 @@ namespace Present_Express
             ItalicBtn.Icon = (Viewbox)TryFindResource(Funcs.ChooseIcon("ItalicIcon"));
             UnderlineBtn.Icon = (Viewbox)TryFindResource(Funcs.ChooseIcon("UnderlineIcon"));
 
-            // Set up colours
             Funcs.SetupColorPickers(null, ColourPicker);
+            Funcs.RegisterPopups(WindowGrid);
 
-            Dark1Combo.ItemsSource = Funcs.DarkModeFrom.Select((el) => {
-                return new AppDropdownItem() { Content = el };
-            });
-            Dark2Combo.ItemsSource = Funcs.DarkModeTo.Select((el) => {
-                return new AppDropdownItem() { Content = el };
-            });
+            Dark1Combo.ItemsSource = Funcs.DarkModeFrom.Select(
+                (el) =>
+                {
+                    return new AppDropdownItem() { Content = el };
+                }
+            );
+            Dark2Combo.ItemsSource = Funcs.DarkModeTo.Select(
+                (el) =>
+                {
+                    return new AppDropdownItem() { Content = el };
+                }
+            );
 
             // Load current settings
             LoadSettings();
@@ -74,16 +80,28 @@ namespace Present_Express
             FontStyleTxt.Text = Settings.Default.DefaultFont.Name;
 
             WinDrawing.FontStyle style = Settings.Default.DefaultFont.Style;
-            BoldSelector.Visibility = style.HasFlag(WinDrawing.FontStyle.Bold) ? Visibility.Visible : Visibility.Hidden;
-            ItalicSelector.Visibility = style.HasFlag(WinDrawing.FontStyle.Italic) ? Visibility.Visible : Visibility.Hidden;
-            UnderlineSelector.Visibility = style.HasFlag(WinDrawing.FontStyle.Underline) ? Visibility.Visible : Visibility.Hidden;
+            BoldSelector.Visibility = style.HasFlag(WinDrawing.FontStyle.Bold)
+                ? Visibility.Visible
+                : Visibility.Hidden;
+            ItalicSelector.Visibility = style.HasFlag(WinDrawing.FontStyle.Italic)
+                ? Visibility.Visible
+                : Visibility.Hidden;
+            UnderlineSelector.Visibility = style.HasFlag(WinDrawing.FontStyle.Underline)
+                ? Visibility.Visible
+                : Visibility.Hidden;
 
             // Default text colour
-            ColourPicker.SelectedColor = Funcs.ConvertDrawingToMediaColor(Settings.Default.DefaultTextColour);
+            ColourPicker.SelectedColor = Funcs.ConvertDrawingToMediaColor(
+                Settings.Default.DefaultTextColour
+            );
 
             // Default save location
-            SaveLocationTxt.Text = Settings.Default.DefaultSaveLocation == "" ? Funcs.ChooseLang("DocumentFolderStr") :
-                System.IO.Path.GetFileNameWithoutExtension(Settings.Default.DefaultSaveLocation);
+            SaveLocationTxt.Text =
+                Settings.Default.DefaultSaveLocation == ""
+                    ? Funcs.ChooseLang("DocumentFolderStr")
+                    : System.IO.Path.GetFileNameWithoutExtension(
+                        Settings.Default.DefaultSaveLocation
+                    );
 
             // Default timings
             TimingsUpDown.Value = Settings.Default.DefaultTimings;
@@ -104,6 +122,9 @@ namespace Present_Express
             // Hide slideshow controls
             SlideshowBtn.IsChecked = Settings.Default.HideControls;
 
+            // Logging
+            LoggingBtn.IsChecked = Settings.Default.LoggingEnabled;
+
             // Interface theme
             switch ((ThemeOptions)Settings.Default.InterfaceTheme)
             {
@@ -123,8 +144,14 @@ namespace Present_Express
                     break;
             }
 
-            Dark1Combo.SelectedIndex = Array.IndexOf(Funcs.DarkModeFrom, Settings.Default.AutoDarkOn);
-            Dark2Combo.SelectedIndex = Array.IndexOf(Funcs.DarkModeTo, Settings.Default.AutoDarkOff);
+            Dark1Combo.SelectedIndex = Array.IndexOf(
+                Funcs.DarkModeFrom,
+                Settings.Default.AutoDarkOn
+            );
+            Dark2Combo.SelectedIndex = Array.IndexOf(
+                Funcs.DarkModeTo,
+                Settings.Default.AutoDarkOff
+            );
 
             // Recent files limit
             RecentUpDown.Value = Settings.Default.RecentsLimit;
@@ -158,20 +185,27 @@ namespace Present_Express
 
         private void SetFontFace()
         {
-            Settings.Default.DefaultFont =
-                new(FontStyleTxt.Text, 12, Settings.Default.DefaultFont.Style);
+            Settings.Default.DefaultFont = new(
+                FontStyleTxt.Text,
+                12,
+                Settings.Default.DefaultFont.Style
+            );
 
             SaveSettings();
         }
 
         private void SetFontStyle()
         {
-            if (BoldSelector.Visibility == Visibility.Hidden &&
-                ItalicSelector.Visibility == Visibility.Hidden &&
-                UnderlineSelector.Visibility == Visibility.Hidden)
+            if (
+                BoldSelector.Visibility == Visibility.Hidden
+                && ItalicSelector.Visibility == Visibility.Hidden
+                && UnderlineSelector.Visibility == Visibility.Hidden
+            )
             {
-                Settings.Default.DefaultFont =
-                    new(Settings.Default.DefaultFont, WinDrawing.FontStyle.Regular);
+                Settings.Default.DefaultFont = new(
+                    Settings.Default.DefaultFont,
+                    WinDrawing.FontStyle.Regular
+                );
             }
             else
             {
@@ -204,8 +238,12 @@ namespace Present_Express
                 }
                 catch
                 {
-                    Funcs.ShowMessageRes("InvalidFontDescStr", "InvalidFontStr",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    Funcs.ShowMessageRes(
+                        "InvalidFontDescStr",
+                        "InvalidFontStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error
+                    );
 
                     FontStyleTxt.Text = "";
                 }
@@ -234,7 +272,7 @@ namespace Present_Express
         private void FontLoadTimer_Tick(object? sender, EventArgs e)
         {
             FontLoadTimer.Stop();
-            FontsStack.ItemsSource = new FontItems();
+            FontsStack.ItemsSource = new FontItems(true);
 
             LoadingFontsLbl.Visibility = Visibility.Collapsed;
             FontsStack.Visibility = Visibility.Visible;
@@ -280,7 +318,9 @@ namespace Present_Express
 
         private void TextColourBtn_Click(object sender, RoutedEventArgs e)
         {
-            Settings.Default.DefaultTextColour = Funcs.ConvertMediaToDrawingColor(ColourPicker.SelectedColor ?? Colors.Black);
+            Settings.Default.DefaultTextColour = Funcs.ConvertMediaToDrawingColor(
+                ColourPicker.SelectedColor ?? Colors.Black
+            );
             SaveSettings();
         }
 
@@ -291,7 +331,9 @@ namespace Present_Express
         {
             if (Funcs.FolderBrowserDialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
-                SaveLocationTxt.Text = System.IO.Path.GetFileNameWithoutExtension(Funcs.FolderBrowserDialog.FileName);
+                SaveLocationTxt.Text = System.IO.Path.GetFileNameWithoutExtension(
+                    Funcs.FolderBrowserDialog.FileName
+                );
                 Settings.Default.DefaultSaveLocation = Funcs.FolderBrowserDialog.FileName;
                 SaveSettings();
             }
@@ -302,7 +344,10 @@ namespace Present_Express
         #endregion
         #region Defaults > Slideshow Setup
 
-        private void TimingsUpDown_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        private void TimingsUpDown_ValueChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<object> e
+        )
         {
             if (IsLoaded)
             {
@@ -320,20 +365,32 @@ namespace Present_Express
         #endregion
         #region General > Interface
 
-        private void InterfaceCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void InterfaceCombo_SelectionChanged(
+            object sender,
+            SelectionChangedEventArgs e
+        )
         {
             Languages selectedLang = (Languages)InterfaceCombo.SelectedIndex;
 
             if (selectedLang != Funcs.GetCurrentLangEnum())
             {
-                if (Funcs.ShowPromptRes("LangWarningDescStr", "LangWarningStr",
-                    MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+                if (
+                    Funcs.ShowPromptRes(
+                        "LangWarningDescStr",
+                        "LangWarningStr",
+                        MessageBoxButton.YesNoCancel,
+                        MessageBoxImage.Exclamation
+                    ) == MessageBoxResult.Yes
+                )
                 {
                     Settings.Default.Language = Funcs.GetCurrentLangEnum(selectedLang);
                     SaveSettings();
 
+                    foreach (Window win in Application.Current.Windows)
+                        win.Hide();
+
                     System.Windows.Forms.Application.Restart();
-                    Application.Current.Shutdown();
+                    await Funcs.LogApplicationEnd();
                 }
                 else
                 {
@@ -352,6 +409,14 @@ namespace Present_Express
         {
             Settings.Default.ShowClosingPrompt = SavePromptBtn.IsChecked == true;
             SaveSettings();
+        }
+
+        private void LoggingBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Settings.Default.LoggingEnabled = LoggingBtn.IsChecked == true;
+            SaveSettings();
+
+            Funcs.HandleLoggingSettingChange(LoggingBtn.IsChecked == true);
         }
 
         #endregion
@@ -398,8 +463,10 @@ namespace Present_Express
         {
             if (IsLoaded)
             {
-                Settings.Default.AutoDarkOn = (string)((AppDropdownItem)Dark1Combo.SelectedItem).Content;
-                Settings.Default.AutoDarkOff = (string)((AppDropdownItem)Dark2Combo.SelectedItem).Content;
+                Settings.Default.AutoDarkOn = (string)
+                    ((AppDropdownItem)Dark1Combo.SelectedItem).Content;
+                Settings.Default.AutoDarkOff = (string)
+                    ((AppDropdownItem)Dark2Combo.SelectedItem).Content;
                 SaveSettings();
 
                 Funcs.AutoDarkModeOn = Settings.Default.AutoDarkOn;
@@ -413,7 +480,10 @@ namespace Present_Express
         #endregion
         #region Appearance > Other
 
-        private void RecentUpDown_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        private void RecentUpDown_ValueChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<object> e
+        )
         {
             if (IsLoaded)
             {
@@ -479,7 +549,11 @@ namespace Present_Express
             if (settings.Defaults.Underline)
                 style |= WinDrawing.FontStyle.Underline;
 
-            Settings.Default.DefaultFont = new WinDrawing.Font(settings.Defaults.FontFamily, 12, style);
+            Settings.Default.DefaultFont = new WinDrawing.Font(
+                settings.Defaults.FontFamily,
+                12,
+                style
+            );
             Settings.Default.DefaultTextColour = settings.Defaults.TextColour;
 
             // Default save location
@@ -506,6 +580,10 @@ namespace Present_Express
 
             Settings.Default.Pinned.Clear();
             Settings.Default.Pinned.AddRange(settings.General.PinnedFolders);
+
+            // Logging
+            Settings.Default.LoggingEnabled = settings.General.Logging;
+            Funcs.HandleLoggingSettingChange(settings.General.Logging);
 
             // Interface theme
             ThemeOptions theme;
@@ -549,7 +627,11 @@ namespace Present_Express
             {
                 try
                 {
-                    UserOptions? settings = Funcs.OpenSettingsFile<UserOptions>(Funcs.ImportSettingsDialog.FileName);
+                    UserOptions? settings = Funcs.OpenSettingsFile<UserOptions>(
+                        Funcs.ImportSettingsDialog.FileName
+                    );
+
+                    Funcs.LogConversion(PageID, LoggingProperties.Conversion.ImportSettings);
 
                     if (settings != null)
                         LoadSettings(settings);
@@ -558,9 +640,13 @@ namespace Present_Express
                 }
                 catch (Exception ex)
                 {
-                    Funcs.ShowMessage(string.Format(Funcs.ChooseLang("ImportErrorDescStr"), "Present Express"),
-                                      Funcs.ChooseLang("ImportSettingsErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error,
-                                      Funcs.GenerateErrorReport(ex));
+                    Funcs.ShowMessage(
+                        string.Format(Funcs.ChooseLang("ImportErrorDescStr"), "Present Express"),
+                        Funcs.ChooseLang("ImportSettingsErrorStr"),
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(ex, PageID, "ImportSettingsErrorStr")
+                    );
                 }
             }
         }
@@ -578,15 +664,16 @@ namespace Present_Express
                     TextColour = Settings.Default.DefaultTextColour,
                     SaveLocation = Settings.Default.DefaultSaveLocation,
                     Timings = Settings.Default.DefaultTimings,
-                    SlideSize = Settings.Default.DefaultSize
+                    SlideSize = Settings.Default.DefaultSize,
                 },
                 General =
                 {
                     Sounds = Settings.Default.EnableInfoBoxAudio,
                     SavePrompt = Settings.Default.ShowClosingPrompt,
                     Controls = Settings.Default.HideControls,
-                    FavouriteFiles = Settings.Default.Favourites.Cast<string>().ToArray(),
-                    PinnedFolders = Settings.Default.Pinned.Cast<string>().ToArray()
+                    FavouriteFiles = [.. Settings.Default.Favourites.Cast<string>()],
+                    PinnedFolders = [.. Settings.Default.Pinned.Cast<string>()],
+                    Logging = Settings.Default.LoggingEnabled,
                 },
                 Appearance =
                 {
@@ -594,38 +681,51 @@ namespace Present_Express
                     AutoDarkMode = Settings.Default.InterfaceTheme == (int)ThemeOptions.Auto,
                     DarkModeFrom = Settings.Default.AutoDarkOn,
                     DarkModeTo = Settings.Default.AutoDarkOff,
-                    DarkModeFollowSystem = Settings.Default.InterfaceTheme == (int)ThemeOptions.FollowSystem,
+                    DarkModeFollowSystem =
+                        Settings.Default.InterfaceTheme == (int)ThemeOptions.FollowSystem,
                     RecentFilesCount = Settings.Default.RecentsLimit,
-                    SaveShortcut = Settings.Default.ShowSaveShortcut
+                    SaveShortcut = Settings.Default.ShowSaveShortcut,
                 },
                 Startup =
                 {
                     OpenMenuTab = Settings.Default.OpenMenu,
                     CheckNotifications = Settings.Default.CheckNotifications,
-                    OpenRecentFile = Settings.Default.OpenRecentFile
-                }
+                    OpenRecentFile = Settings.Default.OpenRecentFile,
+                },
             };
             return export;
         }
 
         private void ExportSettingsBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (Funcs.ShowPrompt(string.Format(Funcs.ChooseLang("ExportSettingsDescStr"), "Present Express"),
-                                 Funcs.ChooseLang("ExportSettingsStr"),
-                                 MessageBoxButton.OKCancel, MessageBoxImage.Information) == MessageBoxResult.OK)
+            if (
+                Funcs.ShowPrompt(
+                    string.Format(Funcs.ChooseLang("ExportSettingsDescStr"), "Present Express"),
+                    Funcs.ChooseLang("ExportSettingsStr"),
+                    MessageBoxButton.OKCancel,
+                    MessageBoxImage.Information
+                ) == MessageBoxResult.OK
+            )
             {
                 if (Funcs.ExportSettingsDialog.ShowDialog() == true)
                 {
                     Funcs.SaveSettingsFile(BuildSettings(), Funcs.ExportSettingsDialog.FileName);
                     SaveSettings();
+                    Funcs.LogConversion(PageID, LoggingProperties.Conversion.ExportSettings);
                 }
             }
         }
 
         private void ResetSettingsBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (Funcs.ShowPrompt(Funcs.ChooseLang("ResetSettingsWarningStr"), Funcs.ChooseLang("ResetSettingsStr"),
-                                 MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+            if (
+                Funcs.ShowPrompt(
+                    Funcs.ChooseLang("ResetSettingsWarningStr"),
+                    Funcs.ChooseLang("ResetSettingsStr"),
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Exclamation
+                ) == MessageBoxResult.Yes
+            )
             {
                 LoadSettings(new UserOptions());
             }
@@ -658,10 +758,7 @@ namespace Present_Express
         [XmlElement("font-family")]
         public string FontFamily
         {
-            get
-            {
-                return _fontFamily;
-            }
+            get { return _fontFamily; }
             set
             {
                 try
@@ -680,19 +777,31 @@ namespace Present_Express
         public string BoldString { get; set; } = "false";
 
         [XmlIgnore]
-        public bool Bold { get { return Funcs.CheckBoolean(BoldString) ?? false; } set { BoldString = value.ToString(); } }
+        public bool Bold
+        {
+            get { return Funcs.CheckBoolean(BoldString) ?? false; }
+            set { BoldString = value.ToString(); }
+        }
 
         [XmlElement("italic")]
         public string ItalicString { get; set; } = "false";
 
         [XmlIgnore]
-        public bool Italic { get { return Funcs.CheckBoolean(ItalicString) ?? false; } set { ItalicString = value.ToString(); } }
+        public bool Italic
+        {
+            get { return Funcs.CheckBoolean(ItalicString) ?? false; }
+            set { ItalicString = value.ToString(); }
+        }
 
         [XmlElement("underline")]
         public string UnderlineString { get; set; } = "false";
 
         [XmlIgnore]
-        public bool Underline { get { return Funcs.CheckBoolean(UnderlineString) ?? false; } set { UnderlineString = value.ToString(); } }
+        public bool Underline
+        {
+            get { return Funcs.CheckBoolean(UnderlineString) ?? false; }
+            set { UnderlineString = value.ToString(); }
+        }
 
         [XmlElement("text-colour")]
         public string TextColourString { get; set; } = "0,0,0";
@@ -705,7 +814,11 @@ namespace Present_Express
                 try
                 {
                     string[] clrs = TextColourString.Split(",");
-                    return WinDrawing.Color.FromArgb(Convert.ToByte(clrs[0]), Convert.ToByte(clrs[1]), Convert.ToByte(clrs[2]));
+                    return WinDrawing.Color.FromArgb(
+                        Convert.ToByte(clrs[0]),
+                        Convert.ToByte(clrs[1]),
+                        Convert.ToByte(clrs[2])
+                    );
                 }
                 catch
                 {
@@ -714,7 +827,8 @@ namespace Present_Express
             }
             set
             {
-                TextColourString = value.R.ToString() + "," + value.G.ToString() + "," + value.B.ToString();
+                TextColourString =
+                    value.R.ToString() + "," + value.G.ToString() + "," + value.B.ToString();
             }
         }
 
@@ -724,10 +838,7 @@ namespace Present_Express
         [XmlElement("save-location")]
         public string SaveLocation
         {
-            get
-            {
-                return _saveLocation;
-            }
+            get { return _saveLocation; }
             set
             {
                 if (Directory.Exists(value))
@@ -741,10 +852,7 @@ namespace Present_Express
         [XmlElement("timings")]
         public double Timings
         {
-            get
-            {
-                return _timings;
-            }
+            get { return _timings; }
             set
             {
                 if (value >= 0.5 && value <= 10)
@@ -758,10 +866,7 @@ namespace Present_Express
         [XmlElement("slide-size")]
         public int SlideSize
         {
-            get
-            {
-                return _slideSize;
-            }
+            get { return _slideSize; }
             set
             {
                 if (value == 0 || value == 1)
@@ -776,19 +881,31 @@ namespace Present_Express
         public string SoundsString { get; set; } = "true";
 
         [XmlIgnore]
-        public bool Sounds { get { return Funcs.CheckBoolean(SoundsString) ?? true; } set { SoundsString = value.ToString(); } }
+        public bool Sounds
+        {
+            get { return Funcs.CheckBoolean(SoundsString) ?? true; }
+            set { SoundsString = value.ToString(); }
+        }
 
         [XmlElement("save-prompt")]
         public string SavePromptString { get; set; } = "true";
 
         [XmlIgnore]
-        public bool SavePrompt { get { return Funcs.CheckBoolean(SavePromptString) ?? true; } set { SavePromptString = value.ToString(); } }
+        public bool SavePrompt
+        {
+            get { return Funcs.CheckBoolean(SavePromptString) ?? true; }
+            set { SavePromptString = value.ToString(); }
+        }
 
         [XmlElement("controls")]
         public string ControlsString { get; set; } = "true";
 
         [XmlIgnore]
-        public bool Controls { get { return Funcs.CheckBoolean(ControlsString) ?? true; } set { ControlsString = value.ToString(); } }
+        public bool Controls
+        {
+            get { return Funcs.CheckBoolean(ControlsString) ?? true; }
+            set { ControlsString = value.ToString(); }
+        }
 
         [XmlArray("fav-files")]
         [XmlArrayItem("data")]
@@ -797,6 +914,16 @@ namespace Present_Express
         [XmlArray("pinned-folders")]
         [XmlArrayItem("data")]
         public string[] PinnedFolders { get; set; } = [];
+
+        [XmlElement("logging")]
+        public string LoggingString { get; set; } = "true";
+
+        [XmlIgnore]
+        public bool Logging
+        {
+            get { return Funcs.CheckBoolean(LoggingString) ?? true; }
+            set { LoggingString = value.ToString(); }
+        }
     }
 
     public class AppearanceOptions
@@ -805,13 +932,21 @@ namespace Present_Express
         public string DarkModeString { get; set; } = "false";
 
         [XmlIgnore]
-        public bool DarkMode { get { return Funcs.CheckBoolean(DarkModeString) ?? false; } set { DarkModeString = value.ToString(); } }
+        public bool DarkMode
+        {
+            get { return Funcs.CheckBoolean(DarkModeString) ?? false; }
+            set { DarkModeString = value.ToString(); }
+        }
 
         [XmlElement("auto-dark")]
         public string AutoDarkModeString { get; set; } = "false";
 
         [XmlIgnore]
-        public bool AutoDarkMode { get { return Funcs.CheckBoolean(AutoDarkModeString) ?? false; } set { AutoDarkModeString = value.ToString(); } }
+        public bool AutoDarkMode
+        {
+            get { return Funcs.CheckBoolean(AutoDarkModeString) ?? false; }
+            set { AutoDarkModeString = value.ToString(); }
+        }
 
         [XmlIgnore]
         private string _darkModeFrom = "18:00";
@@ -819,10 +954,7 @@ namespace Present_Express
         [XmlElement("dark-on")]
         public string DarkModeFrom
         {
-            get
-            {
-                return _darkModeFrom;
-            }
+            get { return _darkModeFrom; }
             set
             {
                 if (Array.IndexOf(Funcs.DarkModeFrom, value) >= 0)
@@ -836,10 +968,7 @@ namespace Present_Express
         [XmlElement("dark-off")]
         public string DarkModeTo
         {
-            get
-            {
-                return _darkModeTo;
-            }
+            get { return _darkModeTo; }
             set
             {
                 if (Array.IndexOf(Funcs.DarkModeTo, value) >= 0)
@@ -851,7 +980,11 @@ namespace Present_Express
         public string DarkModeFollowSystemString { get; set; } = "true";
 
         [XmlIgnore]
-        public bool DarkModeFollowSystem { get { return Funcs.CheckBoolean(DarkModeFollowSystemString) ?? true; } set { DarkModeFollowSystemString = value.ToString(); } }
+        public bool DarkModeFollowSystem
+        {
+            get { return Funcs.CheckBoolean(DarkModeFollowSystemString) ?? true; }
+            set { DarkModeFollowSystemString = value.ToString(); }
+        }
 
         [XmlIgnore]
         private int _recentFilesCount = 10;
@@ -859,10 +992,7 @@ namespace Present_Express
         [XmlElement("recent-files")]
         public int RecentFilesCount
         {
-            get
-            {
-                return _recentFilesCount;
-            }
+            get { return _recentFilesCount; }
             set
             {
                 if (value >= 0 && value <= 30)
@@ -874,7 +1004,11 @@ namespace Present_Express
         public string SaveShortcutString { get; set; } = "true";
 
         [XmlIgnore]
-        public bool SaveShortcut { get { return Funcs.CheckBoolean(SaveShortcutString) ?? true; } set { SaveShortcutString = value.ToString(); } }
+        public bool SaveShortcut
+        {
+            get { return Funcs.CheckBoolean(SaveShortcutString) ?? true; }
+            set { SaveShortcutString = value.ToString(); }
+        }
     }
 
     public class StartupOptions
@@ -883,18 +1017,30 @@ namespace Present_Express
         public string OpenMenuTabString { get; set; } = "false";
 
         [XmlIgnore]
-        public bool OpenMenuTab { get { return Funcs.CheckBoolean(OpenMenuTabString) ?? false; } set { OpenMenuTabString = value.ToString(); } }
+        public bool OpenMenuTab
+        {
+            get { return Funcs.CheckBoolean(OpenMenuTabString) ?? false; }
+            set { OpenMenuTabString = value.ToString(); }
+        }
 
         [XmlElement("notifications")]
         public string CheckNotificationsString { get; set; } = "true";
 
         [XmlIgnore]
-        public bool CheckNotifications { get { return Funcs.CheckBoolean(CheckNotificationsString) ?? true; } set { CheckNotificationsString = value.ToString(); } }
+        public bool CheckNotifications
+        {
+            get { return Funcs.CheckBoolean(CheckNotificationsString) ?? true; }
+            set { CheckNotificationsString = value.ToString(); }
+        }
 
         [XmlElement("open-recent")]
         public string OpenRecentFileString { get; set; } = "false";
 
         [XmlIgnore]
-        public bool OpenRecentFile { get { return Funcs.CheckBoolean(OpenRecentFileString) ?? false; } set { OpenRecentFileString = value.ToString(); } }
+        public bool OpenRecentFile
+        {
+            get { return Funcs.CheckBoolean(OpenRecentFileString) ?? false; }
+            set { OpenRecentFileString = value.ToString(); }
+        }
     }
 }

@@ -1,31 +1,27 @@
-﻿using ExpressControls;
-using Microsoft.WindowsAPICodePack.Dialogs;
-using Quota_Express.Properties;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.Xml.Serialization;
+using ExpressControls;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using Quota_Express.Properties;
 
 namespace Quota_Express
 {
     /// <summary>
     /// Interaction logic for Options.xaml
     /// </summary>
-    public partial class Options : Window
+    public partial class Options : ExpressWindow
     {
-        private readonly DispatcherTimer TempLblTimer = new() { Interval = new TimeSpan(0, 0, 0, 4) };
+        private readonly DispatcherTimer TempLblTimer = new()
+        {
+            Interval = new TimeSpan(0, 0, 0, 4),
+        };
 
         public Options()
         {
@@ -36,33 +32,45 @@ namespace Quota_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             // Timer event handlers
             TempLblTimer.Tick += TempLblTimer_Tick;
 
-            Dark1Combo.ItemsSource = Funcs.DarkModeFrom.Select((el) => {
-                return new AppDropdownItem() { Content = el };
-            });
-            Dark2Combo.ItemsSource = Funcs.DarkModeTo.Select((el) => {
-                return new AppDropdownItem() { Content = el };
-            });
-
-            SortCombo.ItemsSource = Enum.GetValues<FileSortOption>().Select((el) =>
-            {
-                return new AppDropdownItem()
+            Dark1Combo.ItemsSource = Funcs.DarkModeFrom.Select(
+                (el) =>
                 {
-                    Content = Funcs.ChooseLang(el switch
+                    return new AppDropdownItem() { Content = el };
+                }
+            );
+            Dark2Combo.ItemsSource = Funcs.DarkModeTo.Select(
+                (el) =>
+                {
+                    return new AppDropdownItem() { Content = el };
+                }
+            );
+
+            SortCombo.ItemsSource = Enum.GetValues<FileSortOption>()
+                .Select(
+                    (el) =>
                     {
-                        FileSortOption.NameAZ => "NameAZStr",
-                        FileSortOption.NameZA => "NameZAStr",
-                        FileSortOption.SizeAsc => "SizeAscStr",
-                        FileSortOption.SizeDesc => "SizeDescStr",
-                        FileSortOption.NewestFirst => "NewestStr",
-                        FileSortOption.OldestFirst => "OldestStr",
-                        _ => ""
-                    })
-                };
-            });
+                        return new AppDropdownItem()
+                        {
+                            Content = Funcs.ChooseLang(
+                                el switch
+                                {
+                                    FileSortOption.NameAZ => "NameAZStr",
+                                    FileSortOption.NameZA => "NameZAStr",
+                                    FileSortOption.SizeAsc => "SizeAscStr",
+                                    FileSortOption.SizeDesc => "SizeDescStr",
+                                    FileSortOption.NewestFirst => "NewestStr",
+                                    FileSortOption.OldestFirst => "OldestStr",
+                                    _ => "",
+                                }
+                            ),
+                        };
+                    }
+                );
 
             // Load current settings
             LoadSettings();
@@ -87,6 +95,9 @@ namespace Quota_Express
             // Messagebox sounds
             SoundBtn.IsChecked = Settings.Default.EnableInfoBoxAudio;
 
+            // Logging
+            LoggingBtn.IsChecked = Settings.Default.LoggingEnabled;
+
             // Interface theme
             switch ((ThemeOptions)Settings.Default.InterfaceTheme)
             {
@@ -106,13 +117,21 @@ namespace Quota_Express
                     break;
             }
 
-            Dark1Combo.SelectedIndex = Array.IndexOf(Funcs.DarkModeFrom, Settings.Default.AutoDarkOn);
-            Dark2Combo.SelectedIndex = Array.IndexOf(Funcs.DarkModeTo, Settings.Default.AutoDarkOff);
+            Dark1Combo.SelectedIndex = Array.IndexOf(
+                Funcs.DarkModeFrom,
+                Settings.Default.AutoDarkOn
+            );
+            Dark2Combo.SelectedIndex = Array.IndexOf(
+                Funcs.DarkModeTo,
+                Settings.Default.AutoDarkOff
+            );
 
             // Startup settings
             NotificationBtn.IsChecked = Settings.Default.CheckNotifications;
-            StartupLocationTxt.Text = Settings.Default.StartupFolder == "" ? Funcs.ChooseLang("DocumentFolderStr") :
-                System.IO.Path.GetFileNameWithoutExtension(Settings.Default.StartupFolder);
+            StartupLocationTxt.Text =
+                Settings.Default.StartupFolder == ""
+                    ? Funcs.ChooseLang("DocumentFolderStr")
+                    : System.IO.Path.GetFileNameWithoutExtension(Settings.Default.StartupFolder);
         }
 
         private void LoadColourSchemes()
@@ -124,17 +143,22 @@ namespace Quota_Express
                 foreach (var item in Funcs.ColourSchemes[i])
                     clrs.Add(Funcs.ColorToBrush(item));
 
-                clrItems.Add(new AppDropdownItem()
-                {
-                    Content = Funcs.GetTypeColourSchemeName((ColourScheme)i),
-                    Colours = [.. clrs],
-                    ShowColours = true
-                });
+                clrItems.Add(
+                    new AppDropdownItem()
+                    {
+                        Content = Funcs.GetTypeColourSchemeName((ColourScheme)i),
+                        Colours = [.. clrs],
+                        ShowColours = true,
+                    }
+                );
             }
 
             ColourSchemeCombo.ItemsSource = clrItems;
 
-            if (Settings.Default.DefaultColourScheme == -1 || Settings.Default.DefaultColourScheme == (int)ColourScheme.Custom)
+            if (
+                Settings.Default.DefaultColourScheme == -1
+                || Settings.Default.DefaultColourScheme == (int)ColourScheme.Custom
+            )
             {
                 ColourSchemeCombo.SelectedIndex = 0;
                 Settings.Default.DefaultColourScheme = 0;
@@ -189,20 +213,32 @@ namespace Quota_Express
         #endregion
         #region General > Interface
 
-        private void InterfaceCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void InterfaceCombo_SelectionChanged(
+            object sender,
+            SelectionChangedEventArgs e
+        )
         {
             Languages selectedLang = (Languages)InterfaceCombo.SelectedIndex;
 
             if (selectedLang != Funcs.GetCurrentLangEnum())
             {
-                if (Funcs.ShowPromptRes("LangWarningDescStr", "LangWarningStr",
-                    MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+                if (
+                    Funcs.ShowPromptRes(
+                        "LangWarningDescStr",
+                        "LangWarningStr",
+                        MessageBoxButton.YesNoCancel,
+                        MessageBoxImage.Exclamation
+                    ) == MessageBoxResult.Yes
+                )
                 {
                     Settings.Default.Language = Funcs.GetCurrentLangEnum(selectedLang);
                     SaveSettings();
 
+                    foreach (Window win in Application.Current.Windows)
+                        win.Hide();
+
                     System.Windows.Forms.Application.Restart();
-                    Application.Current.Shutdown();
+                    await Funcs.LogApplicationEnd();
                 }
                 else
                 {
@@ -215,6 +251,14 @@ namespace Quota_Express
         {
             Settings.Default.EnableInfoBoxAudio = SoundBtn.IsChecked == true;
             SaveSettings();
+        }
+
+        private void LoggingBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Settings.Default.LoggingEnabled = LoggingBtn.IsChecked == true;
+            SaveSettings();
+
+            Funcs.HandleLoggingSettingChange(LoggingBtn.IsChecked == true);
         }
 
         #endregion
@@ -252,8 +296,10 @@ namespace Quota_Express
         {
             if (IsLoaded)
             {
-                Settings.Default.AutoDarkOn = (string)((AppDropdownItem)Dark1Combo.SelectedItem).Content;
-                Settings.Default.AutoDarkOff = (string)((AppDropdownItem)Dark2Combo.SelectedItem).Content;
+                Settings.Default.AutoDarkOn = (string)
+                    ((AppDropdownItem)Dark1Combo.SelectedItem).Content;
+                Settings.Default.AutoDarkOff = (string)
+                    ((AppDropdownItem)Dark2Combo.SelectedItem).Content;
                 SaveSettings();
 
                 Funcs.AutoDarkModeOn = Settings.Default.AutoDarkOn;
@@ -277,7 +323,9 @@ namespace Quota_Express
         {
             if (Funcs.FolderBrowserDialog.ShowDialog() == CommonFileDialogResult.Ok)
             {
-                StartupLocationTxt.Text = System.IO.Path.GetFileNameWithoutExtension(Funcs.FolderBrowserDialog.FileName);
+                StartupLocationTxt.Text = System.IO.Path.GetFileNameWithoutExtension(
+                    Funcs.FolderBrowserDialog.FileName
+                );
                 Settings.Default.StartupFolder = Funcs.FolderBrowserDialog.FileName;
                 SaveSettings();
             }
@@ -297,6 +345,10 @@ namespace Quota_Express
 
             // Messagebox sounds
             Settings.Default.EnableInfoBoxAudio = settings.General.Sounds;
+
+            // Logging
+            Settings.Default.LoggingEnabled = settings.General.Logging;
+            Funcs.HandleLoggingSettingChange(settings.General.Logging);
 
             // Interface theme
             ThemeOptions theme;
@@ -332,7 +384,11 @@ namespace Quota_Express
             {
                 try
                 {
-                    UserOptions? settings = Funcs.OpenSettingsFile<UserOptions>(Funcs.ImportSettingsDialog.FileName);
+                    UserOptions? settings = Funcs.OpenSettingsFile<UserOptions>(
+                        Funcs.ImportSettingsDialog.FileName
+                    );
+
+                    Funcs.LogConversion(PageID, LoggingProperties.Conversion.ImportSettings);
 
                     if (settings != null)
                         LoadSettings(settings);
@@ -341,9 +397,13 @@ namespace Quota_Express
                 }
                 catch (Exception ex)
                 {
-                    Funcs.ShowMessage(string.Format(Funcs.ChooseLang("ImportErrorDescStr"), "Quota Express"),
-                                      Funcs.ChooseLang("ImportSettingsErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error,
-                                      Funcs.GenerateErrorReport(ex));
+                    Funcs.ShowMessage(
+                        string.Format(Funcs.ChooseLang("ImportErrorDescStr"), "Quota Express"),
+                        Funcs.ChooseLang("ImportSettingsErrorStr"),
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(ex, PageID, "ImportSettingsErrorStr")
+                    );
                 }
             }
         }
@@ -356,7 +416,7 @@ namespace Quota_Express
                 {
                     PercentageBars = Settings.Default.PercentageBars,
                     DefaultSort = (FileSortOption)Settings.Default.DefaultSort,
-                    ColourScheme = (ColourScheme)Settings.Default.DefaultColourScheme
+                    ColourScheme = (ColourScheme)Settings.Default.DefaultColourScheme,
                 },
                 General =
                 {
@@ -365,35 +425,49 @@ namespace Quota_Express
                     AutoDarkMode = Settings.Default.InterfaceTheme == (int)ThemeOptions.Auto,
                     DarkModeFrom = Settings.Default.AutoDarkOn,
                     DarkModeTo = Settings.Default.AutoDarkOff,
-                    DarkModeFollowSystem = Settings.Default.InterfaceTheme == (int)ThemeOptions.FollowSystem,
+                    DarkModeFollowSystem =
+                        Settings.Default.InterfaceTheme == (int)ThemeOptions.FollowSystem,
+                    Logging = Settings.Default.LoggingEnabled,
                 },
                 Startup =
                 {
                     CheckNotifications = Settings.Default.CheckNotifications,
-                    StartupFolder = Settings.Default.StartupFolder
-                }
+                    StartupFolder = Settings.Default.StartupFolder,
+                },
             };
             return export;
         }
 
         private void ExportSettingsBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (Funcs.ShowPrompt(string.Format(Funcs.ChooseLang("ExportSettingsDescStr"), "Quota Express"),
-                                 Funcs.ChooseLang("ExportSettingsStr"),
-                                 MessageBoxButton.OKCancel, MessageBoxImage.Information) == MessageBoxResult.OK)
+            if (
+                Funcs.ShowPrompt(
+                    string.Format(Funcs.ChooseLang("ExportSettingsDescStr"), "Quota Express"),
+                    Funcs.ChooseLang("ExportSettingsStr"),
+                    MessageBoxButton.OKCancel,
+                    MessageBoxImage.Information
+                ) == MessageBoxResult.OK
+            )
             {
                 if (Funcs.ExportSettingsDialog.ShowDialog() == true)
                 {
                     Funcs.SaveSettingsFile(BuildSettings(), Funcs.ExportSettingsDialog.FileName);
                     SaveSettings();
+                    Funcs.LogConversion(PageID, LoggingProperties.Conversion.ExportSettings);
                 }
             }
         }
 
         private void ResetSettingsBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (Funcs.ShowPrompt(Funcs.ChooseLang("ResetSettingsWarningStr"), Funcs.ChooseLang("ResetSettingsStr"),
-                                 MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+            if (
+                Funcs.ShowPrompt(
+                    Funcs.ChooseLang("ResetSettingsWarningStr"),
+                    Funcs.ChooseLang("ResetSettingsStr"),
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Exclamation
+                ) == MessageBoxResult.Yes
+            )
             {
                 LoadSettings(new UserOptions());
             }
@@ -421,7 +495,11 @@ namespace Quota_Express
         public string PercentageBarsString { get; set; } = "true";
 
         [XmlIgnore]
-        public bool PercentageBars { get { return Funcs.CheckBoolean(PercentageBarsString) ?? true; } set { PercentageBarsString = value.ToString(); } }
+        public bool PercentageBars
+        {
+            get { return Funcs.CheckBoolean(PercentageBarsString) ?? true; }
+            set { PercentageBarsString = value.ToString(); }
+        }
 
         [XmlElement("sort")]
         public int DefaultSortID { get; set; } = (int)FileSortOption.NameAZ;
@@ -436,10 +514,7 @@ namespace Quota_Express
                 else
                     return FileSortOption.NameAZ;
             }
-            set
-            {
-                DefaultSortID = (int)value;
-            }
+            set { DefaultSortID = (int)value; }
         }
 
         [XmlElement("colour-scheme")]
@@ -455,10 +530,7 @@ namespace Quota_Express
                 else
                     return ColourScheme.Basic;
             }
-            set
-            {
-                ColourSchemeID = (int)value;
-            }
+            set { ColourSchemeID = (int)value; }
         }
     }
 
@@ -468,19 +540,31 @@ namespace Quota_Express
         public string SoundsString { get; set; } = "true";
 
         [XmlIgnore]
-        public bool Sounds { get { return Funcs.CheckBoolean(SoundsString) ?? true; } set { SoundsString = value.ToString(); } }
+        public bool Sounds
+        {
+            get { return Funcs.CheckBoolean(SoundsString) ?? true; }
+            set { SoundsString = value.ToString(); }
+        }
 
         [XmlElement("dark-mode")]
         public string DarkModeString { get; set; } = "false";
 
         [XmlIgnore]
-        public bool DarkMode { get { return Funcs.CheckBoolean(DarkModeString) ?? false; } set { DarkModeString = value.ToString(); } }
+        public bool DarkMode
+        {
+            get { return Funcs.CheckBoolean(DarkModeString) ?? false; }
+            set { DarkModeString = value.ToString(); }
+        }
 
         [XmlElement("auto-dark")]
         public string AutoDarkModeString { get; set; } = "false";
 
         [XmlIgnore]
-        public bool AutoDarkMode { get { return Funcs.CheckBoolean(AutoDarkModeString) ?? false; } set { AutoDarkModeString = value.ToString(); } }
+        public bool AutoDarkMode
+        {
+            get { return Funcs.CheckBoolean(AutoDarkModeString) ?? false; }
+            set { AutoDarkModeString = value.ToString(); }
+        }
 
         [XmlIgnore]
         private string _darkModeFrom = "18:00";
@@ -488,10 +572,7 @@ namespace Quota_Express
         [XmlElement("dark-on")]
         public string DarkModeFrom
         {
-            get
-            {
-                return _darkModeFrom;
-            }
+            get { return _darkModeFrom; }
             set
             {
                 if (Array.IndexOf(Funcs.DarkModeFrom, value) >= 0)
@@ -505,10 +586,7 @@ namespace Quota_Express
         [XmlElement("dark-off")]
         public string DarkModeTo
         {
-            get
-            {
-                return _darkModeTo;
-            }
+            get { return _darkModeTo; }
             set
             {
                 if (Array.IndexOf(Funcs.DarkModeTo, value) >= 0)
@@ -520,7 +598,21 @@ namespace Quota_Express
         public string DarkModeFollowSystemString { get; set; } = "true";
 
         [XmlIgnore]
-        public bool DarkModeFollowSystem { get { return Funcs.CheckBoolean(DarkModeFollowSystemString) ?? true; } set { DarkModeFollowSystemString = value.ToString(); } }
+        public bool DarkModeFollowSystem
+        {
+            get { return Funcs.CheckBoolean(DarkModeFollowSystemString) ?? true; }
+            set { DarkModeFollowSystemString = value.ToString(); }
+        }
+
+        [XmlElement("logging")]
+        public string LoggingString { get; set; } = "true";
+
+        [XmlIgnore]
+        public bool Logging
+        {
+            get { return Funcs.CheckBoolean(LoggingString) ?? true; }
+            set { LoggingString = value.ToString(); }
+        }
     }
 
     public class StartupOptions
@@ -529,7 +621,11 @@ namespace Quota_Express
         public string CheckNotificationsString { get; set; } = "true";
 
         [XmlIgnore]
-        public bool CheckNotifications { get { return Funcs.CheckBoolean(CheckNotificationsString) ?? true; } set { CheckNotificationsString = value.ToString(); } }
+        public bool CheckNotifications
+        {
+            get { return Funcs.CheckBoolean(CheckNotificationsString) ?? true; }
+            set { CheckNotificationsString = value.ToString(); }
+        }
 
         [XmlIgnore]
         private string _startupFolder = "";
@@ -537,10 +633,7 @@ namespace Quota_Express
         [XmlElement("folder")]
         public string StartupFolder
         {
-            get
-            {
-                return _startupFolder;
-            }
+            get { return _startupFolder; }
             set
             {
                 if (Directory.Exists(value))

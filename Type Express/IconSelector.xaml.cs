@@ -1,31 +1,24 @@
-﻿using ExpressControls;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Net.Http;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net.Http;
+using System.Web;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using System.Web;
-using System.Diagnostics;
+using ExpressControls;
+using Newtonsoft.Json;
 
 namespace Type_Express
 {
     /// <summary>
     /// Interaction logic for IconSelector.xaml
     /// </summary>
-    public partial class IconSelector : Window
+    public partial class IconSelector : ExpressWindow
     {
-        private readonly string IconAPIKey = "";
         private IEnumerable<ImageItem> QueriedIcons = [];
         public ImageItem? ChosenIcon { get; set; } = null;
 
@@ -39,7 +32,7 @@ namespace Type_Express
         private IconStyle ChosenStyle = IconStyle.All;
         public IconSize ChosenSize { get; set; } = IconSize.Default;
 
-        public IconSelector(string apikey)
+        public IconSelector()
         {
             InitializeComponent();
 
@@ -48,21 +41,25 @@ namespace Type_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
-            IconStyleCombo.ItemsSource = Enum.GetValues(typeof(IconStyle)).OfType<IconStyle>().Select(i =>
-            {
-                return new AppDropdownItem() { Content = GetStyleName(i), Tag = i };
-            });
+            IconStyleCombo.ItemsSource = Enum.GetValues(typeof(IconStyle))
+                .OfType<IconStyle>()
+                .Select(i =>
+                {
+                    return new AppDropdownItem() { Content = GetStyleName(i), Tag = i };
+                });
 
-            IconSizeCombo.ItemsSource = Enum.GetValues(typeof(IconSize)).OfType<IconSize>().Select(i =>
-            {
-                return new AppDropdownItem() { Content = GetSizeName(i), Tag = i };
-            });
+            IconSizeCombo.ItemsSource = Enum.GetValues(typeof(IconSize))
+                .OfType<IconSize>()
+                .Select(i =>
+                {
+                    return new AppDropdownItem() { Content = GetSizeName(i), Tag = i };
+                });
 
             IconStyleCombo.SelectedIndex = 0;
             IconSizeCombo.SelectedIndex = 0;
 
-            IconAPIKey = apikey;
             SearchTxt.Focus();
         }
 
@@ -130,72 +127,68 @@ namespace Type_Express
             string cancellationToken = Guid.NewGuid().ToString();
             CurrentCancellationToken = cancellationToken;
 
+            HttpResponseMessage? response = null;
             try
             {
-                UriBuilder ub = new("https://api.iconfinder.com/v4/icons/search") { Port = -1 };
-            
-                var query = HttpUtility.ParseQueryString(ub.Query);
-                query["query"] = SearchTxt.Text;
-                query["count"] = PerPage.ToString();
-                query["offset"] = ((page - 1) * PerPage).ToString();
-                query["premium"] = "false";
-                query["license"] = "commercial-nonattribution";
-
-                if (ChosenStyle != IconStyle.All)
-                    query["style"] = GetAPIStyleName(ChosenStyle);
-
-                ub.Query = query.ToString();
-
-                HttpRequestMessage httpRequestMessage = new()
+                Dictionary<string, string> queryParams = new()
                 {
-                    Method = HttpMethod.Get,
-                    RequestUri = ub.Uri,
-                    Headers = {
-                        { HttpRequestHeader.Authorization.ToString(), "Bearer " + IconAPIKey },
-                        { HttpRequestHeader.Accept.ToString(), "application/json" }
-                    }
+                    { "query", SearchTxt.Text },
+                    { "count", PerPage.ToString() },
+                    { "offset", ((page - 1) * PerPage).ToString() },
                 };
 
-                var resp = await Funcs.SendHTTPRequest(httpRequestMessage);
-                var content = await resp.Content.ReadAsStringAsync();
-                var results = JsonConvert.DeserializeObject<IconResponse>(content);
+                if (ChosenStyle != IconStyle.All)
+                    queryParams["style"] = GetAPIStyleName(ChosenStyle);
+
+                response = await Funcs.SendAPIRequest("icons", queryParams);
+                response.EnsureSuccessStatusCode();
+
+                string content = await response.Content.ReadAsStringAsync();
+                IconResponse? results = JsonConvert.DeserializeObject<IconResponse>(content);
 
                 if (!CancellationTokens.Contains(cancellationToken))
                 {
                     if (results == null)
                         throw new NullReferenceException();
-
                     else if (results.TotalCount == 0)
                         ShowNoResults();
-
                     else
                     {
-                        IEnumerable<ImageItem> icons = results.Icons.Where(item =>
-                        {
-                            // get size closest to 48
-                            IconSizeItemResponse? size = item.IconSizes.OrderBy(x => Math.Abs(x.Size - 48)).FirstOrDefault(defaultValue: null);
+                        IEnumerable<ImageItem> icons = results
+                            .Icons.Where(item =>
+                            {
+                                // get size closest to 48
+                                IconSizeItemResponse? size = item
+                                    .IconSizes.OrderBy(x => Math.Abs(x.Size - 48))
+                                    .FirstOrDefault(defaultValue: null);
 
-                            if (size != null)
-                                if (size.Formats.Length != 0)
-                                    return true;
+                                if (size != null)
+                                    if (size.Formats.Length != 0)
+                                        return true;
 
-                            return false;
+                                return false;
+                            })
+                            .Select(item =>
+                            {
+                                IconSizeItemResponse size = item
+                                    .IconSizes.OrderBy(x => Math.Abs(x.Size - 48))
+                                    .First();
+                                IconSizeItemResponse small = item
+                                    .IconSizes.OrderBy(x => Math.Abs(x.Size - 24))
+                                    .First();
+                                IconSizeItemResponse large = item
+                                    .IconSizes.OrderBy(x => Math.Abs(x.Size - 96))
+                                    .First();
 
-                        }).Select(item =>
-                        {
-                            IconSizeItemResponse size = item.IconSizes.OrderBy(x => Math.Abs(x.Size - 48)).First();
-                            IconSizeItemResponse small = item.IconSizes.OrderBy(x => Math.Abs(x.Size - 24)).First();
-                            IconSizeItemResponse large = item.IconSizes.OrderBy(x => Math.Abs(x.Size - 96)).First();
-
-                            return new ImageItem()
-                            { 
-                                ID = item.IconID.ToString(), 
-                                Image = new BitmapImage(new Uri(size.Formats[0].PreviewURL)),
-                                RegularURL = size.Formats[0].PreviewURL,
-                                SmallURL = small.Formats[0].PreviewURL,
-                                LargeURL = large.Formats[0].PreviewURL
-                            };
-                        });
+                                return new ImageItem()
+                                {
+                                    ID = item.IconID.ToString(),
+                                    Image = new BitmapImage(new Uri(size.Formats[0].PreviewURL)),
+                                    RegularURL = size.Formats[0].PreviewURL,
+                                    SmallURL = small.Formats[0].PreviewURL,
+                                    LargeURL = large.Formats[0].PreviewURL,
+                                };
+                            });
 
                         if (!icons.Any())
                             ShowNoResults();
@@ -210,7 +203,10 @@ namespace Type_Express
                             LoadingGrid.Visibility = Visibility.Collapsed;
                             NoResultsLbl.Visibility = Visibility.Collapsed;
 
-                            PageCount = (int)Math.Ceiling(Convert.ToSingle(results.TotalCount) / Convert.ToSingle(PerPage));
+                            PageCount = (int)
+                                Math.Ceiling(
+                                    Convert.ToSingle(results.TotalCount) / Convert.ToSingle(PerPage)
+                                );
                             CurrentPage = page;
 
                             if (PageCount == 1)
@@ -218,7 +214,11 @@ namespace Type_Express
                             else
                             {
                                 PagePnl.Visibility = Visibility.Visible;
-                                PageLbl.Text = string.Format(Funcs.ChooseLang("PageStr"), CurrentPage.ToString(), PageCount.ToString());
+                                PageLbl.Text = string.Format(
+                                    Funcs.ChooseLang("PageStr"),
+                                    CurrentPage.ToString(),
+                                    PageCount.ToString()
+                                );
 
                                 if (page == 1)
                                 {
@@ -236,14 +236,25 @@ namespace Type_Express
                                     NextPageBtn.Visibility = Visibility.Visible;
                                 }
                             }
-                        } 
+                        }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Funcs.ShowMessageRes("IconErrorDescStr", "IconErrorStr", MessageBoxButton.OK, 
-                    MessageBoxImage.Exclamation, Funcs.GenerateErrorReport(ex));
+                if (!CancellationTokens.Contains(cancellationToken))
+                {
+                    if (response == null || response.StatusCode != HttpStatusCode.Unauthorized)
+                        Funcs.ShowMessageRes(
+                            "IconErrorDescStr",
+                            "IconErrorStr",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Exclamation,
+                            Funcs.GenerateErrorReport(ex, PageID, "IconErrorDescStr")
+                        );
+
+                    ShowNoResults();
+                }
             }
         }
 
@@ -300,11 +311,16 @@ namespace Type_Express
         {
             Button btn = (Button)sender;
             btn.ContextMenu.IsOpen = true;
-            ChosenIcon = QueriedIcons.Where(x => x.ID == (string)btn.Tag).FirstOrDefault(defaultValue: null);
+            ChosenIcon = QueriedIcons
+                .Where(x => x.ID == (string)btn.Tag)
+                .FirstOrDefault(defaultValue: null);
         }
 
-        private void AddDocBtn_Click(object sender, RoutedEventArgs e) 
+        private void AddDocBtn_Click(object sender, RoutedEventArgs e)
         {
+            if (ChosenIcon != null)
+                Funcs.LogDownload(PageID, ChosenIcon.RegularURL, $"Iconfinder:{ChosenIcon.ID}");
+
             DialogResult = true;
             Close();
         }

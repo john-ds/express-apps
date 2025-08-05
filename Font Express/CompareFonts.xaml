@@ -1,4 +1,4 @@
-﻿<Window x:Class="Font_Express.CompareFonts"
+﻿<ex:ExpressWindow x:Class="Font_Express.CompareFonts"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -13,7 +13,7 @@
                 <ex:MenuButton x:Name="SwapBtn" Click="SwapBtn_Click" TextVisibility="Collapsed" ToolTip="{DynamicResource SwapStr}" Icon="{DynamicResource SwapIcon}" Margin="10,0,0,0" Visibility="Collapsed"/>
                 <ex:MenuButton x:Name="ClearSelectionBtn" Click="ClearSelectionBtn_Click" DockPanel.Dock="Right" Text="{DynamicResource ClearSelectionStr}" Icon="{DynamicResource CrossIcon}" Margin="0,0,10,0" Visibility="Collapsed"/>
                 <ex:MenuButton x:Name="TopBtn" Click="TopBtn_Click" DockPanel.Dock="Right" TextVisibility="Collapsed" ToolTip="{DynamicResource FnTopStr}" Icon="{DynamicResource UpIcon}" Margin="0,0,10,0" Visibility="Collapsed"/>
-                <TextBlock x:Name="SelectedLbl" Margin="20,0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="{DynamicResource NoFontsStr}"/>
+                <TextBlock x:Name="SelectedLbl" Margin="20,0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="{DynamicResource NoFontsStr}" AutomationProperties.LiveSetting="Polite"/>
             </DockPanel>
             <Rectangle Fill="{DynamicResource AppColor}" Height="2" VerticalAlignment="Top" DockPanel.Dock="Bottom"/>
             <ScrollViewer x:Name="Scroller" ScrollChanged="Scroller_ScrollChanged" DockPanel.Dock="Right" VerticalScrollBarVisibility="Visible" Width="250">
@@ -23,7 +23,7 @@
                         <ex:AppTextBox x:Name="SearchTxt" PreviewKeyDown="SearchTxt_PreviewKeyDown" Watermark="{DynamicResource SearchStr}" Margin="0,0,8,0" VerticalAlignment="Center"/>
                     </DockPanel>
                     <TextBlock x:Name="SearchLbl" Visibility="Collapsed" Margin="10,20,10,10" DockPanel.Dock="Top" TextWrapping="Wrap" Text="{DynamicResource SearchResultsStr}" FontSize="14" FontWeight="SemiBold" Opacity="0.7"/>
-                    <ItemsControl x:Name="SearchItems">
+                    <ItemsControl x:Name="SearchItems" AutomationProperties.LabeledBy="{Binding ElementName=SearchLbl}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <VirtualizingStackPanel/>
@@ -36,7 +36,7 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     <TextBlock x:Name="FavouritesLbl" Margin="10,20,10,10" DockPanel.Dock="Top" TextWrapping="Wrap" Text="{DynamicResource FavFontsStr}" FontSize="14" FontWeight="SemiBold" Opacity="0.7"/>
-                    <ItemsControl x:Name="FavouriteItems">
+                    <ItemsControl x:Name="FavouriteItems" AutomationProperties.LabeledBy="{Binding ElementName=FavouritesLbl}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <VirtualizingStackPanel/>
@@ -48,8 +48,8 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <TextBlock Margin="10,20,10,10" DockPanel.Dock="Top" TextWrapping="Wrap" Text="{DynamicResource SuggestedStr}" FontSize="14" FontWeight="SemiBold" Opacity="0.7"/>
-                    <ItemsControl x:Name="SuggestedItems">
+                    <TextBlock x:Name="SuggestedLbl" Margin="10,20,10,10" DockPanel.Dock="Top" TextWrapping="Wrap" Text="{DynamicResource SuggestedStr}" FontSize="14" FontWeight="SemiBold" Opacity="0.7"/>
+                    <ItemsControl x:Name="SuggestedItems" AutomationProperties.LabeledBy="{Binding ElementName=SuggestedLbl}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <VirtualizingStackPanel/>
@@ -79,8 +79,8 @@
         </DockPanel>
         <DockPanel Height="30" Margin="0" VerticalAlignment="Top" Background="{DynamicResource AppColor}">
             <ex:AppButton x:Name="CloseBtn" IsCloseBtn="True" Background="Transparent" Icon="{DynamicResource CloseWhiteIcon}" NoShadow="True" CornerRadius="0" IconSize="16" Height="30" Padding="7,0" TextVisibility="Collapsed" DockPanel.Dock="Right" ToolTip="{DynamicResource CloseStr}"/>
-            <ex:AppButton x:Name="AppLogoBtn" HasNoEffects="True" Background="Transparent" Icon="{DynamicResource AppWhiteIcon}" NoShadow="True" CornerRadius="0" IconSize="20" Height="30" Padding="6,0,0,0" TextVisibility="Collapsed"/>
+            <ex:AppButton x:Name="AppLogoBtn" HasNoEffects="True" Focusable="False" Background="Transparent" Icon="{DynamicResource AppWhiteIcon}" NoShadow="True" CornerRadius="0" IconSize="20" Height="30" Padding="6,0,0,0" TextVisibility="Collapsed"/>
             <ex:AppButton x:Name="TitleBtn" HasNoEffects="True" Focusable="False" Text="{Binding Title, ElementName=Cmp}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Foreground="White" FontSize="12" GapMargin="0" Background="Transparent" NoShadow="True" CornerRadius="0" IconVisibility="Collapsed" Height="30" Padding="7,0"/>
         </DockPanel>
     </Grid>
-</Window>
+</ex:ExpressWindow>

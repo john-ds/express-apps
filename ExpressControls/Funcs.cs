@@ -1,13 +1,5 @@
-﻿using Dropbox.Api;
-using Microsoft.Win32;
-using Microsoft.WindowsAPICodePack.Dialogs;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.Globalization;
@@ -18,10 +10,11 @@ using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -29,6 +22,11 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using System.Xml;
 using System.Xml.Serialization;
+using Dropbox.Api;
+using Microsoft.Win32;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using WinDrawing = System.Drawing;
 
 namespace ExpressControls
@@ -36,94 +34,188 @@ namespace ExpressControls
     public class Funcs
     {
         public static Color[][] ColourSchemes { get; } =
-        [
-            [   // Basic
-                Colors.DeepSkyBlue, Colors.Navy, Colors.Gold, Colors.OrangeRed, Colors.MediumSeaGreen,
-                Colors.Teal, Colors.Gray, Colors.Purple
-            ],
-            [   // Blue
-                HexColor("#FF59E5FB"), HexColor("#FF55A8CF"), HexColor("#FF0AD3B7"),
-                HexColor("#FF5985FB"), HexColor("#FF7659FB"), HexColor("#FF59FBD6"),
-                HexColor("#FF5A6A97"), HexColor("#FF3838FF")
-            ],
-            [   // Green
-                HexColor("#FF59FBDE"), HexColor("#FF6FFB59"), HexColor("#FFA3FB59"),
-                HexColor("#FF64B025"), HexColor("#FF268D63"), HexColor("#FF266A16"),
-                HexColor("#FF9EE050"), HexColor("#FFD4FF8A")
-            ],
-            [   // RedOrange
-                HexColor("#FFFB5959"), HexColor("#FFE48D7F"), HexColor("#FFFBC059"),
-                HexColor("#FFE0C61F"), HexColor("#FFDC742C"), HexColor("#FF974331"),
-                HexColor("#FFC5883E"), HexColor("#FFEA9191")
-            ],
-            [   // Violet
-                HexColor("#FFC759FB"), HexColor("#FF9624F5"), HexColor("#FFE559FB"),
-                HexColor("#FF6E305A"), HexColor("#FFC18CEE"), HexColor("#FFC895CB"),
-                HexColor("#FF741FC9"), HexColor("#FFC937A1")
-            ],
-            [   // Office
-                HexColor("#FF4472C4"), HexColor("#FF5B9BD5"), HexColor("#FFED7D31"),
-                HexColor("#FFFFC000"), HexColor("#FF70AD47"), HexColor("#FF7030A0"),
-                HexColor("#FFE7E6E6"), HexColor("#FF44546A")
-            ],
-            [   // Grayscale
-                HexColor("#FFF1F1F1"), Colors.Gainsboro, HexColor("#FFAEAEAE"),
-                HexColor("#FF8D8D8D"), HexColor("#FF787878"), HexColor("#FF5D5B5B"),
-                HexColor("#FF3D3D3E"), HexColor("#FF232323")
-            ]
-        ];
+            [
+                [ // Basic
+                    Colors.DeepSkyBlue,
+                    Colors.Navy,
+                    Colors.Gold,
+                    Colors.OrangeRed,
+                    Colors.MediumSeaGreen,
+                    Colors.Teal,
+                    Colors.Gray,
+                    Colors.Purple,
+                ],
+                [ // Blue
+                    HexColor("#FF59E5FB"),
+                    HexColor("#FF55A8CF"),
+                    HexColor("#FF0AD3B7"),
+                    HexColor("#FF5985FB"),
+                    HexColor("#FF7659FB"),
+                    HexColor("#FF59FBD6"),
+                    HexColor("#FF5A6A97"),
+                    HexColor("#FF3838FF"),
+                ],
+                [ // Green
+                    HexColor("#FF59FBDE"),
+                    HexColor("#FF6FFB59"),
+                    HexColor("#FFA3FB59"),
+                    HexColor("#FF64B025"),
+                    HexColor("#FF268D63"),
+                    HexColor("#FF266A16"),
+                    HexColor("#FF9EE050"),
+                    HexColor("#FFD4FF8A"),
+                ],
+                [ // RedOrange
+                    HexColor("#FFFB5959"),
+                    HexColor("#FFE48D7F"),
+                    HexColor("#FFFBC059"),
+                    HexColor("#FFE0C61F"),
+                    HexColor("#FFDC742C"),
+                    HexColor("#FF974331"),
+                    HexColor("#FFC5883E"),
+                    HexColor("#FFEA9191"),
+                ],
+                [ // Violet
+                    HexColor("#FFC759FB"),
+                    HexColor("#FF9624F5"),
+                    HexColor("#FFE559FB"),
+                    HexColor("#FF6E305A"),
+                    HexColor("#FFC18CEE"),
+                    HexColor("#FFC895CB"),
+                    HexColor("#FF741FC9"),
+                    HexColor("#FFC937A1"),
+                ],
+                [ // Office
+                    HexColor("#FF4472C4"),
+                    HexColor("#FF5B9BD5"),
+                    HexColor("#FFED7D31"),
+                    HexColor("#FFFFC000"),
+                    HexColor("#FF70AD47"),
+                    HexColor("#FF7030A0"),
+                    HexColor("#FFE7E6E6"),
+                    HexColor("#FF44546A"),
+                ],
+                [ // Grayscale
+                    HexColor("#FFF1F1F1"),
+                    Colors.Gainsboro,
+                    HexColor("#FFAEAEAE"),
+                    HexColor("#FF8D8D8D"),
+                    HexColor("#FF787878"),
+                    HexColor("#FF5D5B5B"),
+                    HexColor("#FF3D3D3E"),
+                    HexColor("#FF232323"),
+                ],
+            ];
 
-        public static Dictionary<string, Color> Highlighters { get; } = new()
-        {
-            { "NoColourStr", Colors.White },
-            { "YellowStr", Colors.Yellow },
-            { "BrightGreenStr", Colors.Lime },
-            { "CyanStr", Colors.Cyan },
-            { "MagentaStr", Colors.Magenta },
-            { "BlueHighlightStr", Colors.Blue },
-            { "RedStr", Colors.Red },
-            { "LightGreyStr", Colors.LightGray },
-            { "DarkGreyStr", Colors.DarkGray },
-            { "BlackStr", Colors.Black }
-        };
+        public static Dictionary<string, Color> Highlighters { get; } =
+            new()
+            {
+                { "NoColourStr", Colors.White },
+                { "YellowStr", Colors.Yellow },
+                { "BrightGreenStr", Colors.Lime },
+                { "CyanStr", Colors.Cyan },
+                { "MagentaStr", Colors.Magenta },
+                { "BlueHighlightStr", Colors.Blue },
+                { "RedStr", Colors.Red },
+                { "LightGreyStr", Colors.LightGray },
+                { "DarkGreyStr", Colors.DarkGray },
+                { "BlackStr", Colors.Black },
+            };
 
-        public static Dictionary<string, Color> StandardBackgrounds { get; } = new()
-        {
-            { "WhiteStr", Colors.White },
-            { "BlackStr", Colors.Black },
-            { "LightGreyBackStr", Colors.LightGray },
-            { "DarkGreyBackStr", Colors.DarkGray },
-            { "BlueStr", HexColor("#5FCCFF") },
-            { "YellowStr", HexColor("#FFCD49") },
-            { "PurpleStr", HexColor("#BB82FF") },
-            { "GreenStr", HexColor("#7FD883") }
-        };
+        public static Dictionary<string, Color> StandardBackgrounds { get; } =
+            new()
+            {
+                { "WhiteStr", Colors.White },
+                { "BlackStr", Colors.Black },
+                { "LightGreyBackStr", Colors.LightGray },
+                { "DarkGreyBackStr", Colors.DarkGray },
+                { "BlueStr", HexColor("#5FCCFF") },
+                { "YellowStr", HexColor("#FFCD49") },
+                { "PurpleStr", HexColor("#BB82FF") },
+                { "GreenStr", HexColor("#7FD883") },
+            };
 
         public static readonly string[] DarkModeFrom =
         [
-            "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00"
+            "16:00",
+            "16:30",
+            "17:00",
+            "17:30",
+            "18:00",
+            "18:30",
+            "19:00",
+            "19:30",
+            "20:00",
+            "20:30",
+            "21:00",
+            "21:30",
+            "22:00",
         ];
 
         public static readonly string[] DarkModeTo =
         [
-            "4:00", "4:30", "5:00", "5:30", "6:00", "6:30", "7:00", "7:30", "8:00", "8:30", "9:00", "9:30", "10:00"
+            "4:00",
+            "4:30",
+            "5:00",
+            "5:30",
+            "6:00",
+            "6:30",
+            "7:00",
+            "7:30",
+            "8:00",
+            "8:30",
+            "9:00",
+            "9:30",
+            "10:00",
         ];
 
         public static readonly string[] SuggestedFonts =
         [
-            "Inter", "Roboto", "Open Sans", "Montserrat", "Lato", "Raleway", "Ubuntu", "Merriweather", "Lora", "Source Sans Pro", 
-            "Source Serif Pro", "Cabin", "Georgia", "Franklin Gothic", "Gotham", "Baskerville", "Proxima Nova", "Calibri", 
-            "Calibri Light", "Bahnschrift", "Cambria", "Corbel", "Trebuchet MS", "Verdana", "Tahoma", "Candara", "Arial"
+            "Inter",
+            "Roboto",
+            "Open Sans",
+            "Montserrat",
+            "Lato",
+            "Raleway",
+            "Ubuntu",
+            "Merriweather",
+            "Lora",
+            "Source Sans Pro",
+            "Source Serif Pro",
+            "Cabin",
+            "Georgia",
+            "Franklin Gothic",
+            "Gotham",
+            "Baskerville",
+            "Proxima Nova",
+            "Calibri",
+            "Calibri Light",
+            "Bahnschrift",
+            "Cambria",
+            "Corbel",
+            "Trebuchet MS",
+            "Verdana",
+            "Tahoma",
+            "Candara",
+            "Arial",
         ];
 
-        public static readonly DispatcherTimer AppThemeTimer = new() { Interval = new TimeSpan(0, 1, 0) };
-
-#pragma warning disable CA2211 // Non-constant fields should not be visible
+        public static readonly DispatcherTimer AppThemeTimer = new()
+        {
+            Interval = new TimeSpan(0, 1, 0),
+        };
         public static ThemeOptions AppTheme = ThemeOptions.LightMode;
         public static string AutoDarkModeOn = "18:00";
         public static string AutoDarkModeOff = "6:00";
-#pragma warning restore CA2211 // Non-constant fields should not be visible
-        
+
+        public static LoggingService Logger = new();
+        public static ISecretsManager? Secrets;
+#if DEBUG
+        public static string APIEndpoint = "http://localhost:3000";
+#else
+        public static string APIEndpoint = "https://api.johnjds.co.uk";
+#endif
+
         #region Localisation
 
         /// <summary>
@@ -142,7 +234,12 @@ namespace ExpressControls
             {
                 ResourceDictionary commonresdict = new()
                 {
-                    Source = new Uri("pack://application:,,,/ExpressControls;component/CommonDictionary" + lang.Split("-")[1] + ".xaml", UriKind.Absolute)
+                    Source = new Uri(
+                        "pack://application:,,,/ExpressControls;component/CommonDictionary"
+                            + lang.Split("-")[1]
+                            + ".xaml",
+                        UriKind.Absolute
+                    ),
                 };
                 Application.Current.Resources.MergedDictionaries.Add(commonresdict);
             }
@@ -192,18 +289,27 @@ namespace ExpressControls
                 switch (english)
                 {
                     case "BoldIcon":
-                        options = new Dictionary<string, string>() { 
-                            { "fr", "GrasIcon" }, { "es", "NegritaIcon" }, { "it", "GrasIcon" } 
+                        options = new Dictionary<string, string>()
+                        {
+                            { "fr", "GrasIcon" },
+                            { "es", "NegritaIcon" },
+                            { "it", "GrasIcon" },
                         };
                         break;
                     case "ItalicIcon":
-                        options = new Dictionary<string, string>() { 
-                            { "fr", "ItalicIcon" }, { "es", "ItalicIcon" }, { "it", "CorsivoIcon" } 
+                        options = new Dictionary<string, string>()
+                        {
+                            { "fr", "ItalicIcon" },
+                            { "es", "ItalicIcon" },
+                            { "it", "CorsivoIcon" },
                         };
                         break;
                     case "UnderlineIcon":
-                        options = new Dictionary<string, string>() { 
-                            { "fr", "SousligneIcon" }, { "es", "SousligneIcon" }, { "it", "SousligneIcon" } 
+                        options = new Dictionary<string, string>()
+                        {
+                            { "fr", "SousligneIcon" },
+                            { "es", "SousligneIcon" },
+                            { "it", "SousligneIcon" },
                         };
                         break;
                     default:
@@ -286,7 +392,12 @@ namespace ExpressControls
         public static void MoveForm(object h)
         {
             ReleaseCapture();
-            _ = SendMessage(new System.Windows.Interop.WindowInteropHelper((Window)h).Handle, 0xA1, 2, 0);
+            _ = SendMessage(
+                new System.Windows.Interop.WindowInteropHelper((Window)h).Handle,
+                0xA1,
+                2,
+                0
+            );
         }
 
         public static FrameworkElement GetControl(object window, string control)
@@ -325,16 +436,16 @@ namespace ExpressControls
                     GetControl(sender, "MaxBtn")
                         .SetResourceReference(AppButton.IconProperty, "RestoreWhiteIcon");
 
-                    GetControl(sender, "MaxBtn").ToolTip 
-                        = Application.Current.Resources["RestoreStr"];
+                    GetControl(sender, "MaxBtn").ToolTip = Application.Current.Resources[
+                        "RestoreStr"
+                    ];
                 }
                 else
                 {
                     GetControl(sender, "MaxBtn")
                         .SetResourceReference(AppButton.IconProperty, "MaxWhiteIcon");
 
-                    GetControl(sender, "MaxBtn").ToolTip
-                        = Application.Current.Resources["MaxStr"];
+                    GetControl(sender, "MaxBtn").ToolTip = Application.Current.Resources["MaxStr"];
                 }
         }
 
@@ -355,9 +466,57 @@ namespace ExpressControls
                 GetControl(sender, "TitleBtn").Opacity = 0.6;
         }
 
-#pragma warning disable CA2211 // Non-constant fields should not be visible
+        public static void SystemMenuEvent(object sender, MouseButtonEventArgs e)
+        {
+            Window win = GetWindow(sender);
+            Point screenPosition = win.PointToScreen(Mouse.GetPosition(win));
+            SystemCommands.ShowSystemMenu(win, screenPosition);
+        }
+
+        public static void PopupOpenedEvent(object? sender, EventArgs e)
+        {
+            if (sender is Popup popup && popup.Child is PopupContainer container)
+            {
+                if (container.Template.FindName("scrl", container) is ScrollViewer scrollViewer)
+                    scrollViewer.Focus();
+            }
+        }
+
+        public static void PopupKeyDownEvent(object? sender, KeyEventArgs e)
+        {
+            if (sender is Popup popup && !popup.StaysOpen && e.Key == Key.Escape)
+            {
+                e.Handled = true;
+                popup.IsOpen = false;
+                popup.PlacementTarget?.Focus();
+            }
+        }
+
+        public static void RegisterPopups(FrameworkElement containingElement)
+        {
+            try
+            {
+                foreach (
+                    Popup popup in LogicalTreeHelper.GetChildren(containingElement).OfType<Popup>()
+                )
+                {
+                    popup.Opened += PopupOpenedEvent;
+                    popup.KeyDown += PopupKeyDownEvent;
+                }
+            }
+            catch { }
+        }
+
+        public static void TextBoxKeyDownEvent(object? sender, KeyEventArgs e)
+        {
+            if (sender is TextBoxBase txt && txt.AcceptsTab && e.Key == Key.Escape)
+            {
+                e.Handled = true;
+                txt.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+            }
+        }
+
         public static bool EnableInfoBoxAudio = true;
-#pragma warning restore CA2211 // Non-constant fields should not be visible
 
         /// <summary>
         ///     Shows a messagebox to the user and awaits a response.
@@ -378,11 +537,12 @@ namespace ExpressControls
         ///     An ErrorReport that contains error data if the user wishes to send an error report.
         /// </param>
         public static MessageBoxResult ShowPrompt(
-            string text, 
+            string text,
             string caption = "Express Apps",
-            MessageBoxButton buttons = MessageBoxButton.OK, 
+            MessageBoxButton buttons = MessageBoxButton.OK,
             MessageBoxImage icon = MessageBoxImage.None,
-            ErrorReport? report = null)
+            ErrorReport? report = null
+        )
         {
             InfoBox i = new(text, caption, buttons, icon, report, EnableInfoBoxAudio);
             i.ShowDialog();
@@ -412,7 +572,8 @@ namespace ExpressControls
             string caption,
             MessageBoxButton buttons = MessageBoxButton.OK,
             MessageBoxImage icon = MessageBoxImage.None,
-            ErrorReport? report = null)
+            ErrorReport? report = null
+        )
         {
             return ShowPrompt(ChooseLang(text), ChooseLang(caption), buttons, icon, report);
         }
@@ -440,7 +601,8 @@ namespace ExpressControls
             string caption = "Express Apps",
             MessageBoxButton buttons = MessageBoxButton.OK,
             MessageBoxImage icon = MessageBoxImage.None,
-            ErrorReport? report = null)
+            ErrorReport? report = null
+        )
         {
             _ = ShowPrompt(text, caption, buttons, icon, report);
         }
@@ -469,7 +631,8 @@ namespace ExpressControls
             string caption,
             MessageBoxButton buttons = MessageBoxButton.OK,
             MessageBoxImage icon = MessageBoxImage.None,
-            ErrorReport? report = null)
+            ErrorReport? report = null
+        )
         {
             _ = ShowPromptRes(text, caption, buttons, icon, report);
         }
@@ -483,9 +646,7 @@ namespace ExpressControls
         /// <param name="caption">
         ///     The resource key value for the text to display in the title bar of the messagebox.
         /// </param>
-        public static string? ShowInputRes(
-            string text,
-            string caption)
+        public static string? ShowInputRes(string text, string caption)
         {
             return ShowInput(ChooseLang(text), ChooseLang(caption));
         }
@@ -499,9 +660,7 @@ namespace ExpressControls
         /// <param name="caption">
         ///     The text to display in the title bar of the messagebox.
         /// </param>
-        public static string? ShowInput(
-            string text,
-            string caption)
+        public static string? ShowInput(string text, string caption)
         {
             InfoBox i = new(text, caption, MessageBoxButton.OKCancel, showInput: true);
             i.ShowDialog();
@@ -531,9 +690,17 @@ namespace ExpressControls
             string text,
             string caption = "Express Apps",
             MessageBoxButton buttons = MessageBoxButton.OK,
-            MessageBoxImage icon = MessageBoxImage.None)
+            MessageBoxImage icon = MessageBoxImage.None
+        )
         {
-            InfoBox i = new(text, caption, buttons, icon, audio: EnableInfoBoxAudio, showApplyAllCheckbox: true);
+            InfoBox i = new(
+                text,
+                caption,
+                buttons,
+                icon,
+                audio: EnableInfoBoxAudio,
+                showApplyAllCheckbox: true
+            );
             i.ShowDialog();
             return (i.Result, i.ApplyToAllBtn.IsChecked == true);
         }
@@ -558,7 +725,8 @@ namespace ExpressControls
             string text,
             string caption,
             MessageBoxButton buttons = MessageBoxButton.OK,
-            MessageBoxImage icon = MessageBoxImage.None)
+            MessageBoxImage icon = MessageBoxImage.None
+        )
         {
             return ShowPromptWithCheckbox(ChooseLang(text), ChooseLang(caption), buttons, icon);
         }
@@ -566,10 +734,11 @@ namespace ExpressControls
         #endregion
         #region Ribbons
 
-#pragma warning disable CA2211 // Non-constant fields should not be visible
-        public static readonly DispatcherTimer ScrollTimer = new() { Interval = new TimeSpan(0, 0, 0, 0, 10) };
+        public static readonly DispatcherTimer ScrollTimer = new()
+        {
+            Interval = new TimeSpan(0, 0, 0, 0, 10),
+        };
         public static string[] Tabs = [];
-#pragma warning restore CA2211 // Non-constant fields should not be visible
 
         public static void ScrollTimer_Tick(object? sender, EventArgs e)
         {
@@ -604,7 +773,8 @@ namespace ExpressControls
             try
             {
                 string tab = Tabs.Where(x => ((StackPanel)sender).Name.StartsWith(x)).First();
-                ScrollViewer scroller = (ScrollViewer)GetWindow(sender).FindName(tab + "ScrollViewer");
+                ScrollViewer scroller = (ScrollViewer)
+                    GetWindow(sender).FindName(tab + "ScrollViewer");
 
                 scroller.ScrollToHorizontalOffset(scroller.HorizontalOffset + e.Delta);
             }
@@ -632,7 +802,8 @@ namespace ExpressControls
             {
                 StackPanel pnl = (StackPanel)GetWindow(sender).FindName(tab + "Pnl");
                 Grid grd = (Grid)GetWindow(sender).FindName(tab + "Scroll");
-                ScrollViewer scroller = (ScrollViewer)GetWindow(sender).FindName(tab + "ScrollViewer");
+                ScrollViewer scroller = (ScrollViewer)
+                    GetWindow(sender).FindName(tab + "ScrollViewer");
 
                 if (pnl.ActualWidth + 14 > scroller.ActualWidth)
                 {
@@ -655,7 +826,10 @@ namespace ExpressControls
             if (docTabs.SelectedIndex != Tabs.ToList().IndexOf(tab))
             {
                 docTabs.SelectedIndex = Tabs.ToList().IndexOf(tab);
-                GetWindow(sender).BeginStoryboard((Storyboard)GetWindow(sender).TryFindResource(tab + "Storyboard"));
+                GetWindow(sender)
+                    .BeginStoryboard(
+                        (Storyboard)GetWindow(sender).TryFindResource(tab + "Storyboard")
+                    );
             }
 
             if (tab != "Menu" && GetWindow(sender).Resources.Contains("OverlayOutStoryboard"))
@@ -700,7 +874,8 @@ namespace ExpressControls
 
             if (tabControl.SelectedIndex >= 0)
             {
-                string name = (string)tabControl.Items.OfType<TabItem>().ToList()[tabControl.SelectedIndex].Tag;
+                string name = (string)
+                    tabControl.Items.OfType<TabItem>().ToList()[tabControl.SelectedIndex].Tag;
                 ((TextBlock)GetWindow(sender).FindName("SideHeaderLbl")).Text = name;
             }
         }
@@ -751,7 +926,7 @@ namespace ExpressControls
         public static readonly HttpClient httpClient = new();
         public static readonly HttpClient httpClientWithTimeout = new()
         {
-            Timeout = TimeSpan.FromMinutes(20)
+            Timeout = TimeSpan.FromMinutes(20),
         };
 
         public static T? Deserialize<T>(string json)
@@ -769,9 +944,10 @@ namespace ExpressControls
             return await httpClient.GetByteArrayAsync(uri);
         }
 
-        public static async Task<T> GetJsonAsync<T>(string uri) {
+        public static async Task<T> GetJsonAsync<T>(string uri)
+        {
             var res = Deserialize<T>(await httpClient.GetStringAsync(uri));
-            
+
             if (res != null)
                 return res;
             else
@@ -783,18 +959,285 @@ namespace ExpressControls
             return await GetJsonAsync<JObject>(uri);
         }
 
+        public static string ConvertQParamsToString(Dictionary<string, string> queryParams)
+        {
+            return string.Join(
+                "&",
+                queryParams.Select(kvp =>
+                    $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}"
+                )
+            );
+        }
+
         public static async Task<HttpResponseMessage> SendHTTPRequest(HttpRequestMessage message)
         {
             return await httpClient.SendAsync(message);
         }
 
+        public static async Task<HttpResponseMessage> SendAPIRequest(
+            string endpoint,
+            Dictionary<string, string>? queryParams = null,
+            object? body = null
+        )
+        {
+            if (Secrets == null)
+            {
+                try
+                {
+                    var type = Type.GetType("ExpressControls.SecretsManager");
+                    Secrets =
+                        type != null
+                            ? (ISecretsManager?)Activator.CreateInstance(type)
+                            : new MissingSecretsManager();
+                }
+                catch
+                {
+                    Secrets = new MissingSecretsManager();
+                }
+            }
+
+            string key = Secrets?.APIKey ?? "";
+            if (string.IsNullOrEmpty(key))
+            {
+                ShowMessageRes(
+                    "APIKeyNotFoundStr",
+                    "CriticalErrorStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
+
+                return new HttpResponseMessage(HttpStatusCode.Unauthorized);
+            }
+
+            string queryString =
+                queryParams?.Count > 0 ? "?" + ConvertQParamsToString(queryParams) : "";
+
+            HttpRequestMessage httpRequestMessage = new()
+            {
+                Method = HttpMethod.Get,
+                RequestUri = new Uri($"{APIEndpoint}/api/{endpoint}{queryString}"),
+                Headers =
+                {
+                    { HttpRequestHeader.Accept.ToString(), "application/json" },
+                    { HttpRequestHeader.Authorization.ToString(), $"Bearer {key}" },
+                    { "X-App-Name", GetCurrentAppName().Split(' ')[0].ToLower() },
+                    { "X-App-Version", GetCurrentAppVersion() },
+                    { "X-App-Language", GetCurrentLang() },
+                },
+            };
+
+            if (body != null)
+            {
+                httpRequestMessage.Method = HttpMethod.Post;
+                httpRequestMessage.Content = new StringContent(JsonConvert.SerializeObject(body));
+            }
+
+            LogConversion(null, LoggingProperties.Conversion.APIRequest, endpoint);
+            return await httpClient.SendAsync(httpRequestMessage);
+        }
+
+        #endregion
+        #region Logging
+
+        public static void LogApplicationStart(ExpressApp app, bool enableLogging = false)
+        {
+            Logger.App = app;
+
+            if (enableLogging)
+                Logger.EnableLogging();
+        }
+
+        public static async Task LogApplicationEnd()
+        {
+            await Logger.LogApplicationExit();
+            Application.Current.Shutdown();
+        }
+
+        public static Guid LogWindowOpen(ExpressWindow window)
+        {
+            Guid pageID = window.PageID ?? Guid.NewGuid();
+            try
+            {
+                Logger.LogEvent(
+                    new EntranceLogEvent(
+                        Logger.App,
+                        Logger.SessionID,
+                        pageID.ToString(),
+                        window.GetType().Name,
+                        window.TitleOverride ?? window.Title,
+                        (int)window.Width,
+                        (int)window.Height,
+                        (int)(window.LoadedDateTime - window.InitDateTime).TotalMilliseconds
+                    )
+                );
+            }
+            catch { }
+            return pageID;
+        }
+
+        public static void LogWindowClose(Guid? pageID)
+        {
+            try
+            {
+                if (!pageID.HasValue)
+                    return;
+
+                Logger.LogEvent(
+                    new ExitLogEvent(Logger.App, Logger.SessionID, pageID.Value.ToString())
+                );
+            }
+            catch { }
+        }
+
+        public static void LogClick(Guid? pageID, RoutedEventArgs eventArgs)
+        {
+            try
+            {
+                if (!pageID.HasValue)
+                    return;
+
+                if (eventArgs.Source is ButtonBase element)
+                {
+                    if (LoggingProperties.GetDisableLogging(element))
+                        return;
+
+                    string elementText = element switch
+                    {
+                        AppButton ab => ab
+                            .Text.Or(ab.ToolTip)
+                            .Or(ab.GetValue(AutomationProperties.NameProperty)),
+                        MenuButton ab => ab
+                            .Text.Or(ab.ToolTip)
+                            .Or(ab.GetValue(AutomationProperties.NameProperty)),
+                        CardButton ab => ab
+                            .Text.Or(ab.ToolTip)
+                            .Or(ab.GetValue(AutomationProperties.NameProperty)),
+                        _ => element
+                            .GetValue(AutomationProperties.NameProperty)
+                            ?.ToString()
+                            ?.Or((element.Content is string content) ? content : null)
+                            ?.Or(element.ToolTip) ?? "",
+                    };
+
+                    if (string.IsNullOrEmpty(elementText))
+                        return;
+
+                    Point position = element.PointToScreen(Mouse.GetPosition(element));
+                    Logger.LogEvent(
+                        new ClickLogEvent(
+                            Logger.App,
+                            Logger.SessionID,
+                            pageID.Value.ToString(),
+                            element.Name,
+                            elementText,
+                            (int)position.X,
+                            (int)position.Y
+                        )
+                    );
+                }
+            }
+            catch { }
+        }
+
+        public static void LogClick(Guid? pageID, string name, string text)
+        {
+            try
+            {
+                if (!pageID.HasValue)
+                    return;
+
+                Logger.LogEvent(
+                    new ClickLogEvent(
+                        Logger.App,
+                        Logger.SessionID,
+                        pageID.Value.ToString(),
+                        name,
+                        text,
+                        0,
+                        0
+                    )
+                );
+            }
+            catch { }
+        }
+
+        public static void LogDownload(Guid? pageID, string link, string data = "")
+        {
+            try
+            {
+                if (!pageID.HasValue)
+                    return;
+
+                Logger.LogEvent(
+                    new DownloadLogEvent(
+                        Logger.App,
+                        Logger.SessionID,
+                        pageID.Value.ToString(),
+                        link,
+                        data
+                    )
+                );
+            }
+            catch { }
+        }
+
+        public static void LogConversion(Guid? pageID, string id, string data = "")
+        {
+            try
+            {
+                if (!pageID.HasValue)
+                    return;
+
+                Logger.LogEvent(
+                    new ConversionLogEvent(
+                        Logger.App,
+                        Logger.SessionID,
+                        pageID.Value.ToString(),
+                        id,
+                        data
+                    )
+                );
+            }
+            catch { }
+        }
+
+        public static void LogError(Guid? pageID, string message, string source)
+        {
+            try
+            {
+                Logger.LogEvent(
+                    new ErrorLogEvent(
+                        Logger.App,
+                        Logger.SessionID,
+                        pageID?.ToString() ?? Logger.MainPageID,
+                        message,
+                        source
+                    )
+                );
+            }
+            catch { }
+        }
+
+        public static void HandleLoggingSettingChange(bool loggingEnabled)
+        {
+            if (loggingEnabled)
+            {
+                Logger.EnableLogging();
+
+                foreach (var win in Application.Current.Windows.OfType<ExpressWindow>())
+                    LogWindowOpen(win);
+            }
+            else
+                Logger.DisableLogging();
+        }
+
         public static async Task SendErrorReport(ErrorReport report)
         {
             StringContent content = new(JsonConvert.SerializeObject(report));
-            await httpClient.PostAsync("https://api.johnjds.co.uk/.netlify/functions/log", content);
+            await httpClient.PostAsync($"{APIEndpoint}/api/log", content);
         }
 
-        public static ErrorReport GenerateErrorReport(Exception ex, string email = "")
+        public static string GetSourceFromException(Exception ex)
         {
             string source = "";
             if (ex.TargetSite != null)
@@ -803,24 +1246,40 @@ namespace ExpressControls
                 if (ex.TargetSite.DeclaringType != null)
                     source += " (" + ex.TargetSite.DeclaringType.Name + ")";
             }
+            return source;
+        }
 
-            if (email != "")
+        public static ErrorReport GenerateErrorReport(
+            Exception ex,
+            Guid? id,
+            string contextRes = "",
+            string emailRes = ""
+        )
+        {
+            string source = GetSourceFromException(ex);
+            string message = string.IsNullOrEmpty(contextRes)
+                ? ex.Message
+                : $"{ChooseLang(contextRes)}\n\n{ex.Message}";
+
+            LogError(id, message, source);
+
+            if (!string.IsNullOrEmpty(emailRes))
                 return new ErrorReport()
                 {
-                    App = Assembly.GetEntryAssembly()?.GetName().Name ?? "Express Apps",
-                    Message = ex.Message,
+                    App = GetCurrentAppName(),
+                    Message = message,
                     Source = source,
-                    Version = (Assembly.GetEntryAssembly()?.GetName().Version ?? new Version()).ToString(3),
+                    Version = GetCurrentAppVersion(),
                     Email = true,
-                    EmailInfo = email
+                    EmailInfo = ChooseLang(emailRes),
                 };
             else
                 return new ErrorReport()
                 {
-                    App = Assembly.GetEntryAssembly()?.GetName().Name ?? "Express Apps",
-                    Message = ex.Message,
+                    App = GetCurrentAppName(),
+                    Message = message,
                     Source = source,
-                    Version = (Assembly.GetEntryAssembly()?.GetName().Version ?? new Version()).ToString(3)
+                    Version = GetCurrentAppVersion(),
                 };
         }
 
@@ -908,128 +1367,140 @@ namespace ExpressControls
         {
             Title = Assembly.GetEntryAssembly()?.GetName().Name,
             Filter = ChooseLang("TypeFilesFilterStr"),
-            Multiselect = true
+            Multiselect = true,
         };
 
         public static readonly SaveFileDialog RTFTXTSaveDialog = new()
         {
             Title = Assembly.GetEntryAssembly()?.GetName().Name,
-            Filter = ChooseLang("TypeFilesShortFilterStr")
+            Filter = ChooseLang("TypeFilesShortFilterStr"),
         };
 
         public static readonly OpenFileDialog PRESENTOpenDialog = new()
         {
             Title = Assembly.GetEntryAssembly()?.GetName().Name,
             Filter = ChooseLang("PresentFilterStr"),
-            Multiselect = true
+            Multiselect = true,
         };
 
         public static readonly SaveFileDialog PRESENTSaveDialog = new()
         {
             Title = Assembly.GetEntryAssembly()?.GetName().Name,
-            Filter = ChooseLang("PresentFilterStr")
+            Filter = ChooseLang("PresentFilterStr"),
         };
 
         public static readonly SaveFileDialog HTMLSaveDialog = new()
         {
             Title = Assembly.GetEntryAssembly()?.GetName().Name,
-            Filter = ChooseLang("HTMLFilesFilterStr")
+            Filter = ChooseLang("HTMLFilesFilterStr"),
         };
 
         public static readonly CommonOpenFileDialog FolderBrowserDialog = new()
         {
             Title = Assembly.GetEntryAssembly()?.GetName().Name,
             IsFolderPicker = true,
-            Multiselect = false
+            Multiselect = false,
         };
 
         public static readonly OpenFileDialog TextOpenDialog = new()
         {
             Title = Assembly.GetEntryAssembly()?.GetName().Name,
             Filter = ChooseLang("TextFilesFilterStr"),
-            Multiselect = false
+            Multiselect = false,
         };
 
         public static readonly SaveFileDialog TextSaveDialog = new()
         {
             Title = Assembly.GetEntryAssembly()?.GetName().Name,
-            Filter = ChooseLang("TextFilesFilterStr")
+            Filter = ChooseLang("TextFilesFilterStr"),
         };
 
         public static readonly SaveFileDialog RTFSaveDialog = new()
         {
             Title = Assembly.GetEntryAssembly()?.GetName().Name,
-            Filter = ChooseLang("RTFFilesFilterStr")
+            Filter = ChooseLang("RTFFilesFilterStr"),
         };
 
         public static readonly SaveFileDialog XMLSaveDialog = new()
         {
             Title = Assembly.GetEntryAssembly()?.GetName().Name,
-            Filter = ChooseLang("XMLFilesFilterStr")
+            Filter = ChooseLang("XMLFilesFilterStr"),
         };
 
         public static readonly SaveFileDialog JSONSaveDialog = new()
         {
             Title = Assembly.GetEntryAssembly()?.GetName().Name,
-            Filter = ChooseLang("JSONFilesFilterStr")
+            Filter = ChooseLang("JSONFilesFilterStr"),
         };
 
         public static readonly SaveFileDialog WAVSaveDialog = new()
         {
             Title = Assembly.GetEntryAssembly()?.GetName().Name,
-            Filter = ChooseLang("WAVFilesFilterStr")
+            Filter = ChooseLang("WAVFilesFilterStr"),
         };
 
         public static readonly SaveFileDialog MP4SaveDialog = new()
         {
             Title = Assembly.GetEntryAssembly()?.GetName().Name,
-            Filter = ChooseLang("MP4FilesFilterStr")
+            Filter = ChooseLang("MP4FilesFilterStr"),
         };
 
         public static readonly SaveFileDialog PNGSaveDialog = new()
         {
             Title = Assembly.GetEntryAssembly()?.GetName().Name,
-            Filter = ChooseLang("PNGFilesFilterStr")
+            Filter = ChooseLang("PNGFilesFilterStr"),
         };
 
         public static readonly OpenFileDialog CSVOpenDialog = new()
         {
             Title = Assembly.GetEntryAssembly()?.GetName().Name,
             Filter = ChooseLang("CSVFilesFilterStr"),
-            Multiselect = false
+            Multiselect = false,
         };
 
         public static readonly SaveFileDialog CSVSaveDialog = new()
         {
             Title = Assembly.GetEntryAssembly()?.GetName().Name,
-            Filter = ChooseLang("CSVFilesFilterStr")
+            Filter = ChooseLang("CSVFilesFilterStr"),
         };
 
         public static readonly OpenFileDialog ImportSettingsDialog = new()
         {
-            Title = ChooseLang("OpImportDialogStr") + " - " + Assembly.GetEntryAssembly()?.GetName().Name,
+            Title =
+                ChooseLang("OpImportDialogStr")
+                + " - "
+                + Assembly.GetEntryAssembly()?.GetName().Name,
             Filter = ChooseLang("XMLFilesFilterStr"),
-            Multiselect = false
+            Multiselect = false,
         };
 
         public static readonly SaveFileDialog ExportSettingsDialog = new()
         {
-            Title = ChooseLang("OpExportDialogStr") + " - " + Assembly.GetEntryAssembly()?.GetName().Name,
-            Filter = ChooseLang("XMLFilesFilterStr")
+            Title =
+                ChooseLang("OpExportDialogStr")
+                + " - "
+                + Assembly.GetEntryAssembly()?.GetName().Name,
+            Filter = ChooseLang("XMLFilesFilterStr"),
         };
 
         public static readonly OpenFileDialog PictureOpenDialog = new()
         {
-            Title = ChooseLang("ChoosePictureStr") + " - " + Assembly.GetEntryAssembly()?.GetName().Name,
+            Title =
+                ChooseLang("ChoosePictureStr")
+                + " - "
+                + Assembly.GetEntryAssembly()?.GetName().Name,
             Filter = ChooseLang("PicturesFilterStr"),
-            Multiselect = false
+            Multiselect = false,
         };
 
         public static readonly OpenFileDialog PicturesOpenDialog = new()
         {
-            Title = ChooseLang("PicturesDialogStr") + " - " + Assembly.GetEntryAssembly()?.GetName().Name,
+            Title =
+                ChooseLang("PicturesDialogStr")
+                + " - "
+                + Assembly.GetEntryAssembly()?.GetName().Name,
             Filter = ChooseLang("PicturesFilterStr"),
-            Multiselect = true
+            Multiselect = true,
         };
 
         public static readonly System.Windows.Forms.PrintDialog PrintDialog = new()
@@ -1037,7 +1508,7 @@ namespace ExpressControls
             AllowCurrentPage = true,
             AllowSelection = true,
             AllowSomePages = true,
-            UseEXDialog = true
+            UseEXDialog = true,
         };
 
         public static void SetupDialogs()
@@ -1062,21 +1533,38 @@ namespace ExpressControls
             PictureOpenDialog.Filter = ChooseLang("PicturesFilterStr");
             PicturesOpenDialog.Filter = ChooseLang("PicturesFilterStr");
 
-            ImportSettingsDialog.Title = ChooseLang("OpImportDialogStr") + " - " + Assembly.GetEntryAssembly()?.GetName().Name;
-            ExportSettingsDialog.Title = ChooseLang("OpExportDialogStr") + " - " + Assembly.GetEntryAssembly()?.GetName().Name;
-            PictureOpenDialog.Title = ChooseLang("ChoosePictureStr") + " - " + Assembly.GetEntryAssembly()?.GetName().Name;
-            PicturesOpenDialog.Title = ChooseLang("PicturesDialogStr") + " - " + Assembly.GetEntryAssembly()?.GetName().Name;
+            ImportSettingsDialog.Title =
+                ChooseLang("OpImportDialogStr")
+                + " - "
+                + Assembly.GetEntryAssembly()?.GetName().Name;
+            ExportSettingsDialog.Title =
+                ChooseLang("OpExportDialogStr")
+                + " - "
+                + Assembly.GetEntryAssembly()?.GetName().Name;
+            PictureOpenDialog.Title =
+                ChooseLang("ChoosePictureStr")
+                + " - "
+                + Assembly.GetEntryAssembly()?.GetName().Name;
+            PicturesOpenDialog.Title =
+                ChooseLang("PicturesDialogStr")
+                + " - "
+                + Assembly.GetEntryAssembly()?.GetName().Name;
         }
 
         #endregion
         #region Help Guide
 
-        public static void GetHelp(ExpressApp app, int topic = -1)
+        public static void GetHelp(ExpressApp app, Guid? pageID, int topic = -1)
         {
             string topicString = "";
             if (topic >= 0)
-                topicString = "?version=" +
-                    (Assembly.GetEntryAssembly()?.GetName().Version ?? new Version(1, 0, 0)).ToString(3) + "&topic=" + topic.ToString();
+                topicString =
+                    "?version="
+                    + (
+                        Assembly.GetEntryAssembly()?.GetName().Version ?? new Version(1, 0, 0)
+                    ).ToString(3)
+                    + "&topic="
+                    + topic.ToString();
 
             string appString = app switch
             {
@@ -1084,14 +1572,12 @@ namespace ExpressControls
                 ExpressApp.Present => "present",
                 ExpressApp.Font => "font",
                 ExpressApp.Quota => "quota",
-                _ => ""
+                _ => "",
             };
+            string link = "https://express.johnjds.co.uk/" + appString + "/help" + topicString;
 
-            _ = Process.Start(new ProcessStartInfo()
-            {
-                FileName = "https://express.johnjds.co.uk/" + appString + "/help" + topicString,
-                UseShellExecute = true
-            });
+            _ = Process.Start(new ProcessStartInfo() { FileName = link, UseShellExecute = true });
+            LogConversion(pageID, LoggingProperties.Conversion.HelpGuideVisit, link);
         }
 
         public static void ResetHelpTopics(Window win, Dictionary<string, string> topics)
@@ -1100,41 +1586,55 @@ namespace ExpressControls
             searchTxt.Text = "";
 
             ItemsControl items = (ItemsControl)win.FindName("HelpTopicItems");
-            items.ItemsSource = topics.Select((x, idx) =>
-            {
-                return new IconButtonItem()
-                {
-                    ID = idx + 1,
-                    Name = ChooseLang(x.Key),
-                    Icon = (Viewbox)win.TryFindResource(x.Value)
-                };
-            }).Where((x, idx) =>
-            {
-                return idx == 0 || ((topics.Count - 2) <= idx);
-            });
+            items.ItemsSource = topics
+                .Select(
+                    (x, idx) =>
+                    {
+                        return new IconButtonItem()
+                        {
+                            ID = idx + 1,
+                            Name = ChooseLang(x.Key),
+                            Icon = (Viewbox)win.TryFindResource(x.Value),
+                        };
+                    }
+                )
+                .Where(
+                    (x, idx) =>
+                    {
+                        return idx == 0 || ((topics.Count - 2) <= idx);
+                    }
+                );
         }
 
-        public static void PopulateHelpTopics(Window win, Dictionary<string, string> topics, string query)
+        public static void PopulateHelpTopics(
+            Window win,
+            Dictionary<string, string> topics,
+            string query
+        )
         {
             ItemsControl items = (ItemsControl)win.FindName("HelpTopicItems");
-            items.ItemsSource = topics.Where((x, idx) =>
-            {
-                string[] search = ChooseLang("Search" + x.Key).Split(" ");
-                foreach (var item in search)
-                    if (query.Contains(item, StringComparison.InvariantCultureIgnoreCase))
-                        return true;
+            items.ItemsSource = topics
+                .Where(
+                    (x, idx) =>
+                    {
+                        string[] search = ChooseLang("Search" + x.Key).Split(" ");
+                        foreach (var item in search)
+                            if (query.Contains(item, StringComparison.InvariantCultureIgnoreCase))
+                                return true;
 
-                return false;
-
-            }).Select(x =>
-            {
-                return new IconButtonItem()
+                        return false;
+                    }
+                )
+                .Select(x =>
                 {
-                    ID = topics.ToList().IndexOf(x) + 1,
-                    Name = ChooseLang(x.Key),
-                    Icon = (Viewbox)win.TryFindResource(x.Value)
-                };
-            }).Take(5);
+                    return new IconButtonItem()
+                    {
+                        ID = topics.ToList().IndexOf(x) + 1,
+                        Name = ChooseLang(x.Key),
+                        Icon = (Viewbox)win.TryFindResource(x.Value),
+                    };
+                })
+                .Take(5);
         }
 
         #endregion
@@ -1148,7 +1648,7 @@ namespace ExpressControls
                 ExpressApp.Present => "Present Express",
                 ExpressApp.Font => "Font Express",
                 ExpressApp.Quota => "Quota Express",
-                _ => "Express Apps"
+                _ => "Express Apps",
             };
         }
 
@@ -1160,7 +1660,7 @@ namespace ExpressControls
                 ExpressApp.Present => "PresentExpressIcon",
                 ExpressApp.Font => "FontExpressIcon",
                 ExpressApp.Quota => "QuotaExpressIcon",
-                _ => "ExpressAppsIcon"
+                _ => "ExpressAppsIcon",
             };
         }
 
@@ -1172,8 +1672,18 @@ namespace ExpressControls
                 ExpressApp.Present => ChooseLang("AboutDescPStr"),
                 ExpressApp.Font => ChooseLang("AboutDescFStr"),
                 ExpressApp.Quota => ChooseLang("AboutDescQStr"),
-                _ => ""
+                _ => "",
             };
+        }
+
+        public static string GetCurrentAppName()
+        {
+            return Assembly.GetEntryAssembly()?.GetName().Name ?? "Express Apps";
+        }
+
+        public static string GetCurrentAppVersion()
+        {
+            return (Assembly.GetEntryAssembly()?.GetName().Version ?? new Version()).ToString(3);
         }
 
         public static double PxToPt(double px)
@@ -1193,52 +1703,68 @@ namespace ExpressControls
                 StringBuilder message = new();
                 bool important = info.Any(x => x.Important);
 
-                message.AppendLine(ChooseLang(important ? "ImportantUpdateStr" : "UpdateAvailableStr"));
+                message.AppendLine(
+                    ChooseLang(important ? "ImportantUpdateStr" : "UpdateAvailableStr")
+                );
                 message.AppendLine(ChooseLang("VisitDownloadPageStr"));
 
                 foreach (ReleaseItem item in info)
                 {
                     message.AppendLine();
                     message.AppendLine("**" + ChooseLang("VersionStr") + " " + item.Version + "**");
+                    message.AppendLine();
                     message.AppendLine(item.Description);
                 }
 
-                if (ShowPrompt(message.ToString(), app switch
+                if (
+                    ShowPrompt(
+                        message.ToString(),
+                        app switch
+                        {
+                            ExpressApp.Type => ChooseLang("UpdatesTStr"),
+                            ExpressApp.Present => ChooseLang("UpdatesPStr"),
+                            ExpressApp.Font => ChooseLang("UpdatesFStr"),
+                            ExpressApp.Quota => ChooseLang("UpdatesQStr"),
+                            _ => "",
+                        },
+                        MessageBoxButton.YesNoCancel,
+                        important ? MessageBoxImage.Exclamation : MessageBoxImage.Information
+                    ) == MessageBoxResult.Yes
+                )
                 {
-                    ExpressApp.Type => ChooseLang("UpdatesTStr"),
-                    ExpressApp.Present => ChooseLang("UpdatesPStr"),
-                    ExpressApp.Font => ChooseLang("UpdatesFStr"),
-                    ExpressApp.Quota => ChooseLang("UpdatesQStr"),
-                    _ => ""
-                    
-                }, MessageBoxButton.YesNoCancel,
-                    important ? MessageBoxImage.Exclamation : MessageBoxImage.Information) == MessageBoxResult.Yes)
-                {
-                    _ = Process.Start(new ProcessStartInfo()
-                    {
-                        FileName = GetAppUpdateLink(ExpressApp.Type),
-                        UseShellExecute = true
-                    });
+                    _ = Process.Start(
+                        new ProcessStartInfo()
+                        {
+                            FileName = GetAppUpdateLink(ExpressApp.Type),
+                            UseShellExecute = true,
+                        }
+                    );
                 }
             }
             catch (Exception ex)
             {
-                ShowMessageRes("NotificationErrorStr", "NoInternetStr",
-                    MessageBoxButton.OK, MessageBoxImage.Error, GenerateErrorReport(ex));
+                ShowMessageRes(
+                    "NotificationErrorStr",
+                    "NoInternetStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    GenerateErrorReport(ex, null, "NotificationErrorStr")
+                );
             }
         }
 
         public static string GetAppUpdateLink(ExpressApp app)
         {
             string url = "https://express.johnjds.co.uk/update?app=";
-            return url + app switch
-            {
-                ExpressApp.Type => "type",
-                ExpressApp.Present => "present",
-                ExpressApp.Font => "font",
-                ExpressApp.Quota => "quota",
-                _ => "all",
-            };
+            return url
+                + app switch
+                {
+                    ExpressApp.Type => "type",
+                    ExpressApp.Present => "present",
+                    ExpressApp.Font => "font",
+                    ExpressApp.Quota => "quota",
+                    _ => "all",
+                };
         }
 
         public static Stream GenerateStreamFromString(string s)
@@ -1251,7 +1777,10 @@ namespace ExpressControls
             return stream;
         }
 
-        public static void SetupColorPickers(IEnumerable<Color>? theme, params Xceed.Wpf.Toolkit.ColorPicker[] clrs)
+        public static void SetupColorPickers(
+            IEnumerable<Color>? theme,
+            params Xceed.Wpf.Toolkit.ColorPicker[] clrs
+        )
         {
             foreach (var clrPicker in clrs)
             {
@@ -1267,7 +1796,7 @@ namespace ExpressControls
                     new(Colors.Blue, ChooseLang("BlueStr")),
                     new(Colors.Yellow, ChooseLang("YellowStr")),
                     new(Colors.Orange, ChooseLang("OrangeStr")),
-                    new(Colors.Purple, ChooseLang("PurpleStr"))
+                    new(Colors.Purple, ChooseLang("PurpleStr")),
                 ];
 
                 if (theme != null)
@@ -1275,7 +1804,9 @@ namespace ExpressControls
                     clrPicker.AvailableColors.Clear();
 
                     foreach (var clr in theme)
-                        clrPicker.AvailableColors.Add(new Xceed.Wpf.Toolkit.ColorItem(clr, clr.ToString()));
+                        clrPicker.AvailableColors.Add(
+                            new Xceed.Wpf.Toolkit.ColorItem(clr, clr.ToString())
+                        );
                 }
                 else
                 {
@@ -1289,7 +1820,11 @@ namespace ExpressControls
         /// </summary>
         public static bool NumBetween(int num, int bound1, int bound2)
         {
-            return NumBetween(Convert.ToDouble(num), Convert.ToDouble(bound1), Convert.ToDouble(bound2));
+            return NumBetween(
+                Convert.ToDouble(num),
+                Convert.ToDouble(bound1),
+                Convert.ToDouble(bound2)
+            );
         }
 
         /// <summary>
@@ -1301,55 +1836,95 @@ namespace ExpressControls
         }
 
         /// <summary>
-        ///     Converts the string representation of a number to its double equivalent respecting culture variants. 
+        ///     Converts the string representation of a number to its double equivalent respecting culture variants.
         ///     A return value indicates whether the conversion succeeded or failed.
         /// </summary>
         public static bool ConvertDouble(string doublestr, ref double doubleout)
         {
             if (doublestr.Contains(','))
-                return double.TryParse(doublestr, NumberStyles.Float, CultureInfo.GetCultureInfo("fr-FR"), out doubleout);
+                return double.TryParse(
+                    doublestr,
+                    NumberStyles.Float,
+                    CultureInfo.GetCultureInfo("fr-FR"),
+                    out doubleout
+                );
             else
-                return double.TryParse(doublestr, NumberStyles.Float, CultureInfo.InvariantCulture, out doubleout);
+                return double.TryParse(
+                    doublestr,
+                    NumberStyles.Float,
+                    CultureInfo.InvariantCulture,
+                    out doubleout
+                );
         }
 
         /// <summary>
-        ///     Converts the string representation of a number to its double equivalent respecting culture variants. 
+        ///     Converts the string representation of a number to its double equivalent respecting culture variants.
         ///     Returns a double value, which is set to 0 if the conversion failed.
         /// </summary>
         public static double ConvertDouble(string doublestr)
         {
             double doubleout;
             if (doublestr.Contains(','))
-                double.TryParse(doublestr, NumberStyles.Float, CultureInfo.GetCultureInfo("fr-FR"), out doubleout);
+                double.TryParse(
+                    doublestr,
+                    NumberStyles.Float,
+                    CultureInfo.GetCultureInfo("fr-FR"),
+                    out doubleout
+                );
             else
-                double.TryParse(doublestr, NumberStyles.Float, CultureInfo.InvariantCulture, out doubleout);
-            
+                double.TryParse(
+                    doublestr,
+                    NumberStyles.Float,
+                    CultureInfo.InvariantCulture,
+                    out doubleout
+                );
+
             return doubleout;
         }
 
         /// <summary>
-        ///     Converts the string representation of a number to its single equivalent respecting culture variants. 
+        ///     Converts the string representation of a number to its single equivalent respecting culture variants.
         ///     A return value indicates whether the conversion succeeded or failed.
         /// </summary>
         public static bool ConvertSingle(string singlestr, ref float singleout)
         {
             if (singlestr.Contains(','))
-                return float.TryParse(singlestr, NumberStyles.Float, CultureInfo.GetCultureInfo("fr-FR"), out singleout);
+                return float.TryParse(
+                    singlestr,
+                    NumberStyles.Float,
+                    CultureInfo.GetCultureInfo("fr-FR"),
+                    out singleout
+                );
             else
-                return float.TryParse(singlestr, NumberStyles.Float, CultureInfo.InvariantCulture, out singleout);
+                return float.TryParse(
+                    singlestr,
+                    NumberStyles.Float,
+                    CultureInfo.InvariantCulture,
+                    out singleout
+                );
         }
 
         /// <summary>
-        ///     Converts the string representation of a number to its single equivalent respecting culture variants. 
+        ///     Converts the string representation of a number to its single equivalent respecting culture variants.
         ///     Returns a single value, which is set to 0 if the conversion failed.
         /// </summary>
         public static float ConvertSingle(string singlestr)
         {
             float singleout;
             if (singlestr.Contains(','))
-                float.TryParse(singlestr, NumberStyles.Float, CultureInfo.GetCultureInfo("fr-FR"), out singleout);
+                float.TryParse(
+                    singlestr,
+                    NumberStyles.Float,
+                    CultureInfo.GetCultureInfo("fr-FR"),
+                    out singleout
+                );
             else
-                float.TryParse(singlestr, NumberStyles.Float, CultureInfo.InvariantCulture, out singleout);
+                float.TryParse(
+                    singlestr,
+                    NumberStyles.Float,
+                    CultureInfo.InvariantCulture,
+                    out singleout
+                );
 
             return singleout;
         }
@@ -1372,23 +1947,28 @@ namespace ExpressControls
                     case >= 1125899906842625:
                         result = "1000+ " + ChooseLang("TBStr");
                         break;
-                    case >= 1099511627776 and <= 1125899906842624:
+                    case >= 1099511627776
+                    and <= 1125899906842624:
                         DoubleBytes = BytesCaller / (double)1099511627776; // TB
                         result = Math.Round(DoubleBytes, 2).ToString() + " " + ChooseLang("TBStr");
                         break;
-                    case >= 1073741824 and <= 1099511627775:
+                    case >= 1073741824
+                    and <= 1099511627775:
                         DoubleBytes = BytesCaller / (double)1073741824; // GB
                         result = Math.Round(DoubleBytes, 2).ToString() + " " + ChooseLang("GBStr");
                         break;
-                    case >= 1048576 and <= 1073741823:
+                    case >= 1048576
+                    and <= 1073741823:
                         DoubleBytes = BytesCaller / (double)1048576; // MB
                         result = Math.Round(DoubleBytes, 2).ToString() + " " + ChooseLang("MBStr");
                         break;
-                    case >= 1024 and <= 1048575:
+                    case >= 1024
+                    and <= 1048575:
                         DoubleBytes = BytesCaller / (double)1024; // KB
                         result = Math.Round(DoubleBytes, 2).ToString() + " " + ChooseLang("KBStr");
                         break;
-                    case >= 1 and <= 1023:
+                    case >= 1
+                    and <= 1023:
                         DoubleBytes = BytesCaller; // bytes
                         result = Math.Round(DoubleBytes, 2).ToString() + " " + ChooseLang("BStr");
                         break;
@@ -1428,14 +2008,20 @@ namespace ExpressControls
                 else if (minutes == 1)
                     return $"1 {ChooseLang("HourStr")}, 1 {ChooseLang("MinuteStr")}";
                 else
-                    return "1 " + ChooseLang("HourStr") + ", " + minutes.ToString() + " " + ChooseLang("MinutesStr");
+                    return "1 "
+                        + ChooseLang("HourStr")
+                        + ", "
+                        + minutes.ToString()
+                        + " "
+                        + ChooseLang("MinutesStr");
             }
             else if (minutes == 0)
                 return hours.ToString() + " " + ChooseLang("HoursStr");
             else if (minutes == 1)
                 return hours.ToString() + $" {ChooseLang("HoursStr")}, 1 {ChooseLang("MinuteStr")}";
             else
-                return hours.ToString() + $" {ChooseLang("HoursStr")}, {minutes} {ChooseLang("MinutesStr")}";
+                return hours.ToString()
+                    + $" {ChooseLang("HoursStr")}, {minutes} {ChooseLang("MinutesStr")}";
         }
 
         public static long GetFileSize(string file)
@@ -1486,8 +2072,12 @@ namespace ExpressControls
 
         public static MessageBoxResult SaveChangesPrompt(ExpressApp app)
         {
-            return ShowPromptRes(app == ExpressApp.Type ? "OnExitDescTStr": "OnExitDescPStr", 
-                "OnExitStr", MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation);
+            return ShowPromptRes(
+                app == ExpressApp.Type ? "OnExitDescTStr" : "OnExitDescPStr",
+                "OnExitStr",
+                MessageBoxButton.YesNoCancel,
+                MessageBoxImage.Exclamation
+            );
         }
 
         /// <summary>
@@ -1497,11 +2087,17 @@ namespace ExpressControls
         public static string EscapeChars(string str, bool reverse = false)
         {
             if (reverse)
-                return str.Replace("&amp;", "&").Replace(" &lt;", "<")
-                    .Replace("&gt;", ">").Replace("&apos;", "'").Replace("&quot;", "\"");
+                return str.Replace("&amp;", "&")
+                    .Replace(" &lt;", "<")
+                    .Replace("&gt;", ">")
+                    .Replace("&apos;", "'")
+                    .Replace("&quot;", "\"");
             else
-                return str.Replace("&", "&amp;").Replace("<", " &lt;")
-                    .Replace(">", "&gt;").Replace("'", "&apos;").Replace("\"", "&quot;");
+                return str.Replace("&", "&amp;")
+                    .Replace("<", " &lt;")
+                    .Replace(">", "&gt;")
+                    .Replace("'", "&apos;")
+                    .Replace("\"", "&quot;");
         }
 
         /// <summary>
@@ -1509,11 +2105,11 @@ namespace ExpressControls
         ///     For example, if French is the current language, the &lt;fr&gt; node would be retrieved.
         ///     If an &lt;fr&gt; node is not present, the default &lt;en&gt; node will be returned if present.
         /// </summary>
-        public static string GetXmlLocaleString(System.Xml.XmlNodeList nodes)
+        public static string GetXmlLocaleString(XmlNodeList nodes)
         {
             if (GetCurrentLang(true) == "en")
             {
-                foreach (System.Xml.XmlNode i in nodes)
+                foreach (XmlNode i in nodes)
                 {
                     if (i.OuterXml.StartsWith("<en>"))
                         return i.InnerText;
@@ -1523,7 +2119,7 @@ namespace ExpressControls
             else
             {
                 var en = "";
-                foreach (System.Xml.XmlNode i in nodes)
+                foreach (XmlNode i in nodes)
                 {
                     if (i.OuterXml.StartsWith("<en>"))
                         en = i.InnerText;
@@ -1560,18 +2156,28 @@ namespace ExpressControls
         public static void SaveSettingsFile(object opts, string filename, bool formatted = false)
         {
             XmlSerializer x = new(opts.GetType());
-            XmlWriterSettings settings = new() { OmitXmlDeclaration = !formatted, Indent = formatted };
-            
+            XmlWriterSettings settings = new()
+            {
+                OmitXmlDeclaration = !formatted,
+                Indent = formatted,
+            };
+
             using var stream = new StreamWriter(filename);
             using var writer = XmlWriter.Create(stream, settings);
-            x.Serialize(writer, opts, !formatted ? new XmlSerializerNamespaces([XmlQualifiedName.Empty]) : null);
+            x.Serialize(
+                writer,
+                opts,
+                !formatted ? new XmlSerializerNamespaces([XmlQualifiedName.Empty]) : null
+            );
         }
 
         public static bool? CheckBoolean(string s)
         {
             s = s.Trim().ToLower();
-            if (s == "1" || s == "true") return true;
-            if (s == "0" || s == "false") return false;
+            if (s == "1" || s == "true")
+                return true;
+            if (s == "0" || s == "false")
+                return false;
             return null;
         }
 
@@ -1594,11 +2200,15 @@ namespace ExpressControls
         {
             return clr.ToString();
         }
-        
+
         public static Color RGBColor(string clr)
         {
             string[] clrs = clr.Split(",");
-            return Color.FromRgb(Convert.ToByte(clrs[0]), Convert.ToByte(clrs[1]), Convert.ToByte(clrs[2]));
+            return Color.FromRgb(
+                Convert.ToByte(clrs[0]),
+                Convert.ToByte(clrs[1]),
+                Convert.ToByte(clrs[2])
+            );
         }
 
         public static string ColorRGB(Color clr)
@@ -1629,25 +2239,47 @@ namespace ExpressControls
 
         public static void SwitchToLightMode()
         {
-            if (Application.Current.Resources.MergedDictionaries[0].Source.ToString().Contains("DarkMode"))
+            if (
+                Application
+                    .Current.Resources.MergedDictionaries[0]
+                    .Source.ToString()
+                    .Contains("DarkMode")
+            )
             {
                 Application.Current.Resources.MergedDictionaries.RemoveAt(0);
-                Application.Current.Resources.MergedDictionaries.Insert(0, new ResourceDictionary()
-                {
-                    Source = new Uri("pack://application:,,,/ExpressControls;component/LightMode.xaml", UriKind.Absolute)
-                });
+                Application.Current.Resources.MergedDictionaries.Insert(
+                    0,
+                    new ResourceDictionary()
+                    {
+                        Source = new Uri(
+                            "pack://application:,,,/ExpressControls;component/LightMode.xaml",
+                            UriKind.Absolute
+                        ),
+                    }
+                );
             }
         }
 
         public static void SwitchToDarkMode()
         {
-            if (Application.Current.Resources.MergedDictionaries[0].Source.ToString().Contains("LightMode"))
+            if (
+                Application
+                    .Current.Resources.MergedDictionaries[0]
+                    .Source.ToString()
+                    .Contains("LightMode")
+            )
             {
                 Application.Current.Resources.MergedDictionaries.RemoveAt(0);
-                Application.Current.Resources.MergedDictionaries.Insert(0, new ResourceDictionary()
-                {
-                    Source = new Uri("pack://application:,,,/ExpressControls;component/DarkMode.xaml", UriKind.Absolute)
-                });
+                Application.Current.Resources.MergedDictionaries.Insert(
+                    0,
+                    new ResourceDictionary()
+                    {
+                        Source = new Uri(
+                            "pack://application:,,,/ExpressControls;component/DarkMode.xaml",
+                            UriKind.Absolute
+                        ),
+                    }
+                );
             }
         }
 
@@ -1682,7 +2314,11 @@ namespace ExpressControls
             }
             else if (AppTheme == ThemeOptions.FollowSystem)
             {
-                var v = Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize", "AppsUseLightTheme", "1");
+                var v = Registry.GetValue(
+                    @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize",
+                    "AppsUseLightTheme",
+                    "1"
+                );
                 if (v != null && v.ToString() == "0")
                     SwitchToDarkMode();
                 else
@@ -1746,7 +2382,7 @@ namespace ExpressControls
                 "Jpeg" => new JpegBitmapEncoder(),
                 "Bmp" => new BmpBitmapEncoder(),
                 "Gif" => new GifBitmapEncoder(),
-                _ => new PngBitmapEncoder()
+                _ => new PngBitmapEncoder(),
             };
             enc.Frames.Add(BitmapFrame.Create(source));
             enc.Save(outStream);
@@ -1766,7 +2402,15 @@ namespace ExpressControls
             using (WinDrawing.Graphics g = WinDrawing.Graphics.FromImage(outputImage))
             {
                 g.Clear(WinDrawing.Color.Transparent);
-                g.DrawImage(inputImage, new WinDrawing.Rectangle(paddingSize, paddingSize, inputImage.Width, inputImage.Height));
+                g.DrawImage(
+                    inputImage,
+                    new WinDrawing.Rectangle(
+                        paddingSize,
+                        paddingSize,
+                        inputImage.Width,
+                        inputImage.Height
+                    )
+                );
             }
 
             return ConvertBitmap(outputImage);
@@ -1786,7 +2430,13 @@ namespace ExpressControls
             return bitmapImage;
         }
 
-        private static WinDrawing.Rectangle GetImageScaledBounds(int width, int height, int imageWidth, int imageHeight, bool fit)
+        private static WinDrawing.Rectangle GetImageScaledBounds(
+            int width,
+            int height,
+            int imageWidth,
+            int imageHeight,
+            bool fit
+        )
         {
             WinDrawing.Rectangle destRect;
             if (fit)
@@ -1794,7 +2444,12 @@ namespace ExpressControls
                 float scale = Math.Min((float)width / imageWidth, (float)height / imageHeight);
                 int scaleWidth = (int)(imageWidth * scale);
                 int scaleHeight = (int)(imageHeight * scale);
-                destRect = new WinDrawing.Rectangle((width - scaleWidth) / 2, (height - scaleHeight) / 2, scaleWidth, scaleHeight);
+                destRect = new WinDrawing.Rectangle(
+                    (width - scaleWidth) / 2,
+                    (height - scaleHeight) / 2,
+                    scaleWidth,
+                    scaleHeight
+                );
             }
             else
             {
@@ -1814,7 +2469,15 @@ namespace ExpressControls
         /// <param name="height">The height of the image</param>
         /// <param name="filename">The filename to save to</param>
         /// <param name="fit">Whether or not the image should fit to the given <paramref name="width"/> and <paramref name="height"/></param>
-        public static void SaveSlideAsImage(BitmapSource bitmapImage, ImageFormat format, Color clr, int width, int height, string filename, bool fit)
+        public static void SaveSlideAsImage(
+            BitmapSource bitmapImage,
+            ImageFormat format,
+            Color clr,
+            int width,
+            int height,
+            string filename,
+            bool fit
+        )
         {
             using WinDrawing.Bitmap bitmap = new(width, height);
             using (WinDrawing.Bitmap image = ConvertBitmapImage(bitmapImage, format))
@@ -1822,7 +2485,13 @@ namespace ExpressControls
                 using WinDrawing.Graphics graphics = WinDrawing.Graphics.FromImage(bitmap);
                 graphics.Clear(ConvertMediaToDrawingColor(clr));
 
-                WinDrawing.Rectangle destRect = GetImageScaledBounds(width, height, image.Width, image.Height, fit);
+                WinDrawing.Rectangle destRect = GetImageScaledBounds(
+                    width,
+                    height,
+                    image.Width,
+                    image.Height,
+                    fit
+                );
                 graphics.DrawImage(image, destRect);
             }
 
@@ -1839,31 +2508,71 @@ namespace ExpressControls
         /// <param name="tempFolderName">The folder to save to</param>
         /// <param name="counter">The counter representing the filename (passed as a reference)</param>
         /// <param name="fit">Whether or not the image should fit to the given <paramref name="width"/> and <paramref name="height"/></param>
-        public static void SaveSlideTransitionAsImages(SlideshowSequenceItem? slide1, SlideshowSequenceItem slide2, 
-            int width, int height, string tempFolderName, ref int counter, bool fit)
+        public static void SaveSlideTransitionAsImages(
+            SlideshowSequenceItem? slide1,
+            SlideshowSequenceItem slide2,
+            int width,
+            int height,
+            string tempFolderName,
+            ref int counter,
+            bool fit
+        )
         {
-            if (slide2.Transition == TransitionType.None ||
-                GetTransitionCategory(slide2.Transition) == TransitionCategory.Uncover && slide1 == null)
+            if (
+                slide2.Transition == TransitionType.None
+                || GetTransitionCategory(slide2.Transition) == TransitionCategory.Uncover
+                    && slide1 == null
+            )
                 return;
 
             List<string> filenames = [];
             using WinDrawing.Bitmap slide1Image = new(width, height);
             using WinDrawing.Bitmap slide2Image = new(width, height);
 
-            using (WinDrawing.Bitmap? slide1Original = slide1 == null ? null : ConvertBitmapImage(slide1.Bitmap, slide1.Format))
+            using (
+                WinDrawing.Bitmap? slide1Original =
+                    slide1 == null ? null : ConvertBitmapImage(slide1.Bitmap, slide1.Format)
+            )
             {
-                using WinDrawing.Bitmap slide2Original = ConvertBitmapImage(slide2.Bitmap, slide2.Format);
-                using (WinDrawing.Graphics slide1Graphics = WinDrawing.Graphics.FromImage(slide1Image))
+                using WinDrawing.Bitmap slide2Original = ConvertBitmapImage(
+                    slide2.Bitmap,
+                    slide2.Format
+                );
+                using (
+                    WinDrawing.Graphics slide1Graphics = WinDrawing.Graphics.FromImage(slide1Image)
+                )
                 {
-                    slide1Graphics.Clear(ConvertMediaToDrawingColor(slide1?.Background ?? Colors.Black));
+                    slide1Graphics.Clear(
+                        ConvertMediaToDrawingColor(slide1?.Background ?? Colors.Black)
+                    );
 
                     if (slide1Original != null)
-                        slide1Graphics.DrawImage(slide1Original, GetImageScaledBounds(width, height, slide1Original.Width, slide1Original.Height, fit));
+                        slide1Graphics.DrawImage(
+                            slide1Original,
+                            GetImageScaledBounds(
+                                width,
+                                height,
+                                slide1Original.Width,
+                                slide1Original.Height,
+                                fit
+                            )
+                        );
                 }
 
-                using WinDrawing.Graphics slide2Graphics = WinDrawing.Graphics.FromImage(slide2Image);
+                using WinDrawing.Graphics slide2Graphics = WinDrawing.Graphics.FromImage(
+                    slide2Image
+                );
                 slide2Graphics.Clear(ConvertMediaToDrawingColor(slide2.Background));
-                slide2Graphics.DrawImage(slide2Original, GetImageScaledBounds(width, height, slide2Original.Width, slide2Original.Height, fit));
+                slide2Graphics.DrawImage(
+                    slide2Original,
+                    GetImageScaledBounds(
+                        width,
+                        height,
+                        slide2Original.Width,
+                        slide2Original.Height,
+                        fit
+                    )
+                );
             }
 
             int numFrames = (int)Math.Floor(slide2.TransitionDuration * 30);
@@ -1881,9 +2590,22 @@ namespace ExpressControls
 
                             ColorMatrix colorMatrix = new() { Matrix33 = fadeOpacity };
                             ImageAttributes imageAttr = new();
-                            imageAttr.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+                            imageAttr.SetColorMatrix(
+                                colorMatrix,
+                                ColorMatrixFlag.Default,
+                                ColorAdjustType.Bitmap
+                            );
 
-                            graphics.DrawImage(slide2Image, new WinDrawing.Rectangle(0, 0, width, height), 0, 0, width, height, WinDrawing.GraphicsUnit.Pixel, imageAttr);
+                            graphics.DrawImage(
+                                slide2Image,
+                                new WinDrawing.Rectangle(0, 0, width, height),
+                                0,
+                                0,
+                                width,
+                                height,
+                                WinDrawing.GraphicsUnit.Pixel,
+                                imageAttr
+                            );
                         }
                         break;
 
@@ -1901,9 +2623,22 @@ namespace ExpressControls
                                 if (opacity != 0)
                                 {
                                     ColorMatrix colorMatrix = new() { Matrix33 = opacity };
-                                    imageAttr.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+                                    imageAttr.SetColorMatrix(
+                                        colorMatrix,
+                                        ColorMatrixFlag.Default,
+                                        ColorAdjustType.Bitmap
+                                    );
 
-                                    graphics.DrawImage(slide1Image, new WinDrawing.Rectangle(0, 0, width, height), 0, 0, width, height, WinDrawing.GraphicsUnit.Pixel, imageAttr);
+                                    graphics.DrawImage(
+                                        slide1Image,
+                                        new WinDrawing.Rectangle(0, 0, width, height),
+                                        0,
+                                        0,
+                                        width,
+                                        height,
+                                        WinDrawing.GraphicsUnit.Pixel,
+                                        imageAttr
+                                    );
                                 }
                             }
                             else
@@ -1914,9 +2649,22 @@ namespace ExpressControls
                                 if (opacity != 0)
                                 {
                                     ColorMatrix colorMatrix = new() { Matrix33 = opacity };
-                                    imageAttr.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+                                    imageAttr.SetColorMatrix(
+                                        colorMatrix,
+                                        ColorMatrixFlag.Default,
+                                        ColorAdjustType.Bitmap
+                                    );
 
-                                    graphics.DrawImage(slide2Image, new WinDrawing.Rectangle(0, 0, width, height), 0, 0, width, height, WinDrawing.GraphicsUnit.Pixel, imageAttr);
+                                    graphics.DrawImage(
+                                        slide2Image,
+                                        new WinDrawing.Rectangle(0, 0, width, height),
+                                        0,
+                                        0,
+                                        width,
+                                        height,
+                                        WinDrawing.GraphicsUnit.Pixel,
+                                        imageAttr
+                                    );
                                 }
                             }
                         }
@@ -1928,7 +2676,10 @@ namespace ExpressControls
                     case TransitionType.PushBottom:
                         using (WinDrawing.Graphics graphics = WinDrawing.Graphics.FromImage(bitmap))
                         {
-                            int dx = 0, dy = 0, dwidth = 0, dheight = 0;
+                            int dx = 0,
+                                dy = 0,
+                                dwidth = 0,
+                                dheight = 0;
                             switch ((TransitionDirection)GetTransitionInc(slide2.Transition))
                             {
                                 case TransitionDirection.Left:
@@ -1950,12 +2701,34 @@ namespace ExpressControls
                             }
 
                             int maxPixels = Math.Max(width, height);
-                            int pixelsToTranslate = (int)Math.Round((double)maxPixels / numFrames * (i + 1));
+                            int pixelsToTranslate = (int)
+                                Math.Round((double)maxPixels / numFrames * (i + 1));
                             int dxFrame = dx * pixelsToTranslate * width / maxPixels;
                             int dyFrame = dy * pixelsToTranslate * height / maxPixels;
 
-                            graphics.DrawImage(slide1Image, new WinDrawing.Rectangle(dxFrame, dyFrame, width, height), 0, 0, width, height, WinDrawing.GraphicsUnit.Pixel);
-                            graphics.DrawImage(slide2Image, new WinDrawing.Rectangle(dwidth + dxFrame, dheight + dyFrame, width, height), 0, 0, width, height, WinDrawing.GraphicsUnit.Pixel);
+                            graphics.DrawImage(
+                                slide1Image,
+                                new WinDrawing.Rectangle(dxFrame, dyFrame, width, height),
+                                0,
+                                0,
+                                width,
+                                height,
+                                WinDrawing.GraphicsUnit.Pixel
+                            );
+                            graphics.DrawImage(
+                                slide2Image,
+                                new WinDrawing.Rectangle(
+                                    dwidth + dxFrame,
+                                    dheight + dyFrame,
+                                    width,
+                                    height
+                                ),
+                                0,
+                                0,
+                                width,
+                                height,
+                                WinDrawing.GraphicsUnit.Pixel
+                            );
                         }
                         break;
 
@@ -1966,7 +2739,10 @@ namespace ExpressControls
                         using (WinDrawing.Graphics graphics = WinDrawing.Graphics.FromImage(bitmap))
                         {
                             bool simpleCrop = true;
-                            int dx = 0, dy = 0, dwidth = width, dheight = height;
+                            int dx = 0,
+                                dy = 0,
+                                dwidth = width,
+                                dheight = height;
                             switch ((TransitionDirection)GetTransitionInc(slide2.Transition))
                             {
                                 case TransitionDirection.Left:
@@ -1985,10 +2761,21 @@ namespace ExpressControls
                                     break;
                             }
 
-                            graphics.DrawImage(slide1Image, new WinDrawing.Rectangle(0, 0, width, height), 0, 0, width, height, WinDrawing.GraphicsUnit.Pixel);
+                            graphics.DrawImage(
+                                slide1Image,
+                                new WinDrawing.Rectangle(0, 0, width, height),
+                                0,
+                                0,
+                                width,
+                                height,
+                                WinDrawing.GraphicsUnit.Pixel
+                            );
 
                             if (simpleCrop)
-                                graphics.DrawImageUnscaledAndClipped(slide2Image, new WinDrawing.Rectangle(dx, dy, dwidth, dheight));
+                                graphics.DrawImageUnscaledAndClipped(
+                                    slide2Image,
+                                    new WinDrawing.Rectangle(dx, dy, dwidth, dheight)
+                                );
                             else
                             {
                                 using var nb = new WinDrawing.Bitmap(width, height);
@@ -1997,7 +2784,10 @@ namespace ExpressControls
                                     g.DrawImage(slide2Image, -dx, -dy);
                                 }
 
-                                graphics.DrawImageUnscaledAndClipped(nb, new WinDrawing.Rectangle(dx, dy, width, height));
+                                graphics.DrawImageUnscaledAndClipped(
+                                    nb,
+                                    new WinDrawing.Rectangle(dx, dy, width, height)
+                                );
                             }
                         }
                         break;
@@ -2008,25 +2798,42 @@ namespace ExpressControls
                     case TransitionType.UncoverBottom:
                         using (WinDrawing.Graphics graphics = WinDrawing.Graphics.FromImage(bitmap))
                         {
-                            int dx = 0, dy = 0;
+                            int dx = 0,
+                                dy = 0;
                             switch ((TransitionDirection)GetTransitionInc(slide2.Transition))
                             {
                                 case TransitionDirection.Left:
                                     dx = i * (width / numFrames);
                                     break;
                                 case TransitionDirection.Right:
-                                    dx = - (i * (width / numFrames));
+                                    dx = -(i * (width / numFrames));
                                     break;
                                 case TransitionDirection.Top:
                                     dy = i * (height / numFrames);
                                     break;
                                 case TransitionDirection.Bottom:
-                                    dy = - (i * (height / numFrames));
+                                    dy = -(i * (height / numFrames));
                                     break;
                             }
 
-                            graphics.DrawImage(slide2Image, new WinDrawing.Rectangle(0, 0, width, height), 0, 0, width, height, WinDrawing.GraphicsUnit.Pixel);
-                            graphics.DrawImage(slide1Image, new WinDrawing.Rectangle(dx, dy, width, height), 0, 0, width, height, WinDrawing.GraphicsUnit.Pixel);
+                            graphics.DrawImage(
+                                slide2Image,
+                                new WinDrawing.Rectangle(0, 0, width, height),
+                                0,
+                                0,
+                                width,
+                                height,
+                                WinDrawing.GraphicsUnit.Pixel
+                            );
+                            graphics.DrawImage(
+                                slide1Image,
+                                new WinDrawing.Rectangle(dx, dy, width, height),
+                                0,
+                                0,
+                                width,
+                                height,
+                                WinDrawing.GraphicsUnit.Pixel
+                            );
                         }
                         break;
 
@@ -2036,7 +2843,8 @@ namespace ExpressControls
                     case TransitionType.CoverBottom:
                         using (WinDrawing.Graphics graphics = WinDrawing.Graphics.FromImage(bitmap))
                         {
-                            int dx = 0, dy = 0;
+                            int dx = 0,
+                                dy = 0;
                             switch ((TransitionDirection)GetTransitionInc(slide2.Transition))
                             {
                                 case TransitionDirection.Left:
@@ -2053,8 +2861,24 @@ namespace ExpressControls
                                     break;
                             }
 
-                            graphics.DrawImage(slide1Image, new WinDrawing.Rectangle(0, 0, width, height), 0, 0, width, height, WinDrawing.GraphicsUnit.Pixel);
-                            graphics.DrawImage(slide2Image, new WinDrawing.Rectangle(dx, dy, width, height), 0, 0, width, height, WinDrawing.GraphicsUnit.Pixel);
+                            graphics.DrawImage(
+                                slide1Image,
+                                new WinDrawing.Rectangle(0, 0, width, height),
+                                0,
+                                0,
+                                width,
+                                height,
+                                WinDrawing.GraphicsUnit.Pixel
+                            );
+                            graphics.DrawImage(
+                                slide2Image,
+                                new WinDrawing.Rectangle(dx, dy, width, height),
+                                0,
+                                0,
+                                width,
+                                height,
+                                WinDrawing.GraphicsUnit.Pixel
+                            );
                         }
                         break;
 
@@ -2062,13 +2886,20 @@ namespace ExpressControls
                         break;
                 }
 
-                string frameFilename = Path.Combine(tempFolderName, $"{counter++.ToString().PadLeft(9, '0')}.png");
+                string frameFilename = Path.Combine(
+                    tempFolderName,
+                    $"{counter++.ToString().PadLeft(9, '0')}.png"
+                );
                 filenames.Add(frameFilename);
                 bitmap.Save(frameFilename, ImageFormat.Png);
             }
         }
 
-        public static BitmapImage ApplyImageFilters(BitmapSource source, FilterItem filters, ImageFormat format)
+        public static BitmapImage ApplyImageFilters(
+            BitmapSource source,
+            FilterItem filters,
+            ImageFormat format
+        )
         {
             WinDrawing.Bitmap bmp = ConvertBitmapImage(source, format);
             ImageAttributes imgattr = new();
@@ -2089,7 +2920,7 @@ namespace ExpressControls
                             [0.587F, 0.587F, 0.587F, 0, 0],
                             [0.114F, 0.114F, 0.114F, 0, 0],
                             [0, 0, 0, 1, 0],
-                            [0, 0, 0, 0, 1]
+                            [0, 0, 0, 0, 1],
                         ];
                         break;
 
@@ -2100,26 +2931,27 @@ namespace ExpressControls
                             [0.769F, 0.686F, 0.534F, 0, 0],
                             [0.189F, 0.168F, 0.131F, 0, 0],
                             [0, 0, 0, 1, 0],
-                            [0, 0, 0, 0, 1]
+                            [0, 0, 0, 0, 1],
                         ];
                         break;
 
                     case ImageFilter.BlackWhite:
                         clr = Multiply(
-                        [
-                            [0.299F, 0.299F, 0.299F, 0, 0],
-                            [0.587F, 0.587F, 0.587F, 0, 0],
-                            [0.114F, 0.114F, 0.114F, 0, 0],
-                            [0, 0, 0, 1, 0],
-                            [0, 0, 0, 0, 1]
-                        ],
-                        [
-                            [2.0F, 0, 0, 0, 0],
-                            [0, 2.0F, 0, 0, 0],
-                            [0, 0, 2.0F, 0, 0],
-                            [0, 0, 0, 1, 0],
-                            [0, 0, 0, 0, 1]
-                        ]);
+                            [
+                                [0.299F, 0.299F, 0.299F, 0, 0],
+                                [0.587F, 0.587F, 0.587F, 0, 0],
+                                [0.114F, 0.114F, 0.114F, 0, 0],
+                                [0, 0, 0, 1, 0],
+                                [0, 0, 0, 0, 1],
+                            ],
+                            [
+                                [2.0F, 0, 0, 0, 0],
+                                [0, 2.0F, 0, 0, 0],
+                                [0, 0, 2.0F, 0, 0],
+                                [0, 0, 0, 1, 0],
+                                [0, 0, 0, 0, 1],
+                            ]
+                        );
 
                         imgattr.SetThreshold(0.9F);
                         break;
@@ -2134,7 +2966,7 @@ namespace ExpressControls
                     [0, filters.Contrast, 0, 0, 0],
                     [0, 0, filters.Contrast, 0, 0],
                     [0, 0, 0, 1, 0],
-                    [filters.Brightness, filters.Brightness, filters.Brightness, 0, 1]
+                    [filters.Brightness, filters.Brightness, filters.Brightness, 0, 1],
                 };
 
                 if (clr == null)
@@ -2142,20 +2974,38 @@ namespace ExpressControls
                 else
                     imgattr.SetColorMatrix(new ColorMatrix(Multiply(clr, light)));
 
-                g.DrawImage(bmp, rc, 0, 0, bmp.Width, bmp.Height, WinDrawing.GraphicsUnit.Pixel, imgattr);
+                g.DrawImage(
+                    bmp,
+                    rc,
+                    0,
+                    0,
+                    bmp.Width,
+                    bmp.Height,
+                    WinDrawing.GraphicsUnit.Pixel,
+                    imgattr
+                );
 
                 switch (filters.Filter)
                 {
                     case ImageFilter.Red:
-                        g.FillRectangle(new WinDrawing.SolidBrush(WinDrawing.Color.FromArgb(100, 235, 58, 52)), rc);
+                        g.FillRectangle(
+                            new WinDrawing.SolidBrush(WinDrawing.Color.FromArgb(100, 235, 58, 52)),
+                            rc
+                        );
                         break;
 
                     case ImageFilter.Green:
-                        g.FillRectangle(new WinDrawing.SolidBrush(WinDrawing.Color.FromArgb(100, 52, 235, 73)), rc);
+                        g.FillRectangle(
+                            new WinDrawing.SolidBrush(WinDrawing.Color.FromArgb(100, 52, 235, 73)),
+                            rc
+                        );
                         break;
 
                     case ImageFilter.Blue:
-                        g.FillRectangle(new WinDrawing.SolidBrush(WinDrawing.Color.FromArgb(100, 52, 122, 235)), rc);
+                        g.FillRectangle(
+                            new WinDrawing.SolidBrush(WinDrawing.Color.FromArgb(100, 52, 122, 235)),
+                            rc
+                        );
                         break;
 
                     default:
@@ -2246,7 +3096,12 @@ namespace ExpressControls
             return X;
         }
 
-        public static BitmapImage GenerateTextBmp(string text, WinDrawing.Font font, Color fontColour, int width)
+        public static BitmapImage GenerateTextBmp(
+            string text,
+            WinDrawing.Font font,
+            Color fontColour,
+            int width
+        )
         {
             WinDrawing.Bitmap bmp = new(width, 1440);
             WinDrawing.Rectangle rect1 = new(30, 30, width - 60, 1380);
@@ -2260,10 +3115,16 @@ namespace ExpressControls
             WinDrawing.StringFormat stringFormat = new()
             {
                 Alignment = WinDrawing.StringAlignment.Center,
-                LineAlignment = WinDrawing.StringAlignment.Center
+                LineAlignment = WinDrawing.StringAlignment.Center,
             };
 
-            g.DrawString(text, font, new WinDrawing.SolidBrush(ConvertMediaToDrawingColor(fontColour)), rect1, stringFormat);
+            g.DrawString(
+                text,
+                font,
+                new WinDrawing.SolidBrush(ConvertMediaToDrawingColor(fontColour)),
+                rect1,
+                stringFormat
+            );
             g.Flush();
 
             BitmapImage output = ConvertBitmap(bmp, ImageFormat.Png);
@@ -2274,10 +3135,10 @@ namespace ExpressControls
         [StructLayout(LayoutKind.Sequential)]
         public struct RECT
         {
-            public int Left;        // x position of upper-left corner
-            public int Top;         // y position of upper-left corner
-            public int Right;       // x position of lower-right corner
-            public int Bottom;      // y position of lower-right corner
+            public int Left; // x position of upper-left corner
+            public int Top; // y position of upper-left corner
+            public int Right; // x position of lower-right corner
+            public int Bottom; // y position of lower-right corner
         }
 
         public static BitmapImage RenderControlAsImage(FrameworkElement ctrl)
@@ -2290,7 +3151,13 @@ namespace ExpressControls
             ctrl.Measure(bounds.Size);
             ctrl.Arrange(bounds);
 
-            RenderTargetBitmap bmp = new((int)bounds.Width, (int)bounds.Height, 96, 96, PixelFormats.Pbgra32);
+            RenderTargetBitmap bmp = new(
+                (int)bounds.Width,
+                (int)bounds.Height,
+                96,
+                96,
+                PixelFormats.Pbgra32
+            );
             bmp.Render(ctrl);
 
             BitmapImage bitmapImage = new();
@@ -2372,7 +3239,9 @@ namespace ExpressControls
                             foreach (var p in xy)
                             {
                                 var vals = p.Split(",");
-                                pts.Add(new Point(Convert.ToDouble(vals[0]), Convert.ToDouble(vals[1])));
+                                pts.Add(
+                                    new Point(Convert.ToDouble(vals[0]), Convert.ToDouble(vals[1]))
+                                );
                             }
                         }
 
@@ -2388,26 +3257,37 @@ namespace ExpressControls
                             },
                             Width = Convert.ToInt32(info[4]),
                             Height = Convert.ToInt32(info[5]),
-                            FillColour = info[0] == "Line" || info[6] == "" ? Colors.Transparent : HexColor(info[6]),
-                            OutlineColour = info[0] != "Line" && info[1] == "" ? Colors.Transparent : HexColor(info[1]),
+                            FillColour =
+                                info[0] == "Line" || info[6] == ""
+                                    ? Colors.Transparent
+                                    : HexColor(info[6]),
+                            OutlineColour =
+                                info[0] != "Line" && info[1] == ""
+                                    ? Colors.Transparent
+                                    : HexColor(info[1]),
                             Thickness = Convert.ToInt32(info[2]),
                             Dashes = info[3] switch
                             {
                                 "Dash" => DashType.Dash,
                                 "Dot" => DashType.Dot,
                                 "DashDot" => DashType.DashDot,
-                                _ => DashType.None
+                                _ => DashType.None,
                             },
-                            LineJoin = info[0] != "Triangle" && info[0] != "Rectangle" ? JoinType.Normal : info[7] switch
-                            {
-                                "Bevel" => JoinType.Bevel,
-                                "Round" => JoinType.Round,
-                                _ => JoinType.Normal
-                            },
-                            Points = pts
+                            LineJoin =
+                                info[0] != "Triangle" && info[0] != "Rectangle"
+                                    ? JoinType.Normal
+                                    : info[7] switch
+                                    {
+                                        "Bevel" => JoinType.Bevel,
+                                        "Round" => JoinType.Round,
+                                        _ => JoinType.Normal,
+                                    },
+                            Points = pts,
                         };
 
-                        converted.Add(JsonConvert.SerializeObject(shape, Newtonsoft.Json.Formatting.None));
+                        converted.Add(
+                            JsonConvert.SerializeObject(shape, Newtonsoft.Json.Formatting.None)
+                        );
                     }
                     catch { }
                 }
@@ -2475,69 +3355,101 @@ namespace ExpressControls
                                 "Fire" => ColourScheme.RedOrange,
                                 "Grayscale" => ColourScheme.Grayscale,
                                 "SeaGreen" => ColourScheme.Green,
-                                _ => ColourScheme.Basic
-                            }
+                                _ => ColourScheme.Basic,
+                            },
                         };
 
                         switch (info[0])
                         {
                             case "Column":
                                 chart.Type = ChartType.Cartesian;
-                                chart.Series.Add(new SeriesItem()
-                                {
-                                    Type = SeriesType.Column,
-                                    Values = values,
-                                    ShowValueLabels = info[1].Equals("true", StringComparison.CurrentCultureIgnoreCase)
-                                });
+                                chart.Series.Add(
+                                    new SeriesItem()
+                                    {
+                                        Type = SeriesType.Column,
+                                        Values = values,
+                                        ShowValueLabels = info[1]
+                                            .Equals(
+                                                "true",
+                                                StringComparison.CurrentCultureIgnoreCase
+                                            ),
+                                    }
+                                );
                                 break;
 
                             case "Bar":
                                 chart.Type = ChartType.Cartesian;
-                                chart.Series.Add(new SeriesItem()
-                                {
-                                    Type = SeriesType.Bar,
-                                    Values = values,
-                                    ShowValueLabels = info[1].Equals("true", StringComparison.CurrentCultureIgnoreCase)
-                                });
+                                chart.Series.Add(
+                                    new SeriesItem()
+                                    {
+                                        Type = SeriesType.Bar,
+                                        Values = values,
+                                        ShowValueLabels = info[1]
+                                            .Equals(
+                                                "true",
+                                                StringComparison.CurrentCultureIgnoreCase
+                                            ),
+                                    }
+                                );
                                 break;
 
                             case "Line":
                                 chart.Type = ChartType.Cartesian;
-                                chart.Series.Add(new SeriesItem()
-                                {
-                                    Type = SeriesType.Line,
-                                    Values = values,
-                                    ShowValueLabels = info[1].Equals("true", StringComparison.CurrentCultureIgnoreCase),
-                                    SmoothLines = false
-                                });
+                                chart.Series.Add(
+                                    new SeriesItem()
+                                    {
+                                        Type = SeriesType.Line,
+                                        Values = values,
+                                        ShowValueLabels = info[1]
+                                            .Equals(
+                                                "true",
+                                                StringComparison.CurrentCultureIgnoreCase
+                                            ),
+                                        SmoothLines = false,
+                                    }
+                                );
                                 break;
 
                             case "Pie":
                                 chart.Type = ChartType.Pie;
-                                chart.Series.Add(new SeriesItem()
-                                {
-                                    Type = SeriesType.Default,
-                                    Values = values,
-                                    ShowValueLabels = info[1].Equals("true", StringComparison.CurrentCultureIgnoreCase)
-                                });
+                                chart.Series.Add(
+                                    new SeriesItem()
+                                    {
+                                        Type = SeriesType.Default,
+                                        Values = values,
+                                        ShowValueLabels = info[1]
+                                            .Equals(
+                                                "true",
+                                                StringComparison.CurrentCultureIgnoreCase
+                                            ),
+                                    }
+                                );
                                 break;
 
                             case "Doughnut":
                                 chart.Type = ChartType.Pie;
-                                chart.Series.Add(new SeriesItem()
-                                {
-                                    Type = SeriesType.Default,
-                                    Values = values,
-                                    ShowValueLabels = info[1].Equals("true", StringComparison.CurrentCultureIgnoreCase),
-                                    DoughnutChart = true
-                                });
+                                chart.Series.Add(
+                                    new SeriesItem()
+                                    {
+                                        Type = SeriesType.Default,
+                                        Values = values,
+                                        ShowValueLabels = info[1]
+                                            .Equals(
+                                                "true",
+                                                StringComparison.CurrentCultureIgnoreCase
+                                            ),
+                                        DoughnutChart = true,
+                                    }
+                                );
                                 break;
 
                             default:
                                 throw new FormatException();
                         }
 
-                        converted.Add(JsonConvert.SerializeObject(chart, Newtonsoft.Json.Formatting.None));
+                        converted.Add(
+                            JsonConvert.SerializeObject(chart, Newtonsoft.Json.Formatting.None)
+                        );
                     }
                     catch { }
                 }

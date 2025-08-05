@@ -318,7 +318,7 @@ CTRL+S</System:String>
     <System:String x:Key="ChSmallStr">Pequeño</System:String>
     <System:String x:Key="ChLargeStr">Grande</System:String>
     <System:String x:Key="ChartDataTStr">Datos de Gráfico - Type Express</System:String>
-    <System:String x:Key="ChDataInfoStr">Introduce los datos, y haz clic en los tres puntos para ver más opciones.</System:String>
+    <System:String x:Key="ChDataInfoStr">Introduce o importa los datos para tu gráfico.</System:String>
     <System:String x:Key="ChDataInfo2Str" xml:space="preserve">Etiqueta                                    Valor</System:String>
     <System:String x:Key="DtRowBelowStr">Añadir fila debajo</System:String>
     <System:String x:Key="DtRowAboveStr">Añadir fila arriba</System:String>
@@ -1438,8 +1438,9 @@ Los detalles técnicos de la aplicación están abajo:
     <System:String x:Key="TryAgainActionStr">Inténtalo de nuevo</System:String>
     <System:String x:Key="DropboxUsernameStr">Estás conectado/a a Dropbox como {0}.</System:String>
     <System:String x:Key="DropboxConnectingStr">Sigue las instrucciones de la ventana del navegador para continuar.</System:String>
-    <System:String x:Key="APIKeyNotFoundStr" xml:space="preserve">No se ha encontrado la clave API para esta función.
-Contacta con el servicio de asistencia haciendo clic en "Informar".</System:String>
+    <System:String x:Key="APIKeyNotFoundStr" xml:space="preserve">La funcionalidad a la que intentas acceder no tiene los datos de conexión necesarios. Esto es normal al descargar el código fuente.
+
+Para acceder a esta funcionalidad, descarga la última versión de la aplicación desde nuestro sitio web. Si el problema persiste, inténtalo de nuevo más tarde.</System:String>
     <System:String x:Key="ReportEmailInfoStr">Por favor, añade cualquier información adicional que pueda ayudarnos a resolver este problema</System:String>
     <System:String x:Key="DropboxDisconnectedStr">El usuario actual de Dropbox se ha desconectado de la aplicación. Vuelve a conectar tu cuenta de Dropbox.</System:String>
     <System:String x:Key="DropboxErrorStr">Error de Dropbox</System:String>
@@ -1801,5 +1802,35 @@ Si este problema persiste, es posible que estemos experimentando dificultades. I
     <System:String x:Key="InsightManyFilesStr">Tienes {0} archivos en esta carpeta. Considera dividirlos en subcarpetas.</System:String>
     <System:String x:Key="InsightDiffTypesStr">Hay muchos tipos diferentes de archivos en esta carpeta. Considera dividirlos en subcarpetas.</System:String>
     <System:String x:Key="InsightFileModifiedStr">{0} archivos en esta carpeta no han sido modificados en más de 2 años. Considera eliminarlos si ya no son necesarios.</System:String>
+    <System:String x:Key="RowLabelsStr">Etiquetas de fila</System:String>
+    <System:String x:Key="IncreaseStr">Aumentar</System:String>
+    <System:String x:Key="DecreaseStr">Disminuir</System:String>
+    <System:String x:Key="MessageStr">Mensaje</System:String>
+    <System:String x:Key="OrientationStr">Orientación:</System:String>
+    <System:String x:Key="SelectItemStr">Seleccionar elemento</System:String>
+    <System:String x:Key="ZoomLevelStr">Nivel de zoom</System:String>
+    <System:String x:Key="SlideStr">Diapositiva</System:String>
+    <System:String x:Key="ChooseSpecialFolderStr">Elegir una carpeta especial</System:String>
+    <System:String x:Key="SelectedFolderStr">Carpeta seleccionada</System:String>
+    <System:String x:Key="SelectedFileStr">Archivo seleccionado</System:String>
+    <System:String x:Key="UnselectedFileStr">Archivo no seleccionado</System:String>
+    <System:String x:Key="UnselectedFolderStr">Carpeta no seleccionada</System:String>
+    <System:String x:Key="TranslationStr">Traducción</System:String>
+    <System:String x:Key="SourceLanguageStr">Idioma desde el que traducir</System:String>
+    <System:String x:Key="TargetLanguageStr">Idioma al que traducir</System:String>
+    <System:String x:Key="DocumentStr">Documento</System:String>
+    <System:String x:Key="FileExtensionStr">Extensión de archivo</System:String>
+    <System:String x:Key="MarkerDiscStr">Lista con viñetas de disco macizo</System:String>
+    <System:String x:Key="MarkerCircleStr">Lista con viñetas de disco hueco</System:String>
+    <System:String x:Key="MarkerBoxStr">Lista con viñetas de cuadrado macizo</System:String>
+    <System:String x:Key="MarkerSquareStr">Lista con viñetas de cuadrado hueco</System:String>
+    <System:String x:Key="MarkerDecimalStr">Lista con números decimales</System:String>
+    <System:String x:Key="MarkerLowerLatinStr">Lista con letras latinas minúsculas</System:String>
+    <System:String x:Key="MarkerUpperLatinStr">Lista con letras latinas mayúsculas</System:String>
+    <System:String x:Key="MarkerUpperRomanStr">Lista con números romanos mayúsculos</System:String>
+    <System:String x:Key="MarkerLowerRomanStr">Lista con números romanos minúsculos</System:String>
+    <System:String x:Key="SpeedStr">Velocidad</System:String>
+    <System:String x:Key="HelpImproveStr">Ayuda a mejorar la aplicación para todos</System:String>
+    <System:String x:Key="SendLogsStr">Enviar automáticamente historiales de la aplicación</System:String>
     
 </ResourceDictionary>

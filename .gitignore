@@ -10,13 +10,10 @@
 *.userosscache
 *.sln.docstates
 *.secret
+ExpressControls/SecretsManager.cs
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
-Express Apps/Experimental.xaml
-Express Apps/Experimental2.xaml
-Express Apps/Experimental.xaml.vb
-Express Apps/Experimental2.xaml.vb
 
 # Mono auto generated files
 mono_crash.*

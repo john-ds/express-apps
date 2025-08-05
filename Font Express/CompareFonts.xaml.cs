@@ -1,26 +1,19 @@
-﻿using ExpressControls;
-using Font_Express.Properties;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using ExpressControls;
+using Font_Express.Properties;
 
 namespace Font_Express
 {
     /// <summary>
     /// Interaction logic for CompareFonts.xaml
     /// </summary>
-    public partial class CompareFonts : Window
+    public partial class CompareFonts : ExpressWindow
     {
         private readonly FontItems FontCollection;
         private string Font1 = "";
@@ -39,15 +32,16 @@ namespace Font_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
-            foreach (string item in Settings.Default.Favourites.Cast<string>()
-                .Where(x => !string.IsNullOrWhiteSpace(x) && collection.Contains(x)).Distinct())
+            foreach (
+                string item in Settings
+                    .Default.Favourites.Cast<string>()
+                    .Where(x => !string.IsNullOrWhiteSpace(x) && collection.Contains(x))
+                    .Distinct()
+            )
             {
-                FavouriteList.Add(new SelectableItem()
-                {
-                    Name = item,
-                    Selected = false
-                });
+                FavouriteList.Add(new SelectableItem() { Name = item, Selected = false });
             }
 
             if (!FavouriteList.Any())
@@ -57,11 +51,7 @@ namespace Font_Express
 
             foreach (string item in Funcs.SuggestedFonts.Where(collection.Contains))
             {
-                SuggestedList.Add(new SelectableItem()
-                {
-                    Name = item,
-                    Selected = false
-                });
+                SuggestedList.Add(new SelectableItem() { Name = item, Selected = false });
             }
             SuggestedItems.ItemsSource = SuggestedList;
 
@@ -73,10 +63,17 @@ namespace Font_Express
 
         private void StartFontSearch()
         {
-            var fonts = FontCollection.Where(f => f.Contains(SearchTxt.Text, StringComparison.CurrentCultureIgnoreCase));
+            var fonts = FontCollection.Where(f =>
+                f.Contains(SearchTxt.Text, StringComparison.CurrentCultureIgnoreCase)
+            );
             if (!fonts.Any())
             {
-                Funcs.ShowMessageRes("NoSearchResultsStr", "SearchResultsStr", MessageBoxButton.OK, MessageBoxImage.Error);
+                Funcs.ShowMessageRes(
+                    "NoSearchResultsStr",
+                    "SearchResultsStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
             }
             else
             {
@@ -85,11 +82,13 @@ namespace Font_Express
 
                 foreach (string font in fonts)
                 {
-                    SearchResList.Add(new SelectableItem()
-                    {
-                        Name = font,
-                        Selected = font == Font1 || font == Font2
-                    });
+                    SearchResList.Add(
+                        new SelectableItem()
+                        {
+                            Name = font,
+                            Selected = font == Font1 || font == Font2,
+                        }
+                    );
                 }
             }
         }
@@ -134,7 +133,7 @@ namespace Font_Express
                     SetFont2(ck.ToolTip.ToString() ?? "");
                 }
 
-                if (!(Font1 == "" && Font2 == ""))
+                if (!(Font1 == "" || Font2 == ""))
                     SwapBtn.Visibility = Visibility.Visible;
 
                 ClearSelectionBtn.Visibility = Visibility.Visible;
@@ -161,17 +160,20 @@ namespace Font_Express
 
         private void UpdateCheckBtns(string name, bool val)
         {
-            foreach (var i in new ObservableCollection<SelectableItem>[] { SearchResList, FavouriteList, SuggestedList })
+            foreach (
+                var i in new ObservableCollection<SelectableItem>[]
+                {
+                    SearchResList,
+                    FavouriteList,
+                    SuggestedList,
+                }
+            )
             {
                 int idx = i.ToList().FindIndex(x => x.Name == name);
                 if (idx >= 0)
                 {
                     i.RemoveAt(idx);
-                    i.Insert(idx, new SelectableItem()
-                    {
-                        Name = name,
-                        Selected = val
-                    });
+                    i.Insert(idx, new SelectableItem() { Name = name, Selected = val });
                 }
             }
         }
@@ -232,11 +234,17 @@ namespace Font_Express
             else if (Font1 == "" || Font2 == "")
             {
                 string onlyfont = Font1 == "" ? Font2 : Font1;
-                SelectedLbl.Text = Funcs.ChooseLang("SelectedFontStr") + " " + onlyfont + ". " + Funcs.ChooseLang("SelectOneMoreStr");
+                SelectedLbl.Text =
+                    Funcs.ChooseLang("SelectedFontStr")
+                    + " "
+                    + onlyfont
+                    + ". "
+                    + Funcs.ChooseLang("SelectOneMoreStr");
             }
             else
             {
-                SelectedLbl.Text = Funcs.ChooseLang("SelectedFontsStr") + " " + Font1 + " / " + Font2;
+                SelectedLbl.Text =
+                    Funcs.ChooseLang("SelectedFontsStr") + " " + Font1 + " / " + Font2;
             }
         }
 

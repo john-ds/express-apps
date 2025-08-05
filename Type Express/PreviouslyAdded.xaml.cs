@@ -1,18 +1,10 @@
-﻿using ExpressControls;
-using LiveChartsCore.SkiaSharpView.WPF;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using ExpressControls;
 using Type_Express.Properties;
 
 namespace Type_Express
@@ -20,7 +12,7 @@ namespace Type_Express
     /// <summary>
     /// Interaction logic for PreviouslyAdded.xaml
     /// </summary>
-    public partial class PreviouslyAdded : Window
+    public partial class PreviouslyAdded : ExpressWindow
     {
         private ShapeItem[]? ShapeItems = null;
         private ChartItem[]? ChartItems = null;
@@ -40,6 +32,7 @@ namespace Type_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             Title = Funcs.ChooseLang("PrevAddedShapesTitleStr");
             PrevAddLbl.Text = Funcs.ChooseLang("PrevAddedShapesSubStr");
@@ -58,6 +51,7 @@ namespace Type_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             Title = Funcs.ChooseLang("PrevAddedChartsTitleStr");
             PrevAddLbl.Text = Funcs.ChooseLang("PrevAddedChartsSubStr");
@@ -82,16 +76,28 @@ namespace Type_Express
                             ShapeType.Ellipse => Funcs.ChooseLang("EllipseStr"),
                             ShapeType.Line => Funcs.ChooseLang("LineStr"),
                             ShapeType.Triangle => Funcs.ChooseLang("TriangleStr"),
-                            _ => ""
+                            _ => "",
                         },
-                        Subtitle = i.Type == ShapeType.Line ? 
-                            string.Format("{0} x {1} {2}", Math.Max(i.Width, i.Height) * 25, i.Thickness, Funcs.ChooseLang("PixelStr")) : 
-                            string.Format("{0} x {1} {2}", i.Width * 25, i.Height * 25, Funcs.ChooseLang("PixelStr")),
-                        Image = ShapeEditor.RenderShape(i)
+                        Subtitle =
+                            i.Type == ShapeType.Line
+                                ? string.Format(
+                                    "{0} x {1} {2}",
+                                    Math.Max(i.Width, i.Height) * 25,
+                                    i.Thickness,
+                                    Funcs.ChooseLang("PixelStr")
+                                )
+                                : string.Format(
+                                    "{0} x {1} {2}",
+                                    i.Width * 25,
+                                    i.Height * 25,
+                                    Funcs.ChooseLang("PixelStr")
+                                ),
+                        Image = ShapeEditor.RenderShape(i),
                     };
                 });
 
-                ItemCountLbl.Text = ShapeItems.Length.ToString() + "/25 " + Funcs.ChooseLang("ItemsStr");
+                ItemCountLbl.Text =
+                    ShapeItems.Length.ToString() + "/25 " + Funcs.ChooseLang("ItemsStr");
                 AddedItems.ItemsSource = items.Reverse();
             }
             else if (ChartItems != null)
@@ -105,14 +111,20 @@ namespace Type_Express
                         {
                             ChartType.Pie => Funcs.ChooseLang("ChPieChartStr"),
                             ChartType.Polar => Funcs.ChooseLang("ChPolarChartStr"),
-                            _ => Funcs.ChooseLang("ChCartesianChartStr")
+                            _ => Funcs.ChooseLang("ChCartesianChartStr"),
                         },
-                        Subtitle = string.Format("{0} x {1} {2}", i.Width, i.Height, Funcs.ChooseLang("PixelStr")),
-                        Image = ChartEditor.RenderChart(i)
+                        Subtitle = string.Format(
+                            "{0} x {1} {2}",
+                            i.Width,
+                            i.Height,
+                            Funcs.ChooseLang("PixelStr")
+                        ),
+                        Image = ChartEditor.RenderChart(i),
                     };
                 });
 
-                ItemCountLbl.Text = ChartItems.Length.ToString() + "/25 " + Funcs.ChooseLang("ItemsStr");
+                ItemCountLbl.Text =
+                    ChartItems.Length.ToString() + "/25 " + Funcs.ChooseLang("ItemsStr");
                 AddedItems.ItemsSource = items.Reverse();
             }
         }
@@ -121,7 +133,9 @@ namespace Type_Express
         {
             if (ShapeItems != null)
             {
-                ShapeItem shape = ShapeItems.Where(i => i.ID == (string)((AppButton)sender).Tag).First();
+                ShapeItem shape = ShapeItems
+                    .Where(i => i.ID == (string)((AppButton)sender).Tag)
+                    .First();
 
                 ShapeEditor editor = new(shape, ColourScheme);
                 if (editor.ShowDialog() == true && editor.ChosenShape != null)
@@ -133,7 +147,9 @@ namespace Type_Express
             }
             else if (ChartItems != null)
             {
-                ChartItem chart = ChartItems.Where(i => i.ID == (string)((AppButton)sender).Tag).First();
+                ChartItem chart = ChartItems
+                    .Where(i => i.ID == (string)((AppButton)sender).Tag)
+                    .First();
 
                 ChartEditor editor = new(ExpressApp.Type, chart, ColourSchemeEnum);
                 if (editor.ShowDialog() == true && editor.ChartData != null)
@@ -147,8 +163,14 @@ namespace Type_Express
 
         private void RemoveBtns_Click(object sender, RoutedEventArgs e)
         {
-            if (Funcs.ShowPromptRes("RemovePrevAddedDescStr", "RemovePrevAddedStr", 
-                MessageBoxButton.YesNoCancel, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+            if (
+                Funcs.ShowPromptRes(
+                    "RemovePrevAddedDescStr",
+                    "RemovePrevAddedStr",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Warning
+                ) == MessageBoxResult.Yes
+            )
             {
                 if (ShapeItems != null)
                 {
@@ -179,8 +201,14 @@ namespace Type_Express
 
         private void ClearAllBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (Funcs.ShowPromptRes("RemoveAllPrevAddedDescStr", "RemoveAllPrevAddedStr",
-                MessageBoxButton.YesNoCancel, MessageBoxImage.Warning) == MessageBoxResult.Yes)
+            if (
+                Funcs.ShowPromptRes(
+                    "RemoveAllPrevAddedDescStr",
+                    "RemoveAllPrevAddedStr",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Warning
+                ) == MessageBoxResult.Yes
+            )
             {
                 if (ShapeItems != null)
                     Settings.Default.SavedShapes.Clear();

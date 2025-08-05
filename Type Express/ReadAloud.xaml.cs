@@ -1,27 +1,18 @@
-﻿using ExpressControls;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Speech.Synthesis;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using ExpressControls;
 
 namespace Type_Express
 {
     /// <summary>
     /// Interaction logic for ReadAloud.xaml
     /// </summary>
-    public partial class ReadAloud : Window
+    public partial class ReadAloud : ExpressWindow
     {
         private readonly SpeechSynthesizer SpeechTTS = new();
         private bool NoBold = false;
@@ -35,6 +26,7 @@ namespace Type_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             // Event handlers for maximisable windows
             MaxBtn.Click += Funcs.MaxRestoreEvent;
@@ -45,27 +37,33 @@ namespace Type_Express
             SpeechTTS.SpeakProgress += SpeechTTS_SpeakProgress;
             SpeechTTS.SpeakCompleted += SpeechTTS_SpeakCompleted;
 
+            Funcs.RegisterPopups(WindowGrid);
+
             TTSTxt.Selection.Text = docText;
             TTSTxt.Selection.Select(TTSTxt.Document.ContentStart, TTSTxt.Document.ContentStart);
 
             var allVoices = SpeechTTS.GetInstalledVoices();
-            var currentLangVoices = SpeechTTS.GetInstalledVoices(new CultureInfo(Funcs.GetCurrentLang()));
+            var currentLangVoices = SpeechTTS.GetInstalledVoices(
+                new CultureInfo(Funcs.GetCurrentLang())
+            );
             int selectedIdx = 0;
 
-            VoiceCombo.ItemsSource = allVoices.Select((voice, idx) =>
-            {
-                if (selectedIdx == 0 && currentLangVoices.Contains(voice))
-                    selectedIdx = idx;
+            VoiceCombo.ItemsSource = allVoices
+                .Select(
+                    (voice, idx) =>
+                    {
+                        if (selectedIdx == 0 && currentLangVoices.Contains(voice))
+                            selectedIdx = idx;
 
-                return new AppDropdownItem()
-                {
-                    Content = $"{voice.VoiceInfo.Name} — {voice.VoiceInfo.Culture.DisplayName}",
-                    Tag = voice.VoiceInfo.Name
-                };
-            }).Concat(
-            [
-                new() { Content = Funcs.ChooseLang("GetMoreVoicesStr"), Tag = "/more/" }
-            ]);
+                        return new AppDropdownItem()
+                        {
+                            Content =
+                                $"{voice.VoiceInfo.Name} — {voice.VoiceInfo.Culture.DisplayName}",
+                            Tag = voice.VoiceInfo.Name,
+                        };
+                    }
+                )
+                .Concat([new() { Content = Funcs.ChooseLang("GetMoreVoicesStr"), Tag = "/more/" }]);
 
             VoiceCombo.SelectedIndex = selectedIdx;
             SpeechTTS.SelectVoice((string)((AppDropdownItem)VoiceCombo.SelectedItem).Tag);
@@ -100,7 +98,10 @@ namespace Type_Express
             PlayBtn.ToolTip = Funcs.ChooseLang("TtPlayStr");
             StopBtn.Visibility = Visibility.Collapsed;
 
-            TTSTxt.Selection.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.Regular);
+            TTSTxt.Selection.ApplyPropertyValue(
+                TextElement.FontWeightProperty,
+                FontWeights.Regular
+            );
             TTSTxt.Selection.Select(TTSTxt.Document.ContentStart, TTSTxt.Document.ContentStart);
         }
 
@@ -108,12 +109,18 @@ namespace Type_Express
         {
             if (!NoBold)
             {
-                TTSTxt.Selection.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.Regular);
+                TTSTxt.Selection.ApplyPropertyValue(
+                    TextElement.FontWeightProperty,
+                    FontWeights.Regular
+                );
 
                 if (e.CharacterCount > 0)
                     HighlightWordInRichTextBox(e.Text);
 
-                TTSTxt.Selection.ApplyPropertyValue(TextElement.FontWeightProperty, FontWeights.Bold);
+                TTSTxt.Selection.ApplyPropertyValue(
+                    TextElement.FontWeightProperty,
+                    FontWeights.Bold
+                );
             }
         }
 
@@ -151,21 +158,26 @@ namespace Type_Express
             {
                 NoBold = true;
                 SpeechTTS.SetOutputToWaveFile(Funcs.WAVSaveDialog.FileName);
-                SpeechTTS.Speak(new TextRange(TTSTxt.Document.ContentStart, TTSTxt.Document.ContentEnd).Text);
+                SpeechTTS.Speak(
+                    new TextRange(TTSTxt.Document.ContentStart, TTSTxt.Document.ContentEnd).Text
+                );
 
                 try
                 {
-                    _ = Process.Start(new ProcessStartInfo()
-                    {
-                        FileName = "explorer.exe",
-                        Arguments = "/select," + Funcs.WAVSaveDialog.FileName,
-                        UseShellExecute = true
-                    });
+                    _ = Process.Start(
+                        new ProcessStartInfo()
+                        {
+                            FileName = "explorer.exe",
+                            Arguments = "/select," + Funcs.WAVSaveDialog.FileName,
+                            UseShellExecute = true,
+                        }
+                    );
                 }
                 catch { }
 
                 NoBold = false;
                 SpeechTTS.SetOutputToDefaultAudioDevice();
+                Funcs.LogConversion(PageID, LoggingProperties.Conversion.FileExported, "tts");
             }
         }
 
@@ -180,16 +192,22 @@ namespace Type_Express
                     VoiceCombo.SelectedItem = e.RemovedItems[0];
                     try
                     {
-                        _ = Process.Start(new ProcessStartInfo()
-                        {
-                            FileName = "ms-settings:speech",
-                            UseShellExecute = true
-                        });
+                        _ = Process.Start(
+                            new ProcessStartInfo()
+                            {
+                                FileName = "ms-settings:speech",
+                                UseShellExecute = true,
+                            }
+                        );
                     }
                     catch
                     {
-                        Funcs.ShowMessageRes("OpenSettingsErrorDescStr", "OpenSettingsErrorStr",
-                            MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                        Funcs.ShowMessageRes(
+                            "OpenSettingsErrorDescStr",
+                            "OpenSettingsErrorStr",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Exclamation
+                        );
                     }
                 }
                 else
@@ -218,7 +236,9 @@ namespace Type_Express
                 PlayBtn.ToolTip = Funcs.ChooseLang("TtPauseStr");
                 StopBtn.Visibility = Visibility.Visible;
 
-                SpeechTTS.SpeakAsync(new TextRange(TTSTxt.Document.ContentStart, TTSTxt.Document.ContentEnd).Text);
+                SpeechTTS.SpeakAsync(
+                    new TextRange(TTSTxt.Document.ContentStart, TTSTxt.Document.ContentEnd).Text
+                );
             }
         }
 
@@ -233,13 +253,19 @@ namespace Type_Express
             VolumePopup.IsOpen = true;
         }
 
-        private void RateSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void RateSlider_ValueChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<double> e
+        )
         {
             if (IsLoaded)
                 SpeechTTS.Rate = (int)RateSlider.Value;
         }
 
-        private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void VolumeSlider_ValueChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<double> e
+        )
         {
             if (IsLoaded)
                 SpeechTTS.Volume = (int)VolumeSlider.Value;

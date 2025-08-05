@@ -1,27 +1,20 @@
-﻿using ExpressControls;
-using Present_Express.Properties;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Windows.Threading;
+using ExpressControls;
+using Present_Express.Properties;
 
 namespace Present_Express
 {
     /// <summary>
     /// Interaction logic for Slideshow.xaml
     /// </summary>
-    public partial class Slideshow : Window
+    public partial class Slideshow : ExpressWindow
     {
         private readonly List<Slide> AllSlides;
         private int CurrentSlide = -1;
@@ -31,13 +24,21 @@ namespace Present_Express
         private Grid PhotoGrid;
         private Grid PhotoGridOther;
 
-        private readonly DispatcherTimer SlideTimer = new() { Interval = new TimeSpan(0, 0, 0, 2), IsEnabled = false };
-        private readonly DispatcherTimer MoveTimer = new() { Interval = new TimeSpan(0, 0, 0, 2), IsEnabled = false };
+        private readonly DispatcherTimer SlideTimer = new()
+        {
+            Interval = new TimeSpan(0, 0, 0, 2),
+            IsEnabled = false,
+        };
+        private readonly DispatcherTimer MoveTimer = new()
+        {
+            Interval = new TimeSpan(0, 0, 0, 2),
+            IsEnabled = false,
+        };
 
         private Point previousMousePosition;
         private readonly Storyboard TransitionStoryboard = new();
         private bool TransitionRunning = false;
-        
+
         private readonly bool LoopOn;
         private readonly bool UseTimings;
 
@@ -70,7 +71,9 @@ namespace Present_Express
 
             try
             {
-                System.Windows.Forms.Screen screen = System.Windows.Forms.Screen.AllScreens[monitor];
+                System.Windows.Forms.Screen screen = System.Windows.Forms.Screen.AllScreens[
+                    monitor
+                ];
                 Top = screen.WorkingArea.Top;
                 Left = screen.WorkingArea.Left;
             }
@@ -83,10 +86,14 @@ namespace Present_Express
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            Funcs.LogConversion(
+                PageID,
+                LoggingProperties.Conversion.SlideshowStarted,
+                $"Slide {CurrentSlide + 2}"
+            );
             WindowState = WindowState.Maximized;
             LoadNext();
         }
-
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -191,7 +198,10 @@ namespace Present_Express
                 (PhotoImg, PhotoImgOther) = (PhotoImgOther, PhotoImg);
                 (PhotoGrid, PhotoGridOther) = (PhotoGridOther, PhotoGrid);
 
-                if (Funcs.GetTransitionCategory(AllSlides[CurrentSlide].Transition.Type) != TransitionCategory.Uncover)
+                if (
+                    Funcs.GetTransitionCategory(AllSlides[CurrentSlide].Transition.Type)
+                    != TransitionCategory.Uncover
+                )
                 {
                     Panel.SetZIndex(PhotoGrid, 2);
                     Panel.SetZIndex(PhotoGridOther, 1);
@@ -272,25 +282,43 @@ namespace Present_Express
                     {
                         KeyFrames =
                         {
-                            new EasingDoubleKeyFrame(1, KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0))),
-                            new EasingDoubleKeyFrame(0, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(trans.Duration / 2)))
-                        }
+                            new EasingDoubleKeyFrame(
+                                1,
+                                KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0))
+                            ),
+                            new EasingDoubleKeyFrame(
+                                0,
+                                KeyTime.FromTimeSpan(TimeSpan.FromSeconds(trans.Duration / 2))
+                            ),
+                        },
                     };
                     DoubleAnimationUsingKeyFrames fadePhase2 = new()
                     {
                         KeyFrames =
                         {
-                            new EasingDoubleKeyFrame(0, KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0))),
-                            new EasingDoubleKeyFrame(0, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(trans.Duration / 2)))
-                        }
+                            new EasingDoubleKeyFrame(
+                                0,
+                                KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0))
+                            ),
+                            new EasingDoubleKeyFrame(
+                                0,
+                                KeyTime.FromTimeSpan(TimeSpan.FromSeconds(trans.Duration / 2))
+                            ),
+                        },
                     };
                     DoubleAnimationUsingKeyFrames fadePhase3 = new()
                     {
                         KeyFrames =
                         {
-                            new EasingDoubleKeyFrame(0, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(trans.Duration / 2))),
-                            new EasingDoubleKeyFrame(1, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(trans.Duration)))
-                        }
+                            new EasingDoubleKeyFrame(
+                                0,
+                                KeyTime.FromTimeSpan(TimeSpan.FromSeconds(trans.Duration / 2))
+                            ),
+                            new EasingDoubleKeyFrame(
+                                1,
+                                KeyTime.FromTimeSpan(TimeSpan.FromSeconds(trans.Duration))
+                            ),
+                        },
                     };
 
                     Storyboard.SetTarget(fadePhase1, PhotoGridOther);
@@ -309,7 +337,8 @@ namespace Present_Express
                 case TransitionType.PushRight:
                 case TransitionType.PushTop:
                 case TransitionType.PushBottom:
-                    double pushInitial = 0, pushFinal = 0;
+                    double pushInitial = 0,
+                        pushFinal = 0;
                     string pushCoord = "X";
 
                     switch ((TransitionDirection)Funcs.GetTransitionInc(trans.Type))
@@ -340,23 +369,45 @@ namespace Present_Express
                     {
                         KeyFrames =
                         {
-                            new EasingDoubleKeyFrame(0, KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0))),
-                            new EasingDoubleKeyFrame(pushInitial, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(trans.Duration)))
-                        }
+                            new EasingDoubleKeyFrame(
+                                0,
+                                KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0))
+                            ),
+                            new EasingDoubleKeyFrame(
+                                pushInitial,
+                                KeyTime.FromTimeSpan(TimeSpan.FromSeconds(trans.Duration))
+                            ),
+                        },
                     };
                     DoubleAnimationUsingKeyFrames pushAnimation2 = new()
                     {
                         KeyFrames =
                         {
-                            new EasingDoubleKeyFrame(pushFinal, KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0))),
-                            new EasingDoubleKeyFrame(0, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(trans.Duration)))
-                        }
+                            new EasingDoubleKeyFrame(
+                                pushFinal,
+                                KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0))
+                            ),
+                            new EasingDoubleKeyFrame(
+                                0,
+                                KeyTime.FromTimeSpan(TimeSpan.FromSeconds(trans.Duration))
+                            ),
+                        },
                     };
 
                     Storyboard.SetTarget(pushAnimation1, PhotoGridOther);
-                    Storyboard.SetTargetProperty(pushAnimation1, new PropertyPath($"(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.{pushCoord})"));
+                    Storyboard.SetTargetProperty(
+                        pushAnimation1,
+                        new PropertyPath(
+                            $"(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.{pushCoord})"
+                        )
+                    );
                     Storyboard.SetTarget(pushAnimation2, PhotoGrid);
-                    Storyboard.SetTargetProperty(pushAnimation2, new PropertyPath($"(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.{pushCoord})"));
+                    Storyboard.SetTargetProperty(
+                        pushAnimation2,
+                        new PropertyPath(
+                            $"(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.{pushCoord})"
+                        )
+                    );
 
                     TransitionStoryboard.Children.Add(pushAnimation1);
                     TransitionStoryboard.Children.Add(pushAnimation2);
@@ -369,19 +420,31 @@ namespace Present_Express
                     switch ((TransitionDirection)Funcs.GetTransitionInc(trans.Type))
                     {
                         case TransitionDirection.Left:
-                            ((LinearGradientBrush)PhotoGrid.OpacityMask).StartPoint = new Point(0, 0);
+                            ((LinearGradientBrush)PhotoGrid.OpacityMask).StartPoint = new Point(
+                                0,
+                                0
+                            );
                             ((LinearGradientBrush)PhotoGrid.OpacityMask).EndPoint = new Point(1, 0);
                             break;
                         case TransitionDirection.Right:
-                            ((LinearGradientBrush)PhotoGrid.OpacityMask).StartPoint = new Point(1, 0);
+                            ((LinearGradientBrush)PhotoGrid.OpacityMask).StartPoint = new Point(
+                                1,
+                                0
+                            );
                             ((LinearGradientBrush)PhotoGrid.OpacityMask).EndPoint = new Point(0, 0);
                             break;
                         case TransitionDirection.Top:
-                            ((LinearGradientBrush)PhotoGrid.OpacityMask).StartPoint = new Point(0, 0);
+                            ((LinearGradientBrush)PhotoGrid.OpacityMask).StartPoint = new Point(
+                                0,
+                                0
+                            );
                             ((LinearGradientBrush)PhotoGrid.OpacityMask).EndPoint = new Point(0, 1);
                             break;
                         case TransitionDirection.Bottom:
-                            ((LinearGradientBrush)PhotoGrid.OpacityMask).StartPoint = new Point(0, 1);
+                            ((LinearGradientBrush)PhotoGrid.OpacityMask).StartPoint = new Point(
+                                0,
+                                1
+                            );
                             ((LinearGradientBrush)PhotoGrid.OpacityMask).EndPoint = new Point(0, 0);
                             break;
                         default:
@@ -392,23 +455,45 @@ namespace Present_Express
                     {
                         KeyFrames =
                         {
-                            new EasingDoubleKeyFrame(0, KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0))),
-                            new EasingDoubleKeyFrame(1, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(trans.Duration)))
-                        }
+                            new EasingDoubleKeyFrame(
+                                0,
+                                KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0))
+                            ),
+                            new EasingDoubleKeyFrame(
+                                1,
+                                KeyTime.FromTimeSpan(TimeSpan.FromSeconds(trans.Duration))
+                            ),
+                        },
                     };
                     DoubleAnimationUsingKeyFrames wipeAnimation2 = new()
                     {
                         KeyFrames =
                         {
-                            new EasingDoubleKeyFrame(0, KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0))),
-                            new EasingDoubleKeyFrame(1, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(trans.Duration)))
-                        }
+                            new EasingDoubleKeyFrame(
+                                0,
+                                KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0))
+                            ),
+                            new EasingDoubleKeyFrame(
+                                1,
+                                KeyTime.FromTimeSpan(TimeSpan.FromSeconds(trans.Duration))
+                            ),
+                        },
                     };
 
                     Storyboard.SetTarget(wipeAnimation1, PhotoGrid);
-                    Storyboard.SetTargetProperty(wipeAnimation1, new PropertyPath("(UIElement.OpacityMask).(GradientBrush.GradientStops)[0].(GradientStop.Offset)"));
+                    Storyboard.SetTargetProperty(
+                        wipeAnimation1,
+                        new PropertyPath(
+                            "(UIElement.OpacityMask).(GradientBrush.GradientStops)[0].(GradientStop.Offset)"
+                        )
+                    );
                     Storyboard.SetTarget(wipeAnimation2, PhotoGrid);
-                    Storyboard.SetTargetProperty(wipeAnimation2, new PropertyPath("(UIElement.OpacityMask).(GradientBrush.GradientStops)[1].(GradientStop.Offset)"));
+                    Storyboard.SetTargetProperty(
+                        wipeAnimation2,
+                        new PropertyPath(
+                            "(UIElement.OpacityMask).(GradientBrush.GradientStops)[1].(GradientStop.Offset)"
+                        )
+                    );
 
                     TransitionStoryboard.Children.Add(wipeAnimation1);
                     TransitionStoryboard.Children.Add(wipeAnimation2);
@@ -445,13 +530,24 @@ namespace Present_Express
                     {
                         KeyFrames =
                         {
-                            new EasingDoubleKeyFrame(0, KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0))),
-                            new EasingDoubleKeyFrame(uncoverValue, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(trans.Duration)))
-                        }
+                            new EasingDoubleKeyFrame(
+                                0,
+                                KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0))
+                            ),
+                            new EasingDoubleKeyFrame(
+                                uncoverValue,
+                                KeyTime.FromTimeSpan(TimeSpan.FromSeconds(trans.Duration))
+                            ),
+                        },
                     };
 
                     Storyboard.SetTarget(uncoverAnimation, PhotoGridOther);
-                    Storyboard.SetTargetProperty(uncoverAnimation, new PropertyPath($"(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.{uncoverCoord})"));
+                    Storyboard.SetTargetProperty(
+                        uncoverAnimation,
+                        new PropertyPath(
+                            $"(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.{uncoverCoord})"
+                        )
+                    );
 
                     TransitionStoryboard.Children.Add(uncoverAnimation);
                     break;
@@ -487,13 +583,24 @@ namespace Present_Express
                     {
                         KeyFrames =
                         {
-                            new EasingDoubleKeyFrame(coverValue, KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0))),
-                            new EasingDoubleKeyFrame(0, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(trans.Duration)))
-                        }
+                            new EasingDoubleKeyFrame(
+                                coverValue,
+                                KeyTime.FromTimeSpan(new TimeSpan(0, 0, 0))
+                            ),
+                            new EasingDoubleKeyFrame(
+                                0,
+                                KeyTime.FromTimeSpan(TimeSpan.FromSeconds(trans.Duration))
+                            ),
+                        },
                     };
 
                     Storyboard.SetTarget(coverAnimation, PhotoGrid);
-                    Storyboard.SetTargetProperty(coverAnimation, new PropertyPath($"(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.{coverCoord})"));
+                    Storyboard.SetTargetProperty(
+                        coverAnimation,
+                        new PropertyPath(
+                            $"(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.{coverCoord})"
+                        )
+                    );
 
                     TransitionStoryboard.Children.Add(coverAnimation);
                     break;
@@ -503,7 +610,7 @@ namespace Present_Express
                     TransitionFinished();
                     return;
             }
-            
+
             TransitionStoryboard.Begin();
             TransitionRunning = true;
         }

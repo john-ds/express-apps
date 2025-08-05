@@ -1,24 +1,18 @@
-﻿using ExpressControls;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using ExpressControls;
 
 namespace Type_Express
 {
     /// <summary>
     /// Interaction logic for ShapeEditor.xaml
     /// </summary>
-    public partial class ShapeEditor : Window
+    public partial class ShapeEditor : ExpressWindow
     {
         private readonly ShapeType CurrentShape;
         public Shape? ChosenShape { get; set; } = null;
@@ -35,6 +29,7 @@ namespace Type_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             CurrentShape = shape;
             ColourScheme = colourScheme;
@@ -49,6 +44,7 @@ namespace Type_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             CurrentShape = data.Type;
             ColourScheme = colourScheme;
@@ -85,6 +81,7 @@ namespace Type_Express
                     LineJoinPnl.Visibility = Visibility.Collapsed;
 
                     DashCheckBox.Content = Funcs.ChooseLang("DashedLineStr");
+                    DashCheckBoxGroup.Header = Funcs.ChooseLang("DashedLineStr");
                     OutlineLbl.Text = Funcs.ChooseLang("LineColourStr");
                     ThicknessLbl.Text = Funcs.ChooseLang("LineThicknessStr");
                     WidthLbl.Text = Funcs.ChooseLang("LengthStr");
@@ -173,7 +170,7 @@ namespace Type_Express
                     else if (DashDotRadio.IsChecked == true)
                         SetDashArray([4, 2, 2, 2]);
                 }
-                
+
                 if (shape.Type == ShapeType.Rectangle || shape.Type == ShapeType.Triangle)
                 {
                     switch (shape.LineJoin)
@@ -212,15 +209,24 @@ namespace Type_Express
                 case Rectangle rect:
                     Path rectPath = new()
                     {
-                        Data = new RectangleGeometry(new Rect(rect.StrokeThickness / 2D, rect.StrokeThickness / 2D, rect.Width, rect.Height)),
+                        Data = new RectangleGeometry(
+                            new Rect(
+                                rect.StrokeThickness / 2D,
+                                rect.StrokeThickness / 2D,
+                                rect.Width,
+                                rect.Height
+                            )
+                        ),
                         Fill = rect.Fill,
                         Stroke = rect.Stroke,
                         StrokeThickness = rect.StrokeThickness,
                         StrokeDashArray = rect.StrokeDashArray,
-                        StrokeLineJoin = rect.StrokeLineJoin
+                        StrokeLineJoin = rect.StrokeLineJoin,
                     };
 
-                    bounds = rectPath.Data.GetRenderBounds(new Pen(rect.Stroke, rect.StrokeThickness));
+                    bounds = rectPath.Data.GetRenderBounds(
+                        new Pen(rect.Stroke, rect.StrokeThickness)
+                    );
                     return Funcs.RenderControlAsImage(rectPath, bounds);
 
                 case Ellipse ellp:
@@ -235,23 +241,31 @@ namespace Type_Express
                         Fill = ellp.Fill,
                         Stroke = ellp.Stroke,
                         StrokeThickness = ellp.StrokeThickness,
-                        StrokeDashArray = ellp.StrokeDashArray
+                        StrokeDashArray = ellp.StrokeDashArray,
                     };
 
-                    bounds = ellpPath.Data.GetRenderBounds(new Pen(ellp.Stroke, ellp.StrokeThickness));
+                    bounds = ellpPath.Data.GetRenderBounds(
+                        new Pen(ellp.Stroke, ellp.StrokeThickness)
+                    );
                     return Funcs.RenderControlAsImage(ellpPath, bounds);
 
                 case Line ln:
                     double offset = ln.StrokeThickness / 2D;
-                    Point startPoint = ln.X2 == 0.0 ? new Point(ln.X1 + offset, ln.Y1) : new Point(ln.X1, ln.Y1 + offset);
-                    Point endPoint = ln.X2 == 0.0 ? new Point(ln.X2 + offset, ln.Y2) : new Point(ln.X2, ln.Y2 + offset);
+                    Point startPoint =
+                        ln.X2 == 0.0
+                            ? new Point(ln.X1 + offset, ln.Y1)
+                            : new Point(ln.X1, ln.Y1 + offset);
+                    Point endPoint =
+                        ln.X2 == 0.0
+                            ? new Point(ln.X2 + offset, ln.Y2)
+                            : new Point(ln.X2, ln.Y2 + offset);
 
                     Path linePath = new()
                     {
                         Data = new LineGeometry(startPoint, endPoint),
                         Stroke = ln.Stroke,
                         StrokeThickness = ln.StrokeThickness,
-                        StrokeDashArray = ln.StrokeDashArray
+                        StrokeDashArray = ln.StrokeDashArray,
                     };
 
                     bounds = linePath.Data.GetRenderBounds(new Pen(ln.Stroke, ln.StrokeThickness));
@@ -261,44 +275,63 @@ namespace Type_Express
                     Path triPath = new()
                     {
                         Data = new PathGeometry(
+                            [
+                                new PathFigure()
+                                {
+                                    Segments =
+                                    [
+                                        new LineSegment()
+                                        {
+                                            Point = new Point(tri.Points[1].X, tri.Points[1].Y),
+                                        },
+                                        new LineSegment()
+                                        {
+                                            Point = new Point(tri.Points[2].X, tri.Points[2].Y),
+                                        },
+                                    ],
+                                    StartPoint = new Point(tri.Points[0].X, tri.Points[0].Y),
+                                    IsClosed = true,
+                                },
+                            ]
+                        ),
+                        Fill = tri.Fill,
+                        Stroke = tri.Stroke,
+                        StrokeThickness = tri.StrokeThickness,
+                        StrokeDashArray = tri.StrokeDashArray,
+                        StrokeLineJoin = tri.StrokeLineJoin,
+                    };
+
+                    Rect tempBounds = triPath.Data.GetRenderBounds(
+                        new Pen(tri.Stroke, tri.StrokeThickness)
+                    );
+
+                    Point point1 = new(
+                        TranslatePt(tri.Points[0].X, tempBounds.X),
+                        TranslatePt(tri.Points[0].Y, tempBounds.Y)
+                    );
+                    Point point2 = new(
+                        TranslatePt(tri.Points[1].X, tempBounds.X),
+                        TranslatePt(tri.Points[1].Y, tempBounds.Y)
+                    );
+                    Point point3 = new(
+                        TranslatePt(tri.Points[2].X, tempBounds.X),
+                        TranslatePt(tri.Points[2].Y, tempBounds.Y)
+                    );
+
+                    triPath.Data = new PathGeometry(
                         [
                             new PathFigure()
                             {
                                 Segments =
                                 [
-                                    new LineSegment() { Point = new Point(tri.Points[1].X, tri.Points[1].Y) },
-                                    new LineSegment() { Point = new Point(tri.Points[2].X, tri.Points[2].Y) }
+                                    new LineSegment() { Point = point2 },
+                                    new LineSegment() { Point = point3 },
                                 ],
-                                StartPoint = new Point(tri.Points[0].X, tri.Points[0].Y),
-                                IsClosed = true
-                            }
-                        ]),
-                        Fill = tri.Fill,
-                        Stroke = tri.Stroke,
-                        StrokeThickness = tri.StrokeThickness,
-                        StrokeDashArray = tri.StrokeDashArray,
-                        StrokeLineJoin = tri.StrokeLineJoin
-                    };
-
-                    Rect tempBounds = triPath.Data.GetRenderBounds(new Pen(tri.Stroke, tri.StrokeThickness));
-                    
-                    Point point1 = new(TranslatePt(tri.Points[0].X, tempBounds.X), TranslatePt(tri.Points[0].Y, tempBounds.Y));
-                    Point point2 = new(TranslatePt(tri.Points[1].X, tempBounds.X), TranslatePt(tri.Points[1].Y, tempBounds.Y));
-                    Point point3 = new(TranslatePt(tri.Points[2].X, tempBounds.X), TranslatePt(tri.Points[2].Y, tempBounds.Y));
-
-                    triPath.Data = new PathGeometry(
-                    [
-                        new PathFigure()
-                        {
-                            Segments =
-                            [
-                                new LineSegment() { Point = point2 },
-                                new LineSegment() { Point = point3 }
-                            ],
-                            StartPoint = point1,
-                            IsClosed = true
-                        }
-                    ]);
+                                StartPoint = point1,
+                                IsClosed = true,
+                            },
+                        ]
+                    );
 
                     bounds = triPath.Data.GetRenderBounds(new Pen(tri.Stroke, tri.StrokeThickness));
                     return Funcs.RenderControlAsImage(triPath, bounds);
@@ -318,27 +351,31 @@ namespace Type_Express
             switch (data.Type)
             {
                 case ShapeType.Rectangle:
-                    return RenderShape(new Rectangle()
-                    {
-                        Width = data.Width * 25,
-                        Height = data.Height * 25,
-                        Fill = new SolidColorBrush(data.FillColour),
-                        Stroke = new SolidColorBrush(data.OutlineColour),
-                        StrokeThickness = data.Thickness,
-                        StrokeDashArray = GetDashArray(data.Dashes),
-                        StrokeLineJoin = GetLineJoin(data.LineJoin)
-                    });
+                    return RenderShape(
+                        new Rectangle()
+                        {
+                            Width = data.Width * 25,
+                            Height = data.Height * 25,
+                            Fill = new SolidColorBrush(data.FillColour),
+                            Stroke = new SolidColorBrush(data.OutlineColour),
+                            StrokeThickness = data.Thickness,
+                            StrokeDashArray = GetDashArray(data.Dashes),
+                            StrokeLineJoin = GetLineJoin(data.LineJoin),
+                        }
+                    );
 
                 case ShapeType.Ellipse:
-                    return RenderShape(new Ellipse()
-                    {
-                        Width = data.Width * 25,
-                        Height = data.Height * 25,
-                        Fill = new SolidColorBrush(data.FillColour),
-                        Stroke = new SolidColorBrush(data.OutlineColour),
-                        StrokeThickness = data.Thickness,
-                        StrokeDashArray = GetDashArray(data.Dashes)
-                    });
+                    return RenderShape(
+                        new Ellipse()
+                        {
+                            Width = data.Width * 25,
+                            Height = data.Height * 25,
+                            Fill = new SolidColorBrush(data.FillColour),
+                            Stroke = new SolidColorBrush(data.OutlineColour),
+                            StrokeThickness = data.Thickness,
+                            StrokeDashArray = GetDashArray(data.Dashes),
+                        }
+                    );
 
                 case ShapeType.Line:
                     Line ln = new()
@@ -346,7 +383,7 @@ namespace Type_Express
                         Stroke = new SolidColorBrush(data.OutlineColour),
                         StrokeThickness = data.Thickness,
                         StrokeDashArray = GetDashArray(data.Dashes),
-                        StrokeLineJoin = GetLineJoin(data.LineJoin)
+                        StrokeLineJoin = GetLineJoin(data.LineJoin),
                     };
 
                     if (data.Width > 0)
@@ -363,15 +400,17 @@ namespace Type_Express
                     return RenderShape(ln);
 
                 case ShapeType.Triangle:
-                    return RenderShape(new Polygon()
-                    {
-                        Points = data.Points,
-                        Fill = new SolidColorBrush(data.FillColour),
-                        Stroke = new SolidColorBrush(data.OutlineColour),
-                        StrokeThickness = data.Thickness,
-                        StrokeDashArray = GetDashArray(data.Dashes),
-                        StrokeLineJoin = GetLineJoin(data.LineJoin)
-                    });
+                    return RenderShape(
+                        new Polygon()
+                        {
+                            Points = data.Points,
+                            Fill = new SolidColorBrush(data.FillColour),
+                            Stroke = new SolidColorBrush(data.OutlineColour),
+                            StrokeThickness = data.Thickness,
+                            StrokeDashArray = GetDashArray(data.Dashes),
+                            StrokeLineJoin = GetLineJoin(data.LineJoin),
+                        }
+                    );
 
                 default:
                     throw new NotSupportedException();
@@ -385,8 +424,14 @@ namespace Type_Express
                 ShapeType.Ellipse => EllipseShape,
                 ShapeType.Line => LineShape,
                 ShapeType.Triangle => TriangleShape,
-                _ => RectangleShape
+                _ => RectangleShape,
             };
+
+            Funcs.LogConversion(
+                PageID,
+                LoggingProperties.Conversion.CreateShape,
+                Enum.GetName(CurrentShape) ?? ""
+            );
 
             DialogResult = true;
             Close();
@@ -394,7 +439,10 @@ namespace Type_Express
 
         #region Size
 
-        private void WidthSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void WidthSlider_ValueChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<double> e
+        )
         {
             if (IsLoaded)
                 switch (CurrentShape)
@@ -421,7 +469,7 @@ namespace Type_Express
                         foreach (var pt in TriangleShape.Points)
                             shapepoints.Add(pt.X);
 
-                        shapepoints = shapepoints.Distinct().ToList();
+                        shapepoints = [.. shapepoints.Distinct()];
 
                         int counter = 0;
                         foreach (var pt in TriangleShape.Points)
@@ -432,7 +480,7 @@ namespace Type_Express
                                 newpoints.Add(new Point(WidthSlider.Value * 25 / 2D, pt.Y));
                             else
                                 newpoints.Add(new Point(pt.X, pt.Y));
-                        
+
                             counter++;
                         }
 
@@ -444,7 +492,10 @@ namespace Type_Express
                 }
         }
 
-        private void HeightSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void HeightSlider_ValueChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<double> e
+        )
         {
             if (IsLoaded)
                 switch (CurrentShape)
@@ -464,7 +515,7 @@ namespace Type_Express
                         foreach (var pt in TriangleShape.Points)
                             shapepoints.Add(pt.Y);
 
-                        shapepoints = shapepoints.Distinct().ToList();
+                        shapepoints = [.. shapepoints.Distinct()];
 
                         int counter = 0;
                         foreach (var pt in TriangleShape.Points)
@@ -490,7 +541,10 @@ namespace Type_Express
         #endregion
         #region Fill
 
-        private void FillColourPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
+        private void FillColourPicker_SelectedColorChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<Color?> e
+        )
         {
             if (IsLoaded && FillColourPicker.SelectedColor != null)
                 FillShape((Color)FillColourPicker.SelectedColor);
@@ -534,7 +588,10 @@ namespace Type_Express
         #endregion
         #region Outline
 
-        private void OutlineColourPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
+        private void OutlineColourPicker_SelectedColorChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<Color?> e
+        )
         {
             if (IsLoaded && OutlineColourPicker.SelectedColor != null)
                 OutlineShape((Color)OutlineColourPicker.SelectedColor);
@@ -595,7 +652,10 @@ namespace Type_Express
         #endregion
         #region Thickness
 
-        private void ThicknessSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void ThicknessSlider_ValueChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<double> e
+        )
         {
             if (IsLoaded)
                 SetThickness((int)ThicknessSlider.Value);
@@ -730,30 +790,53 @@ namespace Type_Express
 
                 case ShapeType.Triangle:
                     // Keep middle point the tip of the triangle
-                    (WidthSlider.Value, HeightSlider.Value) = (HeightSlider.Value, WidthSlider.Value);
+                    (WidthSlider.Value, HeightSlider.Value) = (
+                        HeightSlider.Value,
+                        WidthSlider.Value
+                    );
 
                     double height = HeightSlider.Value * 25;
                     double width = WidthSlider.Value * 25;
 
                     if (TriangleShape.Points[1].X == 0.0)
                         // triangle is: ◀ (pointing to the left): make triangle point down
-                        TriangleShape.Points = [new Point(0.0, 0.0), new Point(width / 2, height), new Point(width, 0.0)];
-                    
+                        TriangleShape.Points =
+                        [
+                            new Point(0.0, 0.0),
+                            new Point(width / 2, height),
+                            new Point(width, 0.0),
+                        ];
                     else if (TriangleShape.Points[1].Y == 0.0)
                         // triangle is: ▲ (pointing to the top): make triangle point left
-                        TriangleShape.Points = [new Point(width, 0.0), new Point(0.0, height / 2), new Point(width, height)];
-                    
+                        TriangleShape.Points =
+                        [
+                            new Point(width, 0.0),
+                            new Point(0.0, height / 2),
+                            new Point(width, height),
+                        ];
                     else if (TriangleShape.Points[1].Y < TriangleShape.Points[1].X)
                         // triangle is: ▶ (pointing to the right): make triangle point up
-                        TriangleShape.Points = [new Point(0.0, height), new Point(width / 2, 0.0), new Point(width, height)];
-                    
+                        TriangleShape.Points =
+                        [
+                            new Point(0.0, height),
+                            new Point(width / 2, 0.0),
+                            new Point(width, height),
+                        ];
                     else
                         // triangle is: ▼ (pointing to the bottom): make triangle point right
-                        TriangleShape.Points = [new Point(0.0, 0.0), new Point(width, height / 2), new Point(0.0, height)];
+                        TriangleShape.Points =
+                        [
+                            new Point(0.0, 0.0),
+                            new Point(width, height / 2),
+                            new Point(0.0, height),
+                        ];
                     break;
 
                 default:
-                    (WidthSlider.Value, HeightSlider.Value) = (HeightSlider.Value, WidthSlider.Value);
+                    (WidthSlider.Value, HeightSlider.Value) = (
+                        HeightSlider.Value,
+                        WidthSlider.Value
+                    );
                     break;
             }
         }
@@ -778,30 +861,53 @@ namespace Type_Express
 
                 case ShapeType.Triangle:
                     // Keep middle point the tip of the triangle
-                    (WidthSlider.Value, HeightSlider.Value) = (HeightSlider.Value, WidthSlider.Value);
+                    (WidthSlider.Value, HeightSlider.Value) = (
+                        HeightSlider.Value,
+                        WidthSlider.Value
+                    );
 
                     double height = HeightSlider.Value * 25;
                     double width = WidthSlider.Value * 25;
 
                     if (TriangleShape.Points[1].X == 0.0)
                         // triangle is: ◀ (pointing to the left): make triangle point up
-                        TriangleShape.Points = [new Point(0.0, height), new Point(width / 2, 0.0), new Point(width, height)];
-
+                        TriangleShape.Points =
+                        [
+                            new Point(0.0, height),
+                            new Point(width / 2, 0.0),
+                            new Point(width, height),
+                        ];
                     else if (TriangleShape.Points[1].Y == 0.0)
                         // triangle is: ▲ (pointing to the top): make triangle point right
-                        TriangleShape.Points = [new Point(0.0, 0.0), new Point(width, height / 2), new Point(0.0, height)];
-
+                        TriangleShape.Points =
+                        [
+                            new Point(0.0, 0.0),
+                            new Point(width, height / 2),
+                            new Point(0.0, height),
+                        ];
                     else if (TriangleShape.Points[1].Y < TriangleShape.Points[1].X)
                         // triangle is: ▶ (pointing to the right): make triangle point down
-                        TriangleShape.Points = [new Point(0.0, 0.0), new Point(width / 2, height), new Point(width, 0.0)];
-
+                        TriangleShape.Points =
+                        [
+                            new Point(0.0, 0.0),
+                            new Point(width / 2, height),
+                            new Point(width, 0.0),
+                        ];
                     else
                         // triangle is: ▼ (pointing to the bottom): make triangle point left
-                        TriangleShape.Points = [new Point(width, 0.0), new Point(0.0, height / 2), new Point(width, height)];
+                        TriangleShape.Points =
+                        [
+                            new Point(width, 0.0),
+                            new Point(0.0, height / 2),
+                            new Point(width, height),
+                        ];
                     break;
 
                 default:
-                    (WidthSlider.Value, HeightSlider.Value) = (HeightSlider.Value, WidthSlider.Value);
+                    (WidthSlider.Value, HeightSlider.Value) = (
+                        HeightSlider.Value,
+                        WidthSlider.Value
+                    );
                     break;
             }
         }

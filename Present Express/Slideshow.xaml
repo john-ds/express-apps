@@ -1,4 +1,4 @@
-﻿<Window x:Class="Present_Express.Slideshow"
+﻿<ex:ExpressWindow x:Class="Present_Express.Slideshow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -45,7 +45,7 @@
                 </Grid>
             </Grid>
         </Viewbox>
-        <Grid x:Name="EndGrid" PreviewMouseUp="EndGrid_PreviewMouseUp" Margin="0" Background="Black" Visibility="Collapsed">
+        <Grid x:Name="EndGrid" PreviewMouseUp="EndGrid_PreviewMouseUp" Margin="0" Background="Black" Visibility="Collapsed" AutomationProperties.LiveSetting="Polite">
             <TextBlock Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,30" TextWrapping="Wrap" VerticalAlignment="Center" FontWeight="Semibold" FontSize="24" Text="{DynamicResource SlideshowEndStr}"/>
             <TextBlock Foreground="White" Text="{DynamicResource SlideshowESCStr}" HorizontalAlignment="Center" FontSize="14" VerticalAlignment="Center" Margin="0,30,0,0" DockPanel.Dock="Bottom"/>
         </Grid>
@@ -56,4 +56,4 @@
             <ex:AppButton x:Name="EndBtn" GapMargin="0" Click="EndBtn_Click" Background="{DynamicResource BackColor}" Icon="{DynamicResource CloseIcon}" ToolTip="{DynamicResource EndStr}" TextVisibility="Collapsed" Margin="0" VerticalAlignment="Top" HorizontalAlignment="Left" Padding="8,0"/>
         </StackPanel>
     </Grid>
-</Window>
+</ex:ExpressWindow>

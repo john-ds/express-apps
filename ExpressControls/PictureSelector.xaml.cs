@@ -1,30 +1,24 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using Newtonsoft.Json;
 
 namespace ExpressControls
 {
     /// <summary>
     /// Interaction logic for PictureSelector.xaml
     /// </summary>
-    public partial class PictureSelector : Window
+    public partial class PictureSelector : ExpressWindow
     {
-        private readonly string PictureAPIKey = "";
         private IEnumerable<ImageItem> QueriedPictures = [];
         public ImageItem? ChosenPicture { get; set; } = null;
 
@@ -38,7 +32,7 @@ namespace ExpressControls
         public int ChosenWidth { get; set; } = 400;
         public bool AddAttribution { get; set; } = false;
 
-        public PictureSelector(string apikey, ExpressApp app)
+        public PictureSelector(ExpressApp app)
         {
             InitializeComponent();
 
@@ -47,10 +41,12 @@ namespace ExpressControls
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
+
+            Funcs.RegisterPopups(WindowGrid);
 
             if (app == ExpressApp.Type)
                 Title = Funcs.ChooseLang("PcHeaderTStr");
-
             else if (app == ExpressApp.Present)
             {
                 Title = Funcs.ChooseLang("PcHeaderPStr");
@@ -60,10 +56,10 @@ namespace ExpressControls
                 MenuPnl.HorizontalAlignment = HorizontalAlignment.Left;
                 MenuPnl.Width = 350;
 
-                ((MenuItem)((ContextMenu)Resources["PictureMenu"]).Items[0]).Header = Funcs.ChooseLang("AddSlideshowStr");
+                ((MenuItem)((ContextMenu)Resources["PictureMenu"]).Items[0]).Header =
+                    Funcs.ChooseLang("AddSlideshowStr");
             }
 
-            PictureAPIKey = apikey;
             SearchTxt.Focus();
         }
 
@@ -82,7 +78,11 @@ namespace ExpressControls
             return ub.Uri;
         }
 
-        private static double GetResizedImageHeight(double originalHeight, double originalWidth, double newWidth)
+        private static double GetResizedImageHeight(
+            double originalHeight,
+            double originalWidth,
+            double newWidth
+        )
         {
             double ratio = newWidth / originalWidth;
             return originalHeight * ratio;
@@ -114,38 +114,29 @@ namespace ExpressControls
             string cancellationToken = Guid.NewGuid().ToString();
             CurrentCancellationToken = cancellationToken;
 
+            HttpResponseMessage? response = null;
             try
             {
-                UriBuilder ub = new("https://api.unsplash.com/search/photos") { Port = -1 };
-
-                var query = HttpUtility.ParseQueryString(ub.Query);
-                query["query"] = SearchTxt.Text;
-                query["per_page"] = PerPage.ToString();
-                query["page"] = page.ToString();
-                query["client_id"] = PictureAPIKey;
-                ub.Query = query.ToString();
-
-                HttpRequestMessage httpRequestMessage = new()
-                {
-                    Method = HttpMethod.Get,
-                    RequestUri = ub.Uri,
-                    Headers = {
-                        { HttpRequestHeader.Accept.ToString(), "application/json" }
+                response = await Funcs.SendAPIRequest(
+                    "photos",
+                    new Dictionary<string, string>()
+                    {
+                        { "query", SearchTxt.Text },
+                        { "per_page", PerPage.ToString() },
+                        { "page", page.ToString() },
                     }
-                };
+                );
+                response.EnsureSuccessStatusCode();
 
-                var resp = await Funcs.SendHTTPRequest(httpRequestMessage);
-                var content = await resp.Content.ReadAsStringAsync();
-                var results = JsonConvert.DeserializeObject<PictureResponse>(content);
+                string content = await response.Content.ReadAsStringAsync();
+                PictureResponse? results = JsonConvert.DeserializeObject<PictureResponse>(content);
 
                 if (!CancellationTokens.Contains(cancellationToken))
                 {
                     if (results == null)
                         throw new NullReferenceException();
-
                     else if (results.TotalCount == 0)
                         ShowNoResults();
-
                     else
                     {
                         IEnumerable<ImageItem> icons = results.Pictures.Select(item =>
@@ -154,14 +145,20 @@ namespace ExpressControls
                             return new ImageItem()
                             {
                                 ID = item.PictureID.ToString(),
-                                Image = new BitmapImage(ResizeImage(item.URLs.RawURL, displayWidth)),
-                                Height = GetResizedImageHeight(item.Height, item.Width, displayWidth),
+                                Image = new BitmapImage(
+                                    ResizeImage(item.URLs.RawURL, displayWidth)
+                                ),
+                                Height = GetResizedImageHeight(
+                                    item.Height,
+                                    item.Width,
+                                    displayWidth
+                                ),
                                 Width = displayWidth,
                                 Colour = new SolidColorBrush(item.Colour),
                                 Description = item.Description,
                                 RegularURL = item.URLs.RawURL,
                                 AuthorName = item.User.FullName,
-                                AuthorUsername = item.User.Username
+                                AuthorUsername = item.User.Username,
                             };
                         });
 
@@ -178,7 +175,10 @@ namespace ExpressControls
                             LoadingGrid.Visibility = Visibility.Collapsed;
                             NoResultsLbl.Visibility = Visibility.Collapsed;
 
-                            PageCount = (int)Math.Ceiling(Convert.ToSingle(results.TotalCount) / Convert.ToSingle(PerPage));
+                            PageCount = (int)
+                                Math.Ceiling(
+                                    Convert.ToSingle(results.TotalCount) / Convert.ToSingle(PerPage)
+                                );
                             CurrentPage = page;
 
                             if (PageCount == 1)
@@ -186,7 +186,11 @@ namespace ExpressControls
                             else
                             {
                                 PagePnl.Visibility = Visibility.Visible;
-                                PageLbl.Text = string.Format(Funcs.ChooseLang("PageStr"), CurrentPage.ToString(), PageCount.ToString());
+                                PageLbl.Text = string.Format(
+                                    Funcs.ChooseLang("PageStr"),
+                                    CurrentPage.ToString(),
+                                    PageCount.ToString()
+                                );
 
                                 if (page == 1)
                                 {
@@ -210,8 +214,19 @@ namespace ExpressControls
             }
             catch (Exception ex)
             {
-                Funcs.ShowMessageRes("PictureErrorDescStr", "PictureErrorStr", MessageBoxButton.OK,
-                    MessageBoxImage.Exclamation, Funcs.GenerateErrorReport(ex));
+                if (!CancellationTokens.Contains(cancellationToken))
+                {
+                    if (response == null || response.StatusCode != HttpStatusCode.Unauthorized)
+                        Funcs.ShowMessageRes(
+                            "PictureErrorDescStr",
+                            "PictureErrorStr",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Exclamation,
+                            Funcs.GenerateErrorReport(ex, PageID, "PictureErrorDescStr")
+                        );
+
+                    ShowNoResults();
+                }
             }
         }
 
@@ -268,7 +283,9 @@ namespace ExpressControls
         {
             Button btn = (Button)sender;
             btn.ContextMenu.IsOpen = true;
-            ChosenPicture = QueriedPictures.Where(x => x.ID == (string)btn.Tag).FirstOrDefault(defaultValue: null);
+            ChosenPicture = QueriedPictures
+                .Where(x => x.ID == (string)btn.Tag)
+                .FirstOrDefault(defaultValue: null);
         }
 
         private void AddDocBtn_Click(object sender, RoutedEventArgs e)
@@ -276,7 +293,18 @@ namespace ExpressControls
             try
             {
                 if (ChosenPicture != null)
-                    _ = Funcs.GetStringAsync("https://api.unsplash.com/photos/" + ChosenPicture.ID + "/download?client_id=" + PictureAPIKey);
+                {
+                    _ = Funcs.SendAPIRequest(
+                        "photos",
+                        null,
+                        new PictureDownloadRequest(ChosenPicture.ID)
+                    );
+                    Funcs.LogDownload(
+                        PageID,
+                        ChosenPicture.RegularURL,
+                        $"Unsplash:{ChosenPicture.ID}"
+                    );
+                }
             }
             catch { }
 
@@ -291,11 +319,17 @@ namespace ExpressControls
                 {
                     PreviewImg.Source = new BitmapImage(ResizeImage(ChosenPicture.RegularURL, 850));
                     PreviewGrid.Visibility = Visibility.Visible;
+                    MainGrid.Visibility = Visibility.Collapsed;
                 }
                 catch (Exception ex)
                 {
-                    Funcs.ShowMessageRes("ImageRetrievalErrorStr", "PictureErrorStr", MessageBoxButton.OK,
-                        MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                    Funcs.ShowMessageRes(
+                        "ImageRetrievalErrorStr",
+                        "PictureErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(ex, PageID, "ImageRetrievalErrorStr")
+                    );
                 }
         }
 
@@ -303,18 +337,29 @@ namespace ExpressControls
         {
             PreviewImg.Source = null;
             PreviewGrid.Visibility = Visibility.Collapsed;
+            MainGrid.Visibility = Visibility.Visible;
         }
 
         private void AuthorBtn_Click(object sender, RoutedEventArgs e)
         {
             if (ChosenPicture != null)
-                Process.Start(new ProcessStartInfo("https://unsplash.com/@" + ChosenPicture.AuthorUsername) { UseShellExecute = true });
+                Process.Start(
+                    new ProcessStartInfo("https://unsplash.com/@" + ChosenPicture.AuthorUsername)
+                    {
+                        UseShellExecute = true,
+                    }
+                );
         }
 
         private void OpenBrowserBtn_Click(object sender, RoutedEventArgs e)
         {
             if (ChosenPicture != null)
-                Process.Start(new ProcessStartInfo("https://unsplash.com/photos/" + ChosenPicture.ID) { UseShellExecute = true });
+                Process.Start(
+                    new ProcessStartInfo("https://unsplash.com/photos/" + ChosenPicture.ID)
+                    {
+                        UseShellExecute = true,
+                    }
+                );
         }
 
         #endregion
@@ -335,7 +380,10 @@ namespace ExpressControls
                 ChosenWidth = size;
         }
 
-        private void CustomUpDown_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        private void CustomUpDown_ValueChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<object> e
+        )
         {
             if (IsLoaded)
             {
@@ -350,6 +398,12 @@ namespace ExpressControls
         }
 
         #endregion
+    }
+
+    public class PictureDownloadRequest(string pictureID = "")
+    {
+        [JsonProperty("id")]
+        public string PictureID { get; set; } = pictureID;
     }
 
     public class PictureResponse
@@ -378,10 +432,7 @@ namespace ExpressControls
         [JsonIgnore]
         public Color Colour
         {
-            get
-            {
-                return Funcs.HexColor(ColourHex);
-            }
+            get { return Funcs.HexColor(ColourHex); }
         }
 
         [JsonProperty("alt_description")]

@@ -1,4 +1,4 @@
-﻿<Window x:Class="ExpressControls.About"
+﻿<ex:ExpressWindow x:Class="ExpressControls.About"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -9,25 +9,17 @@
     <Grid>
         <DockPanel>
             <DockPanel Height="30" Margin="0" VerticalAlignment="Top" Background="{DynamicResource AppColor}" DockPanel.Dock="Top">
-                <Button x:Name="CloseBtn" Width="30" Padding="0" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center" HorizontalAlignment="Right" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" DockPanel.Dock="Right" Style="{DynamicResource TransHoverCloseButton}" Margin="0" ToolTip="{DynamicResource CloseStr}">
-                    <DockPanel>
-                        <ContentControl Width="16" HorizontalAlignment="Center" Margin="0" Height="16" Content="{DynamicResource CloseWhiteIcon}"/>
-                    </DockPanel>
-                </Button>
-                <ContentControl DockPanel.Dock="Left" Content="{DynamicResource AppWhiteIcon}" Height="20" Margin="5,0,0,0"/>
-                <Button x:Name="TitleBtn" VerticalAlignment="Top" Padding="0" HorizontalContentAlignment="Center" VerticalContentAlignment="Stretch" Background="Transparent" BorderBrush="{x:Null}" BorderThickness="0" Style="{DynamicResource TransButton}" Height="30">
-                    <DockPanel x:Name="stackPanel444" RenderTransformOrigin="0.5,0.5">
-                        <TextBlock VerticalAlignment="Center" Margin="0" Text="{Binding Title, ElementName=About1}" TextAlignment="Center" Foreground="White" TextTrimming="CharacterEllipsis" Padding="10,0"/>
-                    </DockPanel>
-                </Button>
+                <ex:AppButton x:Name="CloseBtn" IsCloseBtn="True" Background="Transparent" Icon="{DynamicResource CloseWhiteIcon}" NoShadow="True" CornerRadius="0" IconSize="16" Height="30" Padding="7,0" TextVisibility="Collapsed" DockPanel.Dock="Right" ToolTip="{DynamicResource CloseStr}"/>
+                <ex:AppButton x:Name="AppLogoBtn" HasNoEffects="True" Focusable="False" Background="Transparent" Icon="{DynamicResource AppWhiteIcon}" NoShadow="True" CornerRadius="0" IconSize="20" Height="30" Padding="6,0,0,0" TextVisibility="Collapsed"/>
+                <ex:AppButton x:Name="TitleBtn" HasNoEffects="True" Focusable="False" Text="{Binding Title, ElementName=About1}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Foreground="White" FontSize="12" GapMargin="0" Background="Transparent" NoShadow="True" CornerRadius="0" IconVisibility="Collapsed" Height="30" Padding="7,0"/>
             </DockPanel>
             <Grid>
-                <ContentControl x:Name="LogoImg" Content="{DynamicResource TypeExpressIcon}" Width="70" Margin="30,20,30,0" VerticalAlignment="Top"/>
-                <ContentControl Content="{DynamicResource ExpressAppsIcon}" Width="28" Height="28" Margin="0,110,32,5" HorizontalAlignment="Center" VerticalAlignment="Top"/>
-                <ContentControl Content="{DynamicResource JLogo}" Width="32" Height="32" Margin="34,108,0,2" VerticalAlignment="Top"/>
+                <ContentControl x:Name="LogoImg" Focusable="False" Content="{DynamicResource TypeExpressIcon}" Width="70" Margin="30,20,30,0" VerticalAlignment="Top"/>
+                <ContentControl Content="{DynamicResource ExpressAppsIcon}" Focusable="False" Width="28" Height="28" Margin="0,110,32,5" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+                <ContentControl Content="{DynamicResource JLogo}" Focusable="False" Width="32" Height="32" Margin="34,108,0,2" VerticalAlignment="Top"/>
             </Grid>
             <StackPanel Margin="0,30,30,30">
-                <TextBlock x:Name="TitleTxt" TextWrapping="Wrap" FontSize="20" Margin="0,0,0,5">
+                <TextBlock x:Name="TitleTxt" TextWrapping="Wrap" FontSize="20" Margin="0,0,0,5" AutomationProperties.HeadingLevel="Level1">
                     <Run x:Name="AppNameTxt" FontWeight="SemiBold">Type Express</Run>
                     <Run x:Name="VersionTxt" FontSize="14">v1.2.3</Run>
                 </TextBlock>
@@ -37,4 +29,4 @@
             </StackPanel>
         </DockPanel>
     </Grid>
-</Window>
+</ex:ExpressWindow>

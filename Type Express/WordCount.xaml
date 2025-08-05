@@ -1,4 +1,4 @@
-﻿<Window x:Class="Type_Express.WordCount"
+﻿<ex:ExpressWindow x:Class="Type_Express.WordCount"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -10,12 +10,12 @@
     <Grid Background="{DynamicResource BackColor}">
         <StackPanel Margin="20,50,20,20">
             <DockPanel LastChildFill="False">
-                <ContentControl Content="{DynamicResource TitleCaseIcon}" Width="24" HorizontalAlignment="Left" Margin="0,0,15,0" Height="24" VerticalAlignment="Center" />
+                <ContentControl Focusable="False" Content="{DynamicResource TitleCaseIcon}" Width="24" HorizontalAlignment="Left" Margin="0,0,15,0" Height="24" VerticalAlignment="Center" />
                 <TextBlock Margin="0,0,0,0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="{DynamicResource WrWordsStr}"></TextBlock>
                 <TextBlock x:Name="WordLbl" DockPanel.Dock="Right" Margin="0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left" Text="0" FontWeight="SemiBold"/>
             </DockPanel>
             <DockPanel LastChildFill="False" Margin="0,20,0,0">
-                <ContentControl Content="{DynamicResource StylesIcon}" Width="24" HorizontalAlignment="Left" Margin="0,0,15,0" Height="24" VerticalAlignment="Center" />
+                <ContentControl Focusable="False" Content="{DynamicResource StylesIcon}" Width="24" HorizontalAlignment="Left" Margin="0,0,15,0" Height="24" VerticalAlignment="Center" />
                 <TextBlock Margin="0,0,0,0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="{DynamicResource WrCharsStr}"></TextBlock>
             </DockPanel>
             <DockPanel LastChildFill="False" Margin="0,5,0,0">
@@ -27,15 +27,15 @@
                 <TextBlock x:Name="CharSpaceLbl" DockPanel.Dock="Right" Margin="0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left" Text="0" FontWeight="SemiBold"/>
             </DockPanel>
             <DockPanel LastChildFill="False" Margin="0,25,0,0">
-                <ContentControl Content="{DynamicResource WordCountIcon}" Width="24" HorizontalAlignment="Left" Margin="0,0,15,0" Height="24" VerticalAlignment="Center" />
+                <ContentControl Focusable="False" Content="{DynamicResource WordCountIcon}" Width="24" HorizontalAlignment="Left" Margin="0,0,15,0" Height="24" VerticalAlignment="Center" />
                 <TextBlock Margin="0,0,0,0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left" TextTrimming="CharacterEllipsis" Text="{DynamicResource WrLinesStr}"></TextBlock>
                 <TextBlock x:Name="LineLbl" DockPanel.Dock="Right" Margin="0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left" Text="0" FontWeight="SemiBold"/>
             </DockPanel>
         </StackPanel>
         <DockPanel Height="30" Margin="0" VerticalAlignment="Top" Background="{DynamicResource AppColor}">
             <ex:AppButton x:Name="CloseBtn" IsCloseBtn="True" Background="Transparent" Icon="{DynamicResource CloseWhiteIcon}" NoShadow="True" CornerRadius="0" IconSize="16" Height="30" Padding="7,0" TextVisibility="Collapsed" DockPanel.Dock="Right" ToolTip="{DynamicResource CloseStr}"/>
-            <ex:AppButton x:Name="AppLogoBtn" HasNoEffects="True" Background="Transparent" Icon="{DynamicResource AppWhiteIcon}" NoShadow="True" CornerRadius="0" IconSize="20" Height="30" Padding="6,0,0,0" TextVisibility="Collapsed"/>
+            <ex:AppButton x:Name="AppLogoBtn" HasNoEffects="True" Focusable="False" Background="Transparent" Icon="{DynamicResource AppWhiteIcon}" NoShadow="True" CornerRadius="0" IconSize="20" Height="30" Padding="6,0,0,0" TextVisibility="Collapsed"/>
             <ex:AppButton x:Name="TitleBtn" HasNoEffects="True" Focusable="False" Text="{Binding Title, ElementName=Wrd}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Foreground="White" FontSize="12" GapMargin="0" Background="Transparent" NoShadow="True" CornerRadius="0" IconVisibility="Collapsed" Height="30" Padding="7,0"/>
         </DockPanel>
     </Grid>
-</Window>
+</ex:ExpressWindow>

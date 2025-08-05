@@ -1,24 +1,13 @@
-﻿using ExpressControls;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
+﻿using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using ExpressControls;
 
 namespace Type_Express
 {
     /// <summary>
     /// Interaction logic for HTMLEditor.xaml
     /// </summary>
-    public partial class HTMLEditor : Window
+    public partial class HTMLEditor : ExpressWindow
     {
         public string HTMLCode { get; set; } = "";
         public string Filename { get; set; } = "";
@@ -32,6 +21,7 @@ namespace Type_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             // Event handlers for maximisable windows
             MaxBtn.Click += Funcs.MaxRestoreEvent;
@@ -47,13 +37,16 @@ namespace Type_Express
         {
             ZoomSlider.Value += 2;
         }
-        
+
         private void ZoomOutBtn_Click(object sender, RoutedEventArgs e)
         {
             ZoomSlider.Value -= 2;
         }
 
-        private void ZoomSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void ZoomSlider_ValueChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<double> e
+        )
         {
             if (IsLoaded)
                 HTMLEditorTxt.FontSize = ZoomSlider.Value;
@@ -68,7 +61,9 @@ namespace Type_Express
         {
             try
             {
-                HTMLPreview.NavigateToString("<html oncontextmenu='return false;'>" + HTMLEditorTxt.Text + "</html>");
+                HTMLPreview.NavigateToString(
+                    "<html oncontextmenu='return false;'>" + HTMLEditorTxt.Text + "</html>"
+                );
             }
             catch { }
         }
@@ -80,6 +75,7 @@ namespace Type_Express
                 HTMLCode = HTMLEditorTxt.Text;
                 Filename = Funcs.HTMLSaveDialog.FileName;
 
+                Funcs.LogConversion(PageID, LoggingProperties.Conversion.FileExported, "html");
                 DialogResult = true;
                 Close();
             }
@@ -89,8 +85,13 @@ namespace Type_Express
         {
             Key key = e.Key == Key.System ? e.SystemKey : e.Key;
 
-            if (key == Key.F5 || (e.KeyboardDevice.IsKeyDown(Key.LeftCtrl) && 
-                (key == Key.O || key == Key.N || key == Key.L || key == Key.P)))
+            if (
+                key == Key.F5
+                || (
+                    e.KeyboardDevice.IsKeyDown(Key.LeftCtrl)
+                    && (key == Key.O || key == Key.N || key == Key.L || key == Key.P)
+                )
+            )
             {
                 e.Handled = true;
                 return;

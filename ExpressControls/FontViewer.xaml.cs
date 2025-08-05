@@ -1,23 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace ExpressControls
 {
     /// <summary>
     /// Interaction logic for FontViewer.xaml
     /// </summary>
-    public partial class FontViewer : Window
+    public partial class FontViewer : ExpressWindow
     {
         private bool IsGlyphsVisible = false;
         private readonly Glyphs GlyphList = [];
@@ -28,7 +21,12 @@ namespace ExpressControls
         public KeyValuePair<string, bool>[] CategoryChanges { get; set; } = [];
         public bool IsFavourite { get; set; } = false;
 
-        public FontViewer(string font, ExpressApp app, bool favourite, KeyValuePair<string, bool>[]? categories = null)
+        public FontViewer(
+            string font,
+            ExpressApp app,
+            bool favourite,
+            KeyValuePair<string, bool>[]? categories = null
+        )
         {
             Init(font);
             FontName = font;
@@ -41,17 +39,18 @@ namespace ExpressControls
             if (categories != null)
             {
                 CategoryChanges = categories;
-                CategoryPopupItems.ItemsSource = CategoryChanges.Select((x, idx) =>
-                {
-                    return new SelectableItem()
+                CategoryPopupItems.ItemsSource = CategoryChanges.Select(
+                    (x, idx) =>
                     {
-                        ID = idx,
-                        Name = x.Key,
-                        Selected = x.Value
-                    };
-                });
+                        return new SelectableItem()
+                        {
+                            ID = idx,
+                            Name = x.Key,
+                            Selected = x.Value,
+                        };
+                    }
+                );
             }
-                
 
             if (app == ExpressApp.Type || !CategoryPopupItems.HasItems)
                 CategoryBtn.Visibility = Visibility.Collapsed;
@@ -86,6 +85,7 @@ namespace ExpressControls
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             // Setup icons
             BoldBtn.Icon = (Viewbox)TryFindResource(Funcs.ChooseIcon("BoldIcon"));
@@ -94,6 +94,9 @@ namespace ExpressControls
             ItalicGlyphBtn.Icon = (Viewbox)TryFindResource(Funcs.ChooseIcon("ItalicIcon"));
 
             FontNameTxt.Text = font;
+
+            Funcs.RegisterPopups(WindowGrid);
+            DisplayTxt.KeyDown += Funcs.TextBoxKeyDownEvent;
         }
 
         #region Menu Bar
@@ -116,16 +119,22 @@ namespace ExpressControls
                 ToggleBtn.Icon = (Viewbox)TryFindResource("EditorIcon");
                 ToggleBtn.Text = Funcs.ChooseLang("FreeTextStr");
 
-                GlyphItems.ItemsSource = GlyphList.Take(GlyphPerPage).Select(g => new GridItem()
-                {
-                    Text = g,
-                    Column = GlyphList.IndexOf(g) % 11,
-                    Row = GlyphList.IndexOf(g) / 11
-                });
+                GlyphItems.ItemsSource = GlyphList
+                    .Take(GlyphPerPage)
+                    .Select(g => new GridItem()
+                    {
+                        Text = g,
+                        Column = GlyphList.IndexOf(g) % 11,
+                        Row = GlyphList.IndexOf(g) / 11,
+                    });
 
-                PageTxt.Text = string.Format(Funcs.ChooseLang("PageStr"), "1", 
-                    Math.Ceiling(Convert.ToSingle(GlyphList.Count) / Convert.ToSingle(GlyphPerPage)).ToString());
-                
+                PageTxt.Text = string.Format(
+                    Funcs.ChooseLang("PageStr"),
+                    "1",
+                    Math.Ceiling(Convert.ToSingle(GlyphList.Count) / Convert.ToSingle(GlyphPerPage))
+                        .ToString()
+                );
+
                 GlyphPage = 1;
                 PrevBtn.Visibility = Visibility.Hidden;
             }
@@ -159,7 +168,10 @@ namespace ExpressControls
             AppCheckBox btn = (AppCheckBox)sender;
             int id = (int)btn.Tag;
 
-            CategoryChanges[id] = new KeyValuePair<string, bool>(CategoryChanges[id].Key, btn.IsChecked == true);
+            CategoryChanges[id] = new KeyValuePair<string, bool>(
+                CategoryChanges[id].Key,
+                btn.IsChecked == true
+            );
         }
 
         private void CopyBtn_Click(object sender, RoutedEventArgs e)
@@ -172,15 +184,20 @@ namespace ExpressControls
 
         private void BoldBtn_Click(object sender, RoutedEventArgs e)
         {
-            DisplayTxt.FontWeight = DisplayTxt.FontWeight == FontWeights.Bold ? FontWeights.Normal : FontWeights.Bold;
+            DisplayTxt.FontWeight =
+                DisplayTxt.FontWeight == FontWeights.Bold ? FontWeights.Normal : FontWeights.Bold;
         }
 
         private void ItalicBtn_Click(object sender, RoutedEventArgs e)
         {
-            DisplayTxt.FontStyle = DisplayTxt.FontStyle == FontStyles.Italic ? FontStyles.Normal : FontStyles.Italic;
+            DisplayTxt.FontStyle =
+                DisplayTxt.FontStyle == FontStyles.Italic ? FontStyles.Normal : FontStyles.Italic;
         }
 
-        private void SizeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void SizeSlider_ValueChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<double> e
+        )
         {
             try
             {
@@ -195,12 +212,14 @@ namespace ExpressControls
 
         private void BoldGlyphBtn_Click(object sender, RoutedEventArgs e)
         {
-            GlyphItems.FontWeight = GlyphItems.FontWeight == FontWeights.Bold ? FontWeights.Normal : FontWeights.Bold;
+            GlyphItems.FontWeight =
+                GlyphItems.FontWeight == FontWeights.Bold ? FontWeights.Normal : FontWeights.Bold;
         }
 
         private void ItalicGlyphBtn_Click(object sender, RoutedEventArgs e)
         {
-            GlyphItems.FontStyle = GlyphItems.FontStyle == FontStyles.Italic ? FontStyles.Normal : FontStyles.Italic;
+            GlyphItems.FontStyle =
+                GlyphItems.FontStyle == FontStyles.Italic ? FontStyles.Normal : FontStyles.Italic;
         }
 
         private void PrevBtn_Click(object sender, RoutedEventArgs e)
@@ -214,7 +233,10 @@ namespace ExpressControls
 
         private void NextBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (GlyphPage < Math.Ceiling(Convert.ToSingle(GlyphList.Count) / Convert.ToSingle(GlyphPerPage)))
+            if (
+                GlyphPage
+                < Math.Ceiling(Convert.ToSingle(GlyphList.Count) / Convert.ToSingle(GlyphPerPage))
+            )
             {
                 GlyphPage++;
                 LoadPage();
@@ -223,15 +245,22 @@ namespace ExpressControls
 
         private void LoadPage()
         {
-            PageTxt.Text = string.Format(Funcs.ChooseLang("PageStr"), GlyphPage.ToString(),
-                Math.Ceiling(Convert.ToSingle(GlyphList.Count) / Convert.ToSingle(GlyphPerPage)).ToString());
+            PageTxt.Text = string.Format(
+                Funcs.ChooseLang("PageStr"),
+                GlyphPage.ToString(),
+                Math.Ceiling(Convert.ToSingle(GlyphList.Count) / Convert.ToSingle(GlyphPerPage))
+                    .ToString()
+            );
 
             if (GlyphPage <= 1)
                 PrevBtn.Visibility = Visibility.Hidden;
             else
                 PrevBtn.Visibility = Visibility.Visible;
 
-            if (GlyphPage >= Math.Ceiling(Convert.ToSingle(GlyphList.Count) / Convert.ToSingle(GlyphPerPage)))
+            if (
+                GlyphPage
+                >= Math.Ceiling(Convert.ToSingle(GlyphList.Count) / Convert.ToSingle(GlyphPerPage))
+            )
                 NextBtn.Visibility = Visibility.Hidden;
             else
                 NextBtn.Visibility = Visibility.Visible;
@@ -241,7 +270,7 @@ namespace ExpressControls
             {
                 Text = g,
                 Column = glyphs.IndexOf(g) % 11,
-                Row = glyphs.IndexOf(g) / 11
+                Row = glyphs.IndexOf(g) / 11,
             });
         }
 

@@ -2,23 +2,14 @@
 using System.Collections.Generic;
 using System.Drawing.Printing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace ExpressControls
 {
     /// <summary>
     /// Interaction logic for PageSetup.xaml
     /// </summary>
-    public partial class PageSetup : Window
+    public partial class PageSetup : ExpressWindow
     {
         public PrintDocument document;
         readonly List<PaperSize> PaperSizes = [];
@@ -34,6 +25,7 @@ namespace ExpressControls
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             Title = title;
             document = doc;
@@ -47,10 +39,7 @@ namespace ExpressControls
             {
                 if (item.Kind != PaperKind.Custom)
                 {
-                    var comboItem = new AppDropdownItem()
-                    {
-                        Content = item.PaperName
-                    };
+                    var comboItem = new AppDropdownItem() { Content = item.PaperName };
 
                     pageSizes.Add(comboItem);
                     PaperSizes.Add(item);
@@ -102,11 +91,15 @@ namespace ExpressControls
 
         private void OKBtn_Click(object sender, RoutedEventArgs e)
         {
-            document.DefaultPageSettings.PaperSize = PaperSizes.Where((i) =>
-            {
-                return i.PaperName == (string)((AppDropdownItem)PaperSizeCombo.SelectedItem).Content;
-
-            }).First();
+            document.DefaultPageSettings.PaperSize = PaperSizes
+                .Where(
+                    (i) =>
+                    {
+                        return i.PaperName
+                            == (string)((AppDropdownItem)PaperSizeCombo.SelectedItem).Content;
+                    }
+                )
+                .First();
 
             document.DefaultPageSettings.Landscape = LandscapeBtn.IsChecked == true;
 
@@ -137,8 +130,10 @@ namespace ExpressControls
 
         private void MeasurementBtns_Click(object sender, RoutedEventArgs e)
         {
-            if ((MilimetresBtn.IsChecked == true && !UsingMilimetres) || 
-                (InchesBtn.IsChecked == true && UsingMilimetres))
+            if (
+                (MilimetresBtn.IsChecked == true && !UsingMilimetres)
+                || (InchesBtn.IsChecked == true && UsingMilimetres)
+            )
             {
                 UsingMilimetres = !UsingMilimetres;
                 ConvertMargins();

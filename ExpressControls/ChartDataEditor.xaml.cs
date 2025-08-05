@@ -1,19 +1,13 @@
-﻿using CsvHelper.Configuration;
-using LiveChartsCore.Measure;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using CsvHelper.Configuration;
+using LiveChartsCore.Measure;
 using Xceed.Wpf.Toolkit;
 
 namespace ExpressControls
@@ -21,7 +15,7 @@ namespace ExpressControls
     /// <summary>
     /// Interaction logic for ChartDataEditor.xaml
     /// </summary>
-    public partial class ChartDataEditor : Window
+    public partial class ChartDataEditor : ExpressWindow
     {
         public readonly ChartType CurrentChartType;
         public List<string> CurrentLabels { get; set; } = [];
@@ -33,7 +27,12 @@ namespace ExpressControls
         private int CurrentRowID = 0;
         private SeriesType CurrentSeriesType;
 
-        public ChartDataEditor(ExpressApp app, ChartType type, List<string> labels, IEnumerable<SeriesItem> series)
+        public ChartDataEditor(
+            ExpressApp app,
+            ChartType type,
+            List<string> labels,
+            IEnumerable<SeriesItem> series
+        )
         {
             InitializeComponent();
 
@@ -42,11 +41,14 @@ namespace ExpressControls
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             // Event handlers for maximisable windows
             MaxBtn.Click += Funcs.MaxRestoreEvent;
             TitleBtn.MouseDoubleClick += Funcs.MaxRestoreEvent;
             StateChanged += Funcs.StateChangedEvent;
+
+            Funcs.RegisterPopups(WindowGrid);
 
             switch (app)
             {
@@ -62,7 +64,7 @@ namespace ExpressControls
 
             CurrentChartType = type;
             CurrentLabels = labels;
-            CurrentSeries = series.ToList();
+            CurrentSeries = [.. series];
 
             if (CurrentChartType == ChartType.Pie || CurrentSeries.Count >= MaxSeries)
                 NewColumnBtn.Visibility = Visibility.Hidden;
@@ -72,52 +74,65 @@ namespace ExpressControls
 
             DataLabelsCombo.ItemsSource = new AppDropdownItem[]
             {
-                new() { Content = Funcs.ChooseLang("LegendHiddenStr") }
-
-            }.Concat(Enum.GetValues<DataLabelsPosition>().Where(x =>
-            {
-                return x != DataLabelsPosition.Start && x != DataLabelsPosition.End;
-
-            }).Select(x =>
-            {
-                return new AppDropdownItem()
-                {
-                    Content = Funcs.ChooseLang(x switch
+                new() { Content = Funcs.ChooseLang("LegendHiddenStr") },
+            }.Concat(
+                Enum.GetValues<DataLabelsPosition>()
+                    .Where(x =>
                     {
-                        DataLabelsPosition.Top => "LegendTopStr",
-                        DataLabelsPosition.Bottom => "LegendBottomStr",
-                        DataLabelsPosition.Left => "LegendLeftStr",
-                        DataLabelsPosition.Right => "LegendRightStr",
-                        _ => "ChMiddleStr"
+                        return x != DataLabelsPosition.Start && x != DataLabelsPosition.End;
                     })
-                };
-            }));
+                    .Select(x =>
+                    {
+                        return new AppDropdownItem()
+                        {
+                            Content = Funcs.ChooseLang(
+                                x switch
+                                {
+                                    DataLabelsPosition.Top => "LegendTopStr",
+                                    DataLabelsPosition.Bottom => "LegendBottomStr",
+                                    DataLabelsPosition.Left => "LegendLeftStr",
+                                    DataLabelsPosition.Right => "LegendRightStr",
+                                    _ => "ChMiddleStr",
+                                }
+                            ),
+                        };
+                    })
+            );
 
             UpdateDataView();
         }
 
         private void UpdateDataView()
         {
-            LabelItems.ItemsSource = CurrentLabels.Select((label, idx) =>
-            {
-                return new KeyValuePair<int, string>(idx, label);
-            });
-
-            SeriesItems.ItemsSource = CurrentSeries.Select((series, idx) =>
-            {
-                return new ChartDataItem()
+            LabelItems.ItemsSource = CurrentLabels.Select(
+                (label, idx) =>
                 {
-                    ID = idx,
-                    Icon = GetSeriesIcon(series.Type),
-                    Type = GetSeriesType(series.Type),
-                    Series = CurrentChartType == ChartType.Pie ? "" : series.Name,
-                    IsReadOnly = CurrentChartType == ChartType.Pie,
-                    Values = series.Values.Select((val, i) =>
+                    return new KeyValuePair<int, string>(idx, label);
+                }
+            );
+
+            SeriesItems.ItemsSource = CurrentSeries.Select(
+                (series, idx) =>
+                {
+                    return new ChartDataItem()
                     {
-                        return new KeyValuePair<string, double>(idx.ToString() + "-" + i.ToString(), val);
-                    })
-                };
-            });
+                        ID = idx,
+                        Icon = GetSeriesIcon(series.Type),
+                        Type = GetSeriesType(series.Type),
+                        Series = CurrentChartType == ChartType.Pie ? "" : series.Name,
+                        IsReadOnly = CurrentChartType == ChartType.Pie,
+                        Values = series.Values.Select(
+                            (val, i) =>
+                            {
+                                return new KeyValuePair<string, double>(
+                                    idx.ToString() + "-" + i.ToString(),
+                                    val
+                                );
+                            }
+                        ),
+                    };
+                }
+            );
 
             MoreItems.ItemsSource = Enumerable.Range(0, CurrentLabels.Count);
         }
@@ -135,7 +150,7 @@ namespace ExpressControls
                     SeriesType.Area => (Viewbox)TryFindResource("AreaChartIcon"),
                     SeriesType.Scatter => (Viewbox)TryFindResource("ScatterIcon"),
                     _ => (Viewbox)TryFindResource("ColumnChartIcon"),
-                }
+                },
             };
         }
 
@@ -152,7 +167,7 @@ namespace ExpressControls
                     SeriesType.Area => Funcs.ChooseLang("AreaSeriesStr"),
                     SeriesType.Scatter => Funcs.ChooseLang("ScatterSeriesStr"),
                     _ => Funcs.ChooseLang("ColumnSeriesStr"),
-                }
+                },
             };
         }
 
@@ -169,7 +184,12 @@ namespace ExpressControls
 
             if (!valid)
             {
-                Funcs.ShowMessageRes("NoDataDescStr", "NoDataStr", MessageBoxButton.OK, MessageBoxImage.Error);
+                Funcs.ShowMessageRes(
+                    "NoDataDescStr",
+                    "NoDataStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
             }
             else
             {
@@ -179,11 +199,19 @@ namespace ExpressControls
                         item.Type = SeriesType.Default;
                 }
 
-                if (CurrentSeries.Any(x => x.Type == SeriesType.Bar) && 
-                    CurrentSeries.Count(x => x.Type == SeriesType.Bar) != CurrentSeries.Count)
+                if (
+                    CurrentSeries.Any(x => x.Type == SeriesType.Bar)
+                    && CurrentSeries.Count(x => x.Type == SeriesType.Bar) != CurrentSeries.Count
+                )
                 {
-                    if (Funcs.ShowPromptRes("BarSeriesErrorDescStr", "ChartErrorStr", 
-                        MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+                    if (
+                        Funcs.ShowPromptRes(
+                            "BarSeriesErrorDescStr",
+                            "ChartErrorStr",
+                            MessageBoxButton.YesNoCancel,
+                            MessageBoxImage.Exclamation
+                        ) == MessageBoxResult.Yes
+                    )
                     {
                         foreach (var item in CurrentSeries)
                             item.Type = SeriesType.Bar;
@@ -216,9 +244,12 @@ namespace ExpressControls
             CurrentSeries[id].Name = ((AppTextBox)sender).Text;
         }
 
-        private void ValueUpDowns_ValueChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        private void ValueUpDowns_ValueChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<object> e
+        )
         {
-            int[] ids = ((string)((DoubleUpDown)sender).Tag).Split("-").Select(int.Parse).ToArray();
+            int[] ids = [.. ((string)((DoubleUpDown)sender).Tag).Split("-").Select(int.Parse)];
             int seriesID = ids[0];
             int rowID = ids[1];
 
@@ -287,10 +318,16 @@ namespace ExpressControls
         {
             if (CurrentRowID != 0)
             {
-                (CurrentLabels[CurrentRowID - 1], CurrentLabels[CurrentRowID]) = (CurrentLabels[CurrentRowID], CurrentLabels[CurrentRowID - 1]);
+                (CurrentLabels[CurrentRowID - 1], CurrentLabels[CurrentRowID]) = (
+                    CurrentLabels[CurrentRowID],
+                    CurrentLabels[CurrentRowID - 1]
+                );
 
                 foreach (SeriesItem item in CurrentSeries)
-                    (item.Values[CurrentRowID - 1], item.Values[CurrentRowID]) = (item.Values[CurrentRowID], item.Values[CurrentRowID - 1]);
+                    (item.Values[CurrentRowID - 1], item.Values[CurrentRowID]) = (
+                        item.Values[CurrentRowID],
+                        item.Values[CurrentRowID - 1]
+                    );
 
                 UpdateDataView();
             }
@@ -300,10 +337,16 @@ namespace ExpressControls
         {
             if (CurrentRowID != CurrentLabels.Count - 1)
             {
-                (CurrentLabels[CurrentRowID + 1], CurrentLabels[CurrentRowID]) = (CurrentLabels[CurrentRowID], CurrentLabels[CurrentRowID + 1]);
+                (CurrentLabels[CurrentRowID + 1], CurrentLabels[CurrentRowID]) = (
+                    CurrentLabels[CurrentRowID],
+                    CurrentLabels[CurrentRowID + 1]
+                );
 
                 foreach (SeriesItem item in CurrentSeries)
-                    (item.Values[CurrentRowID + 1], item.Values[CurrentRowID]) = (item.Values[CurrentRowID], item.Values[CurrentRowID + 1]);
+                    (item.Values[CurrentRowID + 1], item.Values[CurrentRowID]) = (
+                        item.Values[CurrentRowID],
+                        item.Values[CurrentRowID + 1]
+                    );
 
                 UpdateDataView();
             }
@@ -361,7 +404,10 @@ namespace ExpressControls
                     DataLabelsPlacementPnl.Visibility = Visibility.Visible;
                     DataLabelsCheckboxPnl.Visibility = Visibility.Collapsed;
 
-                    if (item.Type == SeriesType.Line || (item.Type == SeriesType.Scatter && !item.ScatterFilled))
+                    if (
+                        item.Type == SeriesType.Line
+                        || (item.Type == SeriesType.Scatter && !item.ScatterFilled)
+                    )
                         StrokeThicknessPnl.Visibility = Visibility.Visible;
                     else
                         StrokeThicknessPnl.Visibility = Visibility.Collapsed;
@@ -455,7 +501,10 @@ namespace ExpressControls
         {
             if (CurrentSeriesID != 0)
             {
-                (CurrentSeries[CurrentSeriesID - 1], CurrentSeries[CurrentSeriesID]) = (CurrentSeries[CurrentSeriesID], CurrentSeries[CurrentSeriesID - 1]);
+                (CurrentSeries[CurrentSeriesID - 1], CurrentSeries[CurrentSeriesID]) = (
+                    CurrentSeries[CurrentSeriesID],
+                    CurrentSeries[CurrentSeriesID - 1]
+                );
                 CurrentSeriesID--;
 
                 SeriesPopup.IsOpen = false;
@@ -467,7 +516,10 @@ namespace ExpressControls
         {
             if (CurrentSeriesID != CurrentSeries.Count - 1)
             {
-                (CurrentSeries[CurrentSeriesID + 1], CurrentSeries[CurrentSeriesID]) = (CurrentSeries[CurrentSeriesID], CurrentSeries[CurrentSeriesID + 1]);
+                (CurrentSeries[CurrentSeriesID + 1], CurrentSeries[CurrentSeriesID]) = (
+                    CurrentSeries[CurrentSeriesID],
+                    CurrentSeries[CurrentSeriesID + 1]
+                );
                 CurrentSeriesID++;
 
                 SeriesPopup.IsOpen = false;
@@ -491,11 +543,16 @@ namespace ExpressControls
         {
             if (CurrentChartType != ChartType.Pie && CurrentSeries.Count < MaxSeries)
             {
-                CurrentSeries.Add(new SeriesItem()
-                {
-                    Type = CurrentChartType == ChartType.Polar ? SeriesType.Default : SeriesType.Column,
-                    Values = Enumerable.Repeat(0D, CurrentLabels.Count).ToList()
-                });
+                CurrentSeries.Add(
+                    new SeriesItem()
+                    {
+                        Type =
+                            CurrentChartType == ChartType.Polar
+                                ? SeriesType.Default
+                                : SeriesType.Column,
+                        Values = [.. Enumerable.Repeat(0D, CurrentLabels.Count)],
+                    }
+                );
 
                 UpdateDataView();
 
@@ -509,8 +566,14 @@ namespace ExpressControls
 
         private void ImportDataBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (Funcs.ShowPromptRes("ImportDataWarningDescStr", "ImportDataWarningStr", 
-                MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+            if (
+                Funcs.ShowPromptRes(
+                    "ImportDataWarningDescStr",
+                    "ImportDataWarningStr",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Exclamation
+                ) == MessageBoxResult.Yes
+            )
             {
                 if (Funcs.CSVOpenDialog.ShowDialog() == true)
                 {
@@ -518,7 +581,10 @@ namespace ExpressControls
                     {
                         List<string> labels = [];
                         List<SeriesItem> series = [];
-                        CsvConfiguration config = new(CultureInfo.InvariantCulture) { HasHeaderRecord = false };
+                        CsvConfiguration config = new(CultureInfo.InvariantCulture)
+                        {
+                            HasHeaderRecord = false,
+                        };
 
                         using System.IO.StreamReader reader = new(Funcs.CSVOpenDialog.FileName);
                         using CsvHelper.CsvReader csv = new(reader, config);
@@ -537,15 +603,37 @@ namespace ExpressControls
                                 else
                                 {
                                     if ((i - 1) < series.Count)
-                                        series[i - 1].Values.Add(Funcs.ConvertDouble(string.IsNullOrWhiteSpace(value) ? "0" : value));
-                                    else if ((CurrentChartType == ChartType.Pie && series.Count < 1) ||
-                                        (CurrentChartType != ChartType.Pie && series.Count < MaxSeries))
+                                        series[i - 1]
+                                            .Values.Add(
+                                                Funcs.ConvertDouble(
+                                                    string.IsNullOrWhiteSpace(value) ? "0" : value
+                                                )
+                                            );
+                                    else if (
+                                        (CurrentChartType == ChartType.Pie && series.Count < 1)
+                                        || (
+                                            CurrentChartType != ChartType.Pie
+                                            && series.Count < MaxSeries
+                                        )
+                                    )
                                     {
-                                        series.Add(new SeriesItem()
-                                        {
-                                            Type = CurrentChartType == ChartType.Cartesian ? SeriesType.Column : SeriesType.Default,
-                                            Values = [Funcs.ConvertDouble(string.IsNullOrWhiteSpace(value) ? "0" : value)]
-                                        });
+                                        series.Add(
+                                            new SeriesItem()
+                                            {
+                                                Type =
+                                                    CurrentChartType == ChartType.Cartesian
+                                                        ? SeriesType.Column
+                                                        : SeriesType.Default,
+                                                Values =
+                                                [
+                                                    Funcs.ConvertDouble(
+                                                        string.IsNullOrWhiteSpace(value)
+                                                            ? "0"
+                                                            : value
+                                                    ),
+                                                ],
+                                            }
+                                        );
                                     }
                                 }
                             }
@@ -567,8 +655,18 @@ namespace ExpressControls
                     }
                     catch (Exception ex)
                     {
-                        Funcs.ShowMessageRes("ImportDataErrorDescStr", "ImportDataErrorStr", MessageBoxButton.OK, MessageBoxImage.Error,
-                            Funcs.GenerateErrorReport(ex, Funcs.ChooseLang("ReportEmailAttachStr")));
+                        Funcs.ShowMessageRes(
+                            "ImportDataErrorDescStr",
+                            "ImportDataErrorStr",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error,
+                            Funcs.GenerateErrorReport(
+                                ex,
+                                PageID,
+                                "ImportDataErrorDescStr",
+                                "ReportEmailAttachStr"
+                            )
+                        );
                     }
                 }
             }
@@ -596,7 +694,9 @@ namespace ExpressControls
                     else
                     {
                         item.ShowValueLabels = true;
-                        item.DataLabelsPlacement = (DataLabelsPosition)(DataLabelsCombo.SelectedIndex + 1);
+                        item.DataLabelsPlacement = (DataLabelsPosition)(
+                            DataLabelsCombo.SelectedIndex + 1
+                        );
                     }
                 }
                 else
@@ -696,12 +796,14 @@ namespace ExpressControls
 
         private void ScatterFilledCheckBox_Click(object sender, RoutedEventArgs e)
         {
-            StrokeThicknessPnl.Visibility = ScatterFilledCheckBox.IsChecked == true ? Visibility.Collapsed : Visibility.Visible;
+            StrokeThicknessPnl.Visibility =
+                ScatterFilledCheckBox.IsChecked == true ? Visibility.Collapsed : Visibility.Visible;
         }
 
         private void PolarFilledCheckBox_Click(object sender, RoutedEventArgs e)
         {
-            StrokeThicknessPnl.Visibility = PolarFilledCheckBox.IsChecked == true ? Visibility.Collapsed : Visibility.Visible;
+            StrokeThicknessPnl.Visibility =
+                PolarFilledCheckBox.IsChecked == true ? Visibility.Collapsed : Visibility.Visible;
         }
 
         #endregion
@@ -711,10 +813,17 @@ namespace ExpressControls
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return (bool)value ? new SolidColorBrush(Colors.Transparent) : Application.Current.Resources["Gray1"];
+            return (bool)value
+                ? new SolidColorBrush(Colors.Transparent)
+                : Application.Current.Resources["Gray1"];
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return value == new SolidColorBrush(Colors.Transparent);
         }

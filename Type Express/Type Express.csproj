@@ -7,18 +7,13 @@
     <UseWPF>true</UseWPF>
     <Platforms>AnyCPU;x64</Platforms>
     <ApplicationIcon>icon.ico</ApplicationIcon>
-    <AssemblyVersion>6.1.1</AssemblyVersion>
-    <FileVersion>6.1.1</FileVersion>
+    <AssemblyVersion>6.2.0</AssemblyVersion>
+    <FileVersion>6.2.0</FileVersion>
     <RollForward>Major</RollForward>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="auth-deepl.secret" />
     <None Remove="auth-dropbox.secret" />
-    <None Remove="auth-icon.secret" />
-    <None Remove="auth-lexicala.secret" />
-    <None Remove="auth-merriam.secret" />
-    <None Remove="auth-photo.secret" />
     <None Remove="dropbox-index.html" />
     <None Remove="fonts\Inter-Bold.ttf" />
     <None Remove="fonts\Inter-Regular.ttf" />
@@ -37,19 +32,13 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="icon.ico" />
-    <EmbeddedResource Include="auth-lexicala.secret" />
-    <EmbeddedResource Include="auth-deepl.secret" />
-    <EmbeddedResource Include="auth-merriam.secret" />
     <EmbeddedResource Include="symbols.json" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="auth-photo.secret" />
-    <EmbeddedResource Include="auth-icon.secret" />
     <EmbeddedResource Include="auth-dropbox.secret" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="DeepL.net" Version="1.10.0" />
-    <PackageReference Include="System.Speech" Version="9.0.0" />
+    <PackageReference Include="System.Speech" Version="9.0.7" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="..\ExpressControls\ExpressStyles.xaml" Link="ExpressStyles.xaml">

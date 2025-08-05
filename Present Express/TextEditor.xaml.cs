@@ -1,19 +1,11 @@
-﻿using ExpressControls;
-using Present_Express.Properties;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Windows.Threading;
+using ExpressControls;
+using Present_Express.Properties;
 using WinDrawing = System.Drawing;
 
 namespace Present_Express
@@ -21,9 +13,12 @@ namespace Present_Express
     /// <summary>
     /// Interaction logic for TextEditor.xaml
     /// </summary>
-    public partial class TextEditor : Window
+    public partial class TextEditor : ExpressWindow
     {
-        private readonly DispatcherTimer FontLoadTimer = new() { Interval = new TimeSpan(0, 0, 0, 0, 300) };
+        private readonly DispatcherTimer FontLoadTimer = new()
+        {
+            Interval = new TimeSpan(0, 0, 0, 0, 300),
+        };
         public TextSlide ChosenSlide { get; set; } = new();
         private readonly bool IsWidescreen = true;
 
@@ -36,6 +31,7 @@ namespace Present_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             FontLoadTimer.Tick += FontLoadTimer_Tick;
 
@@ -49,7 +45,7 @@ namespace Present_Express
                     IsItalic = slide.IsItalic,
                     IsUnderlined = slide.IsUnderlined,
                     FontColour = slide.FontColour,
-                    FontSize = slide.FontSize
+                    FontSize = slide.FontSize,
                 };
 
                 AddBtn.Text = Funcs.ChooseLang("ApplyChangesStr");
@@ -57,16 +53,25 @@ namespace Present_Express
             else
             {
                 ChosenSlide.FontName = Settings.Default.DefaultFont.Name;
-                ChosenSlide.IsBold = Settings.Default.DefaultFont.Style.HasFlag(WinDrawing.FontStyle.Bold);
-                ChosenSlide.IsItalic = Settings.Default.DefaultFont.Style.HasFlag(WinDrawing.FontStyle.Italic);
-                ChosenSlide.IsUnderlined = Settings.Default.DefaultFont.Style.HasFlag(WinDrawing.FontStyle.Underline);
-                ChosenSlide.FontColour = new SolidColorBrush(Funcs.ConvertDrawingToMediaColor(Settings.Default.DefaultTextColour));
+                ChosenSlide.IsBold = Settings.Default.DefaultFont.Style.HasFlag(
+                    WinDrawing.FontStyle.Bold
+                );
+                ChosenSlide.IsItalic = Settings.Default.DefaultFont.Style.HasFlag(
+                    WinDrawing.FontStyle.Italic
+                );
+                ChosenSlide.IsUnderlined = Settings.Default.DefaultFont.Style.HasFlag(
+                    WinDrawing.FontStyle.Underline
+                );
+                ChosenSlide.FontColour = new SolidColorBrush(
+                    Funcs.ConvertDrawingToMediaColor(Settings.Default.DefaultTextColour)
+                );
             }
 
             ImgContainer.Background = backColor;
             IsWidescreen = widescreen;
 
             Funcs.SetupColorPickers(null, TextColourPicker);
+            Funcs.RegisterPopups(WindowGrid);
             UpdateControls();
             UpdateImage();
 
@@ -83,8 +88,12 @@ namespace Present_Express
             SlideTxt.Text = ChosenSlide.Content;
             FontStyleTxt.Text = ChosenSlide.FontName;
             BoldSelector.Visibility = ChosenSlide.IsBold ? Visibility.Visible : Visibility.Hidden;
-            ItalicSelector.Visibility = ChosenSlide.IsItalic ? Visibility.Visible : Visibility.Hidden;
-            UnderlineSelector.Visibility = ChosenSlide.IsUnderlined ? Visibility.Visible : Visibility.Hidden;
+            ItalicSelector.Visibility = ChosenSlide.IsItalic
+                ? Visibility.Visible
+                : Visibility.Hidden;
+            UnderlineSelector.Visibility = ChosenSlide.IsUnderlined
+                ? Visibility.Visible
+                : Visibility.Hidden;
             FontSizeSlider.Value = ChosenSlide.FontSize;
             TextColourPicker.SelectedColor = ChosenSlide.FontColour.Color;
         }
@@ -102,22 +111,38 @@ namespace Present_Express
             if (UnderlineSelector.Visibility == Visibility.Visible)
                 style |= WinDrawing.FontStyle.Underline;
 
-
             string fontname = FontStyleTxt.Text;
             if (!Funcs.IsValidFont(fontname))
                 fontname = "Calibri";
 
-            ImgEdit.Source = Funcs.ResizeImage(Funcs.GenerateTextBmp(SlideTxt.Text,
-                new WinDrawing.Font(new WinDrawing.FontFamily(fontname), (float)FontSizeSlider.Value, style),
-                TextColourPicker.SelectedColor ?? Colors.Black, IsWidescreen ? 2560 : 1920), 580, 430);
+            ImgEdit.Source = Funcs.ResizeImage(
+                Funcs.GenerateTextBmp(
+                    SlideTxt.Text,
+                    new WinDrawing.Font(
+                        new WinDrawing.FontFamily(fontname),
+                        (float)FontSizeSlider.Value,
+                        style
+                    ),
+                    TextColourPicker.SelectedColor ?? Colors.Black,
+                    IsWidescreen ? 2560 : 1920
+                ),
+                580,
+                430
+            );
         }
 
         private void AddBtn_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(SlideTxt.Text))
-                Funcs.ShowMessageRes("NoTextDescStr", "NoTextStr", MessageBoxButton.OK, MessageBoxImage.Error);
+                Funcs.ShowMessageRes(
+                    "NoTextDescStr",
+                    "NoTextStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
             else
             {
+                Funcs.LogConversion(PageID, LoggingProperties.Conversion.CreateText);
                 DialogResult = true;
                 Close();
             }
@@ -146,8 +171,12 @@ namespace Present_Express
             }
             else
             {
-                Funcs.ShowMessageRes("InvalidFontDescStr", "InvalidFontStr",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                Funcs.ShowMessageRes(
+                    "InvalidFontDescStr",
+                    "InvalidFontStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
 
                 FontStyleTxt.Text = ChosenSlide.FontName;
             }
@@ -181,7 +210,7 @@ namespace Present_Express
         private void FontLoadTimer_Tick(object? sender, EventArgs e)
         {
             FontLoadTimer.Stop();
-            FontsStack.ItemsSource = new FontItems();
+            FontsStack.ItemsSource = new FontItems(true);
 
             LoadingFontsLbl.Visibility = Visibility.Collapsed;
             FontsStack.Visibility = Visibility.Visible;
@@ -227,7 +256,10 @@ namespace Present_Express
             UpdateImage();
         }
 
-        private void FontSizeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void FontSizeSlider_ValueChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<double> e
+        )
         {
             if (IsLoaded)
             {
@@ -239,11 +271,16 @@ namespace Present_Express
         #endregion
         #region Colour
 
-        private void TextColourPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
+        private void TextColourPicker_SelectedColorChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<Color?> e
+        )
         {
             if (IsLoaded)
             {
-                ChosenSlide.FontColour = new SolidColorBrush(TextColourPicker.SelectedColor ?? Colors.Black);
+                ChosenSlide.FontColour = new SolidColorBrush(
+                    TextColourPicker.SelectedColor ?? Colors.Black
+                );
                 UpdateImage();
             }
         }

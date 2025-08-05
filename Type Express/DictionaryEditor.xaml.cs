@@ -1,19 +1,8 @@
-﻿using ExpressControls;
-using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Diagnostics;
+﻿using System.Collections.Specialized;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using ExpressControls;
 using Type_Express.Properties;
 
 namespace Type_Express
@@ -21,7 +10,7 @@ namespace Type_Express
     /// <summary>
     /// Interaction logic for DictionaryEditor.xaml
     /// </summary>
-    public partial class DictionaryEditor : Window
+    public partial class DictionaryEditor : ExpressWindow
     {
         private Languages ChosenLanguage = Languages.English;
 
@@ -34,7 +23,8 @@ namespace Type_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
-            
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
+
             ChosenLanguage = Funcs.GetCurrentLangEnum();
             LangCombo.SelectedIndex = (int)Funcs.GetCurrentLangEnum();
             UpdateLanguage();
@@ -98,13 +88,21 @@ namespace Type_Express
             {
                 if (GetDictionary().Contains(word))
                 {
-                    Funcs.ShowMessageRes("ExistingWordErrorDescStr", "ExistingWordErrorStr",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    Funcs.ShowMessageRes(
+                        "ExistingWordErrorDescStr",
+                        "ExistingWordErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error
+                    );
                 }
                 else if (word.Length > 100)
                 {
-                    Funcs.ShowMessageRes("WordTooLongStr", "WordAddErrorStr",
-                       MessageBoxButton.OK, MessageBoxImage.Error);
+                    Funcs.ShowMessageRes(
+                        "WordTooLongStr",
+                        "WordAddErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error
+                    );
                 }
                 else
                 {
@@ -118,8 +116,14 @@ namespace Type_Express
 
         private void ClearBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (Funcs.ShowPromptRes("ClearDictDescStr", "ClearDictStr", 
-                MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+            if (
+                Funcs.ShowPromptRes(
+                    "ClearDictDescStr",
+                    "ClearDictStr",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Exclamation
+                ) == MessageBoxResult.Yes
+            )
             {
                 GetDictionary().Clear();
                 Settings.Default.Save();

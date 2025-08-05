@@ -1,31 +1,24 @@
-﻿using ExpressControls;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using ExpressControls;
 using Type_Express.Properties;
-using WinDrawing = System.Drawing;
 
 namespace Type_Express
 {
     /// <summary>
     /// Interaction logic for FontPicker.xaml
     /// </summary>
-    public partial class FontPicker : Window
+    public partial class FontPicker : ExpressWindow
     {
         public string ChosenFont { get; set; } = "";
-        private readonly FontItems FontCollection = [];
+        private readonly FontItems FontCollection = new(true);
         private IEnumerable<string> QueriedFonts = [];
 
         private readonly int PerPage = 25;
@@ -44,6 +37,7 @@ namespace Type_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             // Event handlers for maximisable windows
             MaxBtn.Click += Funcs.MaxRestoreEvent;
@@ -65,11 +59,16 @@ namespace Type_Express
                     break;
 
                 case FontFilter.Favourites:
-                    fonts = Settings.Default.FavouriteFonts.Cast<string>().Where(Funcs.IsValidFont).Distinct();
+                    fonts = Settings
+                        .Default.FavouriteFonts.Cast<string>()
+                        .Where(Funcs.IsValidFont)
+                        .Distinct();
                     break;
 
                 case FontFilter.Search:
-                    fonts = FontCollection.Where(f => f.Contains(parameter, StringComparison.CurrentCultureIgnoreCase));
+                    fonts = FontCollection.Where(f =>
+                        f.Contains(parameter, StringComparison.CurrentCultureIgnoreCase)
+                    );
                     break;
 
                 default:
@@ -79,12 +78,14 @@ namespace Type_Express
             if (!fonts.Any())
             {
                 FontPnl.ItemsSource = null;
-                NoFontsLbl.Text = Funcs.ChooseLang(filter switch
-                {
-                    FontFilter.Favourites => "NoFavouritesFoundDescStr",
-                    FontFilter.Search => "NoFontSearchStr",
-                    _ => "NoFontsHereStr"
-                });
+                NoFontsLbl.Text = Funcs.ChooseLang(
+                    filter switch
+                    {
+                        FontFilter.Favourites => "NoFavouritesFoundDescStr",
+                        FontFilter.Search => "NoFontSearchStr",
+                        _ => "NoFontsHereStr",
+                    }
+                );
 
                 PagePnl.Visibility = Visibility.Collapsed;
                 NoFontsLbl.Visibility = Visibility.Visible;
@@ -98,7 +99,8 @@ namespace Type_Express
             }
             else
             {
-                int pages = (int)Math.Ceiling(Convert.ToSingle(fonts.Count()) / Convert.ToSingle(PerPage));
+                int pages = (int)
+                    Math.Ceiling(Convert.ToSingle(fonts.Count()) / Convert.ToSingle(PerPage));
 
                 PagePnl.Visibility = Visibility.Visible;
                 PageLbl.Text = string.Format(Funcs.ChooseLang("PageStr"), 1, pages);
@@ -241,11 +243,12 @@ namespace Type_Express
 
         private void FontExpressBtn_Click(object sender, RoutedEventArgs e)
         {
-            _ = Process.Start(new ProcessStartInfo()
-            {
-                FileName = "https://express.johnjds.co.uk/font",
-                UseShellExecute = true
-            });
+            string website = "https://express.johnjds.co.uk/font";
+
+            _ = Process.Start(
+                new ProcessStartInfo() { FileName = website, UseShellExecute = true }
+            );
+            Funcs.LogConversion(PageID, LoggingProperties.Conversion.WebsiteVisit, website);
         }
 
         #endregion
@@ -258,7 +261,7 @@ namespace Type_Express
 
         private void SelectFontBtns_Click(object sender, RoutedEventArgs e)
         {
-            ChosenFont = (string)((AppButton)sender).Tag;            
+            ChosenFont = (string)((AppButton)sender).Tag;
             DialogResult = true;
             Close();
         }
@@ -266,7 +269,11 @@ namespace Type_Express
         private void ExpandBtns_Click(object sender, RoutedEventArgs e)
         {
             string font = (string)((AppButton)sender).Tag;
-            var viewer = new FontViewer(font, ExpressApp.Type, Settings.Default.FavouriteFonts.Contains(font));
+            var viewer = new FontViewer(
+                font,
+                ExpressApp.Type,
+                Settings.Default.FavouriteFonts.Contains(font)
+            );
 
             viewer.ShowDialog();
 
@@ -315,11 +322,17 @@ namespace Type_Express
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return Settings.Default.FavouriteFonts.Contains((string)value) ? 
-                Application.Current.Resources["FavouriteIcon"] : Application.Current.Resources["AddFavouriteIcon"];
+            return Settings.Default.FavouriteFonts.Contains((string)value)
+                ? Application.Current.Resources["FavouriteIcon"]
+                : Application.Current.Resources["AddFavouriteIcon"];
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return "";
         }
@@ -329,11 +342,17 @@ namespace Type_Express
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return Settings.Default.FavouriteFonts.Contains((string)value) ?
-                Funcs.ChooseLang("RemoveFromFavsStr") : Funcs.ChooseLang("AddToFavsStr");
+            return Settings.Default.FavouriteFonts.Contains((string)value)
+                ? Funcs.ChooseLang("RemoveFromFavsStr")
+                : Funcs.ChooseLang("AddToFavsStr");
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return "";
         }

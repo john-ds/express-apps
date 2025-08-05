@@ -320,7 +320,7 @@ CTRL+S</System:String>
     <System:String x:Key="ChSmallStr">Small</System:String>
     <System:String x:Key="ChLargeStr">Large</System:String>
     <System:String x:Key="ChartDataTStr">Chart Data - Type Express</System:String>
-    <System:String x:Key="ChDataInfoStr">Enter data, and click on the three dots for more options.</System:String>
+    <System:String x:Key="ChDataInfoStr">Enter or import the data for your chart.</System:String>
     <System:String x:Key="ChDataInfo2Str" xml:space="preserve">Label                                         Value</System:String>
     <System:String x:Key="DtRowBelowStr">Add row below</System:String>
     <System:String x:Key="DtRowAboveStr">Add row above</System:String>
@@ -1423,8 +1423,9 @@ Technical details from the application are below:
     <System:String x:Key="TryAgainActionStr">Try again</System:String>
     <System:String x:Key="DropboxUsernameStr">You're connected to Dropbox as {0}.</System:String>
     <System:String x:Key="DropboxConnectingStr">Please follow the instructions in the browser window to continue.</System:String>
-    <System:String x:Key="APIKeyNotFoundStr" xml:space="preserve">API key not found for this functionality.
-Please contact support by clicking "Report" below.</System:String>
+    <System:String x:Key="APIKeyNotFoundStr" xml:space="preserve">The functionality you are trying to access is missing its connection details. This is expected when downloading the source code.
+
+To access this functionality, download the latest version of the app from our website. If you are still experiencing this issue, please try again later.</System:String>
     <System:String x:Key="ReportEmailInfoStr">Please add any further information that might help us solve this issue</System:String>
     <System:String x:Key="DropboxDisconnectedStr">The current Dropbox user has been disconnected from the app. Please reconnect your Dropbox account.</System:String>
     <System:String x:Key="DropboxErrorStr">Dropbox Error</System:String>
@@ -1802,5 +1803,35 @@ If this problem persists, we may be experiencing issues. Please try again later 
     <System:String x:Key="InsightManyFilesStr">You have {0} files in this folder. Consider splitting them into subfolders.</System:String>
     <System:String x:Key="InsightDiffTypesStr">There are lots of different types of files in this folder. Consider splitting them into subfolders.</System:String>
     <System:String x:Key="InsightFileModifiedStr">{0} files in this folder haven't been modified in over 2 years. Consider deleting them if they're no longer needed.</System:String>
+    <System:String x:Key="RowLabelsStr">Row labels</System:String>
+    <System:String x:Key="IncreaseStr">Increase</System:String>
+    <System:String x:Key="DecreaseStr">Decrease</System:String>
+    <System:String x:Key="MessageStr">Message</System:String>
+    <System:String x:Key="OrientationStr">Orientation:</System:String>
+    <System:String x:Key="SelectItemStr">Select item</System:String>
+    <System:String x:Key="ZoomLevelStr">Zoom level</System:String>
+    <System:String x:Key="SlideStr">Slide</System:String>
+    <System:String x:Key="ChooseSpecialFolderStr">Choose a special folder</System:String>
+    <System:String x:Key="SelectedFolderStr">Selected folder</System:String>
+    <System:String x:Key="SelectedFileStr">Selected file</System:String>
+    <System:String x:Key="UnselectedFileStr">Unselected file</System:String>
+    <System:String x:Key="UnselectedFolderStr">Unselected folder</System:String>
+    <System:String x:Key="TranslationStr">Translation</System:String>
+    <System:String x:Key="SourceLanguageStr">Language to translate from</System:String>
+    <System:String x:Key="TargetLanguageStr">Language to translate to</System:String>
+    <System:String x:Key="DocumentStr">Document</System:String>
+    <System:String x:Key="FileExtensionStr">File extension</System:String>
+    <System:String x:Key="MarkerDiscStr">List with solid disc bullet points</System:String>
+    <System:String x:Key="MarkerCircleStr">List with hollow disc bullet points</System:String>
+    <System:String x:Key="MarkerBoxStr">List with solid square bullet points</System:String>
+    <System:String x:Key="MarkerSquareStr">List with hollow square bullet points</System:String>
+    <System:String x:Key="MarkerDecimalStr">List with decimal numbers</System:String>
+    <System:String x:Key="MarkerLowerLatinStr">List with lowercase Latin letters</System:String>
+    <System:String x:Key="MarkerUpperLatinStr">List with uppercase Latin letters</System:String>
+    <System:String x:Key="MarkerUpperRomanStr">List with uppercase Roman numerals</System:String>
+    <System:String x:Key="MarkerLowerRomanStr">List with lowercase Roman numerals</System:String>
+    <System:String x:Key="SpeedStr">Speed</System:String>
+    <System:String x:Key="HelpImproveStr">Help improve the app for everyone</System:String>
+    <System:String x:Key="SendLogsStr">Send application logs automatically</System:String>
 
 </ResourceDictionary>

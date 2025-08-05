@@ -6,13 +6,12 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>icon.ico</ApplicationIcon>
-    <AssemblyVersion>3.1.1</AssemblyVersion>
-    <FileVersion>3.1.1</FileVersion>
+    <AssemblyVersion>3.2.0</AssemblyVersion>
+    <FileVersion>3.2.0</FileVersion>
     <RollForward>Major</RollForward>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="auth-dropbox.secret" />
-    <None Remove="auth-photo.secret" />
     <None Remove="bootstrap.min.css" />
     <None Remove="bootstrap.min.js" />
     <None Remove="dropbox-index.html" />
@@ -86,14 +85,13 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="auth-dropbox.secret" />
-    <EmbeddedResource Include="auth-photo.secret" />
     <EmbeddedResource Include="bootstrap.min.css" />
     <EmbeddedResource Include="bootstrap.min.js" />
     <EmbeddedResource Include="dropbox-index.html" />
     <EmbeddedResource Include="export-index.html" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FFMpegCore" Version="5.1.0" />
+    <PackageReference Include="FFMpegCore" Version="5.2.0" />
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
     <PackageReference Include="WindowsDisplayAPI" Version="1.3.0.13" />
   </ItemGroup>

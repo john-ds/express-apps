@@ -1,24 +1,15 @@
-﻿using ExpressControls;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using ExpressControls;
 
 namespace Font_Express
 {
     /// <summary>
     /// Interaction logic for AddEditCategory.xaml
     /// </summary>
-    public partial class AddEditCategory : Window
+    public partial class AddEditCategory : ExpressWindow
     {
         private readonly bool IsEditingCategory = false;
         public string ChosenName { get; set; } = "";
@@ -33,6 +24,7 @@ namespace Font_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             if (category != null)
             {
@@ -43,37 +35,54 @@ namespace Font_Express
                 CategoryTxt.Text = ChosenName;
             }
 
-            IconItems.ItemsSource = Enum.GetValues<FontCategoryIcon>().Where(x =>
-            {
-                return x != FontCategoryIcon.None;
-
-            }).Select(x =>
-            {
-                return new SelectableIconItem()
+            IconItems.ItemsSource = Enum.GetValues<FontCategoryIcon>()
+                .Where(x =>
                 {
-                    ID = (int)x,
-                    Icon = (Viewbox)TryFindResource(MainWindow.GetCategoryIcon(x)),
-                    Selected = x == ChosenIcon
-                };
-            });
+                    return x != FontCategoryIcon.None;
+                })
+                .Select(x =>
+                {
+                    return new SelectableIconItem()
+                    {
+                        ID = (int)x,
+                        Icon = (Viewbox)TryFindResource(MainWindow.GetCategoryIcon(x)),
+                        Selected = x == ChosenIcon,
+                    };
+                });
         }
 
         private void OKBtn_Click(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(CategoryTxt.Text))
             {
-                Funcs.ShowMessageRes("NoCategoryNameStr", "CategoryErrorStr", MessageBoxButton.OK, MessageBoxImage.Error);
+                Funcs.ShowMessageRes(
+                    "NoCategoryNameStr",
+                    "CategoryErrorStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
                 return;
             }
-            else if (!(IsEditingCategory && ChosenName == CategoryTxt.Text) && 
-                MainWindow.GetSavedCategories(false).Any(x => x.Name == CategoryTxt.Text))
+            else if (
+                !(IsEditingCategory && ChosenName == CategoryTxt.Text)
+                && MainWindow.GetSavedCategories(false).Any(x => x.Name == CategoryTxt.Text)
+            )
             {
-                if (Funcs.ShowPromptRes("CategoryTakenWarningStr", "CategoryWarningStr", 
-                    MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) != MessageBoxResult.Yes)
+                if (
+                    Funcs.ShowPromptRes(
+                        "CategoryTakenWarningStr",
+                        "CategoryWarningStr",
+                        MessageBoxButton.YesNoCancel,
+                        MessageBoxImage.Exclamation
+                    ) != MessageBoxResult.Yes
+                )
                 {
                     return;
                 }
             }
+
+            if (!IsEditingCategory)
+                Funcs.LogConversion(PageID, LoggingProperties.Conversion.CreateFontCategory);
 
             ChosenName = CategoryTxt.Text;
             DialogResult = true;

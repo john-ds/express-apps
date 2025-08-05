@@ -1,4 +1,4 @@
-﻿<Window x:Class="Font_Express.AddEditCategory"
+﻿<ex:ExpressWindow x:Class="Font_Express.AddEditCategory"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -9,10 +9,10 @@
         Title="{DynamicResource CategoryTitleStr}" Width="400" SizeToContent="Height" Style="{DynamicResource ChromeWindowStyle}" d:FontFamily="Inter" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen">
     <Grid Background="{DynamicResource BackColor}">
         <StackPanel Margin="20,50,20,20">
-            <TextBlock TextWrapping="Wrap" Text="{DynamicResource CategoryHeaderStr}" FontSize="14"/>
-            <ex:AppTextBox x:Name="CategoryTxt" FontSize="14" Margin="0,15,0,25" MaxLength="40"/>
-            <TextBlock TextWrapping="Wrap" Text="{DynamicResource IconStr}" FontSize="14"/>
-            <ItemsControl x:Name="IconItems" Margin="0,10,0,0">
+            <TextBlock x:Name="CategoryTxtLbl" TextWrapping="Wrap" Text="{DynamicResource CategoryHeaderStr}" FontSize="14"/>
+            <ex:AppTextBox x:Name="CategoryTxt" FontSize="14" Margin="0,15,0,25" MaxLength="40" AutomationProperties.LabeledBy="{Binding ElementName=CategoryTxtLbl}"/>
+            <TextBlock x:Name="IconItemsLbl" TextWrapping="Wrap" Text="{DynamicResource IconStr}" FontSize="14"/>
+            <ItemsControl x:Name="IconItems" Margin="0,10,0,0" AutomationProperties.LabeledBy="{Binding ElementName=IconItemsLbl}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <StackPanel Orientation="Horizontal"/>
@@ -31,8 +31,8 @@
         </StackPanel>
         <DockPanel Height="30" Margin="0" VerticalAlignment="Top" Background="{DynamicResource AppColor}">
             <ex:AppButton x:Name="CloseBtn" IsCloseBtn="True" Background="Transparent" Icon="{DynamicResource CloseWhiteIcon}" NoShadow="True" CornerRadius="0" IconSize="16" Height="30" Padding="7,0" TextVisibility="Collapsed" DockPanel.Dock="Right" ToolTip="{DynamicResource CloseStr}"/>
-            <ex:AppButton x:Name="AppLogoBtn" HasNoEffects="True" Background="Transparent" Icon="{DynamicResource AppWhiteIcon}" NoShadow="True" CornerRadius="0" IconSize="20" Height="30" Padding="6,0,0,0" TextVisibility="Collapsed"/>
+            <ex:AppButton x:Name="AppLogoBtn" HasNoEffects="True" Focusable="False" Background="Transparent" Icon="{DynamicResource AppWhiteIcon}" NoShadow="True" CornerRadius="0" IconSize="20" Height="30" Padding="6,0,0,0" TextVisibility="Collapsed"/>
             <ex:AppButton x:Name="TitleBtn" HasNoEffects="True" Focusable="False" Text="{Binding Title, ElementName=AdEdCat}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Foreground="White" FontSize="12" GapMargin="0" Background="Transparent" NoShadow="True" CornerRadius="0" IconVisibility="Collapsed" Height="30" Padding="7,0"/>
         </DockPanel>
     </Grid>
-</Window>
+</ex:ExpressWindow>

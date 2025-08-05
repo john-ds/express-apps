@@ -1,7 +1,4 @@
-﻿using ExpressControls;
-using Font_Express.Properties;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -10,32 +7,29 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Threading;
+using ExpressControls;
+using Font_Express.Properties;
+using Newtonsoft.Json;
 using WpfToolkit.Controls;
-using WinDrawing = System.Drawing;
 
 namespace Font_Express
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : ExpressWindow
     {
         private readonly DispatcherTimer TempLblTimer = new() { Interval = new TimeSpan(0, 0, 4) };
         private StackPanel? CategoryPopupParent;
 
-        private readonly FontItems FontCollection = [];
+        private readonly FontItems FontCollection = new(true);
         private IEnumerable<string> QueriedFonts = [];
         private readonly ObservableCollection<IconButtonItem> CategoryDisplayList = [];
         private readonly string TempFilePath;
@@ -58,6 +52,7 @@ namespace Font_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             // Event handlers for maximisable windows
             MaxBtn.Click += Funcs.MaxRestoreEvent;
@@ -79,6 +74,7 @@ namespace Font_Express
 
             Funcs.SetLang(Settings.Default.Language);
             Funcs.SetupDialogs();
+            Funcs.RegisterPopups(WindowGrid);
 
             // Setup for scrollable ribbon menu
             Funcs.Tabs = ["Menu", "Home", "View", "Category"];
@@ -94,7 +90,8 @@ namespace Font_Express
                 ((Button)FindName(tab + "RightBtn")).PreviewMouseUp += Funcs.ScrollBtns_MouseUp;
 
                 ((StackPanel)FindName(tab + "Pnl")).MouseWheel += Funcs.ScrollRibbon_MouseWheel;
-                ((ScrollViewer)FindName(tab + "ScrollViewer")).SizeChanged += Funcs.DocScrollPnl_SizeChanged;
+                ((ScrollViewer)FindName(tab + "ScrollViewer")).SizeChanged +=
+                    Funcs.DocScrollPnl_SizeChanged;
 
                 ((RadioButton)FindName(tab + "Btn")).Click += Funcs.RibbonTabs_Click;
             }
@@ -117,37 +114,71 @@ namespace Font_Express
 
             Funcs.EnableInfoBoxAudio = Settings.Default.EnableInfoBoxAudio;
 
-            ViewListBtn.IsChecked = (DefaultDisplayMode)Settings.Default.DefaultDisplayMode == DefaultDisplayMode.List;
+            ViewListBtn.IsChecked =
+                (DefaultDisplayMode)Settings.Default.DefaultDisplayMode == DefaultDisplayMode.List;
             UpdateDisplayMode((DefaultDisplayMode)Settings.Default.DefaultDisplayMode);
 
             // Load fonts
-            GetFonts((DefaultFontView)Settings.Default.DefaultView == DefaultFontView.All ? FontFilter.All : FontFilter.Favourites);
+            GetFonts(
+                (DefaultFontView)Settings.Default.DefaultView == DefaultFontView.All
+                    ? FontFilter.All
+                    : FontFilter.Favourites
+            );
 
             CategoriesPnl.ItemsSource = CategoryDisplayList;
             CategorySelectorItems.ItemsSource = CategoryDisplayList;
             LoadCategories();
 
             AlphaBtn.Text = Funcs.ChooseLang("StartsWithStr") + " " + CurrentAlpha;
-            AlphaItems.ItemsSource = new string[] { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N",
-                                                    "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "123&"};
+            AlphaItems.ItemsSource = new string[]
+            {
+                "A",
+                "B",
+                "C",
+                "D",
+                "E",
+                "F",
+                "G",
+                "H",
+                "I",
+                "J",
+                "K",
+                "L",
+                "M",
+                "N",
+                "O",
+                "P",
+                "Q",
+                "R",
+                "S",
+                "T",
+                "U",
+                "V",
+                "W",
+                "X",
+                "Y",
+                "Z",
+                "123&",
+            };
 
             Resources["PreviewText"] = Funcs.ChooseLang("PalindromeStr");
-            PreviewTextItems.ItemsSource = Enum.GetValues<PreviewTextOption>().Select(x =>
-            {
-                return new SelectableImageItem()
+            PreviewTextItems.ItemsSource = Enum.GetValues<PreviewTextOption>()
+                .Select(x =>
                 {
-                    ID = (int)x,
-                    Name = x switch
+                    return new SelectableImageItem()
                     {
-                        PreviewTextOption.Word => Funcs.ChooseLang("OneWordStr"),
-                        PreviewTextOption.Sentence => Funcs.ChooseLang("SentenceStr"),
-                        PreviewTextOption.Paragraph => Funcs.ChooseLang("ParagraphStr"),
-                        PreviewTextOption.Custom => Funcs.ChooseLang("CustomStr"),
-                        _ => ""
-                    },
-                    Selected = x == PreviewTextOption.Sentence
-                };
-            });
+                        ID = (int)x,
+                        Name = x switch
+                        {
+                            PreviewTextOption.Word => Funcs.ChooseLang("OneWordStr"),
+                            PreviewTextOption.Sentence => Funcs.ChooseLang("SentenceStr"),
+                            PreviewTextOption.Paragraph => Funcs.ChooseLang("ParagraphStr"),
+                            PreviewTextOption.Custom => Funcs.ChooseLang("CustomStr"),
+                            _ => "",
+                        },
+                        Selected = x == PreviewTextOption.Sentence,
+                    };
+                });
 
             PerPageBtn.Text = Funcs.ChooseLang("PerPageStr") + " " + PerPage.ToString();
 
@@ -158,21 +189,30 @@ namespace Font_Express
         {
             if ((DefaultFontView)Settings.Default.DefaultView == DefaultFontView.Favourites)
             {
-                FilterSelector.Margin = new Thickness(FavouritesBtn.TranslatePoint(new Point(0, 0), FilterMenuPnl).X, 0, 0, -3);
+                FilterSelector.Margin = new Thickness(
+                    FavouritesBtn.TranslatePoint(new Point(0, 0), FilterMenuPnl).X,
+                    0,
+                    0,
+                    -3
+                );
                 FilterSelector.Width = FavouritesBtn.ActualWidth;
             }
-            
+
             if (Settings.Default.CheckNotifications)
                 await GetNotifications();
         }
 
-        private void Main_Closing(object sender, CancelEventArgs e)
+        private async void Main_Closing(object sender, CancelEventArgs e)
         {
             Settings.Default.Height = ActualHeight;
             Settings.Default.Width = ActualWidth;
             Settings.Default.Maximised = WindowState == WindowState.Maximized;
 
             Settings.Default.Save();
+            Funcs.LogWindowClose(PageID);
+
+            if (Application.Current.Windows.OfType<MainWindow>().Count() <= 1)
+                await Funcs.LogApplicationEnd();
         }
 
         private void FontGrid_RequestBringIntoView(object sender, RequestBringIntoViewEventArgs e)
@@ -258,10 +298,15 @@ namespace Font_Express
                 case FontFilter.All:
                     fonts = FontCollection;
                     HeaderIcon.SetResourceReference(ContentProperty, "EditorIcon");
-                    HeaderLbl.Inlines.AddRange(new Inline[]
-                    {
-                        new Run(Funcs.ChooseLang("AllFontsStr")) { FontWeight = FontWeights.SemiBold }
-                    });
+                    HeaderLbl.Inlines.AddRange(
+                        new Inline[]
+                        {
+                            new Run(Funcs.ChooseLang("AllFontsStr"))
+                            {
+                                FontWeight = FontWeights.SemiBold,
+                            },
+                        }
+                    );
 
                     if (IsLoaded)
                     {
@@ -273,47 +318,87 @@ namespace Font_Express
                 case FontFilter.Suggested:
                     fonts = Funcs.SuggestedFonts.Where(FontCollection.Contains);
                     HeaderIcon.SetResourceReference(ContentProperty, "StylesIcon");
-                    HeaderLbl.Inlines.AddRange(new Inline[]
-                    {
-                        new Run(Funcs.ChooseLang("SuggestedStr")) { FontWeight = FontWeights.SemiBold }
-                    });
+                    HeaderLbl.Inlines.AddRange(
+                        new Inline[]
+                        {
+                            new Run(Funcs.ChooseLang("SuggestedStr"))
+                            {
+                                FontWeight = FontWeights.SemiBold,
+                            },
+                        }
+                    );
 
                     if (IsLoaded)
                     {
-                        FilterSelector.Margin = new Thickness(SuggestedBtn.TranslatePoint(new Point(0, 0), FilterMenuPnl).X, 0, 0, -3);
+                        FilterSelector.Margin = new Thickness(
+                            SuggestedBtn.TranslatePoint(new Point(0, 0), FilterMenuPnl).X,
+                            0,
+                            0,
+                            -3
+                        );
                         FilterSelector.Width = SuggestedBtn.ActualWidth;
                     }
                     break;
 
                 case FontFilter.Favourites:
-                    fonts = Settings.Default.Favourites.Cast<string>().Where(x => !string.IsNullOrWhiteSpace(x) && FontCollection.Contains(x)).Distinct();
+                    fonts = Settings
+                        .Default.Favourites.Cast<string>()
+                        .Where(x => !string.IsNullOrWhiteSpace(x) && FontCollection.Contains(x))
+                        .Distinct();
                     HeaderIcon.SetResourceReference(ContentProperty, "FavouriteIcon");
-                    HeaderLbl.Inlines.AddRange(new Inline[]
-                    {
-                        new Run(Funcs.ChooseLang("FavFontsStr")) { FontWeight = FontWeights.SemiBold }
-                    });
+                    HeaderLbl.Inlines.AddRange(
+                        new Inline[]
+                        {
+                            new Run(Funcs.ChooseLang("FavFontsStr"))
+                            {
+                                FontWeight = FontWeights.SemiBold,
+                            },
+                        }
+                    );
 
                     if (IsLoaded)
                     {
-                        FilterSelector.Margin = new Thickness(FavouritesBtn.TranslatePoint(new Point(0, 0), FilterMenuPnl).X, 0, 0, -3);
+                        FilterSelector.Margin = new Thickness(
+                            FavouritesBtn.TranslatePoint(new Point(0, 0), FilterMenuPnl).X,
+                            0,
+                            0,
+                            -3
+                        );
                         FilterSelector.Width = FavouritesBtn.ActualWidth;
                     }
                     break;
 
                 case FontFilter.Category:
                     var savedCategories = GetSavedCategories(false);
-                    fonts = savedCategories[Convert.ToInt32(parameter)].Fonts.Where(x => !string.IsNullOrWhiteSpace(x) && FontCollection.Contains(x)).Distinct();
+                    fonts = savedCategories[Convert.ToInt32(parameter)]
+                        .Fonts.Where(x =>
+                            !string.IsNullOrWhiteSpace(x) && FontCollection.Contains(x)
+                        )
+                        .Distinct();
                     HeaderIcon.SetResourceReference(ContentProperty, "BulletsIcon");
-                    HeaderLbl.Inlines.AddRange(new Inline[]
-                    {
-                        new Run(Funcs.ChooseLang("CategoryStr")) { FontWeight = FontWeights.SemiBold },
-                        new LineBreak(),
-                        new Run("\"" + savedCategories[Convert.ToInt32(parameter)].Name + "\"") { FontSize = 14 }
-                    });
+                    HeaderLbl.Inlines.AddRange(
+                        new Inline[]
+                        {
+                            new Run(Funcs.ChooseLang("CategoryStr"))
+                            {
+                                FontWeight = FontWeights.SemiBold,
+                            },
+                            new LineBreak(),
+                            new Run("\"" + savedCategories[Convert.ToInt32(parameter)].Name + "\"")
+                            {
+                                FontSize = 14,
+                            },
+                        }
+                    );
 
                     if (IsLoaded)
                     {
-                        FilterSelector.Margin = new Thickness(CategorySelectorBtn.TranslatePoint(new Point(0, 0), FilterMenuPnl).X, 0, 0, -3);
+                        FilterSelector.Margin = new Thickness(
+                            CategorySelectorBtn.TranslatePoint(new Point(0, 0), FilterMenuPnl).X,
+                            0,
+                            0,
+                            -3
+                        );
                         FilterSelector.Width = CategorySelectorBtn.ActualWidth;
                     }
                     EditCategoryBtn.Visibility = Visibility.Visible;
@@ -321,19 +406,60 @@ namespace Font_Express
                     break;
 
                 case FontFilter.Alpha:
-                    string[] alphabet = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M",
-                                                      "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+                    string[] alphabet =
+                    [
+                        "A",
+                        "B",
+                        "C",
+                        "D",
+                        "E",
+                        "F",
+                        "G",
+                        "H",
+                        "I",
+                        "J",
+                        "K",
+                        "L",
+                        "M",
+                        "N",
+                        "O",
+                        "P",
+                        "Q",
+                        "R",
+                        "S",
+                        "T",
+                        "U",
+                        "V",
+                        "W",
+                        "X",
+                        "Y",
+                        "Z",
+                    ];
 
-                    fonts = FontCollection.Where(f => parameter == "123&" ? !alphabet.Contains(f.ToUpper()[0].ToString()) : f.ToUpper()[0] == parameter[0]);
+                    fonts = FontCollection.Where(f =>
+                        parameter == "123&"
+                            ? !alphabet.Contains(f.ToUpper()[0].ToString())
+                            : f.ToUpper()[0] == parameter[0]
+                    );
                     HeaderIcon.SetResourceReference(ContentProperty, "AlphabeticalIcon");
-                    HeaderLbl.Inlines.AddRange(new Inline[]
-                    {
-                        new Run(Funcs.ChooseLang("StartsWithStr") + " " + parameter.ToUpper()) { FontWeight = FontWeights.SemiBold }
-                    });
+                    HeaderLbl.Inlines.AddRange(
+                        new Inline[]
+                        {
+                            new Run(Funcs.ChooseLang("StartsWithStr") + " " + parameter.ToUpper())
+                            {
+                                FontWeight = FontWeights.SemiBold,
+                            },
+                        }
+                    );
 
                     if (IsLoaded)
                     {
-                        FilterSelector.Margin = new Thickness(AlphaBtn.TranslatePoint(new Point(0, 0), FilterMenuPnl).X, 0, 0, -3);
+                        FilterSelector.Margin = new Thickness(
+                            AlphaBtn.TranslatePoint(new Point(0, 0), FilterMenuPnl).X,
+                            0,
+                            0,
+                            -3
+                        );
                         FilterSelector.Width = AlphaBtn.ActualWidth + MoreAlphaBtn.ActualWidth;
                     }
 
@@ -342,18 +468,30 @@ namespace Font_Express
                     break;
 
                 case FontFilter.Search:
-                    fonts = FontCollection.Where(f => f.Contains(parameter, StringComparison.CurrentCultureIgnoreCase));
+                    fonts = FontCollection.Where(f =>
+                        f.Contains(parameter, StringComparison.CurrentCultureIgnoreCase)
+                    );
                     HeaderIcon.SetResourceReference(ContentProperty, "SearchIcon");
-                    HeaderLbl.Inlines.AddRange(new Inline[]
-                    {
-                        new Run(Funcs.ChooseLang("SearchResultsStr")) { FontWeight = FontWeights.SemiBold },
-                        new LineBreak(),
-                        new Run("\"" + parameter + "\"") { FontSize = 14 }
-                    });
+                    HeaderLbl.Inlines.AddRange(
+                        new Inline[]
+                        {
+                            new Run(Funcs.ChooseLang("SearchResultsStr"))
+                            {
+                                FontWeight = FontWeights.SemiBold,
+                            },
+                            new LineBreak(),
+                            new Run("\"" + parameter + "\"") { FontSize = 14 },
+                        }
+                    );
 
                     if (IsLoaded)
                     {
-                        FilterSelector.Margin = new Thickness(SearchTxt.TranslatePoint(new Point(0, 0), FilterMenuPnl).X, 0, 0, -3);
+                        FilterSelector.Margin = new Thickness(
+                            SearchTxt.TranslatePoint(new Point(0, 0), FilterMenuPnl).X,
+                            0,
+                            0,
+                            -3
+                        );
                         FilterSelector.Width = SearchTxt.ActualWidth;
                     }
                     break;
@@ -365,12 +503,14 @@ namespace Font_Express
             if (!fonts.Any())
             {
                 FontGrid.ItemsSource = null;
-                NoFontsLbl.Text = Funcs.ChooseLang(filter switch
-                {
-                    FontFilter.Favourites => "NoFavouritesFoundDescStr",
-                    FontFilter.Search => "NoFontSearchStr",
-                    _ => "NoFontsHereStr"
-                });
+                NoFontsLbl.Text = Funcs.ChooseLang(
+                    filter switch
+                    {
+                        FontFilter.Favourites => "NoFavouritesFoundDescStr",
+                        FontFilter.Search => "NoFontSearchStr",
+                        _ => "NoFontsHereStr",
+                    }
+                );
 
                 PagePnl.Visibility = Visibility.Collapsed;
                 PrevPageStatusBtn.Visibility = Visibility.Collapsed;
@@ -392,10 +532,15 @@ namespace Font_Express
             }
             else
             {
-                int pages = (int)Math.Ceiling(Convert.ToSingle(fonts.Count()) / Convert.ToSingle(PerPage));
+                int pages = (int)
+                    Math.Ceiling(Convert.ToSingle(fonts.Count()) / Convert.ToSingle(PerPage));
 
                 PagePnl.Visibility = Visibility.Visible;
-                PageLbl.Text = PageStatusLbl.Text = string.Format(Funcs.ChooseLang("PageStr"), 1, pages);
+                PageLbl.Text = PageStatusLbl.Text = string.Format(
+                    Funcs.ChooseLang("PageStr"),
+                    1,
+                    pages
+                );
 
                 PrevPageBtn.Visibility = Visibility.Hidden;
                 PrevPageStatusBtn.Visibility = Visibility.Collapsed;
@@ -412,10 +557,16 @@ namespace Font_Express
             CurrentPage = 1;
             QueriedFonts = fonts;
 
-            if (fonts.Count() == 1)
-                RefreshBtn.Text = "1 " + Funcs.ChooseLang("FontStr").ToLower();
-            else
-                RefreshBtn.Text = fonts.Count().ToString() + " " + Funcs.ChooseLang("FontsStr").ToLower();
+            string refreshBtnText =
+                fonts.Count() == 1
+                    ? $"1 {Funcs.ChooseLang("FontStr").ToLower()}"
+                    : $"{fonts.Count()} {Funcs.ChooseLang("FontsStr").ToLower()}";
+
+            RefreshBtn.Text = refreshBtnText;
+            RefreshBtn.SetValue(
+                System.Windows.Automation.AutomationProperties.NameProperty,
+                $"{Funcs.ChooseLang("ReloadStr")} {refreshBtnText}"
+            );
 
             if (!noscroll)
                 Scroller.ScrollToTop();
@@ -441,7 +592,11 @@ namespace Font_Express
 
         private void LoadPage()
         {
-            PageLbl.Text = PageStatusLbl.Text = string.Format(Funcs.ChooseLang("PageStr"), CurrentPage, PageCount);
+            PageLbl.Text = PageStatusLbl.Text = string.Format(
+                Funcs.ChooseLang("PageStr"),
+                CurrentPage,
+                PageCount
+            );
 
             if (CurrentPage <= 1)
             {
@@ -474,11 +629,19 @@ namespace Font_Express
             List<FontCategory> categories = [];
 
             if (includeFav)
-                categories.Add(new FontCategory()
-                {
-                    Name = Funcs.ChooseLang("FavouritesStr"),
-                    Fonts = Settings.Default.Favourites.Cast<string>().Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToList()
-                });
+                categories.Add(
+                    new FontCategory()
+                    {
+                        Name = Funcs.ChooseLang("FavouritesStr"),
+                        Fonts =
+                        [
+                            .. Settings
+                                .Default.Favourites.Cast<string>()
+                                .Where(x => !string.IsNullOrWhiteSpace(x))
+                                .Distinct(),
+                        ],
+                    }
+                );
 
             foreach (string item in Settings.Default.Categories.Cast<string>().ToList())
             {
@@ -486,8 +649,14 @@ namespace Font_Express
                 {
                     FontCategory? cat = Funcs.Deserialize<FontCategory>(item);
 
-                    if (!(cat == null || cat.Icon == FontCategoryIcon.None ||
-                        string.IsNullOrWhiteSpace(cat.Name) || categories.Where(x => x.Name == cat.Name).Any()))
+                    if (
+                        !(
+                            cat == null
+                            || cat.Icon == FontCategoryIcon.None
+                            || string.IsNullOrWhiteSpace(cat.Name)
+                            || categories.Where(x => x.Name == cat.Name).Any()
+                        )
+                    )
                         categories.Add(cat);
                     else
                         throw new InvalidCastException();
@@ -504,12 +673,17 @@ namespace Font_Express
 
         public static void SaveCategories(IEnumerable<FontCategory> categories)
         {
-            categories = categories.Where(x => !string.IsNullOrWhiteSpace(x.Name)).DistinctBy(x => x.Name);
+            categories = categories
+                .Where(x => !string.IsNullOrWhiteSpace(x.Name))
+                .DistinctBy(x => x.Name);
             Settings.Default.Categories.Clear();
 
             foreach (FontCategory category in categories)
             {
-                category.Fonts = category.Fonts.Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToList();
+                category.Fonts =
+                [
+                    .. category.Fonts.Where(x => !string.IsNullOrWhiteSpace(x)).Distinct(),
+                ];
 
                 string dataString = JsonConvert.SerializeObject(category, Formatting.None);
                 Settings.Default.Categories.Add(dataString);
@@ -518,10 +692,16 @@ namespace Font_Express
             Settings.Default.Save();
         }
 
-        public static bool IsFontInCategory(string font, string category, FontCategory[]? categories = null)
+        public static bool IsFontInCategory(
+            string font,
+            string category,
+            FontCategory[]? categories = null
+        )
         {
             categories ??= GetSavedCategories(false);
-            FontCategory? cat = categories.Where(x => x.Name == category).FirstOrDefault(defaultValue: null);
+            FontCategory? cat = categories
+                .Where(x => x.Name == category)
+                .FirstOrDefault(defaultValue: null);
 
             if (cat == null)
                 return false;
@@ -553,17 +733,25 @@ namespace Font_Express
         {
             FontCategory[] categories = GetSavedCategories(false);
 
-            return categories.Select(x =>
-            {
-                return new KeyValuePair<string, bool>(x.Name, IsFontInCategory(font, x.Name, categories));
-
-            }).ToArray();
+            return
+            [
+                .. categories.Select(x =>
+                {
+                    return new KeyValuePair<string, bool>(
+                        x.Name,
+                        IsFontInCategory(font, x.Name, categories)
+                    );
+                }),
+            ];
         }
 
         public static void AddFontsToCategory(IEnumerable<string> fonts, int category)
         {
             var categories = GetSavedCategories(false);
-            categories[category].Fonts.AddRange(fonts.Distinct().Where(x => !categories[category].Fonts.Contains(x)));
+            categories[category]
+                .Fonts.AddRange(
+                    fonts.Distinct().Where(x => !categories[category].Fonts.Contains(x))
+                );
 
             SaveCategories(categories);
         }
@@ -631,13 +819,15 @@ namespace Font_Express
         {
             string font = (string)((AppButton)sender).Tag;
             KeyValuePair<string, bool>[] categories = GetCategoriesForFont(font);
-            bool[] categoryVals = categories.Select(x => x.Value).ToArray();
+            bool[] categoryVals = [.. categories.Select(x => x.Value)];
 
             FontViewer fv = new(font, ExpressApp.Font, IsFontInFavourites(font), categories);
             fv.ShowDialog();
 
-            IEnumerable<KeyValuePair<int, bool>> changes = fv.CategoryChanges
-                .Select((value, index) => new KeyValuePair<int, bool>(index, value.Value))
+            IEnumerable<KeyValuePair<int, bool>> changes = fv
+                .CategoryChanges.Select(
+                    (value, index) => new KeyValuePair<int, bool>(index, value.Value)
+                )
                 .Where(obj => obj.Value != categoryVals[obj.Key]);
 
             foreach (KeyValuePair<int, bool> item in changes)
@@ -662,15 +852,18 @@ namespace Font_Express
         private void CategoryPreviewBtns_Click(object sender, RoutedEventArgs e)
         {
             string font = (string)((AppButton)sender).Tag;
-            CategoryPopupItems.ItemsSource = GetCategoriesForFont(font).Select((x, idx) =>
-            {
-                return new SelectableItem()
-                {
-                    ID = idx,
-                    Name = x.Key,
-                    Selected = x.Value
-                };
-            });
+            CategoryPopupItems.ItemsSource = GetCategoriesForFont(font)
+                .Select(
+                    (x, idx) =>
+                    {
+                        return new SelectableItem()
+                        {
+                            ID = idx,
+                            Name = x.Key,
+                            Selected = x.Value,
+                        };
+                    }
+                );
 
             CategoryPopup.PlacementTarget = (AppButton)sender;
             CategoryPopup.IsOpen = true;
@@ -865,7 +1058,10 @@ namespace Font_Express
             FontSizePopup.IsOpen = true;
         }
 
-        private void FontSizeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void FontSizeSlider_ValueChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<double> e
+        )
         {
             Resources["PreviewFontSize"] = FontSizeSlider.Value;
             FontSizeTxt.Text = FontSizeSlider.Value.ToString();
@@ -932,9 +1128,13 @@ namespace Font_Express
         private void UpdateDisplayMode(DefaultDisplayMode displayMode)
         {
             if (displayMode == DefaultDisplayMode.List)
-                FontGrid.ItemsPanel = new ItemsPanelTemplate(new FrameworkElementFactory(typeof(VirtualizingStackPanel)));
+                FontGrid.ItemsPanel = new ItemsPanelTemplate(
+                    new FrameworkElementFactory(typeof(VirtualizingStackPanel))
+                );
             else
-                FontGrid.ItemsPanel = new ItemsPanelTemplate(new FrameworkElementFactory(typeof(VirtualizingWrapPanel)));
+                FontGrid.ItemsPanel = new ItemsPanelTemplate(
+                    new FrameworkElementFactory(typeof(VirtualizingWrapPanel))
+                );
         }
 
         #endregion
@@ -947,13 +1147,15 @@ namespace Font_Express
 
             foreach (FontCategory item in GetSavedCategories(false))
             {
-                CategoryDisplayList.Add(new IconButtonItem()
-                {
-                    ID = count,
-                    Name = item.Name,
-                    Icon = (Viewbox)TryFindResource(GetCategoryIcon(item.Icon)),
-                    SecondaryIcon = (Viewbox)TryFindResource(GetCategoryIcon(item.Icon))
-                });
+                CategoryDisplayList.Add(
+                    new IconButtonItem()
+                    {
+                        ID = count,
+                        Name = item.Name,
+                        Icon = (Viewbox)TryFindResource(GetCategoryIcon(item.Icon)),
+                        SecondaryIcon = (Viewbox)TryFindResource(GetCategoryIcon(item.Icon)),
+                    }
+                );
                 count++;
             }
 
@@ -976,21 +1178,24 @@ namespace Font_Express
             AddEditCategory win = new();
             if (win.ShowDialog() == true)
             {
-                AddCategory(new FontCategory()
-                {
-                    Name = win.ChosenName,
-                    Icon = win.ChosenIcon
-                });
+                AddCategory(new FontCategory() { Name = win.ChosenName, Icon = win.ChosenIcon });
                 LoadCategories();
             }
         }
 
         private void ClearFontsMenuBtn_Click(object sender, RoutedEventArgs e)
         {
-            int id = (int)((MenuButton)((ContextMenu)((MenuItem)sender).Parent).PlacementTarget).Tag;
+            int id = (int)
+                ((MenuButton)((ContextMenu)((MenuItem)sender).Parent).PlacementTarget).Tag;
 
-            if (Funcs.ShowPromptRes("ClearFontsCategoryStr", "CategoryWarningStr", 
-                MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+            if (
+                Funcs.ShowPromptRes(
+                    "ClearFontsCategoryStr",
+                    "CategoryWarningStr",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Exclamation
+                ) == MessageBoxResult.Yes
+            )
             {
                 ClearCategoryFonts(id);
 
@@ -1022,14 +1227,21 @@ namespace Font_Express
 
         private void EditCategoryMenuBtn_Click(object sender, RoutedEventArgs e)
         {
-            int id = (int)((MenuButton)((ContextMenu)((MenuItem)sender).Parent).PlacementTarget).Tag;
+            int id = (int)
+                ((MenuButton)((ContextMenu)((MenuItem)sender).Parent).PlacementTarget).Tag;
             EditCategoryUI(id);
         }
 
         private void RemoveCategoryUI(int id)
         {
-            if (Funcs.ShowPromptRes("CategoryRemovalDescStr", "CategoryRemovalStr", 
-                MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+            if (
+                Funcs.ShowPromptRes(
+                    "CategoryRemovalDescStr",
+                    "CategoryRemovalStr",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Exclamation
+                ) == MessageBoxResult.Yes
+            )
             {
                 RemoveCategory(id);
                 LoadCategories();
@@ -1049,7 +1261,8 @@ namespace Font_Express
 
         private void RemoveCategoryMenuBtn_Click(object sender, RoutedEventArgs e)
         {
-            int id = (int)((MenuButton)((ContextMenu)((MenuItem)sender).Parent).PlacementTarget).Tag;
+            int id = (int)
+                ((MenuButton)((ContextMenu)((MenuItem)sender).Parent).PlacementTarget).Tag;
             RemoveCategoryUI(id);
         }
 
@@ -1069,16 +1282,22 @@ namespace Font_Express
         {
             try
             {
-                ReleaseItem[] resp = await Funcs.GetJsonAsync<ReleaseItem[]>("https://api.johnjds.co.uk/express/v2/font/updates");
+                ReleaseItem[] resp = await Funcs.GetJsonAsync<ReleaseItem[]>(
+                    $"{Funcs.APIEndpoint}/express/v2/font/updates"
+                );
 
                 if (resp.Length == 0)
                     throw new NullReferenceException();
 
                 IEnumerable<ReleaseItem> updates = resp.Where(x =>
-                {
-                    return new Version(x.Version) > (Assembly.GetExecutingAssembly().GetName().Version ?? new Version(1, 0, 0));
-
-                }).OrderByDescending(x => new Version(x.Version));
+                    {
+                        return new Version(x.Version)
+                            > (
+                                Assembly.GetExecutingAssembly().GetName().Version
+                                ?? new Version(1, 0, 0)
+                            );
+                    })
+                    .OrderByDescending(x => new Version(x.Version));
 
                 if (!updates.Any())
                 {
@@ -1109,8 +1328,13 @@ namespace Font_Express
                 if (NotificationsPopup.IsOpen)
                 {
                     NotificationsPopup.IsOpen = false;
-                    Funcs.ShowMessageRes("NotificationErrorStr", "NoInternetStr",
-                        MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                    Funcs.ShowMessageRes(
+                        "NotificationErrorStr",
+                        "NoInternetStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(ex, PageID, "NotificationErrorStr")
+                    );
                 }
             }
         }
@@ -1118,11 +1342,15 @@ namespace Font_Express
         private void UpdateBtn_Click(object sender, RoutedEventArgs e)
         {
             NotificationsPopup.IsOpen = false;
-            _ = Process.Start(new ProcessStartInfo()
-            {
-                FileName = Funcs.GetAppUpdateLink(ExpressApp.Font),
-                UseShellExecute = true
-            });
+            Funcs.LogConversion(PageID, LoggingProperties.Conversion.UpdatePageVisit);
+
+            _ = Process.Start(
+                new ProcessStartInfo()
+                {
+                    FileName = Funcs.GetAppUpdateLink(ExpressApp.Font),
+                    UseShellExecute = true,
+                }
+            );
         }
 
         private async void UpdateInfoBtn_Click(object sender, RoutedEventArgs e)
@@ -1178,7 +1406,7 @@ namespace Font_Express
             { "HelpNotificationsStr", "NotificationIcon" },
             { "HelpShortcutsStr", "CtrlIcon" },
             { "HelpNewComingSoonStr", "FontExpressIcon" },
-            { "HelpTroubleshootingStr", "FeedbackIcon" }
+            { "HelpTroubleshootingStr", "FeedbackIcon" },
         };
 
         private void HelpBtn_Click(object sender, RoutedEventArgs e)
@@ -1196,7 +1424,7 @@ namespace Font_Express
         private void HelpLinkBtn_Click(object sender, RoutedEventArgs e)
         {
             HelpPopup.IsOpen = false;
-            Funcs.GetHelp(ExpressApp.Font);
+            Funcs.GetHelp(ExpressApp.Font, PageID);
         }
 
         private void HelpSearchTxt_TextChanged(object sender, TextChangedEventArgs e)
@@ -1213,7 +1441,7 @@ namespace Font_Express
         private void HelpTopicBtns_Click(object sender, RoutedEventArgs e)
         {
             HelpPopup.IsOpen = false;
-            Funcs.GetHelp(ExpressApp.Font, (int)((Button)sender).Tag);
+            Funcs.GetHelp(ExpressApp.Font, PageID, (int)((Button)sender).Tag);
         }
 
         #endregion
@@ -1223,11 +1451,17 @@ namespace Font_Express
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return MainWindow.IsFontInFavourites((string)value) ? 
-                (Viewbox)Application.Current.Resources["FavouriteIcon"] : (Viewbox)Application.Current.Resources["AddFavouriteIcon"];
+            return MainWindow.IsFontInFavourites((string)value)
+                ? (Viewbox)Application.Current.Resources["FavouriteIcon"]
+                : (Viewbox)Application.Current.Resources["AddFavouriteIcon"];
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return "";
         }
@@ -1237,11 +1471,17 @@ namespace Font_Express
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return MainWindow.IsFontInFavourites((string)value) ?
-                (string)Application.Current.Resources["RemoveFromFavsStr"] : (string)Application.Current.Resources["AddToFavsStr"];
+            return MainWindow.IsFontInFavourites((string)value)
+                ? (string)Application.Current.Resources["RemoveFromFavsStr"]
+                : (string)Application.Current.Resources["AddToFavsStr"];
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return "";
         }

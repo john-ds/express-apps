@@ -1,17 +1,8 @@
-﻿using ExpressControls;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using ExpressControls;
 using Xceed.Wpf.Toolkit;
 
 namespace Type_Express
@@ -19,9 +10,9 @@ namespace Type_Express
     /// <summary>
     /// Interaction logic for CustomThemeEditor.xaml
     /// </summary>
-    public partial class CustomThemeEditor : Window
+    public partial class CustomThemeEditor : ExpressWindow
     {
-        public Color[] ChosenColours { get; set; } = Enumerable.Repeat(Colors.Black, 8).ToArray();
+        public Color[] ChosenColours { get; set; } = [.. Enumerable.Repeat(Colors.Black, 8)];
 
         public CustomThemeEditor(Color[]? colours)
         {
@@ -32,6 +23,7 @@ namespace Type_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             if (colours != null)
                 ChosenColours = colours;
@@ -41,15 +33,17 @@ namespace Type_Express
 
         private void LoadColours()
         {
-            ColourItems.ItemsSource = ChosenColours.Select((x, idx) =>
-            {
-                return new CustomColourItem()
+            ColourItems.ItemsSource = ChosenColours.Select(
+                (x, idx) =>
                 {
-                    ID = idx,
-                    Name = Funcs.ChooseLang("Clr" + (idx + 1).ToString() + "Str"),
-                    Colour = x
-                };
-            });
+                    return new CustomColourItem()
+                    {
+                        ID = idx,
+                        Name = Funcs.ChooseLang("Clr" + (idx + 1).ToString() + "Str"),
+                        Colour = x,
+                    };
+                }
+            );
         }
 
         private void OKBtn_Click(object sender, RoutedEventArgs e)
@@ -67,12 +61,19 @@ namespace Type_Express
         {
             var rand = new Random();
             for (var i = 0; i < 8; i++)
-                ChosenColours[i] = Color.FromRgb((byte)rand.Next(256), (byte)rand.Next(256), (byte)rand.Next(256));
+                ChosenColours[i] = Color.FromRgb(
+                    (byte)rand.Next(256),
+                    (byte)rand.Next(256),
+                    (byte)rand.Next(256)
+                );
 
             LoadColours();
         }
 
-        private void ColorPickers_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
+        private void ColorPickers_SelectedColorChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<Color?> e
+        )
         {
             ColorPicker clr = (ColorPicker)sender;
             ChosenColours[(int)clr.Tag] = clr.SelectedColor ?? Colors.Black;

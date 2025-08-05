@@ -1,18 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Forms;
-using System.Windows.Input;
 using System.Windows.Interop;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using WinDrawing = System.Drawing;
 
@@ -21,7 +11,7 @@ namespace ExpressControls
     /// <summary>
     /// Interaction logic for Screenshot.xaml
     /// </summary>
-    public partial class Screenshot : Window
+    public partial class Screenshot : ExpressWindow
     {
         private readonly DispatcherTimer DelayTimer = new() { Interval = new TimeSpan(0, 0, 0) };
         private readonly string DefaultTitle = "";
@@ -38,6 +28,7 @@ namespace ExpressControls
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             // Event handlers for maximisable windows
             MaxBtn.Click += Funcs.MaxRestoreEvent;
@@ -108,16 +99,33 @@ namespace ExpressControls
 
         private BitmapImage CaptureRegion()
         {
-            using WinDrawing.Bitmap bitmap = new(RegionBounds.Right - RegionBounds.Left, RegionBounds.Bottom - RegionBounds.Top);
+            using WinDrawing.Bitmap bitmap = new(
+                RegionBounds.Right - RegionBounds.Left,
+                RegionBounds.Bottom - RegionBounds.Top
+            );
             using (WinDrawing.Graphics g = WinDrawing.Graphics.FromImage(bitmap))
-                g.CopyFromScreen(RegionBounds.Left, RegionBounds.Top, 0, 0,
-                    new WinDrawing.Size(RegionBounds.Right - RegionBounds.Left, RegionBounds.Bottom - RegionBounds.Top));
+                g.CopyFromScreen(
+                    RegionBounds.Left,
+                    RegionBounds.Top,
+                    0,
+                    0,
+                    new WinDrawing.Size(
+                        RegionBounds.Right - RegionBounds.Left,
+                        RegionBounds.Bottom - RegionBounds.Top
+                    )
+                );
 
             return Funcs.ConvertBitmap(bitmap);
         }
 
         private void AddBtn_Click(object sender, RoutedEventArgs e)
         {
+            Funcs.LogConversion(
+                PageID,
+                LoggingProperties.Conversion.CreateScreenshot,
+                FullScreenRadio.IsChecked == true ? "Full screen" : "Region"
+            );
+
             DialogResult = true;
             Close();
         }

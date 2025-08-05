@@ -1,12 +1,4 @@
-﻿using DeepL;
-using Dropbox.Api;
-using Dropbox.Api.Files;
-using ExpressControls;
-using Microsoft.VisualBasic;
-using Microsoft.WindowsAPICodePack.Dialogs;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -22,7 +14,6 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Web;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -32,21 +23,27 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using Dropbox.Api;
+using Dropbox.Api.Files;
+using ExpressControls;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using Newtonsoft.Json;
 using Type_Express.Properties;
-using WinDrawing = System.Drawing;
 
 namespace Type_Express
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : ExpressWindow
     {
         private readonly DispatcherTimer EditingTimer = new() { Interval = new TimeSpan(0, 1, 0) };
-        private readonly DispatcherTimer FontLoadTimer = new() { Interval = new TimeSpan(0, 0, 0, 0, 300) };
+        private readonly DispatcherTimer FontLoadTimer = new()
+        {
+            Interval = new TimeSpan(0, 0, 0, 0, 300),
+        };
         private readonly DispatcherTimer TempLblTimer = new() { Interval = new TimeSpan(0, 0, 4) };
 
         private ColourScheme CurrentColourScheme = ColourScheme.Basic;
@@ -68,6 +65,7 @@ namespace Type_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             // Event handlers for maximisable windows
             MaxBtn.Click += Funcs.MaxRestoreEvent;
@@ -89,6 +87,7 @@ namespace Type_Express
 
             Funcs.SetLang(Settings.Default.Language);
             Funcs.SetupDialogs();
+            Funcs.RegisterPopups(WindowGrid);
 
             DateLangCombo.SelectedIndex = (int)Funcs.GetCurrentLangEnum();
             DefineLang = Funcs.GetCurrentLangEnum();
@@ -98,7 +97,7 @@ namespace Type_Express
             Funcs.Tabs = ["Menu", "Home", "Tools", "Design", "Review"];
             Funcs.ScrollTimer.Tick += Funcs.ScrollTimer_Tick;
             DocTabs.SelectionChanged += Funcs.RibbonTabs_SelectionChanged;
-            
+
             foreach (string tab in Funcs.Tabs)
             {
                 ((Button)FindName(tab + "LeftBtn")).PreviewMouseDown += Funcs.ScrollBtns_MouseDown;
@@ -108,7 +107,8 @@ namespace Type_Express
                 ((Button)FindName(tab + "RightBtn")).PreviewMouseUp += Funcs.ScrollBtns_MouseUp;
 
                 ((StackPanel)FindName(tab + "Pnl")).MouseWheel += Funcs.ScrollRibbon_MouseWheel;
-                ((ScrollViewer)FindName(tab + "ScrollViewer")).SizeChanged += Funcs.DocScrollPnl_SizeChanged;
+                ((ScrollViewer)FindName(tab + "ScrollViewer")).SizeChanged +=
+                    Funcs.DocScrollPnl_SizeChanged;
 
                 ((RadioButton)FindName(tab + "Btn")).Click += Funcs.RibbonTabs_Click;
             }
@@ -122,11 +122,13 @@ namespace Type_Express
             string[] OverlayStoryboards = ["New", "Open", "Cloud", "Save", "Info"];
 
             OverlayGrid.Visibility = Visibility.Collapsed;
-            ((Storyboard)TryFindResource("OverlayOutStoryboard")).Completed += OverlayStoryboard_Completed;
+            ((Storyboard)TryFindResource("OverlayOutStoryboard")).Completed +=
+                OverlayStoryboard_Completed;
 
             foreach (string k in OverlayStoryboards)
             {
-                ((Storyboard)TryFindResource(k + "OverlayOutStoryboard")).Completed += OverlayStoryboard_Completed;
+                ((Storyboard)TryFindResource(k + "OverlayOutStoryboard")).Completed +=
+                    OverlayStoryboard_Completed;
                 ((Button)FindName(k + "OverlayCloseBtn")).Click += Funcs.OverlayCloseBtns_Click;
             }
 
@@ -154,18 +156,24 @@ namespace Type_Express
             }
 
             DocTxt.SelectAll();
-            SetSelectionFontStyle(new FontStyleItem()
-            {
-                FontName = Settings.Default.DefaultFont.Name,
-                FontSize = Settings.Default.DefaultFont.Size,
-                IsBold = Settings.Default.DefaultFont.Bold,
-                IsItalic = Settings.Default.DefaultFont.Italic,
-                IsUnderlined = Settings.Default.DefaultFont.Underline,
-                FontColour = new SolidColorBrush(Funcs.ConvertDrawingToMediaColor(Settings.Default.DefaultTextColour))
-            });
+            SetSelectionFontStyle(
+                new FontStyleItem()
+                {
+                    FontName = Settings.Default.DefaultFont.Name,
+                    FontSize = Settings.Default.DefaultFont.Size,
+                    IsBold = Settings.Default.DefaultFont.Bold,
+                    IsItalic = Settings.Default.DefaultFont.Italic,
+                    IsUnderlined = Settings.Default.DefaultFont.Underline,
+                    FontColour = new SolidColorBrush(
+                        Funcs.ConvertDrawingToMediaColor(Settings.Default.DefaultTextColour)
+                    ),
+                }
+            );
 
             if (Settings.Default.DefaultSaveLocation == "")
-                Funcs.RTFTXTSaveDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                Funcs.RTFTXTSaveDialog.InitialDirectory = Environment.GetFolderPath(
+                    Environment.SpecialFolder.MyDocuments
+                );
             else
                 Funcs.RTFTXTSaveDialog.InitialDirectory = Settings.Default.DefaultSaveLocation;
 
@@ -203,8 +211,9 @@ namespace Type_Express
 
             // Set up colours
             Funcs.SetupColorPickers(GetSchemeColours(CurrentColourScheme), TextColourPicker);
-            
+
             // Setup document editor
+            DocTxt.KeyDown += Funcs.TextBoxKeyDownEvent;
             TextFocus();
             UpdateTextSelection();
 
@@ -212,6 +221,8 @@ namespace Type_Express
             BoldBtn.Icon = (Viewbox)TryFindResource(Funcs.ChooseIcon("BoldIcon"));
             ItalicBtn.Icon = (Viewbox)TryFindResource(Funcs.ChooseIcon("ItalicIcon"));
             UnderlineBtn.Icon = (Viewbox)TryFindResource(Funcs.ChooseIcon("UnderlineIcon"));
+
+            TitleOverride = "Type Express";
         }
 
         private async void Main_Loaded(object sender, RoutedEventArgs e)
@@ -229,7 +240,7 @@ namespace Type_Express
                 await GetNotifications();
         }
 
-        private void Main_Closing(object sender, CancelEventArgs e)
+        private async void Main_Closing(object sender, CancelEventArgs e)
         {
             Settings.Default.Height = ActualHeight;
             Settings.Default.Width = ActualWidth;
@@ -251,16 +262,23 @@ namespace Type_Express
                     if (Application.Current.Windows.OfType<MainWindow>().Count() > 1)
                     {
                         (SaveChoice, applySaveChoiceToAll) = Funcs.ShowPromptResWithCheckbox(
-                            "OnExitDescTStr", "OnExitStr", MessageBoxButton.YesNoCancel,
-                            MessageBoxImage.Exclamation);
+                            "OnExitDescTStr",
+                            "OnExitStr",
+                            MessageBoxButton.YesNoCancel,
+                            MessageBoxImage.Exclamation
+                        );
 
                         if (applySaveChoiceToAll)
                             ClosingPromptResponse = SaveChoice;
                     }
                     else
                     {
-                        SaveChoice = Funcs.ShowPromptRes("OnExitDescTStr", "OnExitStr",
-                            MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation);
+                        SaveChoice = Funcs.ShowPromptRes(
+                            "OnExitDescTStr",
+                            "OnExitStr",
+                            MessageBoxButton.YesNoCancel,
+                            MessageBoxImage.Exclamation
+                        );
                     }
                 }
 
@@ -285,6 +303,14 @@ namespace Type_Express
                 if (e.Cancel)
                     ClosingPromptResponse = null;
             }
+
+            if (!e.Cancel)
+            {
+                Funcs.LogWindowClose(PageID);
+
+                if (Application.Current.Windows.OfType<MainWindow>().Count() <= 1)
+                    await Funcs.LogApplicationEnd();
+            }
         }
 
         private void Main_Closed(object sender, EventArgs e)
@@ -292,7 +318,10 @@ namespace Type_Express
             if (ClosingPromptResponse != null)
             {
                 // get next window and close it
-                var next = Application.Current.Windows.OfType<MainWindow>().Where(w => !w.Equals(this)).FirstOrDefault();
+                var next = Application
+                    .Current.Windows.OfType<MainWindow>()
+                    .Where(w => !w.Equals(this))
+                    .FirstOrDefault();
                 if (next != null)
                 {
                     next.ClosingPromptResponse = ClosingPromptResponse;
@@ -307,7 +336,12 @@ namespace Type_Express
                 OverlayGrid.Visibility = Visibility.Collapsed;
         }
 
-        private void ShowLanguagePopup(UIElement target, LanguageChoiceMode mode, Languages defaultValue = Languages.English, bool showItalian = true)
+        private void ShowLanguagePopup(
+            UIElement target,
+            LanguageChoiceMode mode,
+            Languages defaultValue = Languages.English,
+            bool showItalian = true
+        )
         {
             LanguagePopup.PlacementTarget = target;
             PopupLanguageMode = mode;
@@ -420,7 +454,10 @@ namespace Type_Express
                         UpdateTextSelection();
                         break;
                     case "PrintPreview":
-                        new PrintPreview(PrintDoc, Funcs.ChooseLang("PrintPreviewStr") + " - Type Express").ShowDialog();
+                        new PrintPreview(
+                            PrintDoc,
+                            Funcs.ChooseLang("PrintPreviewStr") + " - Type Express"
+                        ).ShowDialog();
                         break;
                     case "Copyright":
                         DocTxt.Selection.Text = "©";
@@ -482,7 +519,7 @@ namespace Type_Express
             set
             {
                 templateFilter = value;
-                TemplateItemsView.Refresh();
+                TemplateItemsView?.Refresh();
             }
         }
 
@@ -503,8 +540,10 @@ namespace Type_Express
         {
             try
             {
-                TemplateItem[] resp = await Funcs.GetJsonAsync<TemplateItem[]>("https://api.johnjds.co.uk/express/v2/type/templates");
-               
+                TemplateItem[] resp = await Funcs.GetJsonAsync<TemplateItem[]>(
+                    $"{Funcs.APIEndpoint}/express/v2/type/templates"
+                );
+
                 if (resp.Length == 0)
                     throw new ArgumentNullException(nameof(resp));
 
@@ -518,10 +557,13 @@ namespace Type_Express
                 TemplateLoadingGrid.Visibility = Visibility.Collapsed;
 
                 Random rnd = new();
-                TemplateItems = new ObservableCollection<TemplateItem>(resp.OrderBy(x => rnd.Next()));
+                TemplateItems = new ObservableCollection<TemplateItem>(
+                    resp.OrderBy(x => rnd.Next())
+                );
                 TemplateItemsView.Filter = new Predicate<object>(o =>
                 {
-                    return TemplateFilter == TypeTemplateCategory.All || TemplateFilter == ((TemplateItem)o).TypeCategory;
+                    return TemplateFilter == TypeTemplateCategory.All
+                        || TemplateFilter == ((TemplateItem)o).TypeCategory;
                 });
 
                 TemplateItemsView.CollectionChanged += TemplateItemsView_CollectionChanged;
@@ -529,15 +571,23 @@ namespace Type_Express
             }
             catch (Exception ex)
             {
-                Funcs.ShowMessageRes("TemplateErrorStr", "NoInternetStr", MessageBoxButton.OK, 
-                    MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                Funcs.ShowMessageRes(
+                    "TemplateErrorStr",
+                    "NoInternetStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    Funcs.GenerateErrorReport(ex, PageID, "TemplateErrorStr")
+                );
 
                 TemplateLoadingGrid.Visibility = Visibility.Collapsed;
                 NoTemplateGrid.Visibility = Visibility.Visible;
             }
         }
 
-        private void TemplateItemsView_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private void TemplateItemsView_CollectionChanged(
+            object? sender,
+            NotifyCollectionChangedEventArgs e
+        )
         {
             if (TemplateGrid.Items.Count == 0)
                 NoTemplateGrid.Visibility = Visibility.Visible;
@@ -555,7 +605,8 @@ namespace Type_Express
         private void TemplateFilterBtns_Click(object sender, RoutedEventArgs e)
         {
             string tag = (string)((RadioButton)sender).Tag;
-            TemplateFilter = (TypeTemplateCategory)Enum.Parse(typeof(TypeTemplateCategory), tag, true);
+            TemplateFilter = (TypeTemplateCategory)
+                Enum.Parse(typeof(TypeTemplateCategory), tag, true);
         }
 
         private async void TemplateBtns_Click(object sender, RoutedEventArgs e)
@@ -563,6 +614,7 @@ namespace Type_Express
             string tag = (string)((Button)sender).Tag;
             if (tag != "")
             {
+                Funcs.LogDownload(PageID, tag, "template");
                 LoadString(await Funcs.GetStringAsync(tag), DataFormats.Rtf);
             }
         }
@@ -594,7 +646,10 @@ namespace Type_Express
                 NewWin.Show();
             }
 
-            TextRange documentTextRange = new(TextTarget.Document.ContentStart, TextTarget.Document.ContentEnd);
+            TextRange documentTextRange = new(
+                TextTarget.Document.ContentStart,
+                TextTarget.Document.ContentEnd
+            );
             using (Stream stream = Funcs.GenerateStreamFromString(txt))
                 documentTextRange.Load(stream, dataFormat);
 
@@ -621,7 +676,7 @@ namespace Type_Express
                     return true;
                 }
             }
-            
+
             RichTextBox TextTarget = DocTxt;
             MainWindow? NewWin = null;
 
@@ -642,7 +697,10 @@ namespace Type_Express
 
             try
             {
-                TextRange documentTextRange = new(TextTarget.Document.ContentStart, TextTarget.Document.ContentEnd);
+                TextRange documentTextRange = new(
+                    TextTarget.Document.ContentStart,
+                    TextTarget.Document.ContentEnd
+                );
                 string dataFormat = DataFormats.Rtf;
                 string ext = System.IO.Path.GetExtension(filename);
 
@@ -668,10 +726,18 @@ namespace Type_Express
             catch (Exception ex)
             {
                 Funcs.ShowMessage(
-                    $"{Funcs.ChooseLang("OpenFileErrorDescStr")}{Environment.NewLine}**{filename}**{Environment.NewLine}{Environment.NewLine}{Funcs.ChooseLang("TryAgainStr")}", 
-                    Funcs.ChooseLang("OpenFileErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error,
-                    Funcs.GenerateErrorReport(ex, Funcs.ChooseLang("ReportEmailAttachStr")));
-                
+                    $"{Funcs.ChooseLang("OpenFileErrorDescStr")}{Environment.NewLine}**{filename}**{Environment.NewLine}{Environment.NewLine}{Funcs.ChooseLang("TryAgainStr")}",
+                    Funcs.ChooseLang("OpenFileErrorStr"),
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    Funcs.GenerateErrorReport(
+                        ex,
+                        PageID,
+                        "OpenFileErrorDescStr",
+                        "ReportEmailAttachStr"
+                    )
+                );
+
                 return false;
             }
         }
@@ -717,7 +783,7 @@ namespace Type_Express
             string icon = "BlankIcon";
             string filename = System.IO.Path.GetFileNameWithoutExtension(path);
             string formatted = path.Replace("\\", " » ");
-            
+
             if (filename == "")
                 filename = path;
 
@@ -734,12 +800,12 @@ namespace Type_Express
             }
 
             return new FileItem()
-                {
-                    FileName = filename,
-                    FilePath = path,
-                    FilePathFormatted = formatted,
-                    Icon = (Viewbox)TryFindResource(icon)
-                };
+            {
+                FileName = filename,
+                FilePath = path,
+                FilePathFormatted = formatted,
+                Icon = (Viewbox)TryFindResource(icon),
+            };
         }
 
         private void GetRecents()
@@ -841,8 +907,14 @@ namespace Type_Express
                 LoadFile(path);
             else
             {
-                if (Funcs.ShowPromptRes("FileNotFoundDescStr", "FileNotFoundStr",
-                    MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+                if (
+                    Funcs.ShowPromptRes(
+                        "FileNotFoundDescStr",
+                        "FileNotFoundStr",
+                        MessageBoxButton.YesNoCancel,
+                        MessageBoxImage.Exclamation
+                    ) == MessageBoxResult.Yes
+                )
                 {
                     if (RecentsTabBtn.IsChecked == true)
                         RemoveRecentFile(path);
@@ -871,18 +943,26 @@ namespace Type_Express
             {
                 if (!File.Exists(path))
                     throw new FileNotFoundException();
-                
-                _ = Process.Start(new ProcessStartInfo()
-                {
-                    FileName = "explorer.exe",
-                    Arguments = "/select," + path,
-                    UseShellExecute = true
-                });
+
+                _ = Process.Start(
+                    new ProcessStartInfo()
+                    {
+                        FileName = "explorer.exe",
+                        Arguments = "/select," + path,
+                        UseShellExecute = true,
+                    }
+                );
             }
             catch
             {
-                if (Funcs.ShowPromptRes("DirNotFoundDescStr", "DirNotFoundStr", 
-                    MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+                if (
+                    Funcs.ShowPromptRes(
+                        "DirNotFoundDescStr",
+                        "DirNotFoundStr",
+                        MessageBoxButton.YesNoCancel,
+                        MessageBoxImage.Exclamation
+                    ) == MessageBoxResult.Yes
+                )
                 {
                     if (RecentsTabBtn.IsChecked == true)
                         RemoveRecentFile(path);
@@ -910,8 +990,14 @@ namespace Type_Express
 
         private void ClearRecentsBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (Funcs.ShowPromptRes("ConfirmRecentsDeleteStr", "AreYouSureStr", 
-                MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+            if (
+                Funcs.ShowPromptRes(
+                    "ConfirmRecentsDeleteStr",
+                    "AreYouSureStr",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Exclamation
+                ) == MessageBoxResult.Yes
+            )
             {
                 Settings.Default.Recents.Clear();
                 Settings.Default.Save();
@@ -936,8 +1022,14 @@ namespace Type_Express
 
         private void ClearFavouritesBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (Funcs.ShowPromptRes("ConfirmFavsDeleteStr", "AreYouSureStr",
-                MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+            if (
+                Funcs.ShowPromptRes(
+                    "ConfirmFavsDeleteStr",
+                    "AreYouSureStr",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Exclamation
+                ) == MessageBoxResult.Yes
+            )
             {
                 Settings.Default.Favourites.Clear();
                 Settings.Default.Save();
@@ -989,7 +1081,11 @@ namespace Type_Express
             {
                 try
                 {
-                    var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Type_Express.auth-dropbox.secret") ?? throw new NullReferenceException();
+                    var info =
+                        Assembly
+                            .GetExecutingAssembly()
+                            .GetManifestResourceStream("Type_Express.auth-dropbox.secret")
+                        ?? throw new NullReferenceException();
                     using var sr = new StreamReader(info);
                     string creds = sr.ReadToEnd();
                     DropboxApiKey = creds.Split(":")[0];
@@ -997,8 +1093,18 @@ namespace Type_Express
                 }
                 catch (Exception ex)
                 {
-                    Funcs.ShowMessageRes("APIKeyNotFoundStr", "CriticalErrorStr", MessageBoxButton.OK, MessageBoxImage.Error, 
-                        Funcs.GenerateErrorReport(ex, Funcs.ChooseLang("ReportEmailInfoStr")));
+                    Funcs.ShowMessageRes(
+                        "APIKeyNotFoundStr",
+                        "CriticalErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(
+                            ex,
+                            PageID,
+                            "APIKeyNotFoundStr",
+                            "ReportEmailInfoStr"
+                        )
+                    );
                     return;
                 }
             }
@@ -1011,14 +1117,25 @@ namespace Type_Express
             }
             else
             {
-                string[] scopeList = ["files.metadata.read", "files.content.read", "files.content.write", "account_info.read"];
+                string[] scopeList =
+                [
+                    "files.metadata.read",
+                    "files.content.read",
+                    "files.content.write",
+                    "account_info.read",
+                ];
                 _ = await AcquireAccessToken(scopeList, IncludeGrantedScopes.None);
                 DropboxUsername = await Funcs.GetCurrentAccount(dpxClient ?? GetDropboxClient());
 
                 if (DropboxUsername == "")
                 {
                     // User disconnected
-                    Funcs.ShowMessageRes("DropboxDisconnectedStr", "DropboxErrorStr", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Funcs.ShowMessageRes(
+                        "DropboxDisconnectedStr",
+                        "DropboxErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error
+                    );
 
                     Settings.Default.DropboxAccessToken = "";
                     Settings.Default.DropboxRefreshToken = "";
@@ -1037,8 +1154,17 @@ namespace Type_Express
 
         private static DropboxClient GetDropboxClient()
         {
-            DropboxClientConfig config = new("Express Apps") { HttpClient = Funcs.httpClientWithTimeout };
-            dpxClient = new(Settings.Default.DropboxAccessToken, Settings.Default.DropboxRefreshToken, DropboxApiKey, DropboxApiSecret, config);
+            DropboxClientConfig config = new("Express Apps")
+            {
+                HttpClient = Funcs.httpClientWithTimeout,
+            };
+            dpxClient = new(
+                Settings.Default.DropboxAccessToken,
+                Settings.Default.DropboxRefreshToken,
+                DropboxApiKey,
+                DropboxApiSecret,
+                config
+            );
             return dpxClient;
         }
 
@@ -1047,7 +1173,13 @@ namespace Type_Express
             try
             {
                 SetupDropboxConnectingScreen();
-                var newScopes = new string[] { "files.metadata.read", "files.content.read", "files.content.write", "account_info.read" };
+                var newScopes = new string[]
+                {
+                    "files.metadata.read",
+                    "files.content.read",
+                    "files.content.write",
+                    "account_info.read",
+                };
                 var token = await AcquireAccessToken(newScopes, IncludeGrantedScopes.None);
 
                 // Use a new DropboxClient
@@ -1057,14 +1189,30 @@ namespace Type_Express
                 {
                     SetupUserDropbox();
                     Activate();
+
+                    Funcs.LogConversion(
+                        PageID,
+                        LoggingProperties.Conversion.AccountConnected,
+                        "Dropbox"
+                    );
                 }
                 else if (!DropboxConnectionStopped)
                     throw new HttpRequestException();
             }
             catch (Exception ex)
             {
-                Funcs.ShowMessageRes("DropboxErrorInfoStr", "DropboxErrorStr", MessageBoxButton.OK, MessageBoxImage.Error, 
-                    Funcs.GenerateErrorReport(ex, Funcs.ChooseLang("ReportEmailInfoStr")));
+                Funcs.ShowMessageRes(
+                    "DropboxErrorInfoStr",
+                    "DropboxErrorStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    Funcs.GenerateErrorReport(
+                        ex,
+                        PageID,
+                        "DropboxErrorInfoStr",
+                        "ReportEmailInfoStr"
+                    )
+                );
             }
         }
 
@@ -1081,11 +1229,17 @@ namespace Type_Express
                 DropboxFileTypeCombo.Visibility = Visibility.Visible;
                 DropboxSaveBtn.Visibility = Visibility.Visible;
 
-                DropboxInfoLbl.Text = string.Format(Funcs.ChooseLang("DropboxUsernameStr"), DropboxUsername);
+                DropboxInfoLbl.Text = string.Format(
+                    Funcs.ChooseLang("DropboxUsernameStr"),
+                    DropboxUsername
+                );
             }
             else
             {
-                DropboxInfoLbl.Text = string.Format(Funcs.ChooseLang("DropboxUsernameStr"), DropboxUsername) + " " + Funcs.ChooseLang("DropboxOpenStr");
+                DropboxInfoLbl.Text =
+                    string.Format(Funcs.ChooseLang("DropboxUsernameStr"), DropboxUsername)
+                    + " "
+                    + Funcs.ChooseLang("DropboxOpenStr");
             }
 
             CloudFilesInfoLbl.Visibility = Visibility.Visible;
@@ -1127,9 +1281,17 @@ namespace Type_Express
             Settings.Default.Save();
 
             InitDropbox();
+            Funcs.LogClick(
+                PageID,
+                nameof(DropboxDisconnectBtn),
+                Funcs.ChooseLang("DisconnectDropboxStr")
+            );
         }
 
-        private static async Task<string?> AcquireAccessToken(string[] scopeList, IncludeGrantedScopes includeGrantedScopes)
+        private static async Task<string?> AcquireAccessToken(
+            string[] scopeList,
+            IncludeGrantedScopes includeGrantedScopes
+        )
         {
             string accessToken = Settings.Default.DropboxAccessToken;
             string refreshToken;
@@ -1139,8 +1301,15 @@ namespace Type_Express
                 try
                 {
                     var state = Guid.NewGuid().ToString("N");
-                    var authorizeUri = DropboxOAuth2Helper.GetAuthorizeUri(OAuthResponseType.Code, DropboxApiKey, Funcs.RedirectUri,
-                        state: state, tokenAccessType: TokenAccessType.Offline, scopeList: scopeList, includeGrantedScopes: includeGrantedScopes);
+                    var authorizeUri = DropboxOAuth2Helper.GetAuthorizeUri(
+                        OAuthResponseType.Code,
+                        DropboxApiKey,
+                        Funcs.RedirectUri,
+                        state: state,
+                        tokenAccessType: TokenAccessType.Offline,
+                        scopeList: scopeList,
+                        includeGrantedScopes: includeGrantedScopes
+                    );
 
                     if (!Funcs.DropboxListener.Prefixes.Contains(Funcs.LoopbackHost))
                         Funcs.DropboxListener.Prefixes.Add(Funcs.LoopbackHost);
@@ -1149,21 +1318,33 @@ namespace Type_Express
                         Funcs.DropboxListener.Stop();
 
                     Funcs.DropboxListener.Start();
-                    Process.Start(new ProcessStartInfo(authorizeUri.ToString()) { UseShellExecute = true });
+                    Process.Start(
+                        new ProcessStartInfo(authorizeUri.ToString()) { UseShellExecute = true }
+                    );
 
-                    var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Type_Express.dropbox-index.html") ?? throw new NullReferenceException();
+                    var info =
+                        Assembly
+                            .GetExecutingAssembly()
+                            .GetManifestResourceStream("Type_Express.dropbox-index.html")
+                        ?? throw new NullReferenceException();
                     string indexHtml;
                     using (var sr = new StreamReader(info))
-                        indexHtml = sr.ReadToEnd().Replace("Please wait...", Funcs.ChooseLang("PleaseWaitStr"));
+                        indexHtml = sr.ReadToEnd()
+                            .Replace("Please wait...", Funcs.ChooseLang("PleaseWaitStr"));
 
                     // Handle OAuth redirect and send URL fragment to local server using JS
                     await Funcs.HandleOAuth2Redirect(Funcs.DropboxListener, indexHtml);
 
                     // Handle redirect from JS and process OAuth response
                     var redirectUri = await Funcs.HandleJSRedirect(Funcs.DropboxListener);
-                    var tokenResult = await DropboxOAuth2Helper.ProcessCodeFlowAsync(redirectUri, 
-                        DropboxApiKey, DropboxApiSecret, Funcs.RedirectUri.ToString(), state);
-                    
+                    var tokenResult = await DropboxOAuth2Helper.ProcessCodeFlowAsync(
+                        redirectUri,
+                        DropboxApiKey,
+                        DropboxApiSecret,
+                        Funcs.RedirectUri.ToString(),
+                        state
+                    );
+
                     accessToken = tokenResult.AccessToken;
                     refreshToken = tokenResult.RefreshToken;
                     string uid = tokenResult.Uid;
@@ -1188,7 +1369,8 @@ namespace Type_Express
 
         private async Task LoadDropboxDirectory(string folder = "")
         {
-            if (folder == "/") folder = "";
+            if (folder == "/")
+                folder = "";
             CloudFilesInfoLbl.Visibility = Visibility.Collapsed;
 
             try
@@ -1198,7 +1380,10 @@ namespace Type_Express
                 DropboxSaveBtn.IsEnabled = false;
 
                 DropboxClient dbx = dpxClient ?? GetDropboxClient();
-                ListFolderResult files = await dbx.Files.ListFolderAsync(folder, includeNonDownloadableFiles: false);
+                ListFolderResult files = await dbx.Files.ListFolderAsync(
+                    folder,
+                    includeNonDownloadableFiles: false
+                );
 
                 List<FileItem> res = [];
                 if (folder != "")
@@ -1208,15 +1393,20 @@ namespace Type_Express
                     if (parentDir == null)
                         parent = "";
                     else
-                        parent = parentDir.ToString().Replace(parentDir.Root.Name, "/").Replace("\\", "/");
+                        parent = parentDir
+                            .ToString()
+                            .Replace(parentDir.Root.Name, "/")
+                            .Replace("\\", "/");
 
-                    res.Add(new FileItem()
-                    {
-                        FileName = Funcs.ChooseLang("BackStr"),
-                        Icon = (Viewbox)TryFindResource("UndoIcon"),
-                        FilePath = parent,
-                        IsFolder = true
-                    });
+                    res.Add(
+                        new FileItem()
+                        {
+                            FileName = Funcs.ChooseLang("BackStr"),
+                            Icon = (Viewbox)TryFindResource("UndoIcon"),
+                            FilePath = parent,
+                            IsFolder = true,
+                        }
+                    );
                 }
 
                 foreach (Metadata item in files.Entries)
@@ -1235,13 +1425,15 @@ namespace Type_Express
                             continue;
                     }
 
-                    res.Add(new FileItem()
-                    {
-                        FileName = item.Name,
-                        Icon = (Viewbox)TryFindResource(icn),
-                        FilePath = item.PathDisplay,
-                        IsFolder = item.IsFolder
-                    });
+                    res.Add(
+                        new FileItem()
+                        {
+                            FileName = item.Name,
+                            Icon = (Viewbox)TryFindResource(icn),
+                            FilePath = item.PathDisplay,
+                            IsFolder = item.IsFolder,
+                        }
+                    );
                 }
 
                 CloudFilesPnl.ItemsSource = res;
@@ -1267,8 +1459,18 @@ namespace Type_Express
             }
             catch (Exception ex)
             {
-                Funcs.ShowMessageRes("DropboxErrorInfoStr", "DropboxErrorStr", MessageBoxButton.OK, MessageBoxImage.Error,
-                    Funcs.GenerateErrorReport(ex, Funcs.ChooseLang("ReportEmailInfoStr")));
+                Funcs.ShowMessageRes(
+                    "DropboxErrorInfoStr",
+                    "DropboxErrorStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    Funcs.GenerateErrorReport(
+                        ex,
+                        PageID,
+                        "DropboxErrorInfoStr",
+                        "ReportEmailInfoStr"
+                    )
+                );
 
                 DropboxSaveBtn.Visibility = Visibility.Collapsed;
             }
@@ -1313,8 +1515,18 @@ namespace Type_Express
             }
             catch (Exception ex)
             {
-                Funcs.ShowMessageRes("DropboxOpenErrorStr", "DropboxErrorStr", MessageBoxButton.OK, MessageBoxImage.Error,
-                    Funcs.GenerateErrorReport(ex, Funcs.ChooseLang("ReportEmailAttachStr")));
+                Funcs.ShowMessageRes(
+                    "DropboxOpenErrorStr",
+                    "DropboxErrorStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    Funcs.GenerateErrorReport(
+                        ex,
+                        PageID,
+                        "DropboxOpenErrorStr",
+                        "ReportEmailAttachStr"
+                    )
+                );
             }
             finally
             {
@@ -1345,7 +1557,10 @@ namespace Type_Express
         /// <param name="dataFormat">A <see cref="DataFormats"/> string compatible with <see cref="TextRange.Save(Stream, string)"/></param>
         private string SaveString(string dataFormat)
         {
-            TextRange documentTextRange = new(DocTxt.Document.ContentStart, DocTxt.Document.ContentEnd);
+            TextRange documentTextRange = new(
+                DocTxt.Document.ContentStart,
+                DocTxt.Document.ContentEnd
+            );
 
             if (dataFormat == DataFormats.Text)
                 return documentTextRange.Text;
@@ -1364,7 +1579,10 @@ namespace Type_Express
         {
             try
             {
-                TextRange documentTextRange = new(DocTxt.Document.ContentStart, DocTxt.Document.ContentEnd);
+                TextRange documentTextRange = new(
+                    DocTxt.Document.ContentStart,
+                    DocTxt.Document.ContentEnd
+                );
                 string dataFormat = DataFormats.Rtf;
                 string ext = System.IO.Path.GetExtension(filename);
 
@@ -1390,14 +1608,19 @@ namespace Type_Express
 
                 Funcs.StartStoryboard(this, "OverlayOutStoryboard");
                 CreateTempLabel(Funcs.ChooseLang("SavingCompleteStr"));
+                Funcs.LogConversion(PageID, LoggingProperties.Conversion.FileSaved, "PC");
 
                 return true;
             }
             catch (Exception ex)
             {
-                Funcs.ShowMessage(string.Format(Funcs.ChooseLang("SavingErrorDescStr"), $"**{filename}**"),
-                    Funcs.ChooseLang("SavingErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error,
-                    Funcs.GenerateErrorReport(ex));
+                Funcs.ShowMessage(
+                    string.Format(Funcs.ChooseLang("SavingErrorDescStr"), $"**{filename}**"),
+                    Funcs.ChooseLang("SavingErrorStr"),
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    Funcs.GenerateErrorReport(ex, PageID, "SavingErrorStr")
+                );
 
                 return false;
             }
@@ -1434,7 +1657,7 @@ namespace Type_Express
                 FileName = filename,
                 FilePath = path,
                 FilePathFormatted = formatted,
-                Icon = (Viewbox)TryFindResource(icon)
+                Icon = (Viewbox)TryFindResource(icon),
             };
         }
 
@@ -1478,8 +1701,14 @@ namespace Type_Express
 
         private void ClearPinnedBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (Funcs.ShowPromptRes("ConfirmPinnedDeleteStr", "AreYouSureStr", 
-                MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+            if (
+                Funcs.ShowPromptRes(
+                    "ConfirmPinnedDeleteStr",
+                    "AreYouSureStr",
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Exclamation
+                ) == MessageBoxResult.Yes
+            )
             {
                 Settings.Default.Pinned.Clear();
                 Settings.Default.Save();
@@ -1514,16 +1743,20 @@ namespace Type_Express
                 if (!Directory.Exists(path))
                     throw new FileNotFoundException();
 
-                _ = Process.Start(new ProcessStartInfo()
-                {
-                    FileName = path,
-                    UseShellExecute = true
-                });
+                _ = Process.Start(
+                    new ProcessStartInfo() { FileName = path, UseShellExecute = true }
+                );
             }
             catch
             {
-                if (Funcs.ShowPromptRes("DirNotFoundDescStr", "DirNotFoundStr",
-                    MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+                if (
+                    Funcs.ShowPromptRes(
+                        "DirNotFoundDescStr",
+                        "DirNotFoundStr",
+                        MessageBoxButton.YesNoCancel,
+                        MessageBoxImage.Exclamation
+                    ) == MessageBoxResult.Yes
+                )
                 {
                     RemovePinnedFolder(path);
                 }
@@ -1559,12 +1792,22 @@ namespace Type_Express
         {
             if (DropboxFilenameTxt.Text == "")
             {
-                Funcs.ShowMessageRes("NoFilenameEnteredStr", "NoFilenameStr", MessageBoxButton.OK, MessageBoxImage.Error);
+                Funcs.ShowMessageRes(
+                    "NoFilenameEnteredStr",
+                    "NoFilenameStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
                 return;
             }
             if (DropboxFilenameTxt.Text.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) >= 0)
             {
-                Funcs.ShowMessageRes("InvalidFilenameDescStr", "InvalidFilenameStr", MessageBoxButton.OK, MessageBoxImage.Error);
+                Funcs.ShowMessageRes(
+                    "InvalidFilenameDescStr",
+                    "InvalidFilenameStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
                 return;
             }
 
@@ -1575,7 +1818,8 @@ namespace Type_Express
                 DropboxSaveBtn.IsEnabled = false;
 
                 string filename = DropboxFilenameTxt.Text;
-                string filetype = (string)((AppDropdownItem)DropboxFileTypeCombo.SelectedItem).Content;
+                string filetype = (string)
+                    ((AppDropdownItem)DropboxFileTypeCombo.SelectedItem).Content;
                 string dataFormat = DataFormats.Rtf;
 
                 if (!filename.ToLower().EndsWith(filetype))
@@ -1593,10 +1837,15 @@ namespace Type_Express
                 {
                     await dbx.Files.GetMetadataAsync(filepath);
 
-                    if (Funcs.ShowPrompt(string.Format(Funcs.ChooseLang("ExistingFileDescStr"), filename), 
-                        Funcs.ChooseLang("ExistingFileStr"), MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) != MessageBoxResult.Yes)
+                    if (
+                        Funcs.ShowPrompt(
+                            string.Format(Funcs.ChooseLang("ExistingFileDescStr"), filename),
+                            Funcs.ChooseLang("ExistingFileStr"),
+                            MessageBoxButton.YesNoCancel,
+                            MessageBoxImage.Exclamation
+                        ) != MessageBoxResult.Yes
+                    )
                         return;
-                    
                 }
                 catch (ApiException<GetMetadataError> ex)
                 {
@@ -1604,21 +1853,39 @@ namespace Type_Express
                         throw;
                 }
 
-                TextRange documentTextRange = new(DocTxt.Document.ContentStart, DocTxt.Document.ContentEnd);
+                TextRange documentTextRange = new(
+                    DocTxt.Document.ContentStart,
+                    DocTxt.Document.ContentEnd
+                );
                 using (MemoryStream stream = new())
                 {
                     documentTextRange.Save(stream, dataFormat);
                     stream.Position = 0;
-                    _ = await dbx.Files.UploadAsync(filepath, WriteMode.Overwrite.Instance, body: stream);
+                    _ = await dbx.Files.UploadAsync(
+                        filepath,
+                        WriteMode.Overwrite.Instance,
+                        body: stream
+                    );
                 }
 
-                Funcs.ShowMessageRes("FileUploadedStr", "SuccessStr", MessageBoxButton.OK, MessageBoxImage.Information);
+                Funcs.LogConversion(PageID, LoggingProperties.Conversion.FileSaved, "Dropbox");
+                Funcs.ShowMessageRes(
+                    "FileUploadedStr",
+                    "SuccessStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information
+                );
                 Funcs.StartStoryboard(this, "OverlayOutStoryboard");
             }
             catch (Exception ex)
             {
-                Funcs.ShowMessageRes("DropboxSaveErrorStr", "DropboxErrorStr", MessageBoxButton.OK, MessageBoxImage.Error,
-                    Funcs.GenerateErrorReport(ex));
+                Funcs.ShowMessageRes(
+                    "DropboxSaveErrorStr",
+                    "DropboxErrorStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    Funcs.GenerateErrorReport(ex, PageID, "DropboxSaveErrorStr")
+                );
             }
             finally
             {
@@ -1664,11 +1931,15 @@ namespace Type_Express
         {
             RichTextBoxPrintCtrl RichTextBoxPrintCtrl1 = new()
             {
-                Rtf = SaveString(DataFormats.Rtf)
+                Rtf = SaveString(DataFormats.Rtf),
             };
-            
+
             // Print the content of the RichTextBox. Store the last character printed.
-            checkPrint = RichTextBoxPrintCtrl1.Print(checkPrint, RichTextBoxPrintCtrl1.TextLength, e);
+            checkPrint = RichTextBoxPrintCtrl1.Print(
+                checkPrint,
+                RichTextBoxPrintCtrl1.TextLength,
+                e
+            );
 
             // Look for more pages
             if (checkPrint < RichTextBoxPrintCtrl1.TextLength)
@@ -1687,13 +1958,19 @@ namespace Type_Express
         private void PageSetupBtn_Click(object sender, RoutedEventArgs e)
         {
             PrintPopup.IsOpen = false;
-            new PageSetup(PrintDoc, Funcs.ChooseLang("PageSetupStr") + " - Type Express").ShowDialog();
+            new PageSetup(
+                PrintDoc,
+                Funcs.ChooseLang("PageSetupStr") + " - Type Express"
+            ).ShowDialog();
         }
 
         private void PrintPreviewBtn_Click(object sender, RoutedEventArgs e)
         {
             PrintPopup.IsOpen = false;
-            new PrintPreview(PrintDoc, Funcs.ChooseLang("PrintPreviewStr") + " - Type Express").ShowDialog();
+            new PrintPreview(
+                PrintDoc,
+                Funcs.ChooseLang("PrintPreviewStr") + " - Type Express"
+            ).ShowDialog();
         }
 
         #endregion
@@ -1716,17 +1993,26 @@ namespace Type_Express
                     // check if valid email
                     System.Net.Mail.MailAddress mail = new(email);
 
-                    _ = Process.Start(new ProcessStartInfo()
-                    {
-                        FileName = "mailto:" + Uri.EscapeDataString(email) + 
-                                   "?body=" + Uri.EscapeDataString(SaveString(DataFormats.Text)),
-                        UseShellExecute = true
-                    });
+                    _ = Process.Start(
+                        new ProcessStartInfo()
+                        {
+                            FileName =
+                                "mailto:"
+                                + Uri.EscapeDataString(email)
+                                + "?body="
+                                + Uri.EscapeDataString(SaveString(DataFormats.Text)),
+                            UseShellExecute = true,
+                        }
+                    );
                 }
                 catch
                 {
-                    Funcs.ShowMessageRes("InvalidEmailDescStr", "InvalidEmailStr", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    Funcs.ShowMessageRes(
+                        "InvalidEmailDescStr",
+                        "InvalidEmailStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error
+                    );
                 }
             }
         }
@@ -1736,7 +2022,12 @@ namespace Type_Express
             SharePopup.IsOpen = false;
 
             if (IsDocTxtEmpty())
-                Funcs.ShowMessageRes("NoTextDocDescStr", "NoTextDocStr", MessageBoxButton.OK, MessageBoxImage.Error);
+                Funcs.ShowMessageRes(
+                    "NoTextDocDescStr",
+                    "NoTextDocStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
             else
             {
                 HTMLEditor htmlwin = new(SaveString(DataFormats.Text));
@@ -1744,15 +2035,23 @@ namespace Type_Express
                 {
                     try
                     {
-                        await File.WriteAllTextAsync(htmlwin.Filename, htmlwin.HTMLCode, Encoding.UTF8);
+                        await File.WriteAllTextAsync(
+                            htmlwin.Filename,
+                            htmlwin.HTMLCode,
+                            Encoding.UTF8
+                        );
 
                         Funcs.StartStoryboard(this, "OverlayOutStoryboard");
                         CreateTempLabel(Funcs.ChooseLang("HTMLExportedStr"));
                     }
                     catch
                     {
-                        Funcs.ShowMessageRes("ExportFileErrorDescStr", "ExportFileErrorStr", 
-                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        Funcs.ShowMessageRes(
+                            "ExportFileErrorDescStr",
+                            "ExportFileErrorStr",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error
+                        );
                     }
                 }
             }
@@ -1782,21 +2081,28 @@ namespace Type_Express
                 PropertiesPnl.Visibility = Visibility.Visible;
                 FilenameTxt.Text = System.IO.Path.GetFileName(ThisFile);
 
-                string[] paths = ThisFile.Split(@"\").Reverse().ToArray();
+                string[] paths = [.. ThisFile.Split(@"\").Reverse()];
                 List<FileItem> files = [];
 
                 for (int i = 1; i < Math.Min(5, paths.Length); i++)
                 {
-                    List<string> dir = paths.Reverse().ToList();
+                    List<string> dir = [.. paths.Reverse()];
                     dir.RemoveRange(dir.Count - i, i);
 
-                    files.Add(new FileItem()
-                    {
-                        FileName = paths[i],
-                        FilePath = string.Join(@"\", dir),
-                        Indent = new Thickness(10 + (34 * (Math.Min(4, paths.Length) - i)), 0, 10, 0),
-                        IsFolder = true
-                    });
+                    files.Add(
+                        new FileItem()
+                        {
+                            FileName = paths[i],
+                            FilePath = string.Join(@"\", dir),
+                            Indent = new Thickness(
+                                10 + (34 * (Math.Min(4, paths.Length) - i)),
+                                0,
+                                10,
+                                0
+                            ),
+                            IsFolder = true,
+                        }
+                    );
                 }
 
                 files.Reverse();
@@ -1845,17 +2151,23 @@ namespace Type_Express
         {
             try
             {
-                _ = Process.Start(new ProcessStartInfo()
-                {
-                    FileName = "explorer.exe",
-                    Arguments = "/select," + ThisFile,
-                    UseShellExecute = true
-                });
+                _ = Process.Start(
+                    new ProcessStartInfo()
+                    {
+                        FileName = "explorer.exe",
+                        Arguments = "/select," + ThisFile,
+                        UseShellExecute = true,
+                    }
+                );
             }
             catch
             {
-                Funcs.ShowMessageRes("AccessDeniedDescStr", "AccessDeniedStr", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                Funcs.ShowMessageRes(
+                    "AccessDeniedDescStr",
+                    "AccessDeniedStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
             }
         }
 
@@ -1867,11 +2179,19 @@ namespace Type_Express
 
             try
             {
-                files = Directory.GetFiles(dir).Where(file =>
-                {
-                    return (file.ToLower().EndsWith(".txt") || file.ToLower().EndsWith(".rtf")) && file != ThisFile;
-
-                }).ToArray();
+                files =
+                [
+                    .. Directory
+                        .GetFiles(dir)
+                        .Where(file =>
+                        {
+                            return (
+                                    file.ToLower().EndsWith(".txt")
+                                    || file.ToLower().EndsWith(".rtf")
+                                )
+                                && file != ThisFile;
+                        }),
+                ];
             }
             catch
             {
@@ -1885,7 +2205,7 @@ namespace Type_Express
                     return new FileItem()
                     {
                         FilePath = f,
-                        FileName = System.IO.Path.GetFileName(f)
+                        FileName = System.IO.Path.GetFileName(f),
                     };
                 });
 
@@ -1945,11 +2265,13 @@ namespace Type_Express
 
         private void ExpressWebBtn_Click(object sender, RoutedEventArgs e)
         {
-            _ = Process.Start(new ProcessStartInfo()
-            {
-                FileName = "https://express.johnjds.co.uk",
-                UseShellExecute = true
-            });
+            _ = Process.Start(
+                new ProcessStartInfo()
+                {
+                    FileName = "https://express.johnjds.co.uk",
+                    UseShellExecute = true,
+                }
+            );
         }
 
         #endregion
@@ -1960,8 +2282,12 @@ namespace Type_Express
             if (DocTxt.Document.Blocks.Count == 0)
                 return true;
 
-            TextPointer startPointer = DocTxt.Document.ContentStart.GetNextInsertionPosition(LogicalDirection.Forward);
-            TextPointer endPointer = DocTxt.Document.ContentEnd.GetNextInsertionPosition(LogicalDirection.Backward);
+            TextPointer startPointer = DocTxt.Document.ContentStart.GetNextInsertionPosition(
+                LogicalDirection.Forward
+            );
+            TextPointer endPointer = DocTxt.Document.ContentEnd.GetNextInsertionPosition(
+                LogicalDirection.Backward
+            );
             return startPointer.CompareTo(endPointer) == 0;
         }
 
@@ -2031,8 +2357,8 @@ namespace Type_Express
         private void DocTxt_LostFocus(object sender, RoutedEventArgs e)
         {
             foreach (Paragraph paragraph in DocTxt.Document.Blocks.OfType<Paragraph>())
-                foreach (Inline inline in paragraph.Inlines)
-                    RemoveAdorner(inline as InlineUIContainer);
+            foreach (Inline inline in paragraph.Inlines)
+                RemoveAdorner(inline as InlineUIContainer);
         }
 
         private void UpdateTextSelection()
@@ -2043,8 +2369,15 @@ namespace Type_Express
 
                 try
                 {
-                    FontStyleTxt.Text = ((FontFamily)DocTxt.Selection.GetPropertyValue(TextElement.FontFamilyProperty)).Source;
-                    FontSizeTxt.Text = Funcs.PxToPt((double)DocTxt.Selection.GetPropertyValue(TextElement.FontSizeProperty)).ToString();
+                    FontStyleTxt.Text = (
+                        (FontFamily)
+                            DocTxt.Selection.GetPropertyValue(TextElement.FontFamilyProperty)
+                    ).Source;
+                    FontSizeTxt.Text = Funcs
+                        .PxToPt(
+                            (double)DocTxt.Selection.GetPropertyValue(TextElement.FontSizeProperty)
+                        )
+                        .ToString();
                 }
                 catch
                 {
@@ -2052,10 +2385,18 @@ namespace Type_Express
                     FontSizeTxt.Text = "";
                 }
 
-                BoldSelector.Visibility = IsSelectionBold() ? Visibility.Visible : Visibility.Hidden;
-                ItalicSelector.Visibility = IsSelectionItalic() ? Visibility.Visible : Visibility.Hidden;
-                UnderlineSelector.Visibility = IsSelectionUnderline() ? Visibility.Visible : Visibility.Hidden;
-                StrikeoutSelector.Visibility = IsSelectionStrikethrough() ? Visibility.Visible : Visibility.Hidden;
+                BoldSelector.Visibility = IsSelectionBold()
+                    ? Visibility.Visible
+                    : Visibility.Hidden;
+                ItalicSelector.Visibility = IsSelectionItalic()
+                    ? Visibility.Visible
+                    : Visibility.Hidden;
+                UnderlineSelector.Visibility = IsSelectionUnderline()
+                    ? Visibility.Visible
+                    : Visibility.Hidden;
+                StrikeoutSelector.Visibility = IsSelectionStrikethrough()
+                    ? Visibility.Visible
+                    : Visibility.Hidden;
 
                 EnableFontChange = true;
             }
@@ -2074,9 +2415,12 @@ namespace Type_Express
             else
                 DocTxt.Document.Blocks.Add(defaultBlock);
 
-            return DocTxt.Document.Blocks.Where(x => 
-                x.ContentStart.CompareTo(curCaret) == -1 && x.ContentEnd.CompareTo(curCaret) == 1
-            ).FirstOrDefault(force ? defaultBlock : null);
+            return DocTxt
+                .Document.Blocks.Where(x =>
+                    x.ContentStart.CompareTo(curCaret) == -1
+                    && x.ContentEnd.CompareTo(curCaret) == 1
+                )
+                .FirstOrDefault(force ? defaultBlock : null);
         }
 
         private void FindSelectedRangeOrWord(out TextPointer start, out TextPointer end)
@@ -2099,15 +2443,26 @@ namespace Type_Express
         {
             List<TextRange> textToChange = [];
             var previousPointer = start;
-            for (var pointer = start; pointer.CompareTo(end) <= 0; pointer = pointer.GetPositionAtOffset(1, LogicalDirection.Forward))
+            for (
+                var pointer = start;
+                pointer.CompareTo(end) <= 0;
+                pointer = pointer.GetPositionAtOffset(1, LogicalDirection.Forward)
+            )
             {
                 var contextAfter = pointer.GetPointerContext(LogicalDirection.Forward);
                 var contextBefore = pointer.GetPointerContext(LogicalDirection.Backward);
-                if (contextBefore != TextPointerContext.Text && contextAfter == TextPointerContext.Text)
+                if (
+                    contextBefore != TextPointerContext.Text
+                    && contextAfter == TextPointerContext.Text
+                )
                 {
                     previousPointer = pointer;
                 }
-                if (contextBefore == TextPointerContext.Text && contextAfter != TextPointerContext.Text && previousPointer != pointer)
+                if (
+                    contextBefore == TextPointerContext.Text
+                    && contextAfter != TextPointerContext.Text
+                    && previousPointer != pointer
+                )
                 {
                     textToChange.Add(new TextRange(previousPointer, pointer));
                     previousPointer = null;
@@ -2183,7 +2538,7 @@ namespace Type_Express
             {
                 Source = bitmap,
                 Width = bitmap.Width,
-                Height = bitmap.Height
+                Height = bitmap.Height,
             };
 
             ClearSelection();
@@ -2207,7 +2562,7 @@ namespace Type_Express
             {
                 Source = image,
                 Width = image.Width,
-                Height = image.Height
+                Height = image.Height,
             };
 
             ClearSelection();
@@ -2260,12 +2615,16 @@ namespace Type_Express
 
         private void UndoBtn_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            UndoBtn.Icon = (Viewbox)(UndoBtn.IsEnabled ? TryFindResource("UndoIcon") : TryFindResource("NoUndoIcon"));
+            UndoBtn.Icon = (Viewbox)(
+                UndoBtn.IsEnabled ? TryFindResource("UndoIcon") : TryFindResource("NoUndoIcon")
+            );
         }
 
         private void RedoBtn_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            RedoBtn.Icon = (Viewbox)(RedoBtn.IsEnabled ? TryFindResource("RedoIcon") : TryFindResource("NoRedoIcon"));
+            RedoBtn.Icon = (Viewbox)(
+                RedoBtn.IsEnabled ? TryFindResource("RedoIcon") : TryFindResource("NoRedoIcon")
+            );
         }
 
         #endregion
@@ -2303,14 +2662,14 @@ namespace Type_Express
                     {
                         ID = (int)FileFormat.RichText,
                         Name = Funcs.ChooseLang("PasteRichTextStr"),
-                        Icon = (Viewbox)TryFindResource("RtfIcon")
+                        Icon = (Viewbox)TryFindResource("RtfIcon"),
                     },
                     new()
                     {
                         ID = (int)FileFormat.PlainText,
                         Name = Funcs.ChooseLang("PastePlainTextStr"),
-                        Icon = (Viewbox)TryFindResource("TxtIcon")
-                    }
+                        Icon = (Viewbox)TryFindResource("TxtIcon"),
+                    },
                 };
             }
             else if (Clipboard.ContainsText())
@@ -2321,8 +2680,8 @@ namespace Type_Express
                     {
                         ID = (int)FileFormat.PlainText,
                         Name = Funcs.ChooseLang("PastePlainTextStr"),
-                        Icon = (Viewbox)TryFindResource("DocumentFileIcon")
-                    }
+                        Icon = (Viewbox)TryFindResource("DocumentFileIcon"),
+                    },
                 };
             }
             else if (Clipboard.ContainsImage())
@@ -2333,8 +2692,8 @@ namespace Type_Express
                     {
                         ID = (int)FileFormat.Image,
                         Name = Funcs.ChooseLang("PasteImageStr"),
-                        Icon = (Viewbox)TryFindResource("PictureFileIcon")
-                    }
+                        Icon = (Viewbox)TryFindResource("PictureFileIcon"),
+                    },
                 };
             }
             else if (Clipboard.ContainsFileDropList())
@@ -2345,14 +2704,14 @@ namespace Type_Express
                     {
                         ID = (int)FileFormat.File,
                         Name = Funcs.ChooseLang("PasteFilenameStr"),
-                        Icon = (Viewbox)TryFindResource("BlankIcon")
+                        Icon = (Viewbox)TryFindResource("BlankIcon"),
                     },
                     new()
                     {
                         ID = (int)FileFormat.Link,
                         Name = Funcs.ChooseLang("PasteLinkStr"),
-                        Icon = (Viewbox)TryFindResource("LinkIcon")
-                    }
+                        Icon = (Viewbox)TryFindResource("LinkIcon"),
+                    },
                 };
             }
             else
@@ -2413,10 +2772,9 @@ namespace Type_Express
                 FormatPainterOn = true;
                 FormatPainterAlwaysOn = false;
                 FormatPainterSelector.Visibility = Visibility.Visible;
-                FormatStyle = GetSelectionFontStyle(new FontStyleItem()
-                {
-                    HighlightColour = GetHighlight()
-                });
+                FormatStyle = GetSelectionFontStyle(
+                    new FontStyleItem() { HighlightColour = GetHighlight() }
+                );
             }
         }
 
@@ -2434,7 +2792,10 @@ namespace Type_Express
 
         private void RefreshFavouriteFonts()
         {
-            IEnumerable<string> fonts = Settings.Default.FavouriteFonts.Cast<string>().Where(Funcs.IsValidFont).Distinct();
+            IEnumerable<string> fonts = Settings
+                .Default.FavouriteFonts.Cast<string>()
+                .Where(Funcs.IsValidFont)
+                .Distinct();
 
             if (!fonts.Any())
             {
@@ -2475,7 +2836,7 @@ namespace Type_Express
         {
             FontLoadTimer.Stop();
             RefreshFavouriteFonts();
-            AllFontList.ItemsSource = new FontItems();
+            AllFontList.ItemsSource = new FontItems(true);
 
             LoadingFontsLbl.Visibility = Visibility.Collapsed;
             MainFontPnl.Visibility = Visibility.Visible;
@@ -2491,7 +2852,7 @@ namespace Type_Express
 
         private void FontPickerBtn_Click(object sender, RoutedEventArgs e)
         {
-            FontPicker fnt = new();                
+            FontPicker fnt = new();
             if (fnt.ShowDialog() == true)
             {
                 FontStyleTxt.Text = fnt.ChosenFont;
@@ -2517,7 +2878,10 @@ namespace Type_Express
             foreach (string i in AllFontList.Items)
             {
                 if (i.ToUpper()[0].ToString() == letter)
-                    return count * 32 + FavFontList.ActualHeight + AllFontsLbl.ActualHeight + FavouriteFontsLbl.ActualHeight;
+                    return count * 32
+                        + FavFontList.ActualHeight
+                        + AllFontsLbl.ActualHeight
+                        + FavouriteFontsLbl.ActualHeight;
 
                 count += 1;
             }
@@ -2531,7 +2895,10 @@ namespace Type_Express
             try
             {
                 if (EnableFontChange && FontStyleTxt.Text != "")
-                    DocTxt.Selection.ApplyPropertyValue(TextElement.FontFamilyProperty, FontStyleTxt.Text);
+                    DocTxt.Selection.ApplyPropertyValue(
+                        TextElement.FontFamilyProperty,
+                        FontStyleTxt.Text
+                    );
             }
             catch { }
         }
@@ -2546,7 +2913,10 @@ namespace Type_Express
             {
                 try
                 {
-                    FontStyleTxt.Text = ((FontFamily)DocTxt.Selection.GetPropertyValue(TextElement.FontFamilyProperty)).Source;
+                    FontStyleTxt.Text = (
+                        (FontFamily)
+                            DocTxt.Selection.GetPropertyValue(TextElement.FontFamilyProperty)
+                    ).Source;
                 }
                 catch
                 {
@@ -2608,7 +2978,10 @@ namespace Type_Express
             try
             {
                 if (EnableFontChange && FontSizeTxt.Text != "")
-                    DocTxt.Selection.ApplyPropertyValue(TextElement.FontSizeProperty, Funcs.PtToPx(Convert.ToDouble(FontSizeTxt.Text)));
+                    DocTxt.Selection.ApplyPropertyValue(
+                        TextElement.FontSizeProperty,
+                        Funcs.PtToPx(Convert.ToDouble(FontSizeTxt.Text))
+                    );
             }
             catch { }
         }
@@ -2646,8 +3019,10 @@ namespace Type_Express
         {
             try
             {
-                var prop = (TextDecorationCollection)DocTxt.Selection.GetPropertyValue(Inline.TextDecorationsProperty);
-                return (prop != DependencyProperty.UnsetValue) && prop.Any((td) => td.Location == TextDecorationLocation.Underline);
+                var prop = (TextDecorationCollection)
+                    DocTxt.Selection.GetPropertyValue(Inline.TextDecorationsProperty);
+                return (prop != DependencyProperty.UnsetValue)
+                    && prop.Any((td) => td.Location == TextDecorationLocation.Underline);
             }
             catch
             {
@@ -2659,8 +3034,10 @@ namespace Type_Express
         {
             try
             {
-                var prop = (TextDecorationCollection)DocTxt.Selection.GetPropertyValue(Inline.TextDecorationsProperty);
-                return (prop != DependencyProperty.UnsetValue) && prop.Any((td) => td.Location == TextDecorationLocation.Strikethrough);
+                var prop = (TextDecorationCollection)
+                    DocTxt.Selection.GetPropertyValue(Inline.TextDecorationsProperty);
+                return (prop != DependencyProperty.UnsetValue)
+                    && prop.Any((td) => td.Location == TextDecorationLocation.Strikethrough);
             }
             catch
             {
@@ -2699,12 +3076,17 @@ namespace Type_Express
         {
             try
             {
-                var decs = (TextDecorationCollection)DocTxt.Selection.GetPropertyValue(Inline.TextDecorationsProperty);
+                var decs = (TextDecorationCollection)
+                    DocTxt.Selection.GetPropertyValue(Inline.TextDecorationsProperty);
 
                 if (decs.Any((td) => td.Location == TextDecorationLocation.Strikethrough))
                 {
-                    DocTxt.Selection.ApplyPropertyValue(Inline.TextDecorationsProperty,
-                        new TextDecorationCollection(decs.Where((td) => td.Location != TextDecorationLocation.Strikethrough)));
+                    DocTxt.Selection.ApplyPropertyValue(
+                        Inline.TextDecorationsProperty,
+                        new TextDecorationCollection(
+                            decs.Where((td) => td.Location != TextDecorationLocation.Strikethrough)
+                        )
+                    );
                 }
                 else
                 {
@@ -2717,7 +3099,10 @@ namespace Type_Express
             {
                 try
                 {
-                    DocTxt.Selection.ApplyPropertyValue(Inline.TextDecorationsProperty, TextDecorations.Strikethrough);
+                    DocTxt.Selection.ApplyPropertyValue(
+                        Inline.TextDecorationsProperty,
+                        TextDecorations.Strikethrough
+                    );
                 }
                 catch { }
             }
@@ -2832,9 +3217,14 @@ namespace Type_Express
                 DocTxt.Selection.ApplyPropertyValue(TextElement.ForegroundProperty, brush);
                 TextColourBox.Fill = brush;
             }
-            catch 
+            catch
             {
-                Funcs.ShowMessageRes("InvalidColourDescStr", "InvalidColourStr", MessageBoxButton.OK, MessageBoxImage.Error);
+                Funcs.ShowMessageRes(
+                    "InvalidColourDescStr",
+                    "InvalidColourStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
             }
             finally
             {
@@ -2872,7 +3262,7 @@ namespace Type_Express
             HighlighterItems.ItemsSource = clrs.Select(c => new ColourItem()
             {
                 Name = Funcs.ChooseLang(c.Key),
-                Colour = new SolidColorBrush(c.Value)
+                Colour = new SolidColorBrush(c.Value),
             });
         }
 
@@ -2895,7 +3285,8 @@ namespace Type_Express
         {
             try
             {
-                return (SolidColorBrush?)DocTxt.Selection.GetPropertyValue(TextElement.BackgroundProperty);
+                return (SolidColorBrush?)
+                    DocTxt.Selection.GetPropertyValue(TextElement.BackgroundProperty);
             }
             catch
             {
@@ -2940,10 +3331,12 @@ namespace Type_Express
 
         private void MoreBulletsBtn_Click(object sender, RoutedEventArgs e)
         {
-            ListItems.ItemsSource = new TextMarkerStyle[]
+            ListItems.ItemsSource = new MarkerItem[]
             {
-                TextMarkerStyle.Disc, TextMarkerStyle.Circle,
-                TextMarkerStyle.Box, TextMarkerStyle.Square
+                new(TextMarkerStyle.Disc),
+                new(TextMarkerStyle.Circle),
+                new(TextMarkerStyle.Box),
+                new(TextMarkerStyle.Square),
             };
 
             ListPopup.PlacementTarget = MoreBulletsBtn;
@@ -2958,10 +3351,13 @@ namespace Type_Express
 
         private void MoreNumbersBtn_Click(object sender, RoutedEventArgs e)
         {
-            ListItems.ItemsSource = new TextMarkerStyle[]
+            ListItems.ItemsSource = new MarkerItem[]
             {
-                TextMarkerStyle.Decimal, TextMarkerStyle.LowerLatin, TextMarkerStyle.UpperLatin,
-                TextMarkerStyle.LowerRoman, TextMarkerStyle.UpperRoman
+                new(TextMarkerStyle.Decimal),
+                new(TextMarkerStyle.LowerLatin),
+                new(TextMarkerStyle.UpperLatin),
+                new(TextMarkerStyle.LowerRoman),
+                new(TextMarkerStyle.UpperRoman),
             };
 
             ListPopup.PlacementTarget = MoreNumbersBtn;
@@ -2971,7 +3367,7 @@ namespace Type_Express
         private void ListBtns_Click(object sender, RoutedEventArgs e)
         {
             TextMarkerStyle marker = (TextMarkerStyle)((Button)sender).Tag;
- 
+
             if (!SetListStyle(marker))
             {
                 EditingCommands.ToggleBullets.Execute(null, DocTxt);
@@ -2998,10 +3394,16 @@ namespace Type_Express
 
             for (int i = 0; i < ColumnUpDown.Value; i++)
             {
-                t.Columns.Add(new TableColumn() 
-                { 
-                    Width = (GridLength?)gridConverter.ConvertFromString((CellWidthUpDown.Value ?? 2).ToString()) ?? GridLength.Auto 
-                });
+                t.Columns.Add(
+                    new TableColumn()
+                    {
+                        Width =
+                            (GridLength?)
+                                gridConverter.ConvertFromString(
+                                    (CellWidthUpDown.Value ?? 2).ToString()
+                                ) ?? GridLength.Auto,
+                    }
+                );
             }
 
             for (int i = 0; i < RowUpDown.Value; i++)
@@ -3010,11 +3412,13 @@ namespace Type_Express
 
                 for (int j = 0; j < ColumnUpDown.Value; j++)
                 {
-                    currentRow.Cells.Add(new TableCell(new Paragraph(new Run("")))
-                    {
-                        BorderThickness = new Thickness(1),
-                        BorderBrush = Brushes.Black
-                    });
+                    currentRow.Cells.Add(
+                        new TableCell(new Paragraph(new Run("")))
+                        {
+                            BorderThickness = new Thickness(1),
+                            BorderBrush = Brushes.Black,
+                        }
+                    );
                 }
 
                 trg.Rows.Add(currentRow);
@@ -3037,55 +3441,44 @@ namespace Type_Express
 
         private async void IconsBtn_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Type_Express.auth-icon.secret") ?? throw new NullReferenceException();
-                using var sr = new StreamReader(info);
-                IconSelector icn = new(sr.ReadToEnd());
+            IconSelector icn = new();
 
-                if (icn.ShowDialog() == true && icn.ChosenIcon != null)
-                {
-                    switch (icn.ChosenSize)
-                    {
-                        case IconSize.Big:
-                            await InsertOnlineImage(icn.ChosenIcon.LargeURL);
-                            break;
-                        case IconSize.Small:
-                            await InsertOnlineImage(icn.ChosenIcon.SmallURL);
-                            break;
-                        default:
-                            await InsertOnlineImage(icn.ChosenIcon.RegularURL);
-                            break;
-                    }
-                }
-            }
-            catch (Exception ex)
+            if (icn.ShowDialog() == true && icn.ChosenIcon != null)
             {
-                Funcs.ShowMessageRes("APIKeyNotFoundStr", "CriticalErrorStr", MessageBoxButton.OK, MessageBoxImage.Error,
-                    Funcs.GenerateErrorReport(ex, Funcs.ChooseLang("ReportEmailInfoStr")));
+                switch (icn.ChosenSize)
+                {
+                    case IconSize.Big:
+                        await InsertOnlineImage(icn.ChosenIcon.LargeURL);
+                        break;
+                    case IconSize.Small:
+                        await InsertOnlineImage(icn.ChosenIcon.SmallURL);
+                        break;
+                    default:
+                        await InsertOnlineImage(icn.ChosenIcon.RegularURL);
+                        break;
+                }
             }
         }
 
         private async void OnlinePicturesBtn_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Type_Express.auth-photo.secret") ?? throw new NullReferenceException();
-                using var sr = new StreamReader(info);
-                PictureSelector pct = new(sr.ReadToEnd(), ExpressApp.Type);
+            PictureSelector pct = new(ExpressApp.Type);
 
-                if (pct.ShowDialog() == true && pct.ChosenPicture != null)
-                {
-                    await InsertOnlineImage(PictureSelector.ResizeImage(pct.ChosenPicture.RegularURL, pct.ChosenWidth).ToString());
-
-                    if (pct.AddAttribution)
-                        InsertTextNewLine(string.Format(Funcs.ChooseLang("PhotoAttributionStr"), pct.ChosenPicture.AuthorName));
-                }
-            }
-            catch (Exception ex)
+            if (pct.ShowDialog() == true && pct.ChosenPicture != null)
             {
-                Funcs.ShowMessageRes("APIKeyNotFoundStr", "CriticalErrorStr", MessageBoxButton.OK, MessageBoxImage.Error,
-                    Funcs.GenerateErrorReport(ex, Funcs.ChooseLang("ReportEmailInfoStr")));
+                await InsertOnlineImage(
+                    PictureSelector
+                        .ResizeImage(pct.ChosenPicture.RegularURL, pct.ChosenWidth)
+                        .ToString()
+                );
+
+                if (pct.AddAttribution)
+                    InsertTextNewLine(
+                        string.Format(
+                            Funcs.ChooseLang("PhotoAttributionStr"),
+                            pct.ChosenPicture.AuthorName
+                        )
+                    );
             }
         }
 
@@ -3099,8 +3492,12 @@ namespace Type_Express
                 }
                 catch
                 {
-                    Funcs.ShowMessageRes("ImageInsertErrorDescStr", "ImageErrorStr", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    Funcs.ShowMessageRes(
+                        "ImageInsertErrorDescStr",
+                        "ImageErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error
+                    );
                 }
             }
         }
@@ -3119,8 +3516,13 @@ namespace Type_Express
                 }
                 catch (Exception ex)
                 {
-                    Funcs.ShowMessageRes("ScreenshotErrorDescStr", "ScreenshotErrorStr",
-                        MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                    Funcs.ShowMessageRes(
+                        "ScreenshotErrorDescStr",
+                        "ScreenshotErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(ex, PageID, "ScreenshotErrorDescStr")
+                    );
                 }
             }
         }
@@ -3139,15 +3541,20 @@ namespace Type_Express
                     {
                         Width = 636,
                         Height = 477,
-                        Strokes = drw.Strokes
+                        Strokes = drw.Strokes,
                     };
 
                     InsertImage(Funcs.RenderControlAsImage(inkCanvas));
                 }
                 catch (Exception ex)
                 {
-                    Funcs.ShowMessageRes("DrawingErrorDescStr", "DrawingErrorStr",
-                        MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                    Funcs.ShowMessageRes(
+                        "DrawingErrorDescStr",
+                        "DrawingErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(ex, PageID, "DrawingErrorDescStr")
+                    );
                 }
             }
         }
@@ -3182,7 +3589,10 @@ namespace Type_Express
 
         private void OpenShapeEditor(ShapeType shape)
         {
-            ShapeEditor editor = new(shape, GetSchemeColours(CurrentColourScheme) ?? Funcs.ColourSchemes[0]);
+            ShapeEditor editor = new(
+                shape,
+                GetSchemeColours(CurrentColourScheme) ?? Funcs.ColourSchemes[0]
+            );
             if (editor.ShowDialog() == true && editor.ChosenShape != null)
             {
                 try
@@ -3194,8 +3604,13 @@ namespace Type_Express
                 }
                 catch (Exception ex)
                 {
-                    Funcs.ShowMessageRes("ShapeErrorDescStr", "ShapeErrorStr",
-                        MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                    Funcs.ShowMessageRes(
+                        "ShapeErrorDescStr",
+                        "ShapeErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(ex, PageID, "ShapeErrorDescStr")
+                    );
                 }
             }
         }
@@ -3240,8 +3655,8 @@ namespace Type_Express
                         {
                             PenLineJoin.Bevel => JoinType.Bevel,
                             PenLineJoin.Round => JoinType.Round,
-                            _ => JoinType.Normal
-                        }
+                            _ => JoinType.Normal,
+                        },
                     };
                     break;
 
@@ -3254,7 +3669,7 @@ namespace Type_Express
                         FillColour = ((SolidColorBrush)ellp.Fill).Color,
                         OutlineColour = ((SolidColorBrush)ellp.Stroke).Color,
                         Thickness = (int)ellp.StrokeThickness,
-                        Dashes = ShapeEditor.GetDashType(ellp.StrokeDashArray)
+                        Dashes = ShapeEditor.GetDashType(ellp.StrokeDashArray),
                     };
                     break;
 
@@ -3264,7 +3679,7 @@ namespace Type_Express
                         Type = ShapeType.Line,
                         OutlineColour = ((SolidColorBrush)ln.Stroke).Color,
                         Thickness = (int)ln.StrokeThickness,
-                        Dashes = ShapeEditor.GetDashType(ln.StrokeDashArray)
+                        Dashes = ShapeEditor.GetDashType(ln.StrokeDashArray),
                     };
 
                     if (ln.X2 > 1)
@@ -3272,7 +3687,7 @@ namespace Type_Express
                         item.Width = (int)Math.Round(ln.X2 / 25D);
                         item.Height = 0;
                     }
-                    else 
+                    else
                     {
                         item.Width = 0;
                         item.Height = (int)Math.Round(ln.Y2 / 25D);
@@ -3293,9 +3708,9 @@ namespace Type_Express
                         {
                             PenLineJoin.Bevel => JoinType.Bevel,
                             PenLineJoin.Round => JoinType.Round,
-                            _ => JoinType.Normal
+                            _ => JoinType.Normal,
                         },
-                        Points = tri.Points
+                        Points = tri.Points,
                     };
                     break;
 
@@ -3317,18 +3732,27 @@ namespace Type_Express
         private void PrevShapeBtn_Click(object sender, RoutedEventArgs e)
         {
             if (Settings.Default.SaveShapes == false)
-                Funcs.ShowMessageRes("PrevAddedShapesOffStr", "PrevAddedShapesStr",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-
+                Funcs.ShowMessageRes(
+                    "PrevAddedShapesOffStr",
+                    "PrevAddedShapesStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information
+                );
             else if (GetPrevAddedShapes().Length == 0)
-                Funcs.ShowMessageRes("NoPrevAddedShapesDescStr", "NoPrevAddedShapesStr",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-
+                Funcs.ShowMessageRes(
+                    "NoPrevAddedShapesDescStr",
+                    "NoPrevAddedShapesStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information
+                );
             else
             {
                 try
                 {
-                    PreviouslyAdded prev = new(GetPrevAddedShapes(), GetSchemeColours(CurrentColourScheme) ?? Funcs.ColourSchemes[0]);
+                    PreviouslyAdded prev = new(
+                        GetPrevAddedShapes(),
+                        GetSchemeColours(CurrentColourScheme) ?? Funcs.ColourSchemes[0]
+                    );
                     if (prev.ShowDialog() == true && prev.ChosenShape != null)
                     {
                         InsertImage(ShapeEditor.RenderShape(prev.ChosenShape));
@@ -3337,8 +3761,13 @@ namespace Type_Express
                 }
                 catch (Exception ex)
                 {
-                    Funcs.ShowMessageRes("ShapeErrorDescStr", "ShapeErrorStr",
-                        MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                    Funcs.ShowMessageRes(
+                        "ShapeErrorDescStr",
+                        "ShapeErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(ex, PageID, "ShapeErrorDescStr")
+                    );
                 }
             }
         }
@@ -3365,8 +3794,13 @@ namespace Type_Express
                 }
                 catch (Exception ex)
                 {
-                    Funcs.ShowMessageRes("ChartErrorDescStr", "ChartErrorStr",
-                        MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                    Funcs.ShowMessageRes(
+                        "ChartErrorDescStr",
+                        "ChartErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(ex, PageID, "ChartErrorDescStr")
+                    );
                 }
             }
         }
@@ -3408,13 +3842,19 @@ namespace Type_Express
         private void PrevChartBtn_Click(object sender, RoutedEventArgs e)
         {
             if (Settings.Default.SaveCharts == false)
-                Funcs.ShowMessageRes("PrevAddedChartsOffStr", "PrevAddedChartsStr",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-
+                Funcs.ShowMessageRes(
+                    "PrevAddedChartsOffStr",
+                    "PrevAddedChartsStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information
+                );
             else if (GetPrevAddedCharts().Length == 0)
-                Funcs.ShowMessageRes("NoPrevAddedChartsDescStr", "NoPrevAddedChartsStr",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-
+                Funcs.ShowMessageRes(
+                    "NoPrevAddedChartsDescStr",
+                    "NoPrevAddedChartsStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information
+                );
             else
             {
                 try
@@ -3428,8 +3868,13 @@ namespace Type_Express
                 }
                 catch (Exception ex)
                 {
-                    Funcs.ShowMessageRes("ChartErrorDescStr", "ChartErrorStr",
-                        MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                    Funcs.ShowMessageRes(
+                        "ChartErrorDescStr",
+                        "ChartErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(ex, PageID, "ChartErrorDescStr")
+                    );
                 }
             }
         }
@@ -3448,8 +3893,21 @@ namespace Type_Express
         private CultureInfo ChosenDateTimeCulture = new("en-GB");
         private readonly string[] DateTimeFormats =
         [
-            "dd/MM/yyyy", "dddd dd MMMM yyyy", "dd MMMM yyyy", "dd/MM/yy", "yyyy-MM-dd", "dd-MMM-yy", "dd.MM.yyyy",
-            "MMMM yyyy", "MMM-yy", "dd/MM/yyyy HH:mm", "dd/MM/yyyy HH:mm:ss", "h:mm tt", "h:mm:ss tt", "HH:mm", "HH:mm:ss"
+            "dd/MM/yyyy",
+            "dddd dd MMMM yyyy",
+            "dd MMMM yyyy",
+            "dd/MM/yy",
+            "yyyy-MM-dd",
+            "dd-MMM-yy",
+            "dd.MM.yyyy",
+            "MMMM yyyy",
+            "MMM-yy",
+            "dd/MM/yyyy HH:mm",
+            "dd/MM/yyyy HH:mm:ss",
+            "h:mm tt",
+            "h:mm:ss tt",
+            "HH:mm",
+            "HH:mm:ss",
         ];
 
         private void DateTimeBtn_Click(object sender, RoutedEventArgs e)
@@ -3489,7 +3947,10 @@ namespace Type_Express
         {
             DateTimeStack.ItemsSource = DateTimeFormats.Select(x =>
             {
-                return new KeyValuePair<string, string>(x, DateTime.Now.ToString(x, ChosenDateTimeCulture));
+                return new KeyValuePair<string, string>(
+                    x,
+                    DateTime.Now.ToString(x, ChosenDateTimeCulture)
+                );
             });
         }
 
@@ -3513,7 +3974,11 @@ namespace Type_Express
                     {
                         string text = File.ReadAllText(filename);
 
-                        if (System.IO.Path.GetExtension(filename).EndsWith(".rtf", StringComparison.InvariantCultureIgnoreCase))
+                        if (
+                            System
+                                .IO.Path.GetExtension(filename)
+                                .EndsWith(".rtf", StringComparison.InvariantCultureIgnoreCase)
+                        )
                             InsertRTF(text);
                         else
                             InsertText(text);
@@ -3521,8 +3986,18 @@ namespace Type_Express
                 }
                 catch (Exception ex)
                 {
-                    Funcs.ShowMessageRes("ImportFileErrorDescStr", "ImportFileErrorStr", MessageBoxButton.OK, 
-                        MessageBoxImage.Error, Funcs.GenerateErrorReport(ex, Funcs.ChooseLang("ReportEmailAttachStr")));
+                    Funcs.ShowMessageRes(
+                        "ImportFileErrorDescStr",
+                        "ImportFileErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(
+                            ex,
+                            PageID,
+                            "ImportFileErrorDescStr",
+                            "ReportEmailAttachStr"
+                        )
+                    );
                 }
             }
 
@@ -3542,20 +4017,26 @@ namespace Type_Express
 
         private void LoadTextProperties()
         {
-            TextPropStack.ItemsSource = Enum.GetValues<TextProp>().Select(x =>
-            {
-                return new KeyValuePair<int, string>((int)x, Funcs.ChooseLang(x switch
+            TextPropStack.ItemsSource = Enum.GetValues<TextProp>()
+                .Select(x =>
                 {
-                    TextProp.NumWords => "NumWordsStr",
-                    TextProp.NumChars => "NumCharsStr",
-                    TextProp.NumLines => "NumLinesStr",
-                    TextProp.Filename => "FilenameStr",
-                    TextProp.Filepath => "FilepathStr",
-                    TextProp.AppName => "AppNameStr",
-                    TextProp.Username => "UsernameStr",
-                    _ => ""
-                }));
-            });
+                    return new KeyValuePair<int, string>(
+                        (int)x,
+                        Funcs.ChooseLang(
+                            x switch
+                            {
+                                TextProp.NumWords => "NumWordsStr",
+                                TextProp.NumChars => "NumCharsStr",
+                                TextProp.NumLines => "NumLinesStr",
+                                TextProp.Filename => "FilenameStr",
+                                TextProp.Filepath => "FilepathStr",
+                                TextProp.AppName => "AppNameStr",
+                                TextProp.Username => "UsernameStr",
+                                _ => "",
+                            }
+                        )
+                    );
+                });
         }
 
         private void TextPropBtns_Click(object sender, RoutedEventArgs e)
@@ -3564,21 +4045,28 @@ namespace Type_Express
 
             if ((id == TextProp.Filename || id == TextProp.Filepath) && ThisFile == "")
             {
-                Funcs.ShowMessageRes("NoFilenameDescStr", "NoFilenameStr", MessageBoxButton.OK, MessageBoxImage.Error);
+                Funcs.ShowMessageRes(
+                    "NoFilenameDescStr",
+                    "NoFilenameStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
                 return;
             }
 
-            InsertText(id switch
-            {
-                TextProp.NumWords => FilterWords().Count.ToString(),
-                TextProp.NumChars => GetChars(false).ToString(),
-                TextProp.NumLines => GetLines().Count.ToString(),
-                TextProp.Filename => System.IO.Path.GetFileName(ThisFile),
-                TextProp.Filepath => ThisFile,
-                TextProp.AppName => "Type Express",
-                TextProp.Username => Environment.UserName,
-                _ => ""
-            });
+            InsertText(
+                id switch
+                {
+                    TextProp.NumWords => FilterWords().Count.ToString(),
+                    TextProp.NumChars => GetChars(false).ToString(),
+                    TextProp.NumLines => GetLines().Count.ToString(),
+                    TextProp.Filename => System.IO.Path.GetFileName(ThisFile),
+                    TextProp.Filepath => ThisFile,
+                    TextProp.AppName => "Type Express",
+                    TextProp.Username => Environment.UserName,
+                    _ => "",
+                }
+            );
         }
 
         #endregion
@@ -3595,40 +4083,47 @@ namespace Type_Express
 
         private void LoadSymbolCategories()
         {
-            SymbolCatList.ItemsSource = Enum.GetValues<SymbolCategory>().Select(x =>
-            {
-                return new IconButtonItem()
+            SymbolCatList.ItemsSource = Enum.GetValues<SymbolCategory>()
+                .Select(x =>
                 {
-                    ID = (int)x,
-                    Name = Funcs.ChooseLang(x switch
+                    return new IconButtonItem()
                     {
-                        SymbolCategory.Lettering => "LetteringStr",
-                        SymbolCategory.Arrows => "ArrowStr",
-                        SymbolCategory.Standard => "StandardStr",
-                        SymbolCategory.Greek => "GreekStr",
-                        SymbolCategory.Punctuation => "PunctuationStr",
-                        SymbolCategory.Maths => "MathsStr",
-                        SymbolCategory.Emoji => "EmojiStr",
-                        _ => ""
-                    }),
-                    Icon = (Viewbox)TryFindResource(x switch
-                    {
-                        SymbolCategory.Lettering => "AlphabeticalIcon",
-                        SymbolCategory.Arrows => "ArrowIcon",
-                        SymbolCategory.Standard => "CopyrightIcon",
-                        SymbolCategory.Greek => "AlphaIcon",
-                        SymbolCategory.Punctuation => "HelpIcon",
-                        SymbolCategory.Maths => "ApproximateIcon",
-                        SymbolCategory.Emoji => "EmojiIcon",
-                        _ => ""
-                    })
-                };
-            });
+                        ID = (int)x,
+                        Name = Funcs.ChooseLang(
+                            x switch
+                            {
+                                SymbolCategory.Lettering => "LetteringStr",
+                                SymbolCategory.Arrows => "ArrowStr",
+                                SymbolCategory.Standard => "StandardStr",
+                                SymbolCategory.Greek => "GreekStr",
+                                SymbolCategory.Punctuation => "PunctuationStr",
+                                SymbolCategory.Maths => "MathsStr",
+                                SymbolCategory.Emoji => "EmojiStr",
+                                _ => "",
+                            }
+                        ),
+                        Icon = (Viewbox)TryFindResource(
+                            x switch
+                            {
+                                SymbolCategory.Lettering => "AlphabeticalIcon",
+                                SymbolCategory.Arrows => "ArrowIcon",
+                                SymbolCategory.Standard => "CopyrightIcon",
+                                SymbolCategory.Greek => "AlphaIcon",
+                                SymbolCategory.Punctuation => "HelpIcon",
+                                SymbolCategory.Maths => "ApproximateIcon",
+                                SymbolCategory.Emoji => "EmojiIcon",
+                                _ => "",
+                            }
+                        ),
+                    };
+                });
         }
 
         private static AvailableSymbols? GetAvailableSymbols()
         {
-            var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Type_Express.symbols.json");
+            var info = Assembly
+                .GetExecutingAssembly()
+                .GetManifestResourceStream("Type_Express.symbols.json");
             if (info == null)
                 return new();
 
@@ -3644,13 +4139,18 @@ namespace Type_Express
             Dictionary<string, string> result = [];
             var all = new Dictionary<string, Dictionary<string, string>>[]
             {
-                AvailableSymbols.Lettering, AvailableSymbols.Arrows, AvailableSymbols.Standard, AvailableSymbols.Greek,
-                AvailableSymbols.Punctuation, AvailableSymbols.Maths, AvailableSymbols.Emoji
+                AvailableSymbols.Lettering,
+                AvailableSymbols.Arrows,
+                AvailableSymbols.Standard,
+                AvailableSymbols.Greek,
+                AvailableSymbols.Punctuation,
+                AvailableSymbols.Maths,
+                AvailableSymbols.Emoji,
             };
 
             foreach (var item in all)
-                foreach (var pair in item[Funcs.GetCurrentLang(true)])
-                    result.Add(pair.Key, pair.Value);
+            foreach (var pair in item[Funcs.GetCurrentLang(true)])
+                result.Add(pair.Key, pair.Value);
 
             return result;
         }
@@ -3685,7 +4185,7 @@ namespace Type_Express
                 SymbolCategory.Punctuation => AvailableSymbols.Punctuation,
                 SymbolCategory.Maths => AvailableSymbols.Maths,
                 SymbolCategory.Emoji => AvailableSymbols.Emoji,
-                _ => []
+                _ => [],
             };
 
             SymbolList.ItemsSource = symbols[Funcs.GetCurrentLang(true)];
@@ -3697,8 +4197,9 @@ namespace Type_Express
             AvailableSymbols ??= GetAvailableSymbols() ?? new();
             AllSymbols ??= GetAllSymbols();
 
-            SymbolList.ItemsSource = AllSymbols.Where(x => 
-                x.Value.Contains(SymbolSearchTxt.Text, StringComparison.InvariantCultureIgnoreCase));
+            SymbolList.ItemsSource = AllSymbols.Where(x =>
+                x.Value.Contains(SymbolSearchTxt.Text, StringComparison.InvariantCultureIgnoreCase)
+            );
 
             ShowSymbolDisplay();
         }
@@ -3743,32 +4244,38 @@ namespace Type_Express
 
         private void LoadEquations()
         {
-            EquationList.ItemsSource = Enum.GetValues<Equation>().Select(x =>
-            {
-                return new KeyValuePair<string, string>(x switch
+            EquationList.ItemsSource = Enum.GetValues<Equation>()
+                .Select(x =>
                 {
-                    Equation.Pythagorean => "a² + b² = c²",
-                    Equation.CircleArea => "A = πr²",
-                    Equation.Newton2ndLaw => "F = ma",
-                    Equation.SphereArea => "S = 4πr²",
-                    Equation.Distributive => "a(b + c) = ab + ac",
-                    Equation.Diff2Squares => "(x - y)(x + y) = x² - y²",
-                    Equation.TriangleArea => "A = ½bh",
-                    Equation.SphereVolume => "V = (4/3)πr³",
-                    _ => ""
-                }, Funcs.ChooseLang(x switch
-                {
-                    Equation.Pythagorean => "Eq1Str",
-                    Equation.CircleArea => "Eq2Str",
-                    Equation.Newton2ndLaw => "Eq3Str",
-                    Equation.SphereArea => "Eq4Str",
-                    Equation.Distributive => "Eq5Str",
-                    Equation.Diff2Squares => "Eq6Str",
-                    Equation.TriangleArea => "Eq7Str",
-                    Equation.SphereVolume => "Eq8Str",
-                    _ => ""
-                }));
-            });
+                    return new KeyValuePair<string, string>(
+                        x switch
+                        {
+                            Equation.Pythagorean => "a² + b² = c²",
+                            Equation.CircleArea => "A = πr²",
+                            Equation.Newton2ndLaw => "F = ma",
+                            Equation.SphereArea => "S = 4πr²",
+                            Equation.Distributive => "a(b + c) = ab + ac",
+                            Equation.Diff2Squares => "(x - y)(x + y) = x² - y²",
+                            Equation.TriangleArea => "A = ½bh",
+                            Equation.SphereVolume => "V = (4/3)πr³",
+                            _ => "",
+                        },
+                        Funcs.ChooseLang(
+                            x switch
+                            {
+                                Equation.Pythagorean => "Eq1Str",
+                                Equation.CircleArea => "Eq2Str",
+                                Equation.Newton2ndLaw => "Eq3Str",
+                                Equation.SphereArea => "Eq4Str",
+                                Equation.Distributive => "Eq5Str",
+                                Equation.Diff2Squares => "Eq6Str",
+                                Equation.TriangleArea => "Eq7Str",
+                                Equation.SphereVolume => "Eq8Str",
+                                _ => "",
+                            }
+                        )
+                    );
+                });
         }
 
         private void EquationBtns_Click(object sender, RoutedEventArgs e)
@@ -3807,7 +4314,12 @@ namespace Type_Express
             }
             catch
             {
-                Funcs.ShowMessageRes("LinkErrorDescStr", "LinkErrorStr", MessageBoxButton.OK, MessageBoxImage.Error);
+                Funcs.ShowMessageRes(
+                    "LinkErrorDescStr",
+                    "LinkErrorStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
             }
         }
 
@@ -3815,11 +4327,13 @@ namespace Type_Express
         {
             try
             {
-                _ = Process.Start(new ProcessStartInfo()
-                {
-                    FileName = ((Hyperlink)sender).NavigateUri.ToString(),
-                    UseShellExecute = true
-                });
+                _ = Process.Start(
+                    new ProcessStartInfo()
+                    {
+                        FileName = ((Hyperlink)sender).NavigateUri.ToString(),
+                        UseShellExecute = true,
+                    }
+                );
 
                 DocTxt.IsReadOnly = false;
                 DocTxt.IsDocumentEnabled = false;
@@ -3838,16 +4352,35 @@ namespace Type_Express
 
         private static string[] GetDefaultFontStyles()
         {
-            return new FontStyleItem[]
-            {
-                new() { FontName = "Calibri", FontSize = 20, IsBold = true },
-                new() { FontName = "Calibri", FontSize = 18 },
-                new() { FontName = "Calibri", FontSize = 16, IsBold = true, FontColourString = "#FF00007C" },
-                new() { FontName = "Calibri", FontSize = 14 },
-                new() { FontName = "Calibri", FontSize = 12 },
-                new() { FontName = "Calibri", FontSize = 14, IsItalic = true, FontColourString = "#FF00007C" }
-
-            }.Select(x => JsonConvert.SerializeObject(x, Formatting.None)).ToArray();
+            return
+            [
+                .. new FontStyleItem[]
+                {
+                    new()
+                    {
+                        FontName = "Calibri",
+                        FontSize = 20,
+                        IsBold = true,
+                    },
+                    new() { FontName = "Calibri", FontSize = 18 },
+                    new()
+                    {
+                        FontName = "Calibri",
+                        FontSize = 16,
+                        IsBold = true,
+                        FontColourString = "#FF00007C",
+                    },
+                    new() { FontName = "Calibri", FontSize = 14 },
+                    new() { FontName = "Calibri", FontSize = 12 },
+                    new()
+                    {
+                        FontName = "Calibri",
+                        FontSize = 14,
+                        IsItalic = true,
+                        FontColourString = "#FF00007C",
+                    },
+                }.Select(x => JsonConvert.SerializeObject(x, Formatting.None)),
+            ];
         }
 
         public void LoadFontStyles()
@@ -3859,34 +4392,41 @@ namespace Type_Express
                 Settings.Default.Save();
             }
 
-            FontStylesStack.ItemsSource = Enum.GetValues<UserFontStyle>().Select(x =>
-            {
-                FontStyleItem item = Funcs.Deserialize<FontStyleItem>(Settings.Default.SavedFonts[(int)x] ?? "") ?? new();
-
-                item.ID = (int)x;
-                item.Name = Funcs.ChooseLang(x switch
+            FontStylesStack.ItemsSource = Enum.GetValues<UserFontStyle>()
+                .Select(x =>
                 {
-                    UserFontStyle.Heading1 => "H1Str",
-                    UserFontStyle.Heading2 => "H2Str",
-                    UserFontStyle.Heading3 => "H3Str",
-                    UserFontStyle.Body1 => "B1Str",
-                    UserFontStyle.Body2 => "B2Str",
-                    UserFontStyle.Quote => "B3Str",
-                    _ => ""
-                });
-                item.ApplyTooltip = Funcs.ChooseLang(x switch
-                {
-                    UserFontStyle.Heading1 => "H1ApplyStr",
-                    UserFontStyle.Heading2 => "H2ApplyStr",
-                    UserFontStyle.Heading3 => "H3ApplyStr",
-                    UserFontStyle.Body1 => "B1ApplyStr",
-                    UserFontStyle.Body2 => "B2ApplyStr",
-                    UserFontStyle.Quote => "B3ApplyStr",
-                    _ => ""
-                });
+                    FontStyleItem item =
+                        Funcs.Deserialize<FontStyleItem>(Settings.Default.SavedFonts[(int)x] ?? "")
+                        ?? new();
 
-                return item;
-            });
+                    item.ID = (int)x;
+                    item.Name = Funcs.ChooseLang(
+                        x switch
+                        {
+                            UserFontStyle.Heading1 => "H1Str",
+                            UserFontStyle.Heading2 => "H2Str",
+                            UserFontStyle.Heading3 => "H3Str",
+                            UserFontStyle.Body1 => "B1Str",
+                            UserFontStyle.Body2 => "B2Str",
+                            UserFontStyle.Quote => "B3Str",
+                            _ => "",
+                        }
+                    );
+                    item.ApplyTooltip = Funcs.ChooseLang(
+                        x switch
+                        {
+                            UserFontStyle.Heading1 => "H1ApplyStr",
+                            UserFontStyle.Heading2 => "H2ApplyStr",
+                            UserFontStyle.Heading3 => "H3ApplyStr",
+                            UserFontStyle.Body1 => "B1ApplyStr",
+                            UserFontStyle.Body2 => "B2ApplyStr",
+                            UserFontStyle.Quote => "B3ApplyStr",
+                            _ => "",
+                        }
+                    );
+
+                    return item;
+                });
         }
 
         private FontStyleItem GetSelectionFontStyle(FontStyleItem item)
@@ -3895,7 +4435,9 @@ namespace Type_Express
 
             try
             {
-                item.FontName = ((FontFamily)tr.GetPropertyValue(TextElement.FontFamilyProperty)).Source;
+                item.FontName = (
+                    (FontFamily)tr.GetPropertyValue(TextElement.FontFamilyProperty)
+                ).Source;
             }
             catch
             {
@@ -3904,7 +4446,9 @@ namespace Type_Express
 
             try
             {
-                item.FontSize = Funcs.PxToPt((double)tr.GetPropertyValue(TextElement.FontSizeProperty));
+                item.FontSize = Funcs.PxToPt(
+                    (double)tr.GetPropertyValue(TextElement.FontSizeProperty)
+                );
             }
             catch
             {
@@ -3918,7 +4462,8 @@ namespace Type_Express
 
             try
             {
-                item.FontColour = (SolidColorBrush)tr.GetPropertyValue(TextElement.ForegroundProperty);
+                item.FontColour = (SolidColorBrush)
+                    tr.GetPropertyValue(TextElement.ForegroundProperty);
             }
             catch
             {
@@ -3956,7 +4501,10 @@ namespace Type_Express
             try
             {
                 if (item.HighlightColour != null)
-                    DocTxt.Selection.ApplyPropertyValue(TextElement.BackgroundProperty, item.HighlightColour);
+                    DocTxt.Selection.ApplyPropertyValue(
+                        TextElement.BackgroundProperty,
+                        item.HighlightColour
+                    );
             }
             catch { }
 
@@ -3967,7 +4515,8 @@ namespace Type_Express
         private void StyleBtns_Click(object sender, RoutedEventArgs e)
         {
             int id = (int)((Button)sender).Tag;
-            FontStyleItem item = Funcs.Deserialize<FontStyleItem>(Settings.Default.SavedFonts[id] ?? "") ?? new();
+            FontStyleItem item =
+                Funcs.Deserialize<FontStyleItem>(Settings.Default.SavedFonts[id] ?? "") ?? new();
 
             SetSelectionFontStyle(item);
         }
@@ -3975,7 +4524,8 @@ namespace Type_Express
         private void StyleApplyBtns_Click(object sender, RoutedEventArgs e)
         {
             int id = (int)((Button)sender).Tag;
-            FontStyleItem item = Funcs.Deserialize<FontStyleItem>(Settings.Default.SavedFonts[id] ?? "") ?? new();
+            FontStyleItem item =
+                Funcs.Deserialize<FontStyleItem>(Settings.Default.SavedFonts[id] ?? "") ?? new();
 
             item = GetSelectionFontStyle(item);
             Settings.Default.SavedFonts[id] = JsonConvert.SerializeObject(item, Formatting.None);
@@ -4018,16 +4568,17 @@ namespace Type_Express
 
         private void LoadColourSchemes()
         {
-            ColourSchemeStack.ItemsSource = Enum.GetValues<ColourScheme>().Select(x =>
-            {
-                return new ColourSchemeItem()
+            ColourSchemeStack.ItemsSource = Enum.GetValues<ColourScheme>()
+                .Select(x =>
                 {
-                    ID = (int)x,
-                    Name = Funcs.GetTypeColourSchemeName(x),
-                    Selected = CurrentColourScheme == x,
-                    Colours = GetSchemeColours(x)
-                };
-            });
+                    return new ColourSchemeItem()
+                    {
+                        ID = (int)x,
+                        Name = Funcs.GetTypeColourSchemeName(x),
+                        Selected = CurrentColourScheme == x,
+                        Colours = GetSchemeColours(x),
+                    };
+                });
         }
 
         public static Color[]? GetCustomColours()
@@ -4037,7 +4588,10 @@ namespace Type_Express
 
             try
             {
-                return Settings.Default.CustomColourScheme.Cast<string>().Select(Funcs.HexColor).ToArray();
+                return
+                [
+                    .. Settings.Default.CustomColourScheme.Cast<string>().Select(Funcs.HexColor),
+                ];
             }
             catch
             {
@@ -4061,7 +4615,7 @@ namespace Type_Express
             TextColourItems.ItemsSource = clrs.Select(c => new ColourItem()
             {
                 Name = c.ToString(),
-                Colour = new SolidColorBrush(c)
+                Colour = new SolidColorBrush(c),
             });
         }
 
@@ -4078,7 +4632,7 @@ namespace Type_Express
             if (colours.Length == 8)
             {
                 Settings.Default.CustomColourScheme.Clear();
-                Settings.Default.CustomColourScheme.AddRange(colours.Select(Funcs.ColorHex).ToArray());
+                Settings.Default.CustomColourScheme.AddRange([.. colours.Select(Funcs.ColorHex)]);
 
                 Settings.Default.Save();
             }
@@ -4149,10 +4703,16 @@ namespace Type_Express
             }
         }
 
-        private static void ChangeCaseToAllRanges(List<TextRange> textToChange, Func<string, string> caseFunc)
+        private static void ChangeCaseToAllRanges(
+            List<TextRange> textToChange,
+            Func<string, string> caseFunc
+        )
         {
-            var allText = string.Join(" ", textToChange.Select(x => x.Text).Where(x => !string.IsNullOrWhiteSpace(x)));
-            
+            var allText = string.Join(
+                " ",
+                textToChange.Select(x => x.Text).Where(x => !string.IsNullOrWhiteSpace(x))
+            );
+
             foreach (var range in textToChange)
                 if (!range.IsEmpty && !string.IsNullOrWhiteSpace(range.Text))
                     range.Text = caseFunc(range.Text);
@@ -4210,31 +4770,46 @@ namespace Type_Express
             ClearPopup.IsOpen = false;
             TextRange tr = new(DocTxt.Document.ContentStart, DocTxt.Document.ContentEnd);
 
-
             if (Funcs.IsValidFont(Settings.Default.DefaultFont.Name))
-                tr.ApplyPropertyValue(TextElement.FontFamilyProperty, Settings.Default.DefaultFont.Name);
+                tr.ApplyPropertyValue(
+                    TextElement.FontFamilyProperty,
+                    Settings.Default.DefaultFont.Name
+                );
 
             try
             {
-                tr.ApplyPropertyValue(TextElement.FontSizeProperty, Funcs.PtToPx(Settings.Default.DefaultFont.Size));
+                tr.ApplyPropertyValue(
+                    TextElement.FontSizeProperty,
+                    Funcs.PtToPx(Settings.Default.DefaultFont.Size)
+                );
             }
             catch { }
 
             try
             {
-                tr.ApplyPropertyValue(TextElement.FontWeightProperty, 
-                    Settings.Default.DefaultFont.Bold ? FontWeights.Bold : FontWeights.Normal);
-                tr.ApplyPropertyValue(TextElement.FontStyleProperty, 
-                    Settings.Default.DefaultFont.Italic ? FontStyles.Italic : FontStyles.Normal);
-                tr.ApplyPropertyValue(Inline.TextDecorationsProperty, 
-                    Settings.Default.DefaultFont.Underline ? TextDecorations.Underline : []);
+                tr.ApplyPropertyValue(
+                    TextElement.FontWeightProperty,
+                    Settings.Default.DefaultFont.Bold ? FontWeights.Bold : FontWeights.Normal
+                );
+                tr.ApplyPropertyValue(
+                    TextElement.FontStyleProperty,
+                    Settings.Default.DefaultFont.Italic ? FontStyles.Italic : FontStyles.Normal
+                );
+                tr.ApplyPropertyValue(
+                    Inline.TextDecorationsProperty,
+                    Settings.Default.DefaultFont.Underline ? TextDecorations.Underline : []
+                );
             }
             catch { }
 
             try
             {
-                tr.ApplyPropertyValue(TextElement.ForegroundProperty, 
-                    new SolidColorBrush(Funcs.ConvertDrawingToMediaColor(Settings.Default.DefaultTextColour)));
+                tr.ApplyPropertyValue(
+                    TextElement.ForegroundProperty,
+                    new SolidColorBrush(
+                        Funcs.ConvertDrawingToMediaColor(Settings.Default.DefaultTextColour)
+                    )
+                );
             }
             catch { }
 
@@ -4315,15 +4890,23 @@ namespace Type_Express
 
             if (!FindMatch(textRange.Text, searchText).Success)
             {
-                Funcs.ShowMessageRes("SearchFinishedDescStr", "SearchFinishedStr",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                Funcs.ShowMessageRes(
+                    "SearchFinishedDescStr",
+                    "SearchFinishedStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information
+                );
 
                 return found;
             }
 
-            for (TextPointer startPointer = DocTxt.Selection.End;
-                 startPointer.CompareTo(DocTxt.Document.ContentEnd) <= 0;
-                 startPointer = (startPointer ?? DocTxt.Document.ContentEnd).GetNextContextPosition(LogicalDirection.Forward))
+            for (
+                TextPointer startPointer = DocTxt.Selection.End;
+                startPointer.CompareTo(DocTxt.Document.ContentEnd) <= 0;
+                startPointer = (startPointer ?? DocTxt.Document.ContentEnd).GetNextContextPosition(
+                        LogicalDirection.Forward
+                    )
+            )
             {
                 if (startPointer.CompareTo(DocTxt.Document.ContentEnd) == 0)
                     break;
@@ -4337,7 +4920,9 @@ namespace Type_Express
                     startPointer = startPointer.GetPositionAtOffset(indexOfParseString);
                     if (startPointer != null)
                     {
-                        TextPointer nextPointer = startPointer.GetPositionAtOffset(searchText.Length);
+                        TextPointer nextPointer = startPointer.GetPositionAtOffset(
+                            searchText.Length
+                        );
                         DocTxt.Selection.Select(startPointer, nextPointer);
                         TextFocus();
                         found = true;
@@ -4348,14 +4933,23 @@ namespace Type_Express
 
             if (!found && !automated)
             {
-                if (Funcs.ShowPromptRes("ContinueSearchDescStr", "ContinueSearchStr",
-                    MessageBoxButton.YesNoCancel, MessageBoxImage.Information) == MessageBoxResult.Yes)
+                if (
+                    Funcs.ShowPromptRes(
+                        "ContinueSearchDescStr",
+                        "ContinueSearchStr",
+                        MessageBoxButton.YesNoCancel,
+                        MessageBoxImage.Information
+                    ) == MessageBoxResult.Yes
+                )
                 {
-                    DocTxt.Selection.Select(DocTxt.Document.ContentStart, DocTxt.Document.ContentStart);
+                    DocTxt.Selection.Select(
+                        DocTxt.Document.ContentStart,
+                        DocTxt.Document.ContentStart
+                    );
                     return FindNext(searchText);
                 }
             }
-            
+
             return found;
         }
 
@@ -4424,8 +5018,6 @@ namespace Type_Express
         #region Review > Dictionary
 
         private Languages DefineLang = Languages.English;
-        private string MerriamWebsterKey = "";
-        private string LexicalaKey = "";
 
         private void DictionaryBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -4482,7 +5074,7 @@ namespace Type_Express
 
         private void PrepareDefineSearch()
         {
-            DefineSearchTxt.Text = DefineSearchTxt.Text.TrimStart(" ".ToCharArray()[0]);
+            DefineSearchTxt.Text = DefineSearchTxt.Text.TrimStart();
             DefineItems.ItemsSource = null;
             DefineLoadingPnl.Visibility = Visibility.Visible;
 
@@ -4495,262 +5087,54 @@ namespace Type_Express
         private async void StartDefinitionSearch()
         {
             PrepareDefineSearch();
-            await UseLexicala();
+            await CallDictionaryFor("definitions");
         }
 
         private async void StartSynonymSearch()
         {
             PrepareDefineSearch();
-            switch (DefineLang)
-            {
-                case Languages.English:
-                    await UseMerriamWebster();
-                    break;
-
-                case Languages.French:
-                    await UseSynonymsAPI();
-                    break;
-
-                case Languages.Spanish:
-                case Languages.Italian:
-                    await UseLexicala();
-                    break;
-
-                default:
-                    break;
-            }
+            await CallDictionaryFor("synonyms");
         }
 
-        private static WordItem GetWordItem(List<WordItem> items, string word)
+        private async Task CallDictionaryFor(string dictType)
         {
-            if (ContainsWordItem(items, word))
-                return items.Where(x => x.Word == word).First();
-            else
-            {
-                WordItem newItem = new() { Word = word };
-                items.Add(newItem);
-                return newItem;
-            }
-        }
-
-        private static bool ContainsWordItem(List<WordItem> items, string word)
-        {
-            return items.Any(x => x.Word == word);
-        }
-
-        private static WordTypeItem GetWordTypeItem(List<WordTypeItem> items, string type, bool onlySynonyms = false)
-        {
-            if (ContainsWordTypeItem(items, type))
-                return items.Where(x => x.Type == type).First();
-            else
-            {
-                WordTypeItem newItem = new() { Type = type, OnlySynonyms = onlySynonyms };
-                items.Add(newItem);
-                return newItem;
-            }
-        }
-
-        private static bool ContainsWordTypeItem(List<WordTypeItem> items, string type)
-        {
-            return items.Any(x => x.Type == type);
-        }
-
-        private static WordTypeDefItem GetWordTypeDefItem(List<WordTypeDefItem> items, string def, int id = 0)
-        {
-            if (ContainsWordTypeDefItem(items, def))
-                return items.Where(x => x.Definition == def).First();
-            else
-            {
-                WordTypeDefItem newItem = new() { Definition = def, ID = id };
-                items.Add(newItem);
-                return newItem;
-            }
-        }
-
-        private static bool ContainsWordTypeDefItem(List<WordTypeDefItem> items, string def)
-        {
-            return items.Any(x => x.Definition == def);
-        }
-
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-#pragma warning disable CS8604 // Possible null reference argument.
-
-        private async Task UseMerriamWebster()
-        {
-            if (MerriamWebsterKey == "")
-            {
-                try
-                {
-                    var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Type_Express.auth-merriam.secret") ?? throw new NullReferenceException();
-                    using var sr = new StreamReader(info);
-                    MerriamWebsterKey = sr.ReadToEnd();
-                }
-                catch (Exception ex)
-                {
-                    Funcs.ShowMessageRes("DictAPIKeyNotFoundStr", "CriticalErrorStr", MessageBoxButton.OK, MessageBoxImage.Error,
-                        Funcs.GenerateErrorReport(ex, Funcs.ChooseLang("ReportEmailInfoStr")));
-                    return;
-                }
-            }
-
+            HttpResponseMessage? response = null;
             try
             {
-                List<WordItem> wordItems = [];
-                string query = Uri.EscapeDataString(DefineSearchTxt.Text.Replace(" ", "_"));
-                JArray obj = await Funcs.GetJsonAsync<JArray>("https://dictionaryapi.com/api/v3/references/thesaurus/json/" + query + "?key=" + MerriamWebsterKey);
-
-                if (obj.Any())
-                {
-                    foreach (var result in obj)
+                response = await Funcs.SendAPIRequest(
+                    "dictionary",
+                    new Dictionary<string, string>()
                     {
-                        WordItem currentWord = GetWordItem(wordItems, (string)result["hwi"]["hw"]);
-                        WordTypeItem currentType = GetWordTypeItem(currentWord.Types, (string)result["fl"]);
-
-                        int counter = 0;
-                        foreach (var def in result["def"][0]["sseq"])
-                        {
-                            if (def[0][1]["syn_list"] != null)
-                            {
-                                string definitionText = (string)def[0][1]["dt"][0][1];
-
-                                if (!ContainsWordTypeDefItem(currentType.Definitions, definitionText))
-                                    counter++;
-
-                                WordTypeDefItem currentDef = GetWordTypeDefItem(currentType.Definitions, definitionText, counter);
-
-                                foreach (var syn in def[0][1]["syn_list"][0])
-                                    currentDef.Synonyms.Add((string)syn["wd"]);
-                            }
-                        }
+                        { "query", DefineSearchTxt.Text },
+                        { "type", dictType },
+                        { "language", Funcs.GetCurrentLangEnum(DefineLang, true) },
                     }
-                }
-                else
-                    throw new Exception();
+                );
+                response.EnsureSuccessStatusCode();
 
-                LoadDefinitions(wordItems);
+                string content = await response.Content.ReadAsStringAsync();
+                List<WordItem>? results = JsonConvert.DeserializeObject<List<WordItem>>(content);
+
+                if (results == null || results.Count == 0)
+                    throw new Exception("No results in dictionary.");
+
+                LoadDefinitions(results);
             }
             catch (Exception ex)
             {
-                LoadDefinitions(null, ex);
+                LoadDefinitions(
+                    null,
+                    ex,
+                    response == null || response.StatusCode != HttpStatusCode.Unauthorized
+                );
             }
         }
 
-        private async Task UseLexicala()
-        {
-            if (LexicalaKey == "")
-            {
-                try
-                {
-                    var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Type_Express.auth-lexicala.secret") ?? throw new NullReferenceException();
-                    using var sr = new StreamReader(info);
-                    LexicalaKey = sr.ReadToEnd();
-                }
-                catch (Exception ex)
-                {
-                    Funcs.ShowMessageRes("DictAPIKeyNotFoundStr", "CriticalErrorStr", MessageBoxButton.OK, MessageBoxImage.Error,
-                        Funcs.GenerateErrorReport(ex, Funcs.ChooseLang("ReportEmailInfoStr")));
-                    return;
-                }
-            }
-
-            try
-            {
-                List<WordItem> wordItems = [];
-                UriBuilder ub = new("https://lexicala1.p.rapidapi.com/search-entries") { Port = -1 };
-
-                var queryString = HttpUtility.ParseQueryString(ub.Query);
-                queryString["source"] = "global";
-                queryString["language"] = Funcs.GetCurrentLangEnum(DefineLang, true);
-                queryString["text"] = DefineSearchTxt.Text.Replace(" ", "_");
-                queryString["morph"] = "true";
-                ub.Query = queryString.ToString();
-
-                HttpRequestMessage httpRequestMessage = new()
-                {
-                    Method = HttpMethod.Get,
-                    RequestUri = ub.Uri,
-                    Headers = {
-                        { HttpRequestHeader.ContentType.ToString(), "application/json" },
-                        { "X-RapidAPI-Host", "lexicala1.p.rapidapi.com" },
-                        { "X-RapidAPI-Key", LexicalaKey }
-                    }
-                };
-
-                var resp = await Funcs.SendHTTPRequest(httpRequestMessage);
-                string content = await resp.Content.ReadAsStringAsync();
-                JObject obj = Funcs.Deserialize<JObject>(content);
-
-                if (obj["results"].Any())
-                {
-                    foreach (var result in obj["results"])
-                    {
-                        if (result["headword"]["pos"] != null)
-                        {
-                            WordItem currentWord = GetWordItem(wordItems, (string)result["headword"]["text"]);
-                            WordTypeItem currentType = GetWordTypeItem(currentWord.Types, (string)result["headword"]["pos"], SynonymsBtn.IsChecked == true);
-
-                            int counter = 0;
-                            foreach (var def in result["senses"])
-                            {
-                                if (SynonymsBtn.IsChecked == true && def["synonyms"] != null)
-                                {
-                                    WordTypeDefItem currentDef = GetWordTypeDefItem(currentType.Definitions, "");
-
-                                    foreach (var synonym in def["synonyms"])
-                                        currentDef.Synonyms.Add((string)synonym);
-                                }
-                                else if (DefinitionsBtn.IsChecked == true && def["definition"] != null)
-                                {
-                                    if (!ContainsWordTypeDefItem(currentType.Definitions, (string)def["definition"]))
-                                    {
-                                        counter++;
-                                        _ = GetWordTypeDefItem(currentType.Definitions, (string)def["definition"], counter);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                else
-                    throw new Exception();
-
-                LoadDefinitions(wordItems);
-            }
-            catch (Exception ex)
-            {
-                LoadDefinitions(null, ex);
-            }
-        }
-
-        private async Task UseSynonymsAPI()
-        {
-            try
-            {
-                List<WordItem> wordItems = [];
-                string query = Uri.EscapeDataString(DefineSearchTxt.Text.Replace(" ", "_"));
-                JObject obj = await Funcs.GetJsonAsync<JObject>("https://synonymes-api.vercel.app/" + query);
-
-                WordItem currentWord = GetWordItem(wordItems, (string)obj["word"]);
-                WordTypeItem currentType = GetWordTypeItem(currentWord.Types, (string)obj["entries"][0]["category"], true);
-                WordTypeDefItem currentDef = GetWordTypeDefItem(currentType.Definitions, "");
-
-                foreach (var synonym in obj["entries"][0]["synonyms"])
-                    currentDef.Synonyms.Add((string)synonym);
-
-                LoadDefinitions(wordItems);
-            }
-            catch (Exception ex)
-            {
-                LoadDefinitions(null, ex);
-            }
-        }
-
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
-#pragma warning restore CS8604 // Possible null reference argument.
-
-        private void LoadDefinitions(List<WordItem>? items, Exception? ex = null)
+        private void LoadDefinitions(
+            List<WordItem>? items,
+            Exception? ex = null,
+            bool showMessage = true
+        )
         {
             if (items != null)
             {
@@ -4760,11 +5144,19 @@ namespace Type_Express
                 items.RemoveAll(x => x.Types.Count == 0);
             }
 
-            if (items == null || items.Count == 0)
-                Funcs.ShowMessage(string.Format(Funcs.ChooseLang("DictErrorDescStr"),
-                    DefinitionsBtn.IsChecked == true ? Funcs.ChooseLang("NoDefinitionsStr") : Funcs.ChooseLang("NoSynonymsStr")),
-                    Funcs.ChooseLang("DictErrorStr"), MessageBoxButton.OK, MessageBoxImage.Exclamation,
-                    ex != null ? Funcs.GenerateErrorReport(ex) : null);
+            if (showMessage && (items == null || items.Count == 0))
+                Funcs.ShowMessage(
+                    string.Format(
+                        Funcs.ChooseLang("DictErrorDescStr"),
+                        DefinitionsBtn.IsChecked == true
+                            ? Funcs.ChooseLang("NoDefinitionsStr")
+                            : Funcs.ChooseLang("NoSynonymsStr")
+                    ),
+                    Funcs.ChooseLang("DictErrorStr"),
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Exclamation,
+                    ex != null ? Funcs.GenerateErrorReport(ex, PageID, "DictErrorStr") : null
+                );
 
             DefineLoadingPnl.Visibility = Visibility.Collapsed;
             DefineItems.ItemsSource = items;
@@ -4813,9 +5205,17 @@ namespace Type_Express
 
         private void SetDocumentLanguage(Languages lang)
         {
-            IEnumerable<Inline> inlines = DocTxt.Document.Blocks.OfType<Paragraph>().SelectMany(x => x.Inlines).Concat(
-                DocTxt.Document.Blocks.OfType<List>().SelectMany(x => x.ListItems).Cast<ListItem>()
-                .SelectMany(x => x.Blocks.OfType<Paragraph>()).SelectMany(x => x.Inlines));
+            IEnumerable<Inline> inlines = DocTxt
+                .Document.Blocks.OfType<Paragraph>()
+                .SelectMany(x => x.Inlines)
+                .Concat(
+                    DocTxt
+                        .Document.Blocks.OfType<List>()
+                        .SelectMany(x => x.ListItems)
+                        .Cast<ListItem>()
+                        .SelectMany(x => x.Blocks.OfType<Paragraph>())
+                        .SelectMany(x => x.Inlines)
+                );
 
             XmlLanguage xmlLang = XmlLanguage.GetLanguage(Funcs.GetCurrentLangEnum(lang));
             foreach (Inline item in inlines)
@@ -4855,7 +5255,10 @@ namespace Type_Express
                             break;
                     }
 
-                    File.WriteAllText(tempPath + filename, string.Join(Environment.NewLine, entries));
+                    File.WriteAllText(
+                        tempPath + filename,
+                        string.Join(Environment.NewLine, entries)
+                    );
                     DocTxt.SpellCheck.CustomDictionaries.Add(new Uri(tempPath + filename));
                 }
             }
@@ -4892,7 +5295,10 @@ namespace Type_Express
                 if (CheckSpellBtn.Text == Funcs.ChooseLang("StartCheckingStr"))
                     startPosition = DocTxt.Document.ContentStart;
 
-                TextPointer errorPosition = DocTxt.GetNextSpellingErrorPosition(startPosition, LogicalDirection.Forward);
+                TextPointer errorPosition = DocTxt.GetNextSpellingErrorPosition(
+                    startPosition,
+                    LogicalDirection.Forward
+                );
                 TextRange errorRange = DocTxt.GetSpellingErrorRange(errorPosition);
 
                 DocTxt.Selection.Select(errorRange.Start, errorRange.End);
@@ -4917,8 +5323,12 @@ namespace Type_Express
             }
             catch
             {
-                Funcs.ShowMessageRes("SpellcheckCompleteDescStr", "SpellcheckCompleteStr", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
+                Funcs.ShowMessageRes(
+                    "SpellcheckCompleteDescStr",
+                    "SpellcheckCompleteStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information
+                );
 
                 ResetSpellchecker();
             }
@@ -4991,7 +5401,9 @@ namespace Type_Express
 
             if (CheckForSpeechVoices())
             {
-                var voice = SpeechTTS.GetInstalledVoices(new CultureInfo(Funcs.GetCurrentLangEnum(SpellLang)))[0];
+                var voice = SpeechTTS.GetInstalledVoices(
+                    new CultureInfo(Funcs.GetCurrentLangEnum(SpellLang))
+                )[0];
                 SpeechTTS.Rate = 0;
                 SpeechTTS.SelectVoice(voice.VoiceInfo.Name);
                 SpeechTTS.SpeakAsync(suggestion);
@@ -5005,7 +5417,9 @@ namespace Type_Express
 
             if (CheckForSpeechVoices())
             {
-                var voice = SpeechTTS.GetInstalledVoices(new CultureInfo(Funcs.GetCurrentLangEnum(SpellLang)))[0];
+                var voice = SpeechTTS.GetInstalledVoices(
+                    new CultureInfo(Funcs.GetCurrentLangEnum(SpellLang))
+                )[0];
 
                 System.Speech.Synthesis.PromptBuilder prompt = new();
                 prompt.StartVoice(voice.VoiceInfo.Name);
@@ -5019,29 +5433,44 @@ namespace Type_Express
 
         private bool CheckForSpeechVoices(bool all = false)
         {
-            bool voices = all ? SpeechTTS.GetInstalledVoices().Count != 0 :
-                SpeechTTS.GetInstalledVoices(new CultureInfo(Funcs.GetCurrentLangEnum(SpellLang))).Count != 0;
+            bool voices = all
+                ? SpeechTTS.GetInstalledVoices().Count != 0
+                : SpeechTTS
+                    .GetInstalledVoices(new CultureInfo(Funcs.GetCurrentLangEnum(SpellLang)))
+                    .Count != 0;
 
             if (!voices)
             {
-                if (Funcs.ShowPromptRes("NoVoicesDescStr", "NoVoicesStr",
-                    MessageBoxButton.YesNo, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+                if (
+                    Funcs.ShowPromptRes(
+                        "NoVoicesDescStr",
+                        "NoVoicesStr",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Exclamation
+                    ) == MessageBoxResult.Yes
+                )
                 {
                     try
                     {
-                        _ = Process.Start(new ProcessStartInfo()
-                        {
-                            FileName = "ms-settings:speech",
-                            UseShellExecute = true
-                        });
+                        _ = Process.Start(
+                            new ProcessStartInfo()
+                            {
+                                FileName = "ms-settings:speech",
+                                UseShellExecute = true,
+                            }
+                        );
                     }
                     catch
                     {
-                        Funcs.ShowMessageRes("OpenSettingsErrorDescStr", "OpenSettingsErrorStr",
-                            MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                        Funcs.ShowMessageRes(
+                            "OpenSettingsErrorDescStr",
+                            "OpenSettingsErrorStr",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Exclamation
+                        );
                     }
                 }
-            } 
+            }
             else
                 return true;
 
@@ -5050,8 +5479,6 @@ namespace Type_Express
 
         #endregion
         #region Review > Translator
-
-        private string DeepLKey = "";
 
         private void TranslatorBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -5071,49 +5498,71 @@ namespace Type_Express
         {
             string[] supportedLanguages =
             [
-                LanguageCode.English, LanguageCode.EnglishBritish, LanguageCode.EnglishAmerican, LanguageCode.Chinese, 
-                LanguageCode.Danish, LanguageCode.Dutch, LanguageCode.Finnish, LanguageCode.French, LanguageCode.German, 
-                LanguageCode.Greek, LanguageCode.Italian, LanguageCode.Japanese, LanguageCode.Korean, LanguageCode.Norwegian, 
-                LanguageCode.Polish, LanguageCode.Portuguese, LanguageCode.PortugueseEuropean, LanguageCode.PortugueseBrazilian, 
-                LanguageCode.Spanish, LanguageCode.Swedish, LanguageCode.Turkish, LanguageCode.Ukrainian
+                LanguageCode.English,
+                LanguageCode.EnglishBritish,
+                LanguageCode.EnglishAmerican,
+                LanguageCode.Chinese,
+                LanguageCode.Danish,
+                LanguageCode.Dutch,
+                LanguageCode.Finnish,
+                LanguageCode.French,
+                LanguageCode.German,
+                LanguageCode.Greek,
+                LanguageCode.Italian,
+                LanguageCode.Japanese,
+                LanguageCode.Korean,
+                LanguageCode.Norwegian,
+                LanguageCode.Polish,
+                LanguageCode.Portuguese,
+                LanguageCode.PortugueseEuropean,
+                LanguageCode.PortugueseBrazilian,
+                LanguageCode.Spanish,
+                LanguageCode.Swedish,
+                LanguageCode.Turkish,
+                LanguageCode.Ukrainian,
             ];
 
             SourceLangCombo.ItemsSource = new AppDropdownItem[]
             {
-                new()
-                {
-                    Content = Funcs.ChooseLang("DetectLanguageStr"),
-                    Tag = null
-                }
-            }.Concat(supportedLanguages.Where(x =>
-            {
-                string[] notIncluded =
-                [
-                    LanguageCode.EnglishBritish, LanguageCode.EnglishAmerican, LanguageCode.PortugueseEuropean, LanguageCode.PortugueseBrazilian
-                ];
-                return !notIncluded.Contains(x);
+                new() { Content = Funcs.ChooseLang("DetectLanguageStr"), Tag = null },
+            }.Concat(
+                supportedLanguages
+                    .Where(x =>
+                    {
+                        string[] notIncluded =
+                        [
+                            LanguageCode.EnglishBritish,
+                            LanguageCode.EnglishAmerican,
+                            LanguageCode.PortugueseEuropean,
+                            LanguageCode.PortugueseBrazilian,
+                        ];
+                        return !notIncluded.Contains(x);
+                    })
+                    .Select(x =>
+                    {
+                        return new AppDropdownItem()
+                        {
+                            Content = Funcs.ChooseLang(x.ToUpper() + "TransStr"),
+                            Tag = x,
+                        };
+                    })
+                    .OrderBy(x => x.Content)
+            );
 
-            }).Select(x =>
-            {
-                return new AppDropdownItem()
+            TargetLangCombo.ItemsSource = supportedLanguages
+                .Where(x =>
                 {
-                    Content = Funcs.ChooseLang(x.ToUpper() + "TransStr"),
-                    Tag = x
-                };
-            }).OrderBy(x => x.Content));
-
-            TargetLangCombo.ItemsSource = supportedLanguages.Where(x =>
-            {
-                return x != LanguageCode.English && x != LanguageCode.Portuguese;
-
-            }).Select(x =>
-            {
-                return new AppDropdownItem()
+                    return x != LanguageCode.English && x != LanguageCode.Portuguese;
+                })
+                .Select(x =>
                 {
-                    Content = Funcs.ChooseLang(x.ToUpper() + "TransStr"),
-                    Tag = x
-                };
-            }).OrderBy(x => x.Content);
+                    return new AppDropdownItem()
+                    {
+                        Content = Funcs.ChooseLang(x.ToUpper() + "TransStr"),
+                        Tag = x,
+                    };
+                })
+                .OrderBy(x => x.Content);
 
             SourceLangCombo.SelectedIndex = 0;
             TargetLangCombo.SelectedIndex = 0;
@@ -5123,19 +5572,25 @@ namespace Type_Express
         {
             AppDropdownItem buffer = (AppDropdownItem)SourceLangCombo.SelectedItem;
 
-            SourceLangCombo.SelectedIndex = SourceLangCombo.ItemsSource.Cast<AppDropdownItem>().ToList().FindIndex(x =>
-            {
-                string target = (string)((AppDropdownItem)TargetLangCombo.SelectedItem).Tag;
-                return (string)x.Tag == target[..2];
-            });
+            SourceLangCombo.SelectedIndex = SourceLangCombo
+                .ItemsSource.Cast<AppDropdownItem>()
+                .ToList()
+                .FindIndex(x =>
+                {
+                    string target = (string)((AppDropdownItem)TargetLangCombo.SelectedItem).Tag;
+                    return (string)x.Tag == target[..2];
+                });
 
             if (buffer.Tag != null)
             {
-                TargetLangCombo.SelectedIndex = TargetLangCombo.ItemsSource.Cast<AppDropdownItem>().ToList().FindIndex(x =>
-                {
-                    string source = (string)buffer.Tag;
-                    return ((string)x.Tag).StartsWith(source);
-                });
+                TargetLangCombo.SelectedIndex = TargetLangCombo
+                    .ItemsSource.Cast<AppDropdownItem>()
+                    .ToList()
+                    .FindIndex(x =>
+                    {
+                        string source = (string)buffer.Tag;
+                        return ((string)x.Tag).StartsWith(source);
+                    });
             }
 
             SourceTransTxt.Text = TargetTransTxt.Text;
@@ -5147,38 +5602,54 @@ namespace Type_Express
             string? source = (string)((AppDropdownItem)SourceLangCombo.SelectedItem).Tag;
             string target = (string)((AppDropdownItem)TargetLangCombo.SelectedItem).Tag;
 
-            if (target.StartsWith(source ?? "DETECT"))
+            if (source != null && target.StartsWith(source))
             {
-                Funcs.ShowMessageRes("SameLanguageStr", "TranslateErrorStr", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                Funcs.ShowMessageRes(
+                    "SameLanguageStr",
+                    "TranslateErrorStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
             }
             else if (!string.IsNullOrWhiteSpace(SourceTransTxt.Text))
             {
-                if (DeepLKey == "")
-                {
-                    try
-                    {
-                        var info = Assembly.GetExecutingAssembly().GetManifestResourceStream("Type_Express.auth-deepl.secret") ?? throw new NullReferenceException();
-                        using var sr = new StreamReader(info);
-                        DeepLKey = sr.ReadToEnd();
-                    }
-                    catch (Exception ex)
-                    {
-                        Funcs.ShowMessageRes("APIKeyNotFoundStr", "CriticalErrorStr", MessageBoxButton.OK, MessageBoxImage.Error,
-                            Funcs.GenerateErrorReport(ex, Funcs.ChooseLang("ReportEmailInfoStr")));
-                        return;
-                    }
-                }
+                HttpResponseMessage? response = null;
+                TranslateBtn.IsEnabled = false;
 
                 try
                 {
-                    Translator translator = new(DeepLKey);
-                    TargetTransTxt.Text = (await translator.TranslateTextAsync(SourceTransTxt.Text, source, target)).ToString();
+                    response = await Funcs.SendAPIRequest(
+                        "translator",
+                        new Dictionary<string, string>()
+                        {
+                            { "from", source ?? "null" },
+                            { "to", target },
+                            { "text", SourceTransTxt.Text },
+                        }
+                    );
+                    response.EnsureSuccessStatusCode();
+
+                    string content = await response.Content.ReadAsStringAsync();
+                    TranslatorResult? result =
+                        JsonConvert.DeserializeObject<TranslatorResult>(content)
+                        ?? throw new Exception("No text in response.");
+
+                    TargetTransTxt.Text = result.Text;
                 }
                 catch (Exception ex)
                 {
-                    Funcs.ShowMessageRes("TranslateErrorDescStr", "TranslateErrorStr",
-                        MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                    if (response == null || response.StatusCode != HttpStatusCode.Unauthorized)
+                        Funcs.ShowMessageRes(
+                            "TranslateErrorDescStr",
+                            "TranslateErrorStr",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error,
+                            Funcs.GenerateErrorReport(ex, PageID, "TranslateErrorDescStr")
+                        );
+                }
+                finally
+                {
+                    TranslateBtn.IsEnabled = true;
                 }
             }
         }
@@ -5203,11 +5674,12 @@ namespace Type_Express
 
         private void AblasBtn_Click(object sender, RoutedEventArgs e)
         {
-            _ = Process.Start(new ProcessStartInfo()
-            {
-                FileName = "https://www.learnwithablas.com/",
-                UseShellExecute = true
-            });
+            string website = "https://www.learnwithablas.com/";
+
+            _ = Process.Start(
+                new ProcessStartInfo() { FileName = website, UseShellExecute = true }
+            );
+            Funcs.LogConversion(PageID, LoggingProperties.Conversion.WebsiteVisit, website);
         }
 
         #endregion
@@ -5218,8 +5690,12 @@ namespace Type_Express
             string docText = SaveString(DataFormats.Text);
             if (string.IsNullOrWhiteSpace(docText))
             {
-                Funcs.ShowMessageRes("NoTextDocDescStr", "NoTextDocStr", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                Funcs.ShowMessageRes(
+                    "NoTextDocDescStr",
+                    "NoTextDocStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
             }
             else if (!CheckForSpeechVoices(true)) { }
             else
@@ -5242,13 +5718,22 @@ namespace Type_Express
             if (!DocTxt.Selection.IsEmpty)
                 range = new TextRange(DocTxt.Selection.Start, DocTxt.Selection.End);
 
-            new WordCount(FilterWords(range).Count, GetChars(false, range), GetChars(true, range), GetLines(range).Count).ShowDialog();
+            new WordCount(
+                FilterWords(range).Count,
+                GetChars(false, range),
+                GetChars(true, range),
+                GetLines(range).Count
+            ).ShowDialog();
         }
 
         private List<string> FilterWords(TextRange? range = null)
         {
-            TextRange tr = range ?? new TextRange(DocTxt.Document.ContentStart, DocTxt.Document.ContentEnd);
-            string wordstr = (tr.Text + " ").Replace("\r", " ").Replace("\n", " ").Replace("/", " ");
+            TextRange tr =
+                range ?? new TextRange(DocTxt.Document.ContentStart, DocTxt.Document.ContentEnd);
+            string wordstr = (tr.Text + " ")
+                .Replace("\r", " ")
+                .Replace("\n", " ")
+                .Replace("/", " ");
 
             List<string> wordlist = [.. wordstr.Split(" ")];
             wordlist.RemoveAll(string.IsNullOrWhiteSpace);
@@ -5259,7 +5744,8 @@ namespace Type_Express
         private List<string> GetLines(TextRange? range = null)
         {
             string[] separator = ["\r\n", "\r", "\n"];
-            TextRange tr = range ?? new TextRange(DocTxt.Document.ContentStart, DocTxt.Document.ContentEnd);
+            TextRange tr =
+                range ?? new TextRange(DocTxt.Document.ContentStart, DocTxt.Document.ContentEnd);
             string[] splittedLines = tr.Text.Split(separator, StringSplitOptions.None);
             List<string> ls = [.. splittedLines];
 
@@ -5271,7 +5757,8 @@ namespace Type_Express
 
         private int GetChars(bool withSpaces = true, TextRange? range = null)
         {
-            TextRange tr = range ?? new TextRange(DocTxt.Document.ContentStart, DocTxt.Document.ContentEnd);
+            TextRange tr =
+                range ?? new TextRange(DocTxt.Document.ContentStart, DocTxt.Document.ContentEnd);
             return withSpaces ? tr.Text.Length - 2 : tr.Text.Replace(" ", "").Length - 2;
         }
 
@@ -5291,16 +5778,22 @@ namespace Type_Express
         {
             try
             {
-                ReleaseItem[] resp = await Funcs.GetJsonAsync<ReleaseItem[]>("https://api.johnjds.co.uk/express/v2/type/updates");
+                ReleaseItem[] resp = await Funcs.GetJsonAsync<ReleaseItem[]>(
+                    $"{Funcs.APIEndpoint}/express/v2/type/updates"
+                );
 
                 if (resp.Length == 0)
                     throw new NullReferenceException();
 
                 IEnumerable<ReleaseItem> updates = resp.Where(x =>
-                {
-                    return new Version(x.Version) > (Assembly.GetExecutingAssembly().GetName().Version ?? new Version(1, 0, 0));
-
-                }).OrderByDescending(x => new Version(x.Version));
+                    {
+                        return new Version(x.Version)
+                            > (
+                                Assembly.GetExecutingAssembly().GetName().Version
+                                ?? new Version(1, 0, 0)
+                            );
+                    })
+                    .OrderByDescending(x => new Version(x.Version));
 
                 if (!updates.Any())
                 {
@@ -5331,8 +5824,13 @@ namespace Type_Express
                 if (NotificationsPopup.IsOpen)
                 {
                     NotificationsPopup.IsOpen = false;
-                    Funcs.ShowMessageRes("NotificationErrorStr", "NoInternetStr",
-                        MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                    Funcs.ShowMessageRes(
+                        "NotificationErrorStr",
+                        "NoInternetStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(ex, PageID, "NotificationErrorStr")
+                    );
                 }
             }
         }
@@ -5340,11 +5838,15 @@ namespace Type_Express
         private void UpdateBtn_Click(object sender, RoutedEventArgs e)
         {
             NotificationsPopup.IsOpen = false;
-            _ = Process.Start(new ProcessStartInfo()
-            {
-                FileName = Funcs.GetAppUpdateLink(ExpressApp.Type),
-                UseShellExecute = true
-            });
+            Funcs.LogConversion(PageID, LoggingProperties.Conversion.UpdatePageVisit);
+
+            _ = Process.Start(
+                new ProcessStartInfo()
+                {
+                    FileName = Funcs.GetAppUpdateLink(ExpressApp.Type),
+                    UseShellExecute = true,
+                }
+            );
         }
 
         private async void UpdateInfoBtn_Click(object sender, RoutedEventArgs e)
@@ -5374,42 +5876,71 @@ namespace Type_Express
                     if (lines == 1)
                         WordCountStatusBtn.Content = Funcs.ChooseLang("LineCountStr");
                     else
-                        WordCountStatusBtn.Content = string.Format(Funcs.ChooseLang("LinesCountStr"), lines.ToString());
+                        WordCountStatusBtn.Content = string.Format(
+                            Funcs.ChooseLang("LinesCountStr"),
+                            lines.ToString()
+                        );
                     break;
 
                 case StatisticsFigure.Characters:
                     int chars = GetChars();
-                    int selectchars = GetChars(true, new TextRange(DocTxt.Selection.Start, DocTxt.Selection.End));
+                    int selectchars = GetChars(
+                        true,
+                        new TextRange(DocTxt.Selection.Start, DocTxt.Selection.End)
+                    );
 
                     if (chars == 1)
                         WordCountStatusBtn.Content = Funcs.ChooseLang("CharacterStr");
                     else if (DocTxt.Selection.IsEmpty)
-                        WordCountStatusBtn.Content = string.Format(Funcs.ChooseLang("CharactersStr"), chars.ToString());
+                        WordCountStatusBtn.Content = string.Format(
+                            Funcs.ChooseLang("CharactersStr"),
+                            chars.ToString()
+                        );
                     else
-                        WordCountStatusBtn.Content = string.Format(Funcs.ChooseLang("CharactersOfStr"), selectchars.ToString(), chars.ToString());
+                        WordCountStatusBtn.Content = string.Format(
+                            Funcs.ChooseLang("CharactersOfStr"),
+                            selectchars.ToString(),
+                            chars.ToString()
+                        );
                     break;
 
                 case StatisticsFigure.Words:
                 default:
                     int words = FilterWords().Count;
-                    int selectwords = FilterWords(new TextRange(DocTxt.Selection.Start, DocTxt.Selection.End)).Count;
+                    int selectwords = FilterWords(
+                        new TextRange(DocTxt.Selection.Start, DocTxt.Selection.End)
+                    ).Count;
 
                     if (words == 1)
                         WordCountStatusBtn.Content = Funcs.ChooseLang("WordStr");
                     else if (DocTxt.Selection.IsEmpty)
-                        WordCountStatusBtn.Content = string.Format(Funcs.ChooseLang("WordsStr"), words.ToString());
+                        WordCountStatusBtn.Content = string.Format(
+                            Funcs.ChooseLang("WordsStr"),
+                            words.ToString()
+                        );
                     else
-                        WordCountStatusBtn.Content = string.Format(Funcs.ChooseLang("WordsOfStr"), selectwords.ToString(), words.ToString());
+                        WordCountStatusBtn.Content = string.Format(
+                            Funcs.ChooseLang("WordsOfStr"),
+                            selectwords.ToString(),
+                            words.ToString()
+                        );
                     break;
             }
 
-            int col = Math.Max(1, DocTxt.Selection.Start.GetLineStartPosition(0).GetOffsetToPosition(DocTxt.Selection.Start) - 1);
+            int col = Math.Max(
+                1,
+                DocTxt
+                    .Selection.Start.GetLineStartPosition(0)
+                    .GetOffsetToPosition(DocTxt.Selection.Start) - 1
+            );
 
             DocTxt.Selection.Start.GetLineStartPosition(int.MinValue, out int lineMoved);
             int ln = -lineMoved + 1;
 
-            WordCountStatusBtn.Content = WordCountStatusBtn.Content.ToString() + "  |  " + 
-                string.Format(Funcs.ChooseLang("LnColStr"), ln.ToString(), col.ToString());
+            WordCountStatusBtn.Content =
+                WordCountStatusBtn.Content.ToString()
+                + "  |  "
+                + string.Format(Funcs.ChooseLang("LnColStr"), ln.ToString(), col.ToString());
         }
 
         private void CreateTempLabel(string label)
@@ -5424,7 +5955,10 @@ namespace Type_Express
             TempLblTimer.Stop();
         }
 
-        private void ZoomSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void ZoomSlider_ValueChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<double> e
+        )
         {
             if (IsLoaded)
                 ZoomLbl.Text = Math.Round(ZoomSlider.Value * 100).ToString() + " %";
@@ -5465,7 +5999,7 @@ namespace Type_Express
             { "HelpNavigatingUIStr", "PaneIcon" },
             { "HelpShortcutsStr", "CtrlIcon" },
             { "HelpNewComingSoonStr", "TypeExpressIcon" },
-            { "HelpTroubleshootingStr", "FeedbackIcon" }
+            { "HelpTroubleshootingStr", "FeedbackIcon" },
         };
 
         private void HelpBtn_Click(object sender, RoutedEventArgs e)
@@ -5483,7 +6017,7 @@ namespace Type_Express
         private void HelpLinkBtn_Click(object sender, RoutedEventArgs e)
         {
             HelpPopup.IsOpen = false;
-            Funcs.GetHelp(ExpressApp.Type);
+            Funcs.GetHelp(ExpressApp.Type, PageID);
         }
 
         private void HelpSearchTxt_TextChanged(object sender, TextChangedEventArgs e)
@@ -5500,7 +6034,7 @@ namespace Type_Express
         private void HelpTopicBtns_Click(object sender, RoutedEventArgs e)
         {
             HelpPopup.IsOpen = false;
-            Funcs.GetHelp(ExpressApp.Type, (int)((Button)sender).Tag);
+            Funcs.GetHelp(ExpressApp.Type, PageID, (int)((Button)sender).Tag);
         }
 
         #endregion
@@ -5513,7 +6047,12 @@ namespace Type_Express
             return Math.Max(Math.Min(1470, (double)value - 130), 0);
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return (double)value + 130;
         }
@@ -5526,7 +6065,12 @@ namespace Type_Express
             return (bool)value ? FontWeights.SemiBold : FontWeights.Normal;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return (FontWeight)value == FontWeights.SemiBold;
         }
@@ -5534,12 +6078,22 @@ namespace Type_Express
 
     public class DefinitionMarkerConverter : IMultiValueConverter
     {
-        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(
+            object[] values,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return (bool)values[0] ? "•" : values[1].ToString() + ".";
         }
 
-        public object[] ConvertBack(object value, Type[] targetType, object parameter, CultureInfo culture)
+        public object[] ConvertBack(
+            object value,
+            Type[] targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return [];
         }
@@ -5552,7 +6106,12 @@ namespace Type_Express
             return (bool)value ? 14D : 24D;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return (double)value == 14D;
         }
@@ -5565,7 +6124,12 @@ namespace Type_Express
             return (bool)value ? new Thickness(24, 0, 0, 0) : new Thickness(0);
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return ((Thickness)value).Left == 24D;
         }
@@ -5578,7 +6142,12 @@ namespace Type_Express
             return ((List<string>)value).Count == 0 ? Visibility.Collapsed : Visibility.Visible;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return new List<string>();
         }
@@ -5592,7 +6161,12 @@ namespace Type_Express
             return ls.SelectMany(x => x.Synonyms);
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return new List<WordTypeDefItem>();
         }
@@ -5605,9 +6179,40 @@ namespace Type_Express
             return (bool)value ? Visibility.Collapsed : Visibility.Visible;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return (Visibility)value == Visibility.Collapsed;
         }
+    }
+
+    public class LanguageCode
+    {
+        public const string English = "en";
+        public const string EnglishBritish = "en-GB";
+        public const string EnglishAmerican = "en-US";
+        public const string Chinese = "zh";
+        public const string Danish = "da";
+        public const string Dutch = "nl";
+        public const string Finnish = "fi";
+        public const string French = "fr";
+        public const string German = "de";
+        public const string Greek = "el";
+        public const string Italian = "it";
+        public const string Japanese = "ja";
+        public const string Korean = "ko";
+        public const string Norwegian = "nb";
+        public const string Polish = "pl";
+        public const string Portuguese = "pt";
+        public const string PortugueseEuropean = "pt-PT";
+        public const string PortugueseBrazilian = "pt-BR";
+        public const string Spanish = "es";
+        public const string Swedish = "sv";
+        public const string Turkish = "tr";
+        public const string Ukrainian = "uk";
     }
 }

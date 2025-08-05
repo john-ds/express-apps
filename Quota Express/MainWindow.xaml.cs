@@ -1,9 +1,4 @@
-﻿using CsvHelper.Configuration;
-using ExpressControls;
-using Microsoft.WindowsAPICodePack.Dialogs;
-using Newtonsoft.Json;
-using Quota_Express.Properties;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -18,23 +13,28 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Threading;
+using CsvHelper.Configuration;
+using ExpressControls;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using Newtonsoft.Json;
+using Quota_Express.Properties;
 
 namespace Quota_Express
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : ExpressWindow
     {
         private readonly DispatcherTimer TempLblTimer = new() { Interval = new TimeSpan(0, 0, 4) };
-        private readonly BackgroundWorker FileSizeWorker = new() { WorkerSupportsCancellation = true };
-        
+        private readonly BackgroundWorker FileSizeWorker = new()
+        {
+            WorkerSupportsCancellation = true,
+        };
+
         public readonly ObservableCollection<FileItem> FileDisplayList = [];
         public ICollectionView FileItemsView
         {
@@ -54,13 +54,110 @@ namespace Quota_Express
 
         private static readonly Dictionary<FileTypeCategory, string[]> FileTypeCategories = new()
         {
-            { FileTypeCategory.Images, new string[] { ".ai", ".bmp", ".gif", ".ico", ".jpeg", ".jpg", ".png", ".psd", ".svg", ".tif", ".tiff" } },
-            { FileTypeCategory.Audio, new string[] { ".aif", ".cda", ".mid", ".midi", ".mp3", ".mpa", ".ogg", ".wav", ".wma", ".wpl" } },
-            { FileTypeCategory.Video, new string[] { ".avi", ".3gp", ".flv", ".h264", ".m4v", ".mkv", ".mov", ".mp4", ".mpg", ".mpeg", ".swf", ".wmv" } },
-            { FileTypeCategory.Documents, new string[] { ".txt", ".rtf", ".doc", ".docx", ".odt", ".ppt", ".pptx", ".odp", ".xls", ".xlsx", ".ods", ".tex", ".pdf", ".pub" } },
-            { FileTypeCategory.Code, new string[] { ".c", ".class", ".cpp", ".cs", ".h", ".java", ".pl", ".sh", ".swift", ".vb", ".xml", ".xaml", ".html", ".css", ".js", ".asp", ".pl", ".cgi", ".htm", ".php", ".py", ".xhtml" } },
+            {
+                FileTypeCategory.Images,
+                new string[]
+                {
+                    ".ai",
+                    ".bmp",
+                    ".gif",
+                    ".ico",
+                    ".jpeg",
+                    ".jpg",
+                    ".png",
+                    ".psd",
+                    ".svg",
+                    ".tif",
+                    ".tiff",
+                }
+            },
+            {
+                FileTypeCategory.Audio,
+                new string[]
+                {
+                    ".aif",
+                    ".cda",
+                    ".mid",
+                    ".midi",
+                    ".mp3",
+                    ".mpa",
+                    ".ogg",
+                    ".wav",
+                    ".wma",
+                    ".wpl",
+                }
+            },
+            {
+                FileTypeCategory.Video,
+                new string[]
+                {
+                    ".avi",
+                    ".3gp",
+                    ".flv",
+                    ".h264",
+                    ".m4v",
+                    ".mkv",
+                    ".mov",
+                    ".mp4",
+                    ".mpg",
+                    ".mpeg",
+                    ".swf",
+                    ".wmv",
+                }
+            },
+            {
+                FileTypeCategory.Documents,
+                new string[]
+                {
+                    ".txt",
+                    ".rtf",
+                    ".doc",
+                    ".docx",
+                    ".odt",
+                    ".ppt",
+                    ".pptx",
+                    ".odp",
+                    ".xls",
+                    ".xlsx",
+                    ".ods",
+                    ".tex",
+                    ".pdf",
+                    ".pub",
+                }
+            },
+            {
+                FileTypeCategory.Code,
+                new string[]
+                {
+                    ".c",
+                    ".class",
+                    ".cpp",
+                    ".cs",
+                    ".h",
+                    ".java",
+                    ".pl",
+                    ".sh",
+                    ".swift",
+                    ".vb",
+                    ".xml",
+                    ".xaml",
+                    ".html",
+                    ".css",
+                    ".js",
+                    ".asp",
+                    ".pl",
+                    ".cgi",
+                    ".htm",
+                    ".php",
+                    ".py",
+                    ".xhtml",
+                }
+            },
             { FileTypeCategory.Fonts, new string[] { ".fon", ".fnt", ".otf", ".ttf", ".woff" } },
-            { FileTypeCategory.Archives, new string[] { ".zip", ".7z", ".rar", ".tar", ".pkg", ".arj" } }
+            {
+                FileTypeCategory.Archives,
+                new string[] { ".zip", ".7z", ".rar", ".tar", ".pkg", ".arj" }
+            },
         };
 
         public MainWindow()
@@ -72,6 +169,7 @@ namespace Quota_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             // Event handlers for maximisable windows
             MaxBtn.Click += Funcs.MaxRestoreEvent;
@@ -93,6 +191,7 @@ namespace Quota_Express
 
             Funcs.SetLang(Settings.Default.Language);
             Funcs.SetupDialogs();
+            Funcs.RegisterPopups(WindowGrid);
 
             // Setup for scrollable ribbon menu
             Funcs.Tabs = ["Menu", "Home", "View", "Export"];
@@ -108,7 +207,8 @@ namespace Quota_Express
                 ((Button)FindName(tab + "RightBtn")).PreviewMouseUp += Funcs.ScrollBtns_MouseUp;
 
                 ((StackPanel)FindName(tab + "Pnl")).MouseWheel += Funcs.ScrollRibbon_MouseWheel;
-                ((ScrollViewer)FindName(tab + "ScrollViewer")).SizeChanged += Funcs.DocScrollPnl_SizeChanged;
+                ((ScrollViewer)FindName(tab + "ScrollViewer")).SizeChanged +=
+                    Funcs.DocScrollPnl_SizeChanged;
 
                 ((RadioButton)FindName(tab + "Btn")).Click += Funcs.RibbonTabs_Click;
             }
@@ -143,36 +243,43 @@ namespace Quota_Express
 
             // Load ItemsControls
             FolderItems.ItemsSource = Enum.GetValues<FolderTypeCategory>()
-                .Where(x => x != FolderTypeCategory.None).Select(x =>
-            {
-                return new IconButtonItem()
+                .Where(x => x != FolderTypeCategory.None)
+                .Select(x =>
                 {
-                    ID = (int)x,
-                    Name = Funcs.ChooseLang(x switch
+                    return new IconButtonItem()
                     {
-                        FolderTypeCategory.Documents => "DocumentFolderStr",
-                        FolderTypeCategory.Pictures => "PictureFolderStr",
-                        FolderTypeCategory.Music => "MusicFolderStr",
-                        FolderTypeCategory.Video => "VideoFolderStr",
-                        _ => ""
-                    }),
-                    Icon = GetFolderIcon(x)
-                };
-            });
-            SortItems.ItemsSource = Enum.GetValues<FileSortOption>().Select(x =>
-            {
-                return new SelectableItem()
+                        ID = (int)x,
+                        Name = Funcs.ChooseLang(
+                            x switch
+                            {
+                                FolderTypeCategory.Documents => "DocumentFolderStr",
+                                FolderTypeCategory.Pictures => "PictureFolderStr",
+                                FolderTypeCategory.Music => "MusicFolderStr",
+                                FolderTypeCategory.Video => "VideoFolderStr",
+                                _ => "",
+                            }
+                        ),
+                        Icon = GetFolderIcon(x),
+                    };
+                });
+            SortItems.ItemsSource = Enum.GetValues<FileSortOption>()
+                .Select(x =>
                 {
-                    ID = (int)x,
-                    Name = GetSortName(x),
-                    Selected = x == ChosenSort
-                };
-            });
+                    return new SelectableItem()
+                    {
+                        ID = (int)x,
+                        Name = GetSortName(x),
+                        Selected = x == ChosenSort,
+                    };
+                });
 
             // Load files
             ItemsStack.ItemsSource = FileItemsView;
-            GetFiles(Directory.Exists(Settings.Default.StartupFolder) ? 
-                Settings.Default.StartupFolder : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
+            GetFiles(
+                Directory.Exists(Settings.Default.StartupFolder)
+                    ? Settings.Default.StartupFolder
+                    : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+            );
 
             GetDriveInfo();
             SortBtn.Tag = false;
@@ -184,13 +291,17 @@ namespace Quota_Express
                 await GetNotifications();
         }
 
-        private void Main_Closing(object sender, CancelEventArgs e)
+        private async void Main_Closing(object sender, CancelEventArgs e)
         {
             Settings.Default.Height = ActualHeight;
             Settings.Default.Width = ActualWidth;
             Settings.Default.Maximised = WindowState == WindowState.Maximized;
 
             Settings.Default.Save();
+            Funcs.LogWindowClose(PageID);
+
+            if (Application.Current.Windows.OfType<MainWindow>().Count() <= 1)
+                await Funcs.LogApplicationEnd();
         }
 
         private async void CommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -288,31 +399,35 @@ namespace Quota_Express
                 if (IncludeFolders)
                 {
                     foreach (string item in folders)
-                        FileDisplayList.Add(new FileItem()
-                        {
-                            Icon = GetFolderIcon(item),
-                            IsFolder = true,
-                            FileName = Path.GetFileName(item),
-                            FilePath = item,
-                            FilePathFormatted = item.Replace("\\", " » "),
-                            DateCreated = GetFileCreationDate(item, true),
-                            DateModified = GetFileModifiedDate(item, true)
-                        });
+                        FileDisplayList.Add(
+                            new FileItem()
+                            {
+                                Icon = GetFolderIcon(item),
+                                IsFolder = true,
+                                FileName = Path.GetFileName(item),
+                                FilePath = item,
+                                FilePathFormatted = item.Replace("\\", " » "),
+                                DateCreated = GetFileCreationDate(item, true),
+                                DateModified = GetFileModifiedDate(item, true),
+                            }
+                        );
                 }
 
                 if (IncludeFiles)
                 {
                     foreach (string item in files)
-                        FileDisplayList.Add(new FileItem()
-                        {
-                            Icon = GetFileIcon(item),
-                            IsFolder = false,
-                            FileName = Path.GetFileName(item),
-                            FilePath = item,
-                            FilePathFormatted = item.Replace("\\", " » "),
-                            DateCreated = GetFileCreationDate(item, false),
-                            DateModified = GetFileModifiedDate(item, false)
-                        });
+                        FileDisplayList.Add(
+                            new FileItem()
+                            {
+                                Icon = GetFileIcon(item),
+                                IsFolder = false,
+                                FileName = Path.GetFileName(item),
+                                FilePath = item,
+                                FilePathFormatted = item.Replace("\\", " » "),
+                                DateCreated = GetFileCreationDate(item, false),
+                                DateModified = GetFileModifiedDate(item, false),
+                            }
+                        );
                 }
 
                 if (updateStacks)
@@ -324,12 +439,19 @@ namespace Quota_Express
                 }
 
                 BackBtn.IsEnabled = BackStack.Count != 0;
-                BackBtn.Icon = (Viewbox)TryFindResource(BackStack.Count != 0 ? "UndoIcon" : "NoUndoIcon");
+                BackBtn.Icon = (Viewbox)TryFindResource(
+                    BackStack.Count != 0 ? "UndoIcon" : "NoUndoIcon"
+                );
                 ForwardBtn.IsEnabled = ForwardStack.Count != 0;
-                ForwardBtn.Icon = (Viewbox)TryFindResource(ForwardStack.Count != 0 ? "RedoIcon" : "NoRedoIcon");
+                ForwardBtn.Icon = (Viewbox)TryFindResource(
+                    ForwardStack.Count != 0 ? "RedoIcon" : "NoRedoIcon"
+                );
 
                 CurrentFolderTxt.Text = CurrentRoot = path;
-                TopBtnTxt.Text = Path.GetFileName(CurrentRoot) == "" ? CurrentRoot : Path.GetFileName(CurrentRoot);
+                TopBtnTxt.Text =
+                    Path.GetFileName(CurrentRoot) == ""
+                        ? CurrentRoot
+                        : Path.GetFileName(CurrentRoot);
                 TotalFolderSize = -1;
                 UpdateFilter(FileTypeCategory.None);
 
@@ -341,9 +463,13 @@ namespace Quota_Express
             }
             catch (Exception ex)
             {
-                Funcs.ShowMessage(string.Format(Funcs.ChooseLang("OpenFileErrorQStr"), path), 
-                    Funcs.ChooseLang("AccessDeniedStr"), MessageBoxButton.OK, MessageBoxImage.Error,
-                    Funcs.GenerateErrorReport(ex));
+                Funcs.ShowMessage(
+                    string.Format(Funcs.ChooseLang("OpenFileErrorQStr"), path),
+                    Funcs.ChooseLang("AccessDeniedStr"),
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    Funcs.GenerateErrorReport(ex, PageID, "AccessDeniedStr")
+                );
             }
         }
 
@@ -374,7 +500,10 @@ namespace Quota_Express
                 e.Cancel = true;
         }
 
-        private void FileSizeWorker_RunWorkerCompleted(object? sender, RunWorkerCompletedEventArgs e)
+        private void FileSizeWorker_RunWorkerCompleted(
+            object? sender,
+            RunWorkerCompletedEventArgs e
+        )
         {
             if (!e.Cancelled)
             {
@@ -427,7 +556,9 @@ namespace Quota_Express
         {
             try
             {
-                return isFolder ? new DirectoryInfo(path).CreationTime : new FileInfo(path).CreationTime;
+                return isFolder
+                    ? new DirectoryInfo(path).CreationTime
+                    : new FileInfo(path).CreationTime;
             }
             catch
             {
@@ -439,7 +570,9 @@ namespace Quota_Express
         {
             try
             {
-                return isFolder ? new DirectoryInfo(path).LastWriteTime : new FileInfo(path).LastWriteTime;
+                return isFolder
+                    ? new DirectoryInfo(path).LastWriteTime
+                    : new FileInfo(path).LastWriteTime;
             }
             catch
             {
@@ -453,25 +586,35 @@ namespace Quota_Express
             if (ext == "")
                 return FileTypeCategory.None;
 
-            return FileTypeCategories.Where(x => x.Value.Contains(ext))
-                .Select(x => x.Key).FirstOrDefault(defaultValue: FileTypeCategory.None);
+            return FileTypeCategories
+                .Where(x => x.Value.Contains(ext))
+                .Select(x => x.Key)
+                .FirstOrDefault(defaultValue: FileTypeCategory.None);
         }
 
         private static FolderTypeCategory GetFolderTypeCategory(string path)
         {
             try
             {
-                if (path == Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) || 
-                    Path.GetFileName(path) == Funcs.ChooseLang("DocumentFolderStr"))
+                if (
+                    path == Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+                    || Path.GetFileName(path) == Funcs.ChooseLang("DocumentFolderStr")
+                )
                     return FolderTypeCategory.Documents;
-                else if (path == Environment.GetFolderPath(Environment.SpecialFolder.MyMusic) || 
-                    Path.GetFileName(path) == Funcs.ChooseLang("MusicFolderStr"))
+                else if (
+                    path == Environment.GetFolderPath(Environment.SpecialFolder.MyMusic)
+                    || Path.GetFileName(path) == Funcs.ChooseLang("MusicFolderStr")
+                )
                     return FolderTypeCategory.Music;
-                else if (path == Environment.GetFolderPath(Environment.SpecialFolder.MyPictures) || 
-                    Path.GetFileName(path) == Funcs.ChooseLang("PictureFolderStr"))
+                else if (
+                    path == Environment.GetFolderPath(Environment.SpecialFolder.MyPictures)
+                    || Path.GetFileName(path) == Funcs.ChooseLang("PictureFolderStr")
+                )
                     return FolderTypeCategory.Pictures;
-                else if (path == Environment.GetFolderPath(Environment.SpecialFolder.MyVideos) || 
-                    Path.GetFileName(path) == Funcs.ChooseLang("VideoFolderStr"))
+                else if (
+                    path == Environment.GetFolderPath(Environment.SpecialFolder.MyVideos)
+                    || Path.GetFileName(path) == Funcs.ChooseLang("VideoFolderStr")
+                )
                     return FolderTypeCategory.Video;
                 else
                     return FolderTypeCategory.None;
@@ -489,17 +632,19 @@ namespace Quota_Express
 
         private Viewbox GetFileIcon(FileTypeCategory category)
         {
-            return (Viewbox)TryFindResource(category switch
-            {
-                FileTypeCategory.Images => "PictureFileIcon",
-                FileTypeCategory.Audio => "MusicFileIcon",
-                FileTypeCategory.Video => "VideoFileIcon",
-                FileTypeCategory.Documents => "DocumentFileIcon",
-                FileTypeCategory.Code => "CodeFileIcon",
-                FileTypeCategory.Fonts => "FontFileIcon",
-                FileTypeCategory.Archives => "ArchiveIcon",
-                _ => "BlankIcon"
-            });
+            return (Viewbox)TryFindResource(
+                category switch
+                {
+                    FileTypeCategory.Images => "PictureFileIcon",
+                    FileTypeCategory.Audio => "MusicFileIcon",
+                    FileTypeCategory.Video => "VideoFileIcon",
+                    FileTypeCategory.Documents => "DocumentFileIcon",
+                    FileTypeCategory.Code => "CodeFileIcon",
+                    FileTypeCategory.Fonts => "FontFileIcon",
+                    FileTypeCategory.Archives => "ArchiveIcon",
+                    _ => "BlankIcon",
+                }
+            );
         }
 
         private Viewbox GetFolderIcon(string path)
@@ -509,14 +654,16 @@ namespace Quota_Express
 
         private Viewbox GetFolderIcon(FolderTypeCategory category)
         {
-            return (Viewbox)TryFindResource(category switch
-            {
-                FolderTypeCategory.Documents => "DocumentFolderIcon",
-                FolderTypeCategory.Pictures => "ImageFolderIcon",
-                FolderTypeCategory.Music => "MusicFolderIcon",
-                FolderTypeCategory.Video => "VideoFolderIcon",
-                _ => "FolderIcon"
-            });
+            return (Viewbox)TryFindResource(
+                category switch
+                {
+                    FolderTypeCategory.Documents => "DocumentFolderIcon",
+                    FolderTypeCategory.Pictures => "ImageFolderIcon",
+                    FolderTypeCategory.Music => "MusicFolderIcon",
+                    FolderTypeCategory.Video => "VideoFolderIcon",
+                    _ => "FolderIcon",
+                }
+            );
         }
 
         private void OpenFileOrFolder(string path, bool isFolder)
@@ -529,16 +676,18 @@ namespace Quota_Express
             {
                 try
                 {
-                    _ = Process.Start(new ProcessStartInfo()
-                    {
-                        FileName = path,
-                        UseShellExecute = true
-                    });
+                    _ = Process.Start(
+                        new ProcessStartInfo() { FileName = path, UseShellExecute = true }
+                    );
                 }
                 catch
                 {
-                    Funcs.ShowMessage(string.Format(Funcs.ChooseLang("OpenFileErrorQStr"), path),
-                        Funcs.ChooseLang("AccessDeniedStr"), MessageBoxButton.OK, MessageBoxImage.Error);
+                    Funcs.ShowMessage(
+                        string.Format(Funcs.ChooseLang("OpenFileErrorQStr"), path),
+                        Funcs.ChooseLang("AccessDeniedStr"),
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error
+                    );
                 }
             }
         }
@@ -553,7 +702,12 @@ namespace Quota_Express
 
             if (fileSize < 0)
             {
-                Funcs.ShowMessageRes("FileSizeCalculatingDescStr", "FileSizeCalculatingStr", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Funcs.ShowMessageRes(
+                    "FileSizeCalculatingDescStr",
+                    "FileSizeCalculatingStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning
+                );
             }
             else
             {
@@ -575,46 +729,54 @@ namespace Quota_Express
             }
             catch
             {
-                return Funcs.ChooseLang(d.DriveType switch
-                {
-                    DriveType.Removable => "USBDriveStr",
-                    DriveType.Network => "NetworkDriveStr",
-                    DriveType.CDRom => "DiskDriveStr",
-                    _ => "DriveStr"
-
-                }) + " (" + d.Name.Replace("\\", "") + ")";
+                return Funcs.ChooseLang(
+                        d.DriveType switch
+                        {
+                            DriveType.Removable => "USBDriveStr",
+                            DriveType.Network => "NetworkDriveStr",
+                            DriveType.CDRom => "DiskDriveStr",
+                            _ => "DriveStr",
+                        }
+                    )
+                    + " ("
+                    + d.Name.Replace("\\", "")
+                    + ")";
             }
         }
 
         private static string GetFilterName(FileTypeCategory? x)
         {
-            return Funcs.ChooseLang(x switch
-            {
-                FileTypeCategory.None => "FlNoneStr",
-                FileTypeCategory.Images => "FlImgStr",
-                FileTypeCategory.Audio => "FlAudStr",
-                FileTypeCategory.Video => "FlVidStr",
-                FileTypeCategory.Documents => "FlDocStr",
-                FileTypeCategory.Code => "FlCdeStr",
-                FileTypeCategory.Fonts => "FlFntStr",
-                FileTypeCategory.Archives => "FlArcStr",
-                FileTypeCategory.Custom => "FlCustomStr",
-                _ => "OtherFilesStr"
-            });
+            return Funcs.ChooseLang(
+                x switch
+                {
+                    FileTypeCategory.None => "FlNoneStr",
+                    FileTypeCategory.Images => "FlImgStr",
+                    FileTypeCategory.Audio => "FlAudStr",
+                    FileTypeCategory.Video => "FlVidStr",
+                    FileTypeCategory.Documents => "FlDocStr",
+                    FileTypeCategory.Code => "FlCdeStr",
+                    FileTypeCategory.Fonts => "FlFntStr",
+                    FileTypeCategory.Archives => "FlArcStr",
+                    FileTypeCategory.Custom => "FlCustomStr",
+                    _ => "OtherFilesStr",
+                }
+            );
         }
 
         private static string GetSortName(FileSortOption sort)
         {
-            return Funcs.ChooseLang(sort switch
-            {
-                FileSortOption.NameAZ => "NameAZStr",
-                FileSortOption.NameZA => "NameZAStr",
-                FileSortOption.SizeAsc => "SizeAscStr",
-                FileSortOption.SizeDesc => "SizeDescStr",
-                FileSortOption.NewestFirst => "NewestStr",
-                FileSortOption.OldestFirst => "OldestStr",
-                _ => ""
-            });
+            return Funcs.ChooseLang(
+                sort switch
+                {
+                    FileSortOption.NameAZ => "NameAZStr",
+                    FileSortOption.NameZA => "NameZAStr",
+                    FileSortOption.SizeAsc => "SizeAscStr",
+                    FileSortOption.SizeDesc => "SizeDescStr",
+                    FileSortOption.NewestFirst => "NewestStr",
+                    FileSortOption.OldestFirst => "OldestStr",
+                    _ => "",
+                }
+            );
         }
 
         #endregion
@@ -622,7 +784,9 @@ namespace Quota_Express
 
         private void ItemBtn_Click(object sender, RoutedEventArgs e)
         {
-            FileItem item = FileDisplayList.Where(x => x.FilePath == (string)((Button)sender).Tag).First();
+            FileItem item = FileDisplayList
+                .Where(x => x.FilePath == (string)((Button)sender).Tag)
+                .First();
             item.Selected = !item.Selected;
 
             if (!GetSelectedItems().Any())
@@ -636,13 +800,16 @@ namespace Quota_Express
 
         private void ItemBtn_PreviewMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            FileItem item = FileDisplayList.Where(x => x.FilePath == (string)((Button)sender).Tag).First();
+            FileItem item = FileDisplayList
+                .Where(x => x.FilePath == (string)((Button)sender).Tag)
+                .First();
             OpenFileOrFolder(item.FilePath, item.IsFolder);
         }
 
         private void OpenBtn_Click(object sender, RoutedEventArgs e)
         {
-            string path = (string)((Button)((ContextMenu)((MenuItem)sender).Parent).PlacementTarget).Tag;
+            string path = (string)
+                ((Button)((ContextMenu)((MenuItem)sender).Parent).PlacementTarget).Tag;
 
             FileItem item = FileDisplayList.Where(x => x.FilePath == path).First();
             OpenFileOrFolder(item.FilePath, item.IsFolder);
@@ -650,7 +817,8 @@ namespace Quota_Express
 
         private void CopyPathBtn_Click(object sender, RoutedEventArgs e)
         {
-            string? path = (((ContextMenu)((MenuItem)sender).Parent).PlacementTarget as Button)?.Tag as string;
+            string? path =
+                (((ContextMenu)((MenuItem)sender).Parent).PlacementTarget as Button)?.Tag as string;
 
             Clipboard.SetText(path ?? CurrentRoot);
             CreateTempLabel(Funcs.ChooseLang("ClipCopiedStr"));
@@ -658,13 +826,15 @@ namespace Quota_Express
 
         private void CopySizeBtn_Click(object sender, RoutedEventArgs e)
         {
-            string? path = (((ContextMenu)((MenuItem)sender).Parent).PlacementTarget as Button)?.Tag as string;
+            string? path =
+                (((ContextMenu)((MenuItem)sender).Parent).PlacementTarget as Button)?.Tag as string;
             CopyFileSize(path ?? "");
         }
 
         private void CopySizeBytesBtn_Click(object sender, RoutedEventArgs e)
         {
-            string? path = (((ContextMenu)((MenuItem)sender).Parent).PlacementTarget as Button)?.Tag as string;
+            string? path =
+                (((ContextMenu)((MenuItem)sender).Parent).PlacementTarget as Button)?.Tag as string;
             CopyFileSize(path ?? "", true);
         }
 
@@ -705,14 +875,18 @@ namespace Quota_Express
         private void FolderBtns_Click(object sender, RoutedEventArgs e)
         {
             int id = (int)((Button)sender).Tag;
-            GetFiles(Environment.GetFolderPath((FolderTypeCategory)id switch
-            {
-                FolderTypeCategory.Documents => Environment.SpecialFolder.MyDocuments,
-                FolderTypeCategory.Pictures => Environment.SpecialFolder.MyPictures,
-                FolderTypeCategory.Music => Environment.SpecialFolder.MyMusic,
-                FolderTypeCategory.Video => Environment.SpecialFolder.MyVideos,
-                _ => Environment.SpecialFolder.DesktopDirectory
-            }));
+            GetFiles(
+                Environment.GetFolderPath(
+                    (FolderTypeCategory)id switch
+                    {
+                        FolderTypeCategory.Documents => Environment.SpecialFolder.MyDocuments,
+                        FolderTypeCategory.Pictures => Environment.SpecialFolder.MyPictures,
+                        FolderTypeCategory.Music => Environment.SpecialFolder.MyMusic,
+                        FolderTypeCategory.Video => Environment.SpecialFolder.MyVideos,
+                        _ => Environment.SpecialFolder.DesktopDirectory,
+                    }
+                )
+            );
 
             FoldersPopup.IsOpen = false;
         }
@@ -734,24 +908,32 @@ namespace Quota_Express
 
         private void GetFileBreakdown()
         {
-            if (TotalFolderSize > 0 && !GetSelectedItems().Any() && IncludeFiles && ChosenFilter == FileTypeCategory.None)
+            if (
+                TotalFolderSize > 0
+                && !GetSelectedItems().Any()
+                && IncludeFiles
+                && ChosenFilter == FileTypeCategory.None
+            )
             {
                 Dictionary<FileTypeCategory, long> fileTypeSizes = FileDisplayList
-                    .Where(x => !x.IsFolder).GroupBy(x => GetFileTypeCategory(x.FilePath))
+                    .Where(x => !x.IsFolder)
+                    .GroupBy(x => GetFileTypeCategory(x.FilePath))
                     .ToDictionary(x => x.Key, x => x.Sum(y => y.FileSize));
 
                 if (fileTypeSizes.Count > 1)
                 {
-                    BreakdownItems.ItemsSource = fileTypeSizes.Select(x =>
-                    {
-                        return new BreakdownItem()
+                    BreakdownItems.ItemsSource = fileTypeSizes
+                        .Select(x =>
                         {
-                            Name = GetFilterName(x.Key == FileTypeCategory.None ? null : x.Key),
-                            Icon = GetFileIcon(x.Key),
-                            Size = x.Value
-                        };
-
-                    }).OrderBy(o => o.Size).Reverse();
+                            return new BreakdownItem()
+                            {
+                                Name = GetFilterName(x.Key == FileTypeCategory.None ? null : x.Key),
+                                Icon = GetFileIcon(x.Key),
+                                Size = x.Value,
+                            };
+                        })
+                        .OrderBy(o => o.Size)
+                        .Reverse();
                     BreakdownStack.Visibility = Visibility.Visible;
                 }
             }
@@ -764,12 +946,17 @@ namespace Quota_Express
                 FileItem? largestItem = FileDisplayList.MaxBy(x => x.FileSize);
                 IEnumerable<FileItem> files = FileDisplayList.Where(x => !x.IsFolder);
 
-                if (largestItem != null && largestItem.FileSize >= 524288000 &&
-                    (largestItem.FileSize / (double)TotalFolderSize >= 0.7))
+                if (
+                    largestItem != null
+                    && largestItem.FileSize >= 524288000
+                    && (largestItem.FileSize / (double)TotalFolderSize >= 0.7)
+                )
                 {
                     // The largest item exceeds 500MB and is more than 70% of the total folder size
                     InsightTxt.Text = string.Format(
-                        Funcs.ChooseLang(largestItem.IsFolder ? "InsightLargeFolderStr" : "InsightLargeFileStr"),
+                        Funcs.ChooseLang(
+                            largestItem.IsFolder ? "InsightLargeFolderStr" : "InsightLargeFileStr"
+                        ),
                         largestItem.FileName,
                         Funcs.FormatBytes(largestItem.FileSize)
                     );
@@ -777,23 +964,36 @@ namespace Quota_Express
                 else if (files.Count() >= 75)
                 {
                     // More than 75 files
-                    InsightTxt.Text = string.Format(Funcs.ChooseLang("InsightManyFilesStr"), files.Count());
+                    InsightTxt.Text = string.Format(
+                        Funcs.ChooseLang("InsightManyFilesStr"),
+                        files.Count()
+                    );
                 }
-                else if (files.Count() >= 25 &&
-                    files.GroupBy(x => GetFileTypeCategory(x.FilePath)).Count() >= 4)
+                else if (
+                    files.Count() >= 25
+                    && files.GroupBy(x => GetFileTypeCategory(x.FilePath)).Count() >= 4
+                )
                 {
                     // More than 25 files and at least 4 different file types
                     InsightTxt.Text = Funcs.ChooseLang("InsightDiffTypesStr");
                 }
-                else if (FileDisplayList.Count(x => x.DateModified != null && x.DateModified < DateTime.Now.AddYears(-2)) >= 25)
+                else if (
+                    FileDisplayList.Count(x =>
+                        x.DateModified != null && x.DateModified < DateTime.Now.AddYears(-2)
+                    ) >= 25
+                )
                 {
                     // More than 25 files that were last accessed more than 2 years ago
-                    InsightTxt.Text = string.Format(Funcs.ChooseLang("InsightFileModifiedStr"),
-                        FileDisplayList.Count(x => x.DateModified != null && x.DateModified < DateTime.Now.AddYears(-2)));
+                    InsightTxt.Text = string.Format(
+                        Funcs.ChooseLang("InsightFileModifiedStr"),
+                        FileDisplayList.Count(x =>
+                            x.DateModified != null && x.DateModified < DateTime.Now.AddYears(-2)
+                        )
+                    );
                 }
                 else
                     return;
-                
+
                 InsightStack.Visibility = Visibility.Visible;
             }
         }
@@ -815,7 +1015,14 @@ namespace Quota_Express
 
                 if (TotalFolderSize > 0)
                 {
-                    CircleProgress.Value = Math.Round(selectionSize / (double)TotalFolderSize * 100, 0);
+                    CircleProgress.Value = Math.Round(
+                        selectionSize / (double)TotalFolderSize * 100,
+                        0
+                    );
+                    CircleProgress.SetValue(
+                        System.Windows.Automation.AutomationProperties.NameProperty,
+                        Funcs.ChooseLang("SelectionFolderStr")
+                    );
                     CircleProgress.Visibility = Visibility.Visible;
                     SubtitleFolderTxt.Visibility = Visibility.Visible;
                 }
@@ -885,10 +1092,18 @@ namespace Quota_Express
                 FolderStack.Visibility = Visibility.Collapsed;
                 ErrorDriveTxt.Visibility = Visibility.Collapsed;
 
+                CircleProgress.SetValue(
+                    System.Windows.Automation.AutomationProperties.NameProperty,
+                    Funcs.ChooseLang("TotalUsageStr")
+                );
+
                 DriveInfo d = new(name == "" ? Path.GetPathRoot(CurrentRoot) ?? "" : name);
                 DriveNameTxt.Text = name == "" ? Path.GetPathRoot(CurrentRoot) : name;
 
-                CircleProgress.Value = Math.Round((d.TotalSize - d.TotalFreeSpace) / (double)d.TotalSize * 100, 0);
+                CircleProgress.Value = Math.Round(
+                    (d.TotalSize - d.TotalFreeSpace) / (double)d.TotalSize * 100,
+                    0
+                );
                 DriveTakenTxt.Text = Funcs.FormatBytes(d.TotalSize - d.TotalFreeSpace);
                 DriveRemainingTxt.Text = Funcs.FormatBytes(d.TotalFreeSpace);
                 DriveTotalTxt.Text = Funcs.FormatBytes(d.TotalSize);
@@ -902,7 +1117,12 @@ namespace Quota_Express
 
                 if (name != "")
                 {
-                    Funcs.ShowMessageRes("DriveErrorDescStr", "DriveErrorStr", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Funcs.ShowMessageRes(
+                        "DriveErrorDescStr",
+                        "DriveErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error
+                    );
                     GetDriveInfo();
                 }
             }
@@ -910,24 +1130,33 @@ namespace Quota_Express
 
         private void DriveMenuBtn_Click(object sender, RoutedEventArgs e)
         {
-            DriveItems.ItemsSource = DriveInfo.GetDrives().Select(d =>
-            {
-                return new DriveItem()
+            DriveItems.ItemsSource = DriveInfo
+                .GetDrives()
+                .Select(d =>
                 {
-                    Name = d.Name,
-                    DisplayName = GetDriveName(d),
-                    Icon = (Viewbox)TryFindResource(d.DriveType switch
+                    return new DriveItem()
                     {
-                        DriveType.Removable => "UsbIcon",
-                        DriveType.Network => "NetworkDriveIcon",
-                        DriveType.CDRom => "CdIcon",
-                        _ => "DriveIcon"
-                    })
-                };
-            });
+                        Name = d.Name,
+                        DisplayName = GetDriveName(d),
+                        Icon = (Viewbox)TryFindResource(
+                            d.DriveType switch
+                            {
+                                DriveType.Removable => "UsbIcon",
+                                DriveType.Network => "NetworkDriveIcon",
+                                DriveType.CDRom => "CdIcon",
+                                _ => "DriveIcon",
+                            }
+                        ),
+                    };
+                });
 
             if (DriveInfo.GetDrives().Length == 0)
-                Funcs.ShowMessageRes("DriveErrorShortDescStr", "DriveErrorStr", MessageBoxButton.OK, MessageBoxImage.Error);
+                Funcs.ShowMessageRes(
+                    "DriveErrorShortDescStr",
+                    "DriveErrorStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
             else
                 DrivePopup.IsOpen = true;
         }
@@ -945,7 +1174,7 @@ namespace Quota_Express
         {
             if (FoldersBtn.IsChecked == false && FilesBtn.IsChecked == false)
                 FoldersBtn.IsChecked = IncludeFolders = true;
-            
+
             IncludeFiles = FilesBtn.IsChecked == true;
             if (CurrentRoot != "")
                 GetFiles(CurrentRoot, false);
@@ -955,7 +1184,7 @@ namespace Quota_Express
         {
             if (FoldersBtn.IsChecked == false && FilesBtn.IsChecked == false)
                 FilesBtn.IsChecked = IncludeFiles = true;
-            
+
             IncludeFolders = FoldersBtn.IsChecked == true;
             if (CurrentRoot != "")
                 GetFiles(CurrentRoot, false);
@@ -968,19 +1197,25 @@ namespace Quota_Express
         {
             if (!IncludeFiles)
             {
-                Funcs.ShowMessageRes("FilterErrorDescStr", "FilterErrorStr", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                Funcs.ShowMessageRes(
+                    "FilterErrorDescStr",
+                    "FilterErrorStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Exclamation
+                );
                 return;
             }
 
-            FilterItems.ItemsSource = Enum.GetValues<FileTypeCategory>().Select(x =>
-            {
-                return new SelectableItem()
+            FilterItems.ItemsSource = Enum.GetValues<FileTypeCategory>()
+                .Select(x =>
                 {
-                    ID = (int)x,
-                    Name = GetFilterName(x),
-                    Selected = x == ChosenFilter
-                };
-            });
+                    return new SelectableItem()
+                    {
+                        ID = (int)x,
+                        Name = GetFilterName(x),
+                        Selected = x == ChosenFilter,
+                    };
+                });
 
             FilterPopup.IsOpen = true;
         }
@@ -1010,8 +1245,13 @@ namespace Quota_Express
                 }
                 else
                 {
-                    string[] exts = ChosenFilter == FileTypeCategory.Custom ?
-                        WhitespaceRegex().Replace(CustomFilterTxt.Text, "").ToLower().Split(",") : FileTypeCategories[ChosenFilter];
+                    string[] exts =
+                        ChosenFilter == FileTypeCategory.Custom
+                            ? WhitespaceRegex()
+                                .Replace(CustomFilterTxt.Text, "")
+                                .ToLower()
+                                .Split(",")
+                            : FileTypeCategories[ChosenFilter];
 
                     if (exts.Length == 0)
                         return true;
@@ -1040,10 +1280,16 @@ namespace Quota_Express
                 ClearBtn.Visibility = Visibility.Visible;
 
             int count = FileItemsView.Cast<FileItem>().Count();
-            if (count == 1)
-                RefreshBtn.Text = "1 " + Funcs.ChooseLang("ItemStr").ToLower();
-            else
-                RefreshBtn.Text = count.ToString() + " " + Funcs.ChooseLang("ItemsStr").ToLower();
+            string refreshBtnText =
+                count == 1
+                    ? $"1 {Funcs.ChooseLang("ItemStr").ToLower()}"
+                    : $"{count} {Funcs.ChooseLang("ItemsStr").ToLower()}";
+
+            RefreshBtn.Text = refreshBtnText;
+            RefreshBtn.SetValue(
+                System.Windows.Automation.AutomationProperties.NameProperty,
+                $"{Funcs.ChooseLang("ReloadStr")} {refreshBtnText}"
+            );
 
             if (FolderStack.IsVisible)
                 GetFolderInfo();
@@ -1080,25 +1326,53 @@ namespace Quota_Express
             switch (sort)
             {
                 case FileSortOption.NameAZ:
-                    FileItemsView.SortDescriptions.Add(new SortDescription(nameof(FileItem.IsFolderInt), ListSortDirection.Descending));
-                    FileItemsView.SortDescriptions.Add(new SortDescription(nameof(FileItem.FileName), ListSortDirection.Ascending));
+                    FileItemsView.SortDescriptions.Add(
+                        new SortDescription(
+                            nameof(FileItem.IsFolderInt),
+                            ListSortDirection.Descending
+                        )
+                    );
+                    FileItemsView.SortDescriptions.Add(
+                        new SortDescription(nameof(FileItem.FileName), ListSortDirection.Ascending)
+                    );
                     break;
                 case FileSortOption.NameZA:
-                    FileItemsView.SortDescriptions.Add(new SortDescription(nameof(FileItem.IsFolderInt), ListSortDirection.Ascending));
-                    FileItemsView.SortDescriptions.Add(new SortDescription(nameof(FileItem.FileName), ListSortDirection.Descending));
+                    FileItemsView.SortDescriptions.Add(
+                        new SortDescription(
+                            nameof(FileItem.IsFolderInt),
+                            ListSortDirection.Ascending
+                        )
+                    );
+                    FileItemsView.SortDescriptions.Add(
+                        new SortDescription(nameof(FileItem.FileName), ListSortDirection.Descending)
+                    );
                     break;
                 case FileSortOption.SizeAsc:
-                    FileItemsView.SortDescriptions.Add(new SortDescription(nameof(FileItem.FileSize), ListSortDirection.Ascending));
+                    FileItemsView.SortDescriptions.Add(
+                        new SortDescription(nameof(FileItem.FileSize), ListSortDirection.Ascending)
+                    );
                     break;
                 case FileSortOption.SizeDesc:
-                    FileItemsView.SortDescriptions.Add(new SortDescription(nameof(FileItem.FileSize), ListSortDirection.Descending));
+                    FileItemsView.SortDescriptions.Add(
+                        new SortDescription(nameof(FileItem.FileSize), ListSortDirection.Descending)
+                    );
                     break;
                 case FileSortOption.NewestFirst:
-                    FileItemsView.SortDescriptions.Add(new SortDescription(nameof(FileItem.DateCreated), ListSortDirection.Descending));
+                    FileItemsView.SortDescriptions.Add(
+                        new SortDescription(
+                            nameof(FileItem.DateCreated),
+                            ListSortDirection.Descending
+                        )
+                    );
                     SortBtn.Tag = true;
                     break;
                 case FileSortOption.OldestFirst:
-                    FileItemsView.SortDescriptions.Add(new SortDescription(nameof(FileItem.DateCreated), ListSortDirection.Ascending));
+                    FileItemsView.SortDescriptions.Add(
+                        new SortDescription(
+                            nameof(FileItem.DateCreated),
+                            ListSortDirection.Ascending
+                        )
+                    );
                     SortBtn.Tag = true;
                     break;
                 default:
@@ -1114,47 +1388,92 @@ namespace Quota_Express
             IEnumerable<FileItem> items = FileItemsView.Cast<FileItem>();
 
             if (!items.Any())
-                Funcs.ShowMessageRes("NoDataErrorDescStr", "NoDataStr", MessageBoxButton.OK, MessageBoxImage.Error);
+                Funcs.ShowMessageRes(
+                    "NoDataErrorDescStr",
+                    "NoDataStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
             else if (TotalFolderSize < 0)
-                Funcs.ShowMessageRes("TotalSizeCalculatingDescStr", "FileSizeCalculatingStr", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                Funcs.ShowMessageRes(
+                    "TotalSizeCalculatingDescStr",
+                    "FileSizeCalculatingStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Exclamation
+                );
             else
             {
                 if (items.Count() > 25)
-                    Funcs.ShowMessageRes("ChartsMaxQDescStr", "ChartsMaxQStr", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    Funcs.ShowMessageRes(
+                        "ChartsMaxQDescStr",
+                        "ChartsMaxQStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Exclamation
+                    );
 
-                ChartEditor chrt = new(ExpressApp.Quota, new ChartItem()
-                {
-                    Type = ChartType.Pie,
-                    Labels = items.Take(25).Select(x => x.FileName).ToList(),
-                    Series =
-                    [
-                        new SeriesItem()
-                        {
-                            Type = SeriesType.Default,
-                            Values = items.Take(25).Select(x => Math.Round((double)x.FileSize / 1024 / 1024, 2)).ToList()
-                        }
-                    ],
-                    ChartTitle = Path.GetFileName(CurrentRoot),
-                    AxisXTitle = Funcs.ChooseLang("FilenameStr"),
-                    AxisYTitle = Funcs.ChooseLang("SizeAxisTitleStr"),
-                    ColourTheme = (ColourScheme)Settings.Default.DefaultColourScheme,
-                    LegendPlacement = LiveChartsCore.Measure.LegendPosition.Right
-                });
+                ChartEditor chrt = new(
+                    ExpressApp.Quota,
+                    new ChartItem()
+                    {
+                        Type = ChartType.Pie,
+                        Labels = [.. items.Take(25).Select(x => x.FileName)],
+                        Series =
+                        [
+                            new SeriesItem()
+                            {
+                                Type = SeriesType.Default,
+                                Values =
+                                [
+                                    .. items
+                                        .Take(25)
+                                        .Select(x =>
+                                            Math.Round((double)x.FileSize / 1024 / 1024, 2)
+                                        ),
+                                ],
+                            },
+                        ],
+                        ChartTitle = Path.GetFileName(CurrentRoot),
+                        AxisXTitle = Funcs.ChooseLang("FilenameStr"),
+                        AxisYTitle = Funcs.ChooseLang("SizeAxisTitleStr"),
+                        ColourTheme = (ColourScheme)Settings.Default.DefaultColourScheme,
+                        LegendPlacement = LiveChartsCore.Measure.LegendPosition.Right,
+                    }
+                );
 
-                if (chrt.ShowDialog() == true && chrt.ChartData != null && Funcs.PNGSaveDialog.ShowDialog() == true)
+                if (
+                    chrt.ShowDialog() == true
+                    && chrt.ChartData != null
+                    && Funcs.PNGSaveDialog.ShowDialog() == true
+                )
                 {
                     try
                     {
-                        Funcs.SaveSlideAsImage(ChartEditor.RenderChart(chrt.ChartData), 
-                            System.Drawing.Imaging.ImageFormat.Png, Colors.White, chrt.ChartData.Width, 
-                            chrt.ChartData.Height, Funcs.PNGSaveDialog.FileName, true);
+                        Funcs.SaveSlideAsImage(
+                            ChartEditor.RenderChart(chrt.ChartData),
+                            System.Drawing.Imaging.ImageFormat.Png,
+                            Colors.White,
+                            chrt.ChartData.Width,
+                            chrt.ChartData.Height,
+                            Funcs.PNGSaveDialog.FileName,
+                            true
+                        );
 
-                        Funcs.ShowMessageRes("FileSavedStr", "SuccessStr", MessageBoxButton.OK, MessageBoxImage.Information);
+                        Funcs.ShowMessageRes(
+                            "FileSavedStr",
+                            "SuccessStr",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information
+                        );
                     }
                     catch (Exception ex)
                     {
-                        Funcs.ShowMessageRes("FileSaveErrorStr", "ChartErrorStr",
-                            MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                        Funcs.ShowMessageRes(
+                            "FileSaveErrorStr",
+                            "ChartErrorStr",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error,
+                            Funcs.GenerateErrorReport(ex, PageID, "FileSaveErrorStr")
+                        );
                     }
                 }
             }
@@ -1167,54 +1486,56 @@ namespace Quota_Express
 
             for (int i = 0; i < chars.Length; i++)
             {
-                sb.Append(chars[i] switch
-                {
-                    '’' => "{\\'92}",
-                    '`' => "{\\'60}",
-                    '€' => "{\\'80}",
-                    '…' => "{\\'85}",
-                    '‘' => "{\\'91}",
-                    '̕' => "{\\'92}",
-                    '“' => "{\\'93}",
-                    '”' => "{\\'94}",
-                    '•' => "{\\'95}",
-                    '–' or '‒' => "{\\'96}",
-                    '—' => "{\\'97}",
-                    '©' => "{\\'a9}",
-                    '«' => "{\\'ab}",
-                    '±' => "{\\'b1}",
-                    '„' => "\"",
-                    '´' => "{\\'b4}",
-                    '¸' => "{\\'b8}",
-                    '»' => "{\\'bb}",
-                    '½' => "{\\'bd}",
-                    'Ä' => "{\\'c4}",
-                    'È' => "{\\'c8}",
-                    'É' => "{\\'c9}",
-                    'Ë' => "{\\'cb}",
-                    'Ï' => "{\\'cf}",
-                    'Í' => "{\\'cd}",
-                    'Ó' => "{\\'d3}",
-                    'Ö' => "{\\'d6}",
-                    'Ü' => "{\\'dc}",
-                    'Ú' => "{\\'da}",
-                    'ß' or 'β' => "{\\'df}",
-                    'à' => "{\\'e0}",
-                    'á' => "{\\'e1}",
-                    'ä' => "{\\'e4}",
-                    'è' => "{\\'e8}",
-                    'é' => "{\\'e9}",
-                    'ê' => "{\\'ea}",
-                    'ë' => "{\\'eb}",
-                    'ï' => "{\\'ef}",
-                    'í' => "{\\'ed}",
-                    'ò' => "{\\'f2}",
-                    'ó' => "{\\'f3}",
-                    'ö' => "{\\'f6}",
-                    'ú' => "{\\'fa}",
-                    'ü' => "{\\'fc}",
-                    _ => chars[i],
-                });
+                sb.Append(
+                    chars[i] switch
+                    {
+                        '’' => "{\\'92}",
+                        '`' => "{\\'60}",
+                        '€' => "{\\'80}",
+                        '…' => "{\\'85}",
+                        '‘' => "{\\'91}",
+                        '̕' => "{\\'92}",
+                        '“' => "{\\'93}",
+                        '”' => "{\\'94}",
+                        '•' => "{\\'95}",
+                        '–' or '‒' => "{\\'96}",
+                        '—' => "{\\'97}",
+                        '©' => "{\\'a9}",
+                        '«' => "{\\'ab}",
+                        '±' => "{\\'b1}",
+                        '„' => "\"",
+                        '´' => "{\\'b4}",
+                        '¸' => "{\\'b8}",
+                        '»' => "{\\'bb}",
+                        '½' => "{\\'bd}",
+                        'Ä' => "{\\'c4}",
+                        'È' => "{\\'c8}",
+                        'É' => "{\\'c9}",
+                        'Ë' => "{\\'cb}",
+                        'Ï' => "{\\'cf}",
+                        'Í' => "{\\'cd}",
+                        'Ó' => "{\\'d3}",
+                        'Ö' => "{\\'d6}",
+                        'Ü' => "{\\'dc}",
+                        'Ú' => "{\\'da}",
+                        'ß' or 'β' => "{\\'df}",
+                        'à' => "{\\'e0}",
+                        'á' => "{\\'e1}",
+                        'ä' => "{\\'e4}",
+                        'è' => "{\\'e8}",
+                        'é' => "{\\'e9}",
+                        'ê' => "{\\'ea}",
+                        'ë' => "{\\'eb}",
+                        'ï' => "{\\'ef}",
+                        'í' => "{\\'ed}",
+                        'ò' => "{\\'f2}",
+                        'ó' => "{\\'f3}",
+                        'ö' => "{\\'f6}",
+                        'ú' => "{\\'fa}",
+                        'ü' => "{\\'fc}",
+                        _ => chars[i],
+                    }
+                );
             }
             return sb.ToString();
         }
@@ -1224,9 +1545,19 @@ namespace Quota_Express
             IEnumerable<FileItem> items = FileItemsView.Cast<FileItem>();
 
             if (!items.Any())
-                Funcs.ShowMessageRes("NoDataErrorDescStr", "NoDataStr", MessageBoxButton.OK, MessageBoxImage.Error);
+                Funcs.ShowMessageRes(
+                    "NoDataErrorDescStr",
+                    "NoDataStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
             else if (TotalFolderSize < 0)
-                Funcs.ShowMessageRes("TotalSizeCalculatingDescStr", "FileSizeCalculatingStr", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                Funcs.ShowMessageRes(
+                    "TotalSizeCalculatingDescStr",
+                    "FileSizeCalculatingStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Exclamation
+                );
             else
             {
                 try
@@ -1246,7 +1577,11 @@ namespace Quota_Express
                                 foreach (FileItem item in items)
                                 {
                                     sb.AppendLine(item.FileName);
-                                    sb.AppendLine((bool)SortBtn.Tag == false ? Funcs.FormatBytes(item.FileSize) : item.DateCreatedString);
+                                    sb.AppendLine(
+                                        (bool)SortBtn.Tag == false
+                                            ? Funcs.FormatBytes(item.FileSize)
+                                            : item.DateCreatedString
+                                    );
                                     sb.AppendLine();
                                 }
 
@@ -1259,8 +1594,15 @@ namespace Quota_Express
                         case "CSV":
                             if (Funcs.CSVSaveDialog.ShowDialog() == true)
                             {
-                                CsvConfiguration config = new(CultureInfo.InvariantCulture) { HasHeaderRecord = true };
-                                using TextWriter writer = new StreamWriter(Funcs.CSVSaveDialog.FileName, false, Encoding.UTF8);
+                                CsvConfiguration config = new(CultureInfo.InvariantCulture)
+                                {
+                                    HasHeaderRecord = true,
+                                };
+                                using TextWriter writer = new StreamWriter(
+                                    Funcs.CSVSaveDialog.FileName,
+                                    false,
+                                    Encoding.UTF8
+                                );
                                 using CsvHelper.CsvWriter csv = new(writer, config);
 
                                 csv.WriteField(CurrentRoot);
@@ -1270,7 +1612,11 @@ namespace Quota_Express
                                 foreach (FileItem item in items)
                                 {
                                     csv.WriteField(item.FileName);
-                                    csv.WriteField((bool)SortBtn.Tag == false ? Funcs.FormatBytes(item.FileSize) : item.DateCreatedString);
+                                    csv.WriteField(
+                                        (bool)SortBtn.Tag == false
+                                            ? Funcs.FormatBytes(item.FileSize)
+                                            : item.DateCreatedString
+                                    );
                                     csv.NextRecord();
                                 }
                             }
@@ -1282,58 +1628,81 @@ namespace Quota_Express
                             if (Funcs.RTFSaveDialog.ShowDialog() == true)
                             {
                                 StringBuilder sb = new();
-                                sb.Append("{\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Calibri;}}\\trowd\\cellx6000\\cellx7500\\pard\\intbl\\f1 ");
-                                sb.Append($"{{\\b {CurrentRoot.Replace("\\", "\\\\")}}}\\f0\\cell\\f1 {{\\b {Funcs.FormatBytes(TotalFolderSize)}}}\\f0\\cell\\row");
-                                sb.Append("\\trowd\\cellx6000\\cellx7500\\pard\\intbl\\f1 \\emdash\\f0\\cell\\f1 \\emdash\\f0\\cell\\row");
+                                sb.Append(
+                                    "{\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Calibri;}}\\trowd\\cellx6000\\cellx7500\\pard\\intbl\\f1 "
+                                );
+                                sb.Append(
+                                    $"{{\\b {CurrentRoot.Replace("\\", "\\\\")}}}\\f0\\cell\\f1 {{\\b {Funcs.FormatBytes(TotalFolderSize)}}}\\f0\\cell\\row"
+                                );
+                                sb.Append(
+                                    "\\trowd\\cellx6000\\cellx7500\\pard\\intbl\\f1 \\emdash\\f0\\cell\\f1 \\emdash\\f0\\cell\\row"
+                                );
 
                                 foreach (FileItem item in items)
                                 {
                                     sb.Append("\\trowd\\cellx6000\\cellx7500\\pard\\intbl\\f1 ");
                                     sb.Append(item.FileName.Replace("\\", "\\\\"));
                                     sb.Append("\\f0\\cell\\f1 ");
-                                    sb.Append((bool)SortBtn.Tag == false ? Funcs.FormatBytes(item.FileSize) : item.DateCreatedString);
+                                    sb.Append(
+                                        (bool)SortBtn.Tag == false
+                                            ? Funcs.FormatBytes(item.FileSize)
+                                            : item.DateCreatedString
+                                    );
                                     sb.Append("\\f0\\cell\\row");
                                 }
                                 sb.Append("\\pard}");
 
-                                File.WriteAllText(Funcs.RTFSaveDialog.FileName, ConvertToRTFCodes(sb.ToString()));
+                                File.WriteAllText(
+                                    Funcs.RTFSaveDialog.FileName,
+                                    ConvertToRTFCodes(sb.ToString())
+                                );
                             }
                             else
                                 return;
                             break;
-                            
+
                         case "XML":
                         case "JSON":
                             if (fileOption == "XML" && Funcs.XMLSaveDialog.ShowDialog() != true)
                                 return;
-                            else if (fileOption == "JSON" && Funcs.JSONSaveDialog.ShowDialog() != true)
+                            else if (
+                                fileOption == "JSON"
+                                && Funcs.JSONSaveDialog.ShowDialog() != true
+                            )
                                 return;
 
                             ExportableDataFile info = new()
                             {
-                                Root = new()
-                                {
-                                    Name = CurrentRoot,
-                                    Size = TotalFolderSize
-                                },
-                                Files = items.Select(x =>
-                                {
-                                    ExportableItem item = x.IsFolder ? new ExportableFolderItem() : new ExportableFileItem();
-                                    item.Name = x.FileName;
-                                    item.Size = (bool)SortBtn.Tag == false ? x.FileSize : null;
-                                    item.Date = (bool)SortBtn.Tag ? x.DateCreatedString : null;
-                                    return item;
-
-                                }).ToArray()
+                                Root = new() { Name = CurrentRoot, Size = TotalFolderSize },
+                                Files =
+                                [
+                                    .. items.Select(x =>
+                                    {
+                                        ExportableItem item = x.IsFolder
+                                            ? new ExportableFolderItem()
+                                            : new ExportableFileItem();
+                                        item.Name = x.FileName;
+                                        item.Size = (bool)SortBtn.Tag == false ? x.FileSize : null;
+                                        item.Date = (bool)SortBtn.Tag ? x.DateCreatedString : null;
+                                        return item;
+                                    }),
+                                ],
                             };
 
                             if (fileOption == "XML")
                                 Funcs.SaveSettingsFile(info, Funcs.XMLSaveDialog.FileName, true);
                             else
-                                File.WriteAllText(Funcs.JSONSaveDialog.FileName, JsonConvert.SerializeObject(info, Formatting.Indented, new JsonSerializerSettings
-                                {
-                                    NullValueHandling = NullValueHandling.Ignore
-                                }));
+                                File.WriteAllText(
+                                    Funcs.JSONSaveDialog.FileName,
+                                    JsonConvert.SerializeObject(
+                                        info,
+                                        Formatting.Indented,
+                                        new JsonSerializerSettings
+                                        {
+                                            NullValueHandling = NullValueHandling.Ignore,
+                                        }
+                                    )
+                                );
 
                             break;
 
@@ -1341,12 +1710,27 @@ namespace Quota_Express
                             break;
                     }
 
-                    Funcs.ShowMessageRes("FileSavedStr", "SuccessStr", MessageBoxButton.OK, MessageBoxImage.Information);
+                    Funcs.ShowMessageRes(
+                        "FileSavedStr",
+                        "SuccessStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Information
+                    );
+                    Funcs.LogConversion(
+                        PageID,
+                        LoggingProperties.Conversion.FileExported,
+                        fileOption
+                    );
                 }
                 catch (Exception ex)
                 {
-                    Funcs.ShowMessageRes("DocumentSaveErrorStr", "SavingErrorStr",
-                        MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                    Funcs.ShowMessageRes(
+                        "DocumentSaveErrorStr",
+                        "SavingErrorStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(ex, PageID, "DocumentSaveErrorStr")
+                    );
                 }
             }
         }
@@ -1367,16 +1751,22 @@ namespace Quota_Express
         {
             try
             {
-                ReleaseItem[] resp = await Funcs.GetJsonAsync<ReleaseItem[]>("https://api.johnjds.co.uk/express/v2/quota/updates");
+                ReleaseItem[] resp = await Funcs.GetJsonAsync<ReleaseItem[]>(
+                    $"{Funcs.APIEndpoint}/express/v2/quota/updates"
+                );
 
                 if (resp.Length == 0)
                     throw new NullReferenceException();
 
                 IEnumerable<ReleaseItem> updates = resp.Where(x =>
-                {
-                    return new Version(x.Version) > (Assembly.GetExecutingAssembly().GetName().Version ?? new Version(1, 0, 0));
-
-                }).OrderByDescending(x => new Version(x.Version));
+                    {
+                        return new Version(x.Version)
+                            > (
+                                Assembly.GetExecutingAssembly().GetName().Version
+                                ?? new Version(1, 0, 0)
+                            );
+                    })
+                    .OrderByDescending(x => new Version(x.Version));
 
                 if (!updates.Any())
                 {
@@ -1407,8 +1797,13 @@ namespace Quota_Express
                 if (NotificationsPopup.IsOpen)
                 {
                     NotificationsPopup.IsOpen = false;
-                    Funcs.ShowMessageRes("NotificationErrorStr", "NoInternetStr",
-                        MessageBoxButton.OK, MessageBoxImage.Error, Funcs.GenerateErrorReport(ex));
+                    Funcs.ShowMessageRes(
+                        "NotificationErrorStr",
+                        "NoInternetStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(ex, PageID, "NotificationErrorStr")
+                    );
                 }
             }
         }
@@ -1416,11 +1811,15 @@ namespace Quota_Express
         private void UpdateBtn_Click(object sender, RoutedEventArgs e)
         {
             NotificationsPopup.IsOpen = false;
-            _ = Process.Start(new ProcessStartInfo()
-            {
-                FileName = Funcs.GetAppUpdateLink(ExpressApp.Quota),
-                UseShellExecute = true
-            });
+            Funcs.LogConversion(PageID, LoggingProperties.Conversion.UpdatePageVisit);
+
+            _ = Process.Start(
+                new ProcessStartInfo()
+                {
+                    FileName = Funcs.GetAppUpdateLink(ExpressApp.Quota),
+                    UseShellExecute = true,
+                }
+            );
         }
 
         private async void UpdateInfoBtn_Click(object sender, RoutedEventArgs e)
@@ -1480,7 +1879,7 @@ namespace Quota_Express
             { "HelpNotificationsStr", "NotificationIcon" },
             { "HelpShortcutsStr", "CtrlIcon" },
             { "HelpNewComingSoonStr", "QuotaExpressIcon" },
-            { "HelpTroubleshootingStr", "FeedbackIcon" }
+            { "HelpTroubleshootingStr", "FeedbackIcon" },
         };
 
         private void HelpBtn_Click(object sender, RoutedEventArgs e)
@@ -1498,7 +1897,7 @@ namespace Quota_Express
         private void HelpLinkBtn_Click(object sender, RoutedEventArgs e)
         {
             HelpPopup.IsOpen = false;
-            Funcs.GetHelp(ExpressApp.Quota);
+            Funcs.GetHelp(ExpressApp.Quota, PageID);
         }
 
         private void HelpSearchTxt_TextChanged(object sender, TextChangedEventArgs e)
@@ -1515,7 +1914,7 @@ namespace Quota_Express
         private void HelpTopicBtns_Click(object sender, RoutedEventArgs e)
         {
             HelpPopup.IsOpen = false;
-            Funcs.GetHelp(ExpressApp.Quota, (int)((Button)sender).Tag);
+            Funcs.GetHelp(ExpressApp.Quota, PageID, (int)((Button)sender).Tag);
         }
 
         #endregion
@@ -1528,7 +1927,12 @@ namespace Quota_Express
             return new GridLength((int)value, GridUnitType.Star);
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return 0;
         }
@@ -1541,7 +1945,12 @@ namespace Quota_Express
             return new GridLength(100 - (int)value, GridUnitType.Star);
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return 0;
         }
@@ -1551,10 +1960,17 @@ namespace Quota_Express
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return (long)value == -1 ? Funcs.ChooseLang("QtCalculatingStr") : Funcs.FormatBytes((long)value);
+            return (long)value == -1
+                ? Funcs.ChooseLang("QtCalculatingStr")
+                : Funcs.FormatBytes((long)value);
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return 0L;
         }
@@ -1572,7 +1988,12 @@ namespace Quota_Express
             return new Point(px, py);
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             throw new NotImplementedException();
         }
@@ -1585,7 +2006,12 @@ namespace Quota_Express
             return System.Convert.ToDouble(value) > 180;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             throw new NotImplementedException();
         }

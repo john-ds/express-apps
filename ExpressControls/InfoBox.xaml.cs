@@ -2,27 +2,17 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using ExpressControls;
 
 namespace ExpressControls
 {
     /// <summary>
     /// Interaction logic for InfoBox.xaml
     /// </summary>
-    public partial class InfoBox : Window
+    public partial class InfoBox : ExpressWindow
     {
         private readonly string AudioFile = "information.wav";
         private readonly ErrorReport Report = new();
@@ -30,14 +20,15 @@ namespace ExpressControls
         public string InputResult { get; set; } = "";
 
         public InfoBox(
-            string text, 
+            string text,
             string caption = "Express Apps",
-            MessageBoxButton buttons = MessageBoxButton.OK, 
+            MessageBoxButton buttons = MessageBoxButton.OK,
             MessageBoxImage icon = MessageBoxImage.None,
             ErrorReport? report = null,
             bool audio = true,
             bool showInput = false,
-            bool showApplyAllCheckbox = false)
+            bool showApplyAllCheckbox = false
+        )
         {
             InitializeComponent();
 
@@ -46,6 +37,7 @@ namespace ExpressControls
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             switch (buttons)
             {
@@ -109,7 +101,9 @@ namespace ExpressControls
                 }
             }
 
-            ApplyToAllBtn.Visibility = showApplyAllCheckbox ? Visibility.Visible : Visibility.Collapsed;
+            ApplyToAllBtn.Visibility = showApplyAllCheckbox
+                ? Visibility.Visible
+                : Visibility.Collapsed;
 
             if (!audio || showInput)
                 AudioFile = "";
@@ -124,7 +118,9 @@ namespace ExpressControls
             {
                 try
                 {
-                    var resourceStream = Assembly.GetExecutingAssembly().GetManifestResourceStream("ExpressControls.sounds." + AudioFile);
+                    var resourceStream = Assembly
+                        .GetExecutingAssembly()
+                        .GetManifestResourceStream("ExpressControls.sounds." + AudioFile);
                     System.Media.SoundPlayer snd = new(resourceStream);
                     snd.Play();
                 }
@@ -133,7 +129,7 @@ namespace ExpressControls
 
             if (InputTxt.Visibility == Visibility.Visible)
                 InputTxt.Focus();
-            else 
+            else
                 Button1.Focus();
         }
 
@@ -157,16 +153,27 @@ namespace ExpressControls
             if (Report.Email)
             {
                 string subject = Uri.EscapeDataString(Funcs.ChooseLang("ReportEmailSubjectStr"));
-                string body = Uri.EscapeDataString(string.Format(Funcs.ChooseLang("ReportEmailBodyStr"), Report.App + " v" + Report.Version, Report.Message, Report.Source));
+                string body = Uri.EscapeDataString(
+                    string.Format(
+                        Funcs.ChooseLang("ReportEmailBodyStr"),
+                        Report.App + " v" + Report.Version,
+                        Report.Message,
+                        Report.Source
+                    )
+                );
                 string info = "";
 
                 if (Report.EmailInfo != "")
                     info = Uri.EscapeDataString("[" + Report.EmailInfo + "]");
 
-                Process.Start(new ProcessStartInfo($"mailto:express@johnjds.co.uk?subject={subject}&body={body}%0D%0A%0D%0A{info}")
-                {
-                    UseShellExecute = true
-                });
+                Process.Start(
+                    new ProcessStartInfo(
+                        $"mailto:express@johnjds.co.uk?subject={subject}&body={body}%0D%0A%0D%0A{info}"
+                    )
+                    {
+                        UseShellExecute = true,
+                    }
+                );
             }
             else
             {
@@ -190,12 +197,14 @@ namespace ExpressControls
         private void UpdateMessage(string message)
         {
             StringReader reader = new(message);
-            string? line; Paragraph? p = null; List? ls = null;
+            string? line;
+            Paragraph? p = null;
+            List? ls = null;
             FlowDoc.Blocks.Clear();
-            
+
             while ((line = reader.ReadLine()) != null)
             {
-                if (Regex.IsMatch(line, "^\\s*[-—•]\\s*"))
+                if (BulletRegex().IsMatch(line))
                 {
                     // string is part of a bullet list
                     if (ls != null)
@@ -255,7 +264,7 @@ namespace ExpressControls
         private static void AppendListItem(string line, List ls)
         {
             Paragraph listPara = new();
-            listPara.Inlines.AddRange(FormatString(Regex.Replace(line, "^\\s*[-—•]\\s*", "")));
+            listPara.Inlines.AddRange(FormatString(BulletRegex().Replace(line, "")));
 
             ls.ListItems.Add(new ListItem(listPara));
         }
@@ -284,11 +293,11 @@ namespace ExpressControls
 
         private static Run[] FormatString(string s)
         {
-            if (Regex.IsMatch(s, "\\*\\*.+?\\*\\*"))
+            if (BoldRegex().IsMatch(s))
             {
                 // string contains bold markup
                 List<Run> result = [];
-                string[] runs = Regex.Split(s, "\\*\\*");
+                string[] runs = RunRegex().Split(s);
                 bool bold = false;
 
                 foreach (string r in runs)
@@ -307,5 +316,14 @@ namespace ExpressControls
                 return [new(s)];
             }
         }
+
+        [GeneratedRegex("^\\s*[-—•]\\s*")]
+        public static partial Regex BulletRegex();
+
+        [GeneratedRegex("\\*\\*.+?\\*\\*")]
+        public static partial Regex BoldRegex();
+
+        [GeneratedRegex("\\*\\*")]
+        public static partial Regex RunRegex();
     }
 }

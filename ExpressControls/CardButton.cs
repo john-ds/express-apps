@@ -1,17 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace ExpressControls
 {
@@ -19,14 +9,14 @@ namespace ExpressControls
     /// Follow steps 1a or 1b and then 2 to use this custom control in a XAML file.
     ///
     /// Step 1a) Using this custom control in a XAML file that exists in the current project.
-    /// Add this XmlNamespace attribute to the root element of the markup file where it is 
+    /// Add this XmlNamespace attribute to the root element of the markup file where it is
     /// to be used:
     ///
     ///     xmlns:MyNamespace="clr-namespace:ExpressControls"
     ///
     ///
     /// Step 1b) Using this custom control in a XAML file that exists in a different project.
-    /// Add this XmlNamespace attribute to the root element of the markup file where it is 
+    /// Add this XmlNamespace attribute to the root element of the markup file where it is
     /// to be used:
     ///
     ///     xmlns:MyNamespace="clr-namespace:ExpressControls;assembly=ExpressControls"
@@ -48,35 +38,36 @@ namespace ExpressControls
     {
         static CardButton()
         {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(CardButton), new FrameworkPropertyMetadata(typeof(CardButton)));
+            DefaultStyleKeyProperty.OverrideMetadata(
+                typeof(CardButton),
+                new FrameworkPropertyMetadata(typeof(CardButton))
+            );
         }
 
-        public static readonly DependencyProperty ImageSourceProperty = DependencyProperty.Register(nameof(ImageSource), typeof(ImageSource), typeof(CardButton), new PropertyMetadata(null));
+        public static readonly DependencyProperty ImageSourceProperty = DependencyProperty.Register(
+            nameof(ImageSource),
+            typeof(ImageSource),
+            typeof(CardButton),
+            new PropertyMetadata(null)
+        );
 
         public ImageSource ImageSource
         {
-            get
-            {
-                return (ImageSource)GetValue(ImageSourceProperty);
-            }
-            set
-            {
-                SetValue(ImageSourceProperty, value);
-            }
+            get { return (ImageSource)GetValue(ImageSourceProperty); }
+            set { SetValue(ImageSourceProperty, value); }
         }
 
-        public static readonly DependencyProperty TextProperty = DependencyProperty.Register(nameof(Text), typeof(string), typeof(CardButton), new PropertyMetadata(null));
+        public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
+            nameof(Text),
+            typeof(string),
+            typeof(CardButton),
+            new PropertyMetadata(null)
+        );
 
         public string Text
         {
-            get
-            {
-                return Convert.ToString(GetValue(TextProperty)) ?? "";
-            }
-            set
-            {
-                SetValue(TextProperty, value);
-            }
+            get { return Convert.ToString(GetValue(TextProperty)) ?? ""; }
+            set { SetValue(TextProperty, value); }
         }
     }
 }

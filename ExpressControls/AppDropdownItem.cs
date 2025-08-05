@@ -1,17 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace ExpressControls
 {
@@ -19,14 +10,14 @@ namespace ExpressControls
     /// Follow steps 1a or 1b and then 2 to use this custom control in a XAML file.
     ///
     /// Step 1a) Using this custom control in a XAML file that exists in the current project.
-    /// Add this XmlNamespace attribute to the root element of the markup file where it is 
+    /// Add this XmlNamespace attribute to the root element of the markup file where it is
     /// to be used:
     ///
     ///     xmlns:MyNamespace="clr-namespace:ExpressControls"
     ///
     ///
     /// Step 1b) Using this custom control in a XAML file that exists in a different project.
-    /// Add this XmlNamespace attribute to the root element of the markup file where it is 
+    /// Add this XmlNamespace attribute to the root element of the markup file where it is
     /// to be used:
     ///
     ///     xmlns:MyNamespace="clr-namespace:ExpressControls;assembly=ExpressControls"
@@ -48,7 +39,10 @@ namespace ExpressControls
     {
         static AppDropdownItem()
         {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(AppDropdownItem), new FrameworkPropertyMetadata(typeof(AppDropdownItem)));
+            DefaultStyleKeyProperty.OverrideMetadata(
+                typeof(AppDropdownItem),
+                new FrameworkPropertyMetadata(typeof(AppDropdownItem))
+            );
         }
 
         public bool IsPressed
@@ -57,8 +51,15 @@ namespace ExpressControls
             protected set => SetValue(IsPressedPropertyKey, value);
         }
 
-        private static readonly DependencyPropertyKey IsPressedPropertyKey = DependencyProperty.RegisterReadOnly(nameof(IsPressed), typeof(bool), typeof(AppDropdownItem), new PropertyMetadata(false));
-        public static readonly DependencyProperty IsPressedProperty = IsPressedPropertyKey.DependencyProperty;
+        private static readonly DependencyPropertyKey IsPressedPropertyKey =
+            DependencyProperty.RegisterReadOnly(
+                nameof(IsPressed),
+                typeof(bool),
+                typeof(AppDropdownItem),
+                new PropertyMetadata(false)
+            );
+        public static readonly DependencyProperty IsPressedProperty =
+            IsPressedPropertyKey.DependencyProperty;
 
         protected override void OnMouseLeftButtonDown(MouseButtonEventArgs e)
         {
@@ -78,34 +79,35 @@ namespace ExpressControls
             base.OnMouseLeave(e);
         }
 
-        public static readonly DependencyProperty ShowColoursProperty = DependencyProperty.Register(nameof(ShowColours), typeof(bool), typeof(AppDropdownItem), new FrameworkPropertyMetadata(ShowColoursPropertyChanged));
+        public static readonly DependencyProperty ShowColoursProperty = DependencyProperty.Register(
+            nameof(ShowColours),
+            typeof(bool),
+            typeof(AppDropdownItem),
+            new FrameworkPropertyMetadata(ShowColoursPropertyChanged)
+        );
 
         public bool ShowColours
         {
-            get
-            {
-                return Convert.ToBoolean(GetValue(ShowColoursProperty));
-            }
-            set
-            {
-                SetValue(ShowColoursProperty, value);
-            }
+            get { return Convert.ToBoolean(GetValue(ShowColoursProperty)); }
+            set { SetValue(ShowColoursProperty, value); }
         }
 
-        public static void ShowColoursPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) {}
+        public static void ShowColoursPropertyChanged(
+            DependencyObject d,
+            DependencyPropertyChangedEventArgs e
+        ) { }
 
-        public static readonly DependencyProperty ColoursProperty = DependencyProperty.Register(nameof(Colours), typeof(SolidColorBrush[]), typeof(AppDropdownItem), new PropertyMetadata(null));
+        public static readonly DependencyProperty ColoursProperty = DependencyProperty.Register(
+            nameof(Colours),
+            typeof(SolidColorBrush[]),
+            typeof(AppDropdownItem),
+            new PropertyMetadata(null)
+        );
 
         public SolidColorBrush[] Colours
         {
-            get
-            {
-                return (SolidColorBrush[])GetValue(ColoursProperty);
-            }
-            set
-            {
-                SetValue(ColoursProperty, value);
-            }
+            get { return (SolidColorBrush[])GetValue(ColoursProperty); }
+            set { SetValue(ColoursProperty, value); }
         }
     }
 }

@@ -1,26 +1,19 @@
-﻿using ExpressControls;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+using ExpressControls;
 
 namespace Present_Express
 {
     /// <summary>
     /// Interaction logic for PhotoEditor.xaml
     /// </summary>
-    public partial class PhotoEditor : Window
+    public partial class PhotoEditor : ExpressWindow
     {
         public FilterItem ChosenFilters { get; set; }
         private readonly BitmapSource Original;
@@ -35,6 +28,7 @@ namespace Present_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             ChosenFilters = chosenFilters.Clone();
             Format = format;
@@ -70,6 +64,7 @@ namespace Present_Express
 
         private void AddBtn_Click(object sender, RoutedEventArgs e)
         {
+            Funcs.LogConversion(PageID, LoggingProperties.Conversion.PhotoEdited);
             DialogResult = true;
             Close();
         }
@@ -85,39 +80,48 @@ namespace Present_Express
 
         private void LoadFilters()
         {
-            FilterItems.ItemsSource = Enum.GetValues<ImageFilter>().Where(x =>
-            {
-                return x != ImageFilter.None;
-
-            }).Select(x =>
-            {
-                return new SelectableImageItem()
+            FilterItems.ItemsSource = Enum.GetValues<ImageFilter>()
+                .Where(x =>
                 {
-                    ID = (int)x,
-                    Name = Funcs.ChooseLang(x switch
+                    return x != ImageFilter.None;
+                })
+                .Select(x =>
+                {
+                    return new SelectableImageItem()
                     {
-                        ImageFilter.Greyscale => "GreyscaleStr",
-                        ImageFilter.Sepia => "SepiaStr",
-                        ImageFilter.BlackWhite => "BlackWhiteStr",
-                        ImageFilter.Red => "RedTintStr",
-                        ImageFilter.Green => "GreenTintStr",
-                        ImageFilter.Blue => "BlueTintStr",
-                        _ => ""
-                    }),
-                    Image = new BitmapImage(new Uri("/filters/" + x switch
-                    {
-                        ImageFilter.Greyscale => "greyscale",
-                        ImageFilter.Sepia => "sepia",
-                        ImageFilter.BlackWhite => "blackwhite",
-                        ImageFilter.Red => "redtint",
-                        ImageFilter.Green => "greentint",
-                        ImageFilter.Blue => "bluetint",
-                        _ => ""
-
-                    } + ".jpg", UriKind.Relative)),
-                    Selected = ChosenFilters.Filter == x
-                };
-            });
+                        ID = (int)x,
+                        Name = Funcs.ChooseLang(
+                            x switch
+                            {
+                                ImageFilter.Greyscale => "GreyscaleStr",
+                                ImageFilter.Sepia => "SepiaStr",
+                                ImageFilter.BlackWhite => "BlackWhiteStr",
+                                ImageFilter.Red => "RedTintStr",
+                                ImageFilter.Green => "GreenTintStr",
+                                ImageFilter.Blue => "BlueTintStr",
+                                _ => "",
+                            }
+                        ),
+                        Image = new BitmapImage(
+                            new Uri(
+                                "/filters/"
+                                    + x switch
+                                    {
+                                        ImageFilter.Greyscale => "greyscale",
+                                        ImageFilter.Sepia => "sepia",
+                                        ImageFilter.BlackWhite => "blackwhite",
+                                        ImageFilter.Red => "redtint",
+                                        ImageFilter.Green => "greentint",
+                                        ImageFilter.Blue => "bluetint",
+                                        _ => "",
+                                    }
+                                    + ".jpg",
+                                UriKind.Relative
+                            )
+                        ),
+                        Selected = ChosenFilters.Filter == x,
+                    };
+                });
         }
 
         private void FilterBtns_Click(object sender, RoutedEventArgs e)
@@ -136,7 +140,10 @@ namespace Present_Express
         #endregion
         #region Brightness
 
-        private void BrightnessSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void BrightnessSlider_ValueChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<double> e
+        )
         {
             if (IsLoaded)
             {
@@ -154,7 +161,10 @@ namespace Present_Express
         #endregion
         #region Contrast
 
-        private void ContrastSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        private void ContrastSlider_ValueChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<double> e
+        )
         {
             if (IsLoaded)
             {
@@ -217,7 +227,12 @@ namespace Present_Express
             return Math.Round(((double)value + 1) * 100).ToString() + "%";
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return 0;
         }
@@ -230,7 +245,12 @@ namespace Present_Express
             return Math.Round((double)value * 100).ToString() + "%";
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return 1;
         }

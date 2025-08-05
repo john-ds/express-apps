@@ -4,7 +4,20 @@
     xmlns:sys="clr-namespace:System;assembly=mscorlib"
     xmlns:local="clr-namespace:ExpressControls">
 
-
+    <Style x:Key="FocusStyle">
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border BorderBrush="{DynamicResource AppColor}"
+                            BorderThickness="2"
+                            CornerRadius="5"
+                            Margin="0"
+                            Background="Transparent"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
     <Style TargetType="{x:Type local:MenuButton}">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="Transparent"/>
@@ -13,6 +26,15 @@
         <Setter Property="Padding" Value="6,0"/>
         <Setter Property="MoreVisibility" Value="Collapsed"/>
         <Setter Property="IsUpFacingMenu" Value="False"/>
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusStyle}"/>
+        <Setter Property="AutomationProperties.Name">
+            <Setter.Value>
+                <PriorityBinding>
+                    <Binding RelativeSource="{RelativeSource Self}" Path="Text" />
+                    <Binding RelativeSource="{RelativeSource Self}" Path="ToolTip" />
+                </PriorityBinding>
+            </Setter.Value>
+        </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:MenuButton}">
@@ -110,6 +132,15 @@
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="LastChildFill" Value="False"/>
         <Setter Property="Effect" Value="{DynamicResource DropShadowBottom}"/>
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusStyle}"/>
+        <Setter Property="AutomationProperties.Name">
+            <Setter.Value>
+                <PriorityBinding>
+                    <Binding RelativeSource="{RelativeSource Self}" Path="Text" />
+                    <Binding RelativeSource="{RelativeSource Self}" Path="ToolTip" />
+                </PriorityBinding>
+            </Setter.Value>
+        </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:AppButton}">
@@ -183,8 +214,22 @@
                         </MultiTrigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
+                                <Condition Property="IsInTitleBar" Value="True"/>
+                                <Condition Property="IsFocused" Value="True"/>
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Background" TargetName="borderInner" Value="{DynamicResource AppPressedColor}"/>
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
                                 <Condition Property="IsCloseBtn" Value="True"/>
                                 <Condition Property="IsMouseOver" Value="True"/>
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Background" TargetName="borderInner" Value="#FF5050"/>
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsCloseBtn" Value="True"/>
+                                <Condition Property="IsFocused" Value="True"/>
                             </MultiTrigger.Conditions>
                             <Setter Property="Background" TargetName="borderInner" Value="#FF5050"/>
                         </MultiTrigger>
@@ -218,6 +263,15 @@
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Width" Value="200"/>
         <Setter Property="Height" Value="227"/>
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusStyle}"/>
+        <Setter Property="AutomationProperties.Name">
+            <Setter.Value>
+                <PriorityBinding>
+                    <Binding RelativeSource="{RelativeSource Self}" Path="Text" />
+                    <Binding RelativeSource="{RelativeSource Self}" Path="ToolTip" />
+                </PriorityBinding>
+            </Setter.Value>
+        </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:CardButton}">
@@ -278,6 +332,15 @@
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Icon" Value="{DynamicResource BlankIcon}"/>
         <Setter Property="IsMultiline" Value="True"/>
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusStyle}"/>
+        <Setter Property="AutomationProperties.Name">
+            <Setter.Value>
+                <PriorityBinding>
+                    <Binding RelativeSource="{RelativeSource Self}" Path="Heading" />
+                    <Binding RelativeSource="{RelativeSource Self}" Path="ToolTip" />
+                </PriorityBinding>
+            </Setter.Value>
+        </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:ListItemButton}">
@@ -292,7 +355,7 @@
                             x:Name="border">
 
                         <DockPanel x:Name="dck" Margin="0,10" LastChildFill="False">
-                            <ContentControl x:Name="icn" Content="{TemplateBinding Icon}" Width="30" Margin="10,0,0,0" />
+                            <ContentControl x:Name="icn" Focusable="False" Content="{TemplateBinding Icon}" Width="30" Margin="10,0,0,0" />
 
                             <TextBlock Foreground="{TemplateBinding Foreground}"
                                        VerticalAlignment="Center"
@@ -355,6 +418,15 @@
         <Setter Property="CornerRadius" Value="5"/>
         <Setter Property="IconSize" Value="24"/>
         <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusStyle}"/>
+        <Setter Property="AutomationProperties.Name">
+            <Setter.Value>
+                <PriorityBinding>
+                    <Binding RelativeSource="{RelativeSource Self}" Path="Content" />
+                    <Binding RelativeSource="{RelativeSource Self}" Path="ToolTip" />
+                </PriorityBinding>
+            </Setter.Value>
+        </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:AppCheckBox}">
@@ -424,6 +496,15 @@
         <Setter Property="CornerRadius" Value="5"/>
         <Setter Property="IconSize" Value="24"/>
         <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusStyle}"/>
+        <Setter Property="AutomationProperties.Name">
+            <Setter.Value>
+                <PriorityBinding>
+                    <Binding RelativeSource="{RelativeSource Self}" Path="Content" />
+                    <Binding RelativeSource="{RelativeSource Self}" Path="ToolTip" />
+                </PriorityBinding>
+            </Setter.Value>
+        </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:AppRadioButton}">
@@ -518,12 +599,14 @@
         <Setter Property="Background" Value="{DynamicResource BackColor}"/>
         <Setter Property="DropdownBackground" Value="{DynamicResource SecondaryColor}"/>
         <Setter Property="IsUpFacingMenu" Value="False"/>
+        <Setter Property="Focusable" Value="False"/>
+        <Setter Property="AutomationProperties.Name" Value="{Binding RelativeSource={RelativeSource Self}, Path=ToolTip}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:AppDropdown}">
                     <Grid>
-                        <ToggleButton UseLayoutRounding="True" Template="{DynamicResource AppToggleButton}" Background="{TemplateBinding Background}" x:Name="ToggleButton" Focusable="False" IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Release"/>
-                        <ContentPresenter HorizontalAlignment="Left" Margin="10,5,25,5" x:Name="ContentSite" VerticalAlignment="Center" Content="{TemplateBinding SelectionBoxItem}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" IsHitTestVisible="False">
+                        <ToggleButton UseLayoutRounding="True" Template="{DynamicResource AppToggleButton}" Background="{TemplateBinding Background}" x:Name="ToggleButton" FocusVisualStyle="{StaticResource FocusStyle}" IsChecked="{Binding Path=IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}" ClickMode="Release"/>
+                        <ContentPresenter HorizontalAlignment="Left" Margin="10,5,25,5" x:Name="ContentSite" Focusable="False" VerticalAlignment="Center" Content="{TemplateBinding SelectionBoxItem}" ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}" IsHitTestVisible="False">
                             <ContentPresenter.ContentTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
@@ -558,6 +641,7 @@
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="ShowColours" Value="False"/>
         <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FocusVisualStyle" Value="{StaticResource FocusStyle}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:AppDropdownItem}">
@@ -565,7 +649,7 @@
                         <Border x:Name="Border" Background="{TemplateBinding Background}" BorderThickness="0"/>
                         <StackPanel>
                             <TextBlock Text="{TemplateBinding Content}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" Margin="10,5,10,5" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                            <ItemsControl ItemsSource="{TemplateBinding Colours}" Margin="10,0,10,5" Visibility="{TemplateBinding ShowColours, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <ItemsControl ItemsSource="{TemplateBinding Colours}" Focusable="False" Margin="10,0,10,5" Visibility="{TemplateBinding ShowColours, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
                                         <UniformGrid Columns="8" UseLayoutRounding="False"/>
@@ -607,6 +691,14 @@
         <Setter Property="BorderBrush" Value="{DynamicResource Gray1}"/>
         <Setter Property="Foreground" Value="{DynamicResource TextColor}"/>
         <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="AutomationProperties.Name">
+            <Setter.Value>
+                <PriorityBinding>
+                    <Binding RelativeSource="{RelativeSource Self}" Path="ToolTip" />
+                    <Binding RelativeSource="{RelativeSource Self}" Path="Watermark" />
+                </PriorityBinding>
+            </Setter.Value>
+        </Setter>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:AppTextBox}">

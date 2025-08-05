@@ -1,32 +1,29 @@
-﻿using ExpressControls;
-using Font_Express.Properties;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.Xml.Serialization;
+using ExpressControls;
+using Font_Express.Properties;
 
 namespace Font_Express
 {
     /// <summary>
     /// Interaction logic for Options.xaml
     /// </summary>
-    public partial class Options : Window
+    public partial class Options : ExpressWindow
     {
-        private readonly DispatcherTimer TempLblTimer = new() { Interval = new TimeSpan(0, 0, 0, 4) };
+        private readonly DispatcherTimer TempLblTimer = new()
+        {
+            Interval = new TimeSpan(0, 0, 0, 4),
+        };
         private bool ImportOverride = false;
 
         private ObservableCollection<SelectableItem> CategoryDisplayList { get; set; } = [];
@@ -41,16 +38,23 @@ namespace Font_Express
             TitleBtn.PreviewMouseLeftButtonDown += Funcs.MoveFormEvent;
             Activated += Funcs.ActivatedEvent;
             Deactivated += Funcs.DeactivatedEvent;
+            AppLogoBtn.PreviewMouseRightButtonUp += Funcs.SystemMenuEvent;
 
             // Timer event handlers
             TempLblTimer.Tick += TempLblTimer_Tick;
 
-            Dark1Combo.ItemsSource = Funcs.DarkModeFrom.Select((el) => {
-                return new AppDropdownItem() { Content = el };
-            });
-            Dark2Combo.ItemsSource = Funcs.DarkModeTo.Select((el) => {
-                return new AppDropdownItem() { Content = el };
-            });
+            Dark1Combo.ItemsSource = Funcs.DarkModeFrom.Select(
+                (el) =>
+                {
+                    return new AppDropdownItem() { Content = el };
+                }
+            );
+            Dark2Combo.ItemsSource = Funcs.DarkModeTo.Select(
+                (el) =>
+                {
+                    return new AppDropdownItem() { Content = el };
+                }
+            );
 
             CategoryFontsList.ItemsSource = CategoryDisplayList;
             SearchFontsList.ItemsSource = SearchDisplayList;
@@ -76,9 +80,14 @@ namespace Font_Express
             // Messagebox sounds
             SoundBtn.IsChecked = Settings.Default.EnableInfoBoxAudio;
 
+            // Logging
+            LoggingBtn.IsChecked = Settings.Default.LoggingEnabled;
+
             // Default display mode
-            ListRadio.IsChecked = Settings.Default.DefaultDisplayMode == (int)DefaultDisplayMode.List;
-            GridRadio.IsChecked = Settings.Default.DefaultDisplayMode == (int)DefaultDisplayMode.Grid;
+            ListRadio.IsChecked =
+                Settings.Default.DefaultDisplayMode == (int)DefaultDisplayMode.List;
+            GridRadio.IsChecked =
+                Settings.Default.DefaultDisplayMode == (int)DefaultDisplayMode.Grid;
 
             // Interface theme
             switch ((ThemeOptions)Settings.Default.InterfaceTheme)
@@ -99,8 +108,14 @@ namespace Font_Express
                     break;
             }
 
-            Dark1Combo.SelectedIndex = Array.IndexOf(Funcs.DarkModeFrom, Settings.Default.AutoDarkOn);
-            Dark2Combo.SelectedIndex = Array.IndexOf(Funcs.DarkModeTo, Settings.Default.AutoDarkOff);
+            Dark1Combo.SelectedIndex = Array.IndexOf(
+                Funcs.DarkModeFrom,
+                Settings.Default.AutoDarkOn
+            );
+            Dark2Combo.SelectedIndex = Array.IndexOf(
+                Funcs.DarkModeTo,
+                Settings.Default.AutoDarkOff
+            );
 
             // Startup settings
             NotificationBtn.IsChecked = Settings.Default.CheckNotifications;
@@ -131,10 +146,12 @@ namespace Font_Express
         private void LoadCategories()
         {
             FontCategory[] categories = MainWindow.GetSavedCategories();
-            CategoryCombo.ItemsSource = categories.Select((x, idx) =>
-            {
-                return new AppDropdownItem() { Content = x.Name };
-            });
+            CategoryCombo.ItemsSource = categories.Select(
+                (x, idx) =>
+                {
+                    return new AppDropdownItem() { Content = x.Name };
+                }
+            );
 
             CategoryCombo.SelectedIndex = 0;
             LoadCategoryFonts(categories);
@@ -143,7 +160,9 @@ namespace Font_Express
         private void LoadCategoryFonts(FontCategory[]? categories = null)
         {
             categories ??= MainWindow.GetSavedCategories();
-            var fonts = categories[CategoryCombo.SelectedIndex].Fonts.Where(x => !string.IsNullOrWhiteSpace(x)).Distinct();
+            var fonts = categories[CategoryCombo.SelectedIndex]
+                .Fonts.Where(x => !string.IsNullOrWhiteSpace(x))
+                .Distinct();
 
             CategoryDisplayList.Clear();
             ExitFontSearch();
@@ -161,28 +180,33 @@ namespace Font_Express
 
                 foreach (string item in fonts)
                 {
-                    CategoryDisplayList.Add(new SelectableItem()
-                    {
-                        Name = item,
-                        Selected = true
-                    });
+                    CategoryDisplayList.Add(new SelectableItem() { Name = item, Selected = true });
                 }
             }
         }
 
         private void StartFontSearch()
         {
-            fontItems ??= [];
+            fontItems ??= new(true);
             if (FontSearchTxt.Text.Length > 0)
             {
-                IEnumerable<string> results = fontItems.Where(x => {
-                    return x.Contains(FontSearchTxt.Text, StringComparison.CurrentCultureIgnoreCase);
+                IEnumerable<string> results = fontItems.Where(x =>
+                {
+                    return x.Contains(
+                        FontSearchTxt.Text,
+                        StringComparison.CurrentCultureIgnoreCase
+                    );
                 });
                 SearchDisplayList.Clear();
 
                 if (!results.Any())
                 {
-                    Funcs.ShowMessageRes("NoSearchResultsStr", "SearchResultsStr", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Funcs.ShowMessageRes(
+                        "NoSearchResultsStr",
+                        "SearchResultsStr",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error
+                    );
                     FontExitSearchBtn.Visibility = Visibility.Collapsed;
                 }
                 else
@@ -190,12 +214,22 @@ namespace Font_Express
                     FontExitSearchBtn.Visibility = Visibility.Visible;
                     foreach (var item in results)
                     {
-                        SearchDisplayList.Add(new SelectableItem()
-                        {
-                            Name = item,
-                            Selected = CategoryCombo.SelectedIndex == 0 ? MainWindow.IsFontInFavourites(item) : 
-                                MainWindow.IsFontInCategory(item, (string)((AppDropdownItem)CategoryCombo.SelectedValue).Content)
-                        });
+                        SearchDisplayList.Add(
+                            new SelectableItem()
+                            {
+                                Name = item,
+                                Selected =
+                                    CategoryCombo.SelectedIndex == 0
+                                        ? MainWindow.IsFontInFavourites(item)
+                                        : MainWindow.IsFontInCategory(
+                                            item,
+                                            (string)
+                                                (
+                                                    (AppDropdownItem)CategoryCombo.SelectedValue
+                                                ).Content
+                                        ),
+                            }
+                        );
                     }
 
                     SearchFontsScroll.ScrollToTop();
@@ -242,7 +276,11 @@ namespace Font_Express
             else
             {
                 var categories = MainWindow.GetSavedCategories(false);
-                int idx = categories.ToList().FindIndex(x => x.Name == (string)((AppDropdownItem)CategoryCombo.SelectedValue).Content);
+                int idx = categories
+                    .ToList()
+                    .FindIndex(x =>
+                        x.Name == (string)((AppDropdownItem)CategoryCombo.SelectedValue).Content
+                    );
                 add = !categories[idx].Fonts.Contains(font);
 
                 if (add)
@@ -260,7 +298,9 @@ namespace Font_Express
             }
             else
             {
-                CategoryDisplayList.RemoveAt(CategoryDisplayList.ToList().FindIndex(x => x.Name == font));
+                CategoryDisplayList.RemoveAt(
+                    CategoryDisplayList.ToList().FindIndex(x => x.Name == font)
+                );
                 MainScroller.ScrollToVerticalOffset(MainScroller.VerticalOffset - 26);
             }
 
@@ -290,15 +330,23 @@ namespace Font_Express
 
         private void ImportCatBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (Funcs.ShowPromptRes("ImportFontsInfoStr", "ImportFavsStr",
-                MessageBoxButton.OKCancel, MessageBoxImage.Information) == MessageBoxResult.OK)
+            if (
+                Funcs.ShowPromptRes(
+                    "ImportFontsInfoStr",
+                    "ImportFavsStr",
+                    MessageBoxButton.OKCancel,
+                    MessageBoxImage.Information
+                ) == MessageBoxResult.OK
+            )
             {
                 if (Funcs.TextOpenDialog.ShowDialog() == true)
                 {
                     try
                     {
                         List<string> chosenFonts = [];
-                        foreach (string fontname in File.ReadAllLines(Funcs.TextOpenDialog.FileName))
+                        foreach (
+                            string fontname in File.ReadAllLines(Funcs.TextOpenDialog.FileName)
+                        )
                         {
                             try
                             {
@@ -314,14 +362,31 @@ namespace Font_Express
 
                         if (CategoryCombo.SelectedIndex == 0)
                         {
-                            Settings.Default.Favourites.AddRange(chosenFonts.Distinct().Where(x => !Settings.Default.Favourites.Contains(x)).ToArray());
+                            Settings.Default.Favourites.AddRange(
+                                [
+                                    .. chosenFonts
+                                        .Distinct()
+                                        .Where(x => !Settings.Default.Favourites.Contains(x)),
+                                ]
+                            );
                         }
                         else
                         {
                             var categories = MainWindow.GetSavedCategories(false);
-                            int idx = categories.ToList().FindIndex(x => x.Name == (string)((AppDropdownItem)CategoryCombo.SelectedValue).Content);
+                            int idx = categories
+                                .ToList()
+                                .FindIndex(x =>
+                                    x.Name
+                                    == (string)
+                                        ((AppDropdownItem)CategoryCombo.SelectedValue).Content
+                                );
 
-                            categories[idx].Fonts.AddRange(chosenFonts.Distinct().Where(x => !categories[idx].Fonts.Contains(x)));
+                            categories[idx]
+                                .Fonts.AddRange(
+                                    chosenFonts
+                                        .Distinct()
+                                        .Where(x => !categories[idx].Fonts.Contains(x))
+                                );
                             MainWindow.SaveCategories(categories);
                         }
 
@@ -331,8 +396,18 @@ namespace Font_Express
                     }
                     catch (Exception ex)
                     {
-                        Funcs.ShowMessageRes("ImportFileErrorDescStr", "ImportFileErrorStr", MessageBoxButton.OK,
-                            MessageBoxImage.Error, Funcs.GenerateErrorReport(ex, Funcs.ChooseLang("ReportEmailAttachStr")));
+                        Funcs.ShowMessageRes(
+                            "ImportFileErrorDescStr",
+                            "ImportFileErrorStr",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error,
+                            Funcs.GenerateErrorReport(
+                                ex,
+                                PageID,
+                                "ImportFileErrorDescStr",
+                                "ReportEmailAttachStr"
+                            )
+                        );
                     }
                 }
             }
@@ -346,27 +421,54 @@ namespace Font_Express
                 {
                     if (CategoryCombo.SelectedIndex == 0)
                     {
-                        File.WriteAllLines(Funcs.TextSaveDialog.FileName, Settings.Default.Favourites.Cast<string>().ToArray(), Encoding.Unicode);
+                        File.WriteAllLines(
+                            Funcs.TextSaveDialog.FileName,
+                            [.. Settings.Default.Favourites.Cast<string>()],
+                            Encoding.Unicode
+                        );
                     }
                     else
                     {
                         var categories = MainWindow.GetSavedCategories(false);
-                        int idx = categories.ToList().FindIndex(x => x.Name == (string)((AppDropdownItem)CategoryCombo.SelectedValue).Content);
+                        int idx = categories
+                            .ToList()
+                            .FindIndex(x =>
+                                x.Name
+                                == (string)((AppDropdownItem)CategoryCombo.SelectedValue).Content
+                            );
 
-                        File.WriteAllLines(Funcs.TextSaveDialog.FileName, [.. categories[idx].Fonts], Encoding.Unicode);
+                        File.WriteAllLines(
+                            Funcs.TextSaveDialog.FileName,
+                            [.. categories[idx].Fonts],
+                            Encoding.Unicode
+                        );
                     }
 
-                    _ = Process.Start(new ProcessStartInfo()
-                    {
-                        FileName = Funcs.TextSaveDialog.FileName,
-                        UseShellExecute = true
-                    });
+                    _ = Process.Start(
+                        new ProcessStartInfo()
+                        {
+                            FileName = Funcs.TextSaveDialog.FileName,
+                            UseShellExecute = true,
+                        }
+                    );
                 }
                 catch (Exception ex)
                 {
-                    Funcs.ShowMessage(string.Format(Funcs.ChooseLang("SavingErrorDescStr"), Funcs.TextSaveDialog.FileName),
-                        Funcs.ChooseLang("SavingErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error,
-                        Funcs.GenerateErrorReport(ex, Funcs.ChooseLang("ReportEmailAttachStr")));
+                    Funcs.ShowMessage(
+                        string.Format(
+                            Funcs.ChooseLang("SavingErrorDescStr"),
+                            Funcs.TextSaveDialog.FileName
+                        ),
+                        Funcs.ChooseLang("SavingErrorStr"),
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(
+                            ex,
+                            PageID,
+                            "SavingErrorStr",
+                            "ReportEmailAttachStr"
+                        )
+                    );
                 }
             }
         }
@@ -375,22 +477,36 @@ namespace Font_Express
         {
             if (Funcs.TextSaveDialog.ShowDialog() == true)
             {
-                fontItems ??= [];
+                fontItems ??= new(true);
                 try
                 {
                     File.WriteAllLines(Funcs.TextSaveDialog.FileName, fontItems, Encoding.Unicode);
 
-                    _ = Process.Start(new ProcessStartInfo()
-                    {
-                        FileName = Funcs.TextSaveDialog.FileName,
-                        UseShellExecute = true
-                    });
+                    _ = Process.Start(
+                        new ProcessStartInfo()
+                        {
+                            FileName = Funcs.TextSaveDialog.FileName,
+                            UseShellExecute = true,
+                        }
+                    );
                 }
                 catch (Exception ex)
                 {
-                    Funcs.ShowMessage(string.Format(Funcs.ChooseLang("SavingErrorDescStr"), Funcs.TextSaveDialog.FileName),
-                        Funcs.ChooseLang("SavingErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error,
-                        Funcs.GenerateErrorReport(ex, Funcs.ChooseLang("ReportEmailAttachStr")));
+                    Funcs.ShowMessage(
+                        string.Format(
+                            Funcs.ChooseLang("SavingErrorDescStr"),
+                            Funcs.TextSaveDialog.FileName
+                        ),
+                        Funcs.ChooseLang("SavingErrorStr"),
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(
+                            ex,
+                            PageID,
+                            "SavingErrorStr",
+                            "ReportEmailAttachStr"
+                        )
+                    );
                 }
             }
         }
@@ -398,20 +514,32 @@ namespace Font_Express
         #endregion
         #region General > Interface
 
-        private void InterfaceCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void InterfaceCombo_SelectionChanged(
+            object sender,
+            SelectionChangedEventArgs e
+        )
         {
             Languages selectedLang = (Languages)InterfaceCombo.SelectedIndex;
 
             if (selectedLang != Funcs.GetCurrentLangEnum())
             {
-                if (Funcs.ShowPromptRes("LangWarningDescStr", "LangWarningStr",
-                    MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+                if (
+                    Funcs.ShowPromptRes(
+                        "LangWarningDescStr",
+                        "LangWarningStr",
+                        MessageBoxButton.YesNoCancel,
+                        MessageBoxImage.Exclamation
+                    ) == MessageBoxResult.Yes
+                )
                 {
                     Settings.Default.Language = Funcs.GetCurrentLangEnum(selectedLang);
                     SaveSettings();
 
+                    foreach (Window win in Application.Current.Windows)
+                        win.Hide();
+
                     System.Windows.Forms.Application.Restart();
-                    Application.Current.Shutdown();
+                    await Funcs.LogApplicationEnd();
                 }
                 else
                 {
@@ -434,6 +562,14 @@ namespace Font_Express
                 Settings.Default.DefaultDisplayMode = (int)DefaultDisplayMode.Grid;
 
             SaveSettings();
+        }
+
+        private void LoggingBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Settings.Default.LoggingEnabled = LoggingBtn.IsChecked == true;
+            SaveSettings();
+
+            Funcs.HandleLoggingSettingChange(LoggingBtn.IsChecked == true);
         }
 
         #endregion
@@ -471,8 +607,10 @@ namespace Font_Express
         {
             if (IsLoaded)
             {
-                Settings.Default.AutoDarkOn = (string)((AppDropdownItem)Dark1Combo.SelectedItem).Content;
-                Settings.Default.AutoDarkOff = (string)((AppDropdownItem)Dark2Combo.SelectedItem).Content;
+                Settings.Default.AutoDarkOn = (string)
+                    ((AppDropdownItem)Dark1Combo.SelectedItem).Content;
+                Settings.Default.AutoDarkOff = (string)
+                    ((AppDropdownItem)Dark2Combo.SelectedItem).Content;
                 SaveSettings();
 
                 Funcs.AutoDarkModeOn = Settings.Default.AutoDarkOn;
@@ -498,7 +636,7 @@ namespace Font_Express
                 Settings.Default.DefaultView = (int)DefaultFontView.All;
             else
                 Settings.Default.DefaultView = (int)DefaultFontView.Favourites;
-            
+
             SaveSettings();
         }
 
@@ -515,6 +653,10 @@ namespace Font_Express
 
             // Messagebox sounds
             Settings.Default.EnableInfoBoxAudio = settings.General.Sounds;
+
+            // Logging
+            Settings.Default.LoggingEnabled = settings.General.Logging;
+            Funcs.HandleLoggingSettingChange(settings.General.Logging);
 
             // Default display mode
             Settings.Default.DefaultDisplayMode = (int)settings.General.DisplayMode;
@@ -557,7 +699,11 @@ namespace Font_Express
             {
                 try
                 {
-                    UserOptions? settings = Funcs.OpenSettingsFile<UserOptions>(Funcs.ImportSettingsDialog.FileName);
+                    UserOptions? settings = Funcs.OpenSettingsFile<UserOptions>(
+                        Funcs.ImportSettingsDialog.FileName
+                    );
+
+                    Funcs.LogConversion(PageID, LoggingProperties.Conversion.ImportSettings);
 
                     if (settings != null)
                         LoadSettings(settings);
@@ -566,9 +712,13 @@ namespace Font_Express
                 }
                 catch (Exception ex)
                 {
-                    Funcs.ShowMessage(string.Format(Funcs.ChooseLang("ImportErrorDescStr"), "Font Express"),
-                                      Funcs.ChooseLang("ImportSettingsErrorStr"), MessageBoxButton.OK, MessageBoxImage.Error,
-                                      Funcs.GenerateErrorReport(ex));
+                    Funcs.ShowMessage(
+                        string.Format(Funcs.ChooseLang("ImportErrorDescStr"), "Font Express"),
+                        Funcs.ChooseLang("ImportSettingsErrorStr"),
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error,
+                        Funcs.GenerateErrorReport(ex, PageID, "ImportSettingsErrorStr")
+                    );
                 }
             }
         }
@@ -579,8 +729,8 @@ namespace Font_Express
             {
                 Categories =
                 {
-                    FavouritesData = Settings.Default.Favourites.Cast<string>().ToArray(),
-                    CategoryData = Settings.Default.Categories.Cast<string>().ToArray()
+                    FavouritesData = [.. Settings.Default.Favourites.Cast<string>()],
+                    CategoryData = [.. Settings.Default.Categories.Cast<string>()],
                 },
                 General =
                 {
@@ -589,36 +739,50 @@ namespace Font_Express
                     AutoDarkMode = Settings.Default.InterfaceTheme == (int)ThemeOptions.Auto,
                     DarkModeFrom = Settings.Default.AutoDarkOn,
                     DarkModeTo = Settings.Default.AutoDarkOff,
-                    DarkModeFollowSystem = Settings.Default.InterfaceTheme == (int)ThemeOptions.FollowSystem,
-                    DisplayMode = (DefaultDisplayMode)Settings.Default.DefaultDisplayMode
+                    DarkModeFollowSystem =
+                        Settings.Default.InterfaceTheme == (int)ThemeOptions.FollowSystem,
+                    DisplayMode = (DefaultDisplayMode)Settings.Default.DefaultDisplayMode,
+                    Logging = Settings.Default.LoggingEnabled,
                 },
                 Startup =
                 {
                     CheckNotifications = Settings.Default.CheckNotifications,
-                    FontView = (DefaultFontView)Settings.Default.DefaultView
-                }
+                    FontView = (DefaultFontView)Settings.Default.DefaultView,
+                },
             };
             return export;
         }
 
         private void ExportSettingsBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (Funcs.ShowPrompt(string.Format(Funcs.ChooseLang("ExportSettingsDescStr"), "Font Express"),
-                                 Funcs.ChooseLang("ExportSettingsStr"),
-                                 MessageBoxButton.OKCancel, MessageBoxImage.Information) == MessageBoxResult.OK)
+            if (
+                Funcs.ShowPrompt(
+                    string.Format(Funcs.ChooseLang("ExportSettingsDescStr"), "Font Express"),
+                    Funcs.ChooseLang("ExportSettingsStr"),
+                    MessageBoxButton.OKCancel,
+                    MessageBoxImage.Information
+                ) == MessageBoxResult.OK
+            )
             {
                 if (Funcs.ExportSettingsDialog.ShowDialog() == true)
                 {
                     Funcs.SaveSettingsFile(BuildSettings(), Funcs.ExportSettingsDialog.FileName);
                     SaveSettings();
+                    Funcs.LogConversion(PageID, LoggingProperties.Conversion.ExportSettings);
                 }
             }
         }
 
         private void ResetSettingsBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (Funcs.ShowPrompt(Funcs.ChooseLang("ResetSettingsWarningStr"), Funcs.ChooseLang("ResetSettingsStr"),
-                                 MessageBoxButton.YesNoCancel, MessageBoxImage.Exclamation) == MessageBoxResult.Yes)
+            if (
+                Funcs.ShowPrompt(
+                    Funcs.ChooseLang("ResetSettingsWarningStr"),
+                    Funcs.ChooseLang("ResetSettingsStr"),
+                    MessageBoxButton.YesNoCancel,
+                    MessageBoxImage.Exclamation
+                ) == MessageBoxResult.Yes
+            )
             {
                 LoadSettings(new UserOptions());
             }
@@ -656,19 +820,31 @@ namespace Font_Express
         public string SoundsString { get; set; } = "true";
 
         [XmlIgnore]
-        public bool Sounds { get { return Funcs.CheckBoolean(SoundsString) ?? true; } set { SoundsString = value.ToString(); } }
+        public bool Sounds
+        {
+            get { return Funcs.CheckBoolean(SoundsString) ?? true; }
+            set { SoundsString = value.ToString(); }
+        }
 
         [XmlElement("dark-mode")]
         public string DarkModeString { get; set; } = "false";
 
         [XmlIgnore]
-        public bool DarkMode { get { return Funcs.CheckBoolean(DarkModeString) ?? false; } set { DarkModeString = value.ToString(); } }
+        public bool DarkMode
+        {
+            get { return Funcs.CheckBoolean(DarkModeString) ?? false; }
+            set { DarkModeString = value.ToString(); }
+        }
 
         [XmlElement("auto-dark")]
         public string AutoDarkModeString { get; set; } = "false";
 
         [XmlIgnore]
-        public bool AutoDarkMode { get { return Funcs.CheckBoolean(AutoDarkModeString) ?? false; } set { AutoDarkModeString = value.ToString(); } }
+        public bool AutoDarkMode
+        {
+            get { return Funcs.CheckBoolean(AutoDarkModeString) ?? false; }
+            set { AutoDarkModeString = value.ToString(); }
+        }
 
         [XmlIgnore]
         private string _darkModeFrom = "18:00";
@@ -676,10 +852,7 @@ namespace Font_Express
         [XmlElement("dark-on")]
         public string DarkModeFrom
         {
-            get
-            {
-                return _darkModeFrom;
-            }
+            get { return _darkModeFrom; }
             set
             {
                 if (Array.IndexOf(Funcs.DarkModeFrom, value) >= 0)
@@ -693,10 +866,7 @@ namespace Font_Express
         [XmlElement("dark-off")]
         public string DarkModeTo
         {
-            get
-            {
-                return _darkModeTo;
-            }
+            get { return _darkModeTo; }
             set
             {
                 if (Array.IndexOf(Funcs.DarkModeTo, value) >= 0)
@@ -708,7 +878,11 @@ namespace Font_Express
         public string DarkModeFollowSystemString { get; set; } = "true";
 
         [XmlIgnore]
-        public bool DarkModeFollowSystem { get { return Funcs.CheckBoolean(DarkModeFollowSystemString) ?? true; } set { DarkModeFollowSystemString = value.ToString(); } }
+        public bool DarkModeFollowSystem
+        {
+            get { return Funcs.CheckBoolean(DarkModeFollowSystemString) ?? true; }
+            set { DarkModeFollowSystemString = value.ToString(); }
+        }
 
         [XmlElement("display")]
         public int DisplayModeID { get; set; } = (int)DefaultDisplayMode.Grid;
@@ -723,10 +897,17 @@ namespace Font_Express
                 else
                     return DefaultDisplayMode.Grid;
             }
-            set
-            {
-                DisplayModeID = (int)value;
-            }
+            set { DisplayModeID = (int)value; }
+        }
+
+        [XmlElement("logging")]
+        public string LoggingString { get; set; } = "true";
+
+        [XmlIgnore]
+        public bool Logging
+        {
+            get { return Funcs.CheckBoolean(LoggingString) ?? true; }
+            set { LoggingString = value.ToString(); }
         }
     }
 
@@ -736,7 +917,11 @@ namespace Font_Express
         public string CheckNotificationsString { get; set; } = "true";
 
         [XmlIgnore]
-        public bool CheckNotifications { get { return Funcs.CheckBoolean(CheckNotificationsString) ?? true; } set { CheckNotificationsString = value.ToString(); } }
+        public bool CheckNotifications
+        {
+            get { return Funcs.CheckBoolean(CheckNotificationsString) ?? true; }
+            set { CheckNotificationsString = value.ToString(); }
+        }
 
         [XmlElement("view")]
         public int FontViewID { get; set; } = (int)DefaultFontView.All;
@@ -751,10 +936,7 @@ namespace Font_Express
                 else
                     return DefaultFontView.All;
             }
-            set
-            {
-                FontViewID = (int)value;
-            }
+            set { FontViewID = (int)value; }
         }
     }
 }

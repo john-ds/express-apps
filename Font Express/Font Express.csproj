@@ -6,12 +6,11 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>icon.ico</ApplicationIcon>
-    <AssemblyVersion>4.1.1</AssemblyVersion>
-    <FileVersion>4.1.1</FileVersion>
+    <AssemblyVersion>4.2.0</AssemblyVersion>
+    <FileVersion>4.2.0</FileVersion>
     <RollForward>Major</RollForward>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="auth-fonts.secret" />
     <None Remove="fontreg\FontReg.exe" />
     <None Remove="fonts\Inter-Bold.ttf" />
     <None Remove="fonts\Inter-Regular.ttf" />
@@ -32,9 +31,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="icon.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="auth-fonts.secret" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="..\ExpressControls\ExpressStyles.xaml" Link="ExpressStyles.xaml">
