@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -7,6 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using ExpressControls;
+using NAudio.Wave;
 using Present_Express.Properties;
 
 namespace Present_Express
@@ -41,6 +43,13 @@ namespace Present_Express
 
         private readonly bool LoopOn;
         private readonly bool UseTimings;
+        private bool IsClosing = false;
+
+        private readonly SlideshowSoundtrack Soundtrack;
+        private readonly WaveOutEvent PlaybackDevice = new();
+        private WaveStream? PlaybackStream;
+        private MemoryStream? PlaybackMemory;
+        private int NextTrack = 0;
 
         public Slideshow(List<Slide> slides, SlideshowInfo info, int monitor, int start = 0)
         {
@@ -66,6 +75,7 @@ namespace Present_Express
 
             LoopOn = info.Loop;
             UseTimings = info.UseTimings;
+            Soundtrack = info.Soundtrack;
             AllSlides = slides;
             CurrentSlide = start - 1;
 
@@ -82,6 +92,7 @@ namespace Present_Express
             SlideTimer.Tick += SlideTimer_Tick;
             MoveTimer.Tick += MoveTimer_Tick;
             TransitionStoryboard.Completed += TransitionStoryboard_Completed;
+            PlaybackDevice.PlaybackStopped += PlaybackDevice_PlaybackStopped;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -91,7 +102,9 @@ namespace Present_Express
                 LoggingProperties.Conversion.SlideshowStarted,
                 $"Slide {CurrentSlide + 2}"
             );
+
             WindowState = WindowState.Maximized;
+            PlayNextTrack();
             LoadNext();
         }
 
@@ -99,6 +112,11 @@ namespace Present_Express
         {
             SlideTimer.Stop();
             MoveTimer.Stop();
+            IsClosing = true;
+
+            PlaybackDevice.Dispose();
+            PlaybackStream?.Dispose();
+            PlaybackMemory?.Dispose();
         }
 
         private void Window_StateChanged(object sender, EventArgs e)
@@ -691,6 +709,54 @@ namespace Present_Express
                 Cursor = Cursors.None;
                 ButtonStack.Visibility = Visibility.Collapsed;
             }
+        }
+
+        #endregion
+        #region Soundtrack
+
+        private void PlayNextTrack()
+        {
+            if (Soundtrack.Filenames.Count > 0)
+            {
+                if (NextTrack >= Soundtrack.Filenames.Count)
+                {
+                    if (Soundtrack.Loop)
+                        NextTrack = 0;
+                    else
+                        return; // No more tracks to play
+                }
+
+                try
+                {
+                    string trackName = Soundtrack.Filenames[NextTrack];
+                    PlaybackMemory = new(Soundtrack.Audio[trackName]);
+
+                    if (
+                        Path.GetExtension(trackName)
+                            .Equals(".wav", StringComparison.OrdinalIgnoreCase)
+                    )
+                        PlaybackStream = new WaveFileReader(PlaybackMemory);
+                    else
+                        PlaybackStream = new Mp3FileReader(PlaybackMemory);
+
+                    PlaybackDevice.Init(PlaybackStream);
+                    PlaybackDevice.Play();
+                }
+                catch
+                {
+                    PlayNextTrack();
+                }
+                finally
+                {
+                    NextTrack++;
+                }
+            }
+        }
+
+        private void PlaybackDevice_PlaybackStopped(object? sender, StoppedEventArgs e)
+        {
+            if (!IsClosing)
+                PlayNextTrack();
         }
 
         #endregion

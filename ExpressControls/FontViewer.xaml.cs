@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,6 +20,7 @@ namespace ExpressControls
         private readonly int GlyphPerPage = 66;
 
         private readonly string FontName = "";
+        private readonly string FontFile = "";
         public KeyValuePair<string, bool>[] CategoryChanges { get; set; } = [];
         public bool IsFavourite { get; set; } = false;
 
@@ -61,9 +64,11 @@ namespace ExpressControls
                 FavouriteBtn.ToolTip = Funcs.ChooseLang("RemoveFromFavsStr");
                 IsFavourite = true;
             }
+
+            InstallBtn.Visibility = Visibility.Collapsed;
         }
 
-        public FontViewer(string fontname, FontFamily family)
+        public FontViewer(string fontname, FontFamily family, string filepath = "")
         {
             Init(fontname);
             FontName = fontname;
@@ -74,6 +79,12 @@ namespace ExpressControls
 
             CategoryBtn.Visibility = Visibility.Collapsed;
             FavouriteBtn.Visibility = Visibility.Collapsed;
+
+            FontFile = filepath;
+            InstallBtn.Visibility =
+                string.IsNullOrEmpty(filepath) || Funcs.IsValidFont(fontname)
+                    ? Visibility.Collapsed
+                    : Visibility.Visible;
         }
 
         private void Init(string font)
@@ -272,6 +283,47 @@ namespace ExpressControls
                 Column = glyphs.IndexOf(g) % 11,
                 Row = glyphs.IndexOf(g) / 11,
             });
+        }
+
+        #endregion
+        #region Install
+
+        private async void InstallBtn_Click(object sender, RoutedEventArgs e)
+        {
+            string? tempFolder = Path.GetDirectoryName(FontFile);
+            if (string.IsNullOrEmpty(tempFolder))
+                return;
+
+            try
+            {
+                ProcessStartInfo info = new()
+                {
+                    FileName = Path.Combine(
+                        AppDomain.CurrentDomain.BaseDirectory,
+                        "fontreg\\FontReg.exe"
+                    ),
+                    Arguments = "/copy",
+                    UseShellExecute = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    WorkingDirectory = tempFolder,
+                };
+
+                Process p = Process.Start(info) ?? throw new NullReferenceException("Process null");
+                await p.WaitForExitAsync();
+
+                InstallBtn.Text = Funcs.ChooseLang("InstalledStr");
+                InstallBtn.IsEnabled = false;
+            }
+            catch (Exception ex)
+            {
+                Funcs.ShowMessageRes(
+                    "InstallFontErrorDescStr",
+                    "InstallFontErrorStr",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    Funcs.GenerateErrorReport(ex, PageID, "InstallFontErrorDescStr")
+                );
+            }
         }
 
         #endregion

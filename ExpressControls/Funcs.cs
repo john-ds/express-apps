@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing.Imaging;
+using System.Drawing.Text;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -200,6 +201,36 @@ namespace ExpressControls
             "Arial",
         ];
 
+        public static readonly string[] ArchiveExtensions =
+        [
+            ".zip",
+            ".rar",
+            ".7z",
+            ".tar",
+            // gzip
+            ".tar.gz",
+            ".tgz",
+            ".taz",
+            ".gz",
+            // bzip2
+            ".tar.bz2",
+            ".tbz2",
+            ".tbz",
+            ".tz2",
+            ".bz2",
+            // lzip
+            ".tar.lz",
+            ".lz",
+            // lzma
+            ".tar.lzma",
+            ".tlz",
+            ".lzma",
+            // xz
+            ".tar.xz",
+            ".txz",
+            ".xz",
+        ];
+
         public static readonly DispatcherTimer AppThemeTimer = new()
         {
             Interval = new TimeSpan(0, 1, 0),
@@ -378,6 +409,20 @@ namespace ExpressControls
                 Languages.English => ".",
                 _ => ",",
             };
+        }
+
+        public static string GetSystemLanguage()
+        {
+            string lang = CultureInfo.InstalledUICulture.TwoLetterISOLanguageName.ToLower();
+            return GetCurrentLangEnum(
+                lang switch
+                {
+                    "fr" => Languages.French,
+                    "es" => Languages.Spanish,
+                    "it" => Languages.Italian,
+                    _ => Languages.English,
+                }
+            );
         }
 
         #endregion
@@ -898,9 +943,15 @@ namespace ExpressControls
             Grid overlay = (Grid)win.FindName("OverlayGrid");
             ((TabItem)win.FindName(tab + "OverlayTab")).IsSelected = true;
 
+            FrameworkElement statusBar = (FrameworkElement)win.FindName("StatusBar");
+            FrameworkElement mainGrid = (FrameworkElement)win.FindName("MainGrid");
+            statusBar.IsEnabled = false;
+            mainGrid.IsEnabled = false;
+
             if (overlay.Visibility != Visibility.Visible)
             {
                 overlay.Visibility = Visibility.Visible;
+
                 StartStoryboard(win, tab + "OverlayInStoryboard");
             }
             else
@@ -915,8 +966,13 @@ namespace ExpressControls
             CloseOverlayStoryboard(GetWindow(sender), btn);
         }
 
-        public static void CloseOverlayStoryboard(Window win, string tab)
+        public static void CloseOverlayStoryboard(Window win, string tab = "")
         {
+            FrameworkElement statusBar = (FrameworkElement)win.FindName("StatusBar");
+            FrameworkElement mainGrid = (FrameworkElement)win.FindName("MainGrid");
+            statusBar.IsEnabled = true;
+            mainGrid.IsEnabled = true;
+
             StartStoryboard(win, tab + "OverlayOutStoryboard");
         }
 
@@ -1363,14 +1419,14 @@ namespace ExpressControls
 
         // Dialog text must be reset at app runtime
 
-        public static readonly OpenFileDialog RTFTXTOpenDialog = new()
+        public static readonly OpenFileDialog DocumentOpenDialog = new()
         {
             Title = Assembly.GetEntryAssembly()?.GetName().Name,
             Filter = ChooseLang("TypeFilesFilterStr"),
             Multiselect = true,
         };
 
-        public static readonly SaveFileDialog RTFTXTSaveDialog = new()
+        public static readonly SaveFileDialog DocumentSaveDialog = new()
         {
             Title = Assembly.GetEntryAssembly()?.GetName().Name,
             Filter = ChooseLang("TypeFilesShortFilterStr"),
@@ -1503,6 +1559,20 @@ namespace ExpressControls
             Multiselect = true,
         };
 
+        public static readonly OpenFileDialog FontOpenDialog = new()
+        {
+            Title = Assembly.GetEntryAssembly()?.GetName().Name,
+            Filter = ChooseLang("FontsFilterStr"),
+            Multiselect = false,
+        };
+
+        public static readonly OpenFileDialog AudioOpenDialog = new()
+        {
+            Title = Assembly.GetEntryAssembly()?.GetName().Name,
+            Filter = ChooseLang("AudioFilterStr"),
+            Multiselect = true,
+        };
+
         public static readonly System.Windows.Forms.PrintDialog PrintDialog = new()
         {
             AllowCurrentPage = true,
@@ -1513,8 +1583,8 @@ namespace ExpressControls
 
         public static void SetupDialogs()
         {
-            RTFTXTOpenDialog.Filter = ChooseLang("TypeFilesFilterStr");
-            RTFTXTSaveDialog.Filter = ChooseLang("TypeFilesShortFilterStr");
+            DocumentOpenDialog.Filter = ChooseLang("TypeFilesFilterStr");
+            DocumentSaveDialog.Filter = ChooseLang("TypeFilesShortFilterStr");
             PRESENTOpenDialog.Filter = ChooseLang("PresentFilterStr");
             PRESENTSaveDialog.Filter = ChooseLang("PresentFilterStr");
             HTMLSaveDialog.Filter = ChooseLang("HTMLFilesFilterStr");
@@ -1532,6 +1602,8 @@ namespace ExpressControls
             ExportSettingsDialog.Filter = ChooseLang("XMLFilesFilterStr");
             PictureOpenDialog.Filter = ChooseLang("PicturesFilterStr");
             PicturesOpenDialog.Filter = ChooseLang("PicturesFilterStr");
+            FontOpenDialog.Filter = ChooseLang("FontsFilterStr");
+            AudioOpenDialog.Filter = ChooseLang("AudioFilterStr");
 
             ImportSettingsDialog.Title =
                 ChooseLang("OpImportDialogStr")
@@ -1735,7 +1807,7 @@ namespace ExpressControls
                     _ = Process.Start(
                         new ProcessStartInfo()
                         {
-                            FileName = GetAppUpdateLink(ExpressApp.Type),
+                            FileName = GetAppUpdateLink(),
                             UseShellExecute = true,
                         }
                     );
@@ -1753,19 +1825,7 @@ namespace ExpressControls
             }
         }
 
-        public static string GetAppUpdateLink(ExpressApp app)
-        {
-            string url = "https://express.johnjds.co.uk/update?app=";
-            return url
-                + app switch
-                {
-                    ExpressApp.Type => "type",
-                    ExpressApp.Present => "present",
-                    ExpressApp.Font => "font",
-                    ExpressApp.Quota => "quota",
-                    _ => "all",
-                };
-        }
+        public static string GetAppUpdateLink() => "https://express.johnjds.co.uk/update/";
 
         public static Stream GenerateStreamFromString(string s)
         {
@@ -3472,6 +3532,54 @@ namespace ExpressControls
             catch
             {
                 return false;
+            }
+        }
+
+        public static string? GetFontName(string fontFile)
+        {
+            try
+            {
+                using PrivateFontCollection fontCol = new();
+                fontCol.AddFontFile(fontFile);
+                return fontCol.Families[0].Name;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public static string GetUniqueFilename(
+            string filename,
+            IEnumerable<string> existingFilenames
+        )
+        {
+            if (!existingFilenames.Contains(filename))
+                return filename;
+
+            string nameWithoutExtension = Path.GetFileNameWithoutExtension(filename);
+            string extension = Path.GetExtension(filename);
+            int counter = 1;
+            string newFilename;
+
+            do
+            {
+                newFilename = $"{nameWithoutExtension}-{counter}{extension}";
+                counter++;
+            } while (existingFilenames.Contains(newFilename));
+            return newFilename;
+        }
+
+        public static T? GetDataContext<T>(object obj)
+            where T : class
+        {
+            try
+            {
+                return (T)((FrameworkElement)obj).DataContext;
+            }
+            catch
+            {
+                return null;
             }
         }
 

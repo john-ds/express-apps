@@ -48,6 +48,7 @@ namespace Present_Express
         private int CurrentSlide = -1;
         private double DefaultTiming = 2;
         private readonly Transition DefaultTransition = new();
+        private readonly SlideshowSoundtrack CurrentSoundtrack = new();
         private int CurrentMonitor = 0;
 
         private readonly DropOutStack<Change> UndoStack = new(25);
@@ -66,6 +67,15 @@ namespace Present_Express
             WorkerSupportsCancellation = true,
             WorkerReportsProgress = true,
         };
+
+        private readonly string[] SupportedImageExtensions =
+        [
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".bmp",
+            ".gif",
+        ];
 
         public MainWindow()
         {
@@ -89,16 +99,15 @@ namespace Present_Express
             // Language setup
             if (Settings.Default.Language == "")
             {
-                LangSelector lang = new(ExpressApp.Present);
-                lang.ShowDialog();
-
-                Settings.Default.Language = lang.ChosenLang;
+                Settings.Default.Language = Funcs.GetSystemLanguage();
                 Settings.Default.Save();
+                FirstLoad = true;
             }
 
             Funcs.SetLang(Settings.Default.Language);
             Funcs.SetupDialogs();
             Funcs.RegisterPopups(WindowGrid);
+            ManualClose = true;
 
             // Setup for scrollable ribbon menu
             Funcs.Tabs = ["Menu", "Home", "Design", "Show"];
@@ -223,6 +232,11 @@ namespace Present_Express
                     OpenRecentFavourite(Settings.Default.Recents[0] ?? "");
             }
 
+            if (FirstLoad)
+                CreateTempLabel(
+                    string.Format(Funcs.ChooseLang("WelcomeStr"), Funcs.GetCurrentAppName())
+                );
+
             if (Settings.Default.CheckNotifications)
                 await GetNotifications();
         }
@@ -320,7 +334,11 @@ namespace Present_Express
         private void OverlayStoryboard_Completed(object? sender, EventArgs e)
         {
             if (IsLoaded)
+            {
                 OverlayGrid.Visibility = Visibility.Collapsed;
+                MainGrid.IsEnabled = true;
+                StatusBar.IsEnabled = true;
+            }
         }
 
         private void CommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -429,6 +447,44 @@ namespace Present_Express
             catch { }
         }
 
+        #region Drag & Drop
+
+        private void WindowGrid_DragOver(object sender, DragEventArgs e)
+        {
+            e.Effects = DragDropEffects.None;
+
+            if (IsDragDropEnabled() && e.Data.GetDataPresent(DataFormats.FileDrop))
+                e.Effects = DragDropEffects.Copy;
+
+            e.Handled = true;
+        }
+
+        private async void WindowGrid_Drop(object sender, DragEventArgs e)
+        {
+            try
+            {
+                if (IsDragDropEnabled() && e.Data.GetDataPresent(DataFormats.FileDrop))
+                {
+                    string[] paths = e.Data.GetData(DataFormats.FileDrop) as string[] ?? [];
+                    string[] imagePaths =
+                    [
+                        .. paths.Where(p =>
+                            File.Exists(p)
+                            && SupportedImageExtensions.Contains(Path.GetExtension(p).ToLower())
+                        ),
+                    ];
+
+                    if (imagePaths.Length > 0)
+                        AddOfflineImages(imagePaths);
+
+                    foreach (string filename in paths)
+                        await LoadFile(filename);
+                }
+            }
+            catch { }
+        }
+
+        #endregion
         #region Menu > New
 
         private void NewBtn_Click(object sender, RoutedEventArgs e)
@@ -446,7 +502,7 @@ namespace Present_Express
         {
             if (ThisFile == "" && IsSlideshowEmpty())
             {
-                Funcs.StartStoryboard(this, "OverlayOutStoryboard");
+                Funcs.CloseOverlayStoryboard(this);
             }
             else
             {
@@ -612,12 +668,22 @@ namespace Present_Express
         /// <param name="filename">The name of the file to open</param>
         private async Task<bool> LoadFile(string filename)
         {
+            if (
+                !filename.StartsWith("https://")
+                && (
+                    !Path.Exists(filename)
+                    || !Path.GetExtension(filename)
+                        .Equals(".present", StringComparison.InvariantCultureIgnoreCase)
+                )
+            )
+                return false;
+
             foreach (MainWindow win in Application.Current.Windows.OfType<MainWindow>())
             {
                 if (win.ThisFile == filename)
                 {
                     win.Focus();
-                    Funcs.StartStoryboard(win, "OverlayOutStoryboard");
+                    Funcs.CloseOverlayStoryboard(win);
                     return true;
                 }
             }
@@ -780,6 +846,7 @@ namespace Present_Express
             targetWin.FitBtn.IsChecked = slideshow.Info.FitToSlide;
             targetWin.LoopBtn.IsChecked = slideshow.Info.Loop;
             targetWin.UseTimingsBtn.IsChecked = slideshow.Info.UseTimings;
+            LoadSoundtrack(slideshow.Info.Soundtrack, targetWin.CurrentSoundtrack, entries);
 
             if (slideshow.Info.Width == 120)
                 targetWin.StandardBtn.IsChecked = true;
@@ -806,7 +873,7 @@ namespace Present_Express
                 System.Windows.Shell.JumpList.GetJumpList(Application.Current).Apply();
             }
 
-            Funcs.StartStoryboard(this, "OverlayOutStoryboard");
+            Funcs.CloseOverlayStoryboard(this);
         }
 
         private async void BrowseOpenBtn_Click(object sender, RoutedEventArgs e)
@@ -847,17 +914,10 @@ namespace Present_Express
 
         private FileItem GenerateFileItem(string path)
         {
-            string filename = Path.GetFileNameWithoutExtension(path);
-            string formatted = path.Replace("\\", " » ");
-
-            if (filename == "")
-                filename = path;
-
             return new FileItem()
             {
-                FileName = filename,
                 FilePath = path,
-                FilePathFormatted = formatted,
+                IncludeFileNameExtension = false,
                 Icon = (Viewbox)TryFindResource("PictureFileIcon"),
             };
         }
@@ -1455,7 +1515,7 @@ namespace Present_Express
                     res.Add(
                         new FileItem()
                         {
-                            FileName = Funcs.ChooseLang("BackStr"),
+                            FileNameOverride = Funcs.ChooseLang("BackStr"),
                             Icon = (Viewbox)TryFindResource("UndoIcon"),
                             FilePath = parent,
                             IsFolder = true,
@@ -1480,7 +1540,7 @@ namespace Present_Express
                     res.Add(
                         new FileItem()
                         {
-                            FileName = item.Name,
+                            FileNameOverride = item.Name,
                             Icon = (Viewbox)TryFindResource(icn),
                             FilePath = item.PathDisplay,
                             IsFolder = item.IsFolder,
@@ -1650,7 +1710,7 @@ namespace Present_Express
                 Title = Path.GetFileName(filename) + " - Present Express";
                 HasChanges = false;
 
-                Funcs.StartStoryboard(this, "OverlayOutStoryboard");
+                Funcs.CloseOverlayStoryboard(this);
                 CreateTempLabel(Funcs.ChooseLang("SavingCompleteStr"));
                 Funcs.LogConversion(PageID, LoggingProperties.Conversion.FileSaved, "PC");
                 return true;
@@ -1727,6 +1787,9 @@ namespace Present_Express
                 );
             }
 
+            foreach (KeyValuePair<string, byte[]> item in CurrentSoundtrack.Audio)
+                AddOrUpdateEntry(zip, item.Key, item.Value);
+
             SlideshowItem slideshow = new()
             {
                 Info = new()
@@ -1736,6 +1799,7 @@ namespace Present_Express
                     FitToSlide = FitBtn.IsChecked == true,
                     Loop = LoopBtn.IsChecked == true,
                     UseTimings = UseTimingsBtn.IsChecked == true,
+                    Soundtrack = CurrentSoundtrack,
                 },
                 Slides = AllSlides,
             };
@@ -1810,19 +1874,11 @@ namespace Present_Express
 
         private FileItem GenerateFolderItem(string path)
         {
-            string icon = "FolderIcon";
-            string filename = Path.GetFileName(path);
-            string formatted = path.Replace("\\", " » ");
-
-            if (filename == "")
-                filename = path;
-
             return new FileItem()
             {
-                FileName = filename,
+                IsFolder = true,
                 FilePath = path,
-                FilePathFormatted = formatted,
-                Icon = (Viewbox)TryFindResource(icon),
+                Icon = (Viewbox)TryFindResource("FolderIcon"),
             };
         }
 
@@ -2049,7 +2105,7 @@ namespace Present_Express
                     MessageBoxButton.OK,
                     MessageBoxImage.Information
                 );
-                Funcs.StartStoryboard(this, "OverlayOutStoryboard");
+                Funcs.CloseOverlayStoryboard(this);
             }
             catch (Exception ex)
             {
@@ -2099,7 +2155,7 @@ namespace Present_Express
                 PrintDoc.Print();
                 Activate();
 
-                Funcs.StartStoryboard(this, "OverlayOutStoryboard");
+                Funcs.CloseOverlayStoryboard(this);
                 CreateTempLabel(Funcs.ChooseLang("SentToPrinterStr"));
             }
         }
@@ -2236,6 +2292,7 @@ namespace Present_Express
             SlideToUpDown.Maximum = AllSlides.Count;
             SlideToUpDown.Value = AllSlides.Count;
 
+            SoundtrackIncludeBtn.Visibility = Visibility.Visible;
             ExportWithTimingsBtn.Visibility = Visibility.Visible;
             ExportWithTimingsBtn.IsChecked = true;
             ExportTimingsPnl.Visibility = Visibility.Collapsed;
@@ -2283,13 +2340,23 @@ namespace Present_Express
                     slideTo = AllSlides.Count;
                 else if (ExportCurrentRadioBtn.IsChecked == true)
                 {
-                    slideFrom = CurrentSlide;
-                    slideTo = CurrentSlide;
+                    slideFrom = CurrentSlide + 1;
+                    slideTo = CurrentSlide + 1;
                 }
                 else
                 {
                     slideFrom = SlideFromUpDown.Value ?? 1;
                     slideTo = SlideToUpDown.Value ?? 1;
+                }
+
+                List<KeyValuePair<string, byte[]>> audio = [];
+                if (SoundtrackIncludeBtn.IsChecked == true)
+                {
+                    foreach (string item in CurrentSoundtrack.Filenames)
+                    {
+                        if (CurrentSoundtrack.Audio.TryGetValue(item, out byte[]? value))
+                            audio.Add(new(item, value));
+                    }
                 }
 
                 ExportVideoWorker.RunWorkerAsync(
@@ -2299,6 +2366,8 @@ namespace Present_Express
                         Resolution = (ExportVideoRes)ExportFormatCombo.SelectedIndex,
                         Widescreen = IsWidescreen(),
                         FitToSlide = FitBtn.IsChecked == true,
+                        Soundtrack = [.. audio],
+                        SoundtrackLoop = CurrentSoundtrack.Loop,
                         Sequence =
                         [
                             .. AllSlides
@@ -2374,6 +2443,7 @@ namespace Present_Express
                         break;
                 }
 
+                // generate frames
                 if (ExportVideoWorker.CancellationPending)
                 {
                     e.Cancel = true;
@@ -2434,6 +2504,25 @@ namespace Present_Express
                         );
                 }
 
+                // generate soundtrack
+                bool hasSoundtrack = config.Soundtrack.Length > 0;
+                for (int i = 0; i < config.Soundtrack.Length; i++)
+                {
+                    string destinationPath = Path.Combine(tempFolderName, config.Soundtrack[i].Key);
+                    File.WriteAllBytes(destinationPath, config.Soundtrack[i].Value);
+
+                    if (ExportVideoWorker.CancellationPending)
+                    {
+                        e.Cancel = true;
+                        throw new TaskCanceledException();
+                    }
+                    else
+                        ExportVideoWorker.ReportProgress(
+                            (int)Math.Round((double)(i + 1) / config.Soundtrack.Length * 100),
+                            "audio"
+                        );
+                }
+
                 if (ExportVideoWorker.CancellationPending)
                 {
                     e.Cancel = true;
@@ -2442,19 +2531,91 @@ namespace Present_Express
                 else
                     ExportVideoWorker.ReportProgress(100, "video");
 
-                FFMpegArguments
-                    .FromFileInput(Path.Combine(tempFolderName, "%09d.png"), false)
+                // render soundtrack
+                string concatAudioPath;
+                string baseFileName = "soundtrack";
+                string extension = ".wav";
+                int audioCounter = 0;
+
+                do
+                {
+                    string fileName =
+                        audioCounter == 0
+                            ? $"{baseFileName}{extension}"
+                            : $"{baseFileName}_{audioCounter}{extension}";
+                    concatAudioPath = Path.Combine(tempFolderName, fileName);
+                    audioCounter++;
+                } while (
+                    config.Soundtrack.Any(kvp =>
+                        kvp.Key.Equals(
+                            Path.GetFileName(concatAudioPath),
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                    ) || File.Exists(concatAudioPath)
+                );
+
+                if (hasSoundtrack)
+                {
+                    FFMpegArguments concatArgs = FFMpegArguments.FromFileInput(
+                        Path.Combine(tempFolderName, config.Soundtrack.First().Key)
+                    );
+
+                    foreach (KeyValuePair<string, byte[]> audio in config.Soundtrack.Skip(1))
+                        concatArgs = concatArgs.AddFileInput(
+                            Path.Combine(tempFolderName, audio.Key)
+                        );
+
+                    concatArgs
+                        .OutputToFile(
+                            concatAudioPath,
+                            true,
+                            options =>
+                                options
+                                    .WithCustomArgument(
+                                        $"-filter_complex \"concat=n={config.Soundtrack.Length}:v=0:a=1\""
+                                    )
+                                    .WithAudioCodec("pcm_s16le")
+                        )
+                        .ProcessSynchronously();
+                }
+
+                FFMpegArguments ffmpegArgs = FFMpegArguments.FromFileInput(
+                    Path.Combine(tempFolderName, "%09d.png"),
+                    false,
+                    options => options.WithFramerate(30)
+                );
+
+                if (hasSoundtrack)
+                    if (config.SoundtrackLoop)
+                    {
+                        ffmpegArgs.AddFileInput(
+                            concatAudioPath,
+                            false,
+                            options => options.WithCustomArgument("-stream_loop -1")
+                        );
+                    }
+                    else
+                    {
+                        ffmpegArgs.AddFileInput(concatAudioPath);
+                    }
+
+                ffmpegArgs
                     .OutputToFile(
                         config.Filename,
                         true,
                         options =>
+                        {
                             options
                                 .ForcePixelFormat("yuv420p")
                                 .Resize(outputWidth, outputHeight)
                                 .WithVideoFilters(filters =>
                                     filters.Scale(outputWidth, outputHeight)
                                 )
-                                .WithFramerate(30)
+                                .WithFramerate(30);
+
+                            if (hasSoundtrack)
+                                options.WithCustomArgument("-shortest");
+                        }
                     )
                     .ProcessSynchronously();
             }
@@ -2473,8 +2634,15 @@ namespace Present_Express
         private void ExportVideoWorker_ProgressChanged(object? sender, ProgressChangedEventArgs e)
         {
             if ((string?)e.UserState == "images")
+            {
                 ExportLoadingLbl.Text =
                     Funcs.ChooseLang("GeneratingSlidesStr") + $" ({e.ProgressPercentage}%)...";
+            }
+            else if ((string?)e.UserState == "audio")
+            {
+                ExportLoadingLbl.Text =
+                    Funcs.ChooseLang("GeneratingAudioStr") + $" ({e.ProgressPercentage}%)...";
+            }
             else
             {
                 ExportLoadingLbl.Text = Funcs.ChooseLang("VideoProcessingStr");
@@ -2549,6 +2717,7 @@ namespace Present_Express
             SlideToUpDown.Value = AllSlides.Count;
 
             ExportWithTimingsBtn.Visibility = Visibility.Collapsed;
+            SoundtrackIncludeBtn.Visibility = Visibility.Collapsed;
             ExportTimingsPnl.Visibility = Visibility.Collapsed;
         }
 
@@ -2594,8 +2763,8 @@ namespace Present_Express
                     slideTo = AllSlides.Count;
                 else if (ExportCurrentRadioBtn.IsChecked == true)
                 {
-                    slideFrom = CurrentSlide;
-                    slideTo = CurrentSlide;
+                    slideFrom = CurrentSlide + 1;
+                    slideTo = CurrentSlide + 1;
                 }
                 else
                 {
@@ -2959,7 +3128,7 @@ namespace Present_Express
                     files.Add(
                         new FileItem()
                         {
-                            FileName = paths[i],
+                            FileNameOverride = paths[i],
                             FilePath = string.Join(@"\", dir),
                             Indent = new Thickness(
                                 10 + (34 * (Math.Min(4, paths.Length) - i)),
@@ -3062,7 +3231,7 @@ namespace Present_Express
             {
                 InfoStack.ItemsSource = files.Select(f =>
                 {
-                    return new FileItem() { FilePath = f, FileName = Path.GetFileName(f) };
+                    return new FileItem() { FilePath = f };
                 });
 
                 NoInfoFilesTxt.Visibility = Visibility.Collapsed;
@@ -4084,18 +4253,9 @@ namespace Present_Express
                 IsEnabled = false;
                 CreateTempLabel(Funcs.ChooseLang("PleaseWaitStr"));
 
-                var buffer = await Funcs.GetBytesAsync(
+                BitmapImage image = await LoadOnlineImage(
                     PictureSelector.ResizeImage(pct.ChosenPicture.RegularURL, 2560, 1440).ToString()
                 );
-                BitmapImage image = new();
-                using (MemoryStream stream = new(buffer))
-                {
-                    image.BeginInit();
-                    image.CacheOption = BitmapCacheOption.OnLoad;
-                    image.StreamSource = stream;
-                    image.EndInit();
-                }
-
                 ImageSlide slide = new()
                 {
                     Name = Funcs.GetNewSlideName("photo", ".jpg"),
@@ -4136,22 +4296,48 @@ namespace Present_Express
 
         private void OfflinePicturesBtn_Click(object sender, RoutedEventArgs e)
         {
-            string[] filenames;
-            bool error = false;
-
             if (
                 PhotoEditorBtn.Visibility == Visibility.Visible
                 && Funcs.PictureOpenDialog.ShowDialog() == true
             )
-                filenames = [Funcs.PictureOpenDialog.FileName];
+            {
+                AddOfflineImages([Funcs.PictureOpenDialog.FileName], true);
+            }
             else if (Funcs.PicturesOpenDialog.ShowDialog() == true)
-                filenames = Funcs.PicturesOpenDialog.FileNames;
-            else
-                return;
+            {
+                AddOfflineImages(Funcs.PicturesOpenDialog.FileNames);
+            }
+        }
 
+        private void PhotoEditorBtn_Click(object sender, RoutedEventArgs e)
+        {
+            ImageSlide slide = (ImageSlide)AllSlides[CurrentSlide];
+            PhotoEditor editor = new(slide.Original, slide.Filters, slide.GetImageFormat());
+
+            if (editor.ShowDialog() == true)
+            {
+                AddActionToUndoStack(
+                    new PropertyChange<FilterItem>()
+                    {
+                        Property = SlideshowProperty.Filters,
+                        OldValues = [slide.Filters],
+                        NewValues = [editor.ChosenFilters],
+                        Position = CurrentSlide,
+                    }
+                );
+
+                slide.Filters = editor.ChosenFilters;
+                AddSlide(slide, CurrentSlide);
+                SelectSlide(CurrentSlide);
+            }
+        }
+
+        private void AddOfflineImages(string[] filenames, bool editingMode = false)
+        {
+            bool error = false;
             try
             {
-                if (PhotoEditorBtn.Visibility == Visibility.Visible)
+                if (editingMode)
                 {
                     if (new FileInfo(filenames[0]).Length > 10485760)
                         throw new NotSupportedException();
@@ -4159,7 +4345,7 @@ namespace Present_Express
                     ImageSlide slide = new()
                     {
                         Name = Path.GetFileName(filenames[0]),
-                        Original = new BitmapImage(new Uri(filenames[0])),
+                        Original = LoadImage(filenames[0]),
                         Timing = AllSlides[CurrentSlide].Timing,
                         Transition = AllSlides[CurrentSlide].Transition,
                         Filters = ((ImageSlide)AllSlides[CurrentSlide]).Filters,
@@ -4191,7 +4377,7 @@ namespace Present_Express
                         ImageSlide slide = new()
                         {
                             Name = Path.GetFileName(filenames[i]),
-                            Original = new BitmapImage(new Uri(filenames[i])),
+                            Original = LoadImage(filenames[i]),
                             Timing = DefaultTiming,
                             Transition = DefaultTransition.Clone(),
                         };
@@ -4211,36 +4397,37 @@ namespace Present_Express
 
             if (error)
                 Funcs.ShowMessageRes(
-                    PhotoEditorBtn.Visibility == Visibility.Visible
-                        ? "ImageErrorDescStr"
-                        : "ImageMultipleErrorDescStr",
+                    editingMode ? "ImageErrorDescStr" : "ImageMultipleErrorDescStr",
                     "ImageErrorStr",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error
                 );
         }
 
-        private void PhotoEditorBtn_Click(object sender, RoutedEventArgs e)
+        private static BitmapImage LoadImage(string filename)
         {
-            ImageSlide slide = (ImageSlide)AllSlides[CurrentSlide];
-            PhotoEditor editor = new(slide.Original, slide.Filters, slide.GetImageFormat());
+            byte[] buffer = File.ReadAllBytes(filename);
+            return LoadImage(buffer);
+        }
 
-            if (editor.ShowDialog() == true)
+        private static async Task<BitmapImage> LoadOnlineImage(string url)
+        {
+            byte[] buffer = await Funcs.GetBytesAsync(url);
+            return LoadImage(buffer);
+        }
+
+        private static BitmapImage LoadImage(byte[] buffer)
+        {
+            BitmapImage bitmap = new();
+            using (MemoryStream stream = new(buffer))
             {
-                AddActionToUndoStack(
-                    new PropertyChange<FilterItem>()
-                    {
-                        Property = SlideshowProperty.Filters,
-                        OldValues = [slide.Filters],
-                        NewValues = [editor.ChosenFilters],
-                        Position = CurrentSlide,
-                    }
-                );
-
-                slide.Filters = editor.ChosenFilters;
-                AddSlide(slide, CurrentSlide);
-                SelectSlide(CurrentSlide);
+                bitmap.BeginInit();
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.StreamSource = stream;
+                bitmap.EndInit();
             }
+
+            return bitmap;
         }
 
         #endregion
@@ -4628,6 +4815,49 @@ namespace Present_Express
         }
 
         #endregion
+        #region Design > Soundtrack
+
+        private void SoundtrackBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Soundtrack snd = new(CurrentSoundtrack);
+            if (snd.ShowDialog() == true)
+            {
+                CurrentSoundtrack.Loop = snd.LoopCheck.IsChecked == true;
+
+                CurrentSoundtrack.Audio.Clear();
+                CurrentSoundtrack.Filenames.Clear();
+
+                foreach (SoundtrackItem item in snd.SoundtrackDisplayList)
+                {
+                    CurrentSoundtrack.Filenames.Add(item.Name);
+                    CurrentSoundtrack.Audio.Add(item.Name, item.Data);
+                }
+            }
+        }
+
+        private void LoadSoundtrack(
+            SlideshowSoundtrack from,
+            SlideshowSoundtrack to,
+            Dictionary<string, byte[]> entries
+        )
+        {
+            CurrentSoundtrack.Filenames.Clear();
+            CurrentSoundtrack.Audio.Clear();
+            to.Loop = from.Loop;
+
+            foreach (string item in from.Filenames)
+            {
+                try
+                {
+                    using MemoryStream mem = new(entries[item]);
+                    to.Filenames.Add(item);
+                    to.Audio.Add(item, mem.ToArray());
+                }
+                catch { }
+            }
+        }
+
+        #endregion
         #region Design > Slide Size
 
         private void SlideSizeBtn_Click(object sender, RoutedEventArgs e)
@@ -4771,6 +5001,7 @@ namespace Present_Express
                         FitToSlide = FitBtn.IsChecked == true,
                         Loop = LoopBtn.IsChecked == true,
                         UseTimings = UseTimingsBtn.IsChecked == true,
+                        Soundtrack = MuteBtn.IsChecked == true ? new() : CurrentSoundtrack,
                     },
                     CurrentMonitor,
                     from
@@ -4782,6 +5013,10 @@ namespace Present_Express
                 HomeBtn.Visibility = Visibility.Collapsed;
                 DesignBtn.Visibility = Visibility.Collapsed;
                 ShowBtn.Visibility = Visibility.Collapsed;
+                DocTabs.IsEnabled = false;
+                StatusBar.IsEnabled = false;
+                MainGrid.IsEnabled = false;
+                DragDropEnabled = false;
 
                 sld.Closed += Sld_Closed;
                 SlideshowPrevBtn.Click += sld.PrevBtn_Click;
@@ -4801,6 +5036,10 @@ namespace Present_Express
             HomeBtn.Visibility = Visibility.Visible;
             DesignBtn.Visibility = Visibility.Visible;
             ShowBtn.Visibility = Visibility.Visible;
+            DocTabs.IsEnabled = true;
+            StatusBar.IsEnabled = true;
+            MainGrid.IsEnabled = true;
+            DragDropEnabled = true;
         }
 
         private void RunBtn_Click(object sender, RoutedEventArgs e)
@@ -4821,7 +5060,7 @@ namespace Present_Express
         }
 
         #endregion
-        #region Show > Loop & Use Timings
+        #region Show > Settings
 
         private void LoopBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -4971,7 +5210,7 @@ namespace Present_Express
             _ = Process.Start(
                 new ProcessStartInfo()
                 {
-                    FileName = Funcs.GetAppUpdateLink(ExpressApp.Present),
+                    FileName = Funcs.GetAppUpdateLink(),
                     UseShellExecute = true,
                 }
             );

@@ -289,6 +289,7 @@ namespace ExpressControls
             public const string PhotoEdited = "photo_edited";
             public const string SlideshowStarted = "slideshow_started";
             public const string APIRequest = "api_request";
+            public const string CreateSoundtrack = "create_soundtrack";
         }
 
         public static readonly DependencyProperty DisableLoggingProperty =

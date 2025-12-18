@@ -80,7 +80,7 @@
         <KeyBinding Key="L" Modifiers="Ctrl" Command="{StaticResource SelectFolderTxtCommand}" />
     </ex:ExpressWindow.InputBindings>
 
-    <Grid x:Name="WindowGrid">
+    <Grid x:Name="WindowGrid" AllowDrop="True" DragOver="WindowGrid_DragOver" Drop="WindowGrid_Drop">
         <Grid x:Name="grid1" Background="{DynamicResource TertiaryColor}">
             <DockPanel Margin="0">
                 <TabControl x:Name="DocTabs" Margin="0,4,0,0" DockPanel.Dock="Top" Height="68" Padding="0" BorderThickness="0" SelectedIndex="1" Panel.ZIndex="1">

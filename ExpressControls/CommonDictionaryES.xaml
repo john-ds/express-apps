@@ -373,6 +373,7 @@ CTRL+S</System:String>
     <System:String x:Key="DefFileTypeStr">Establecer el tipo de archivo de guardado por defecto</System:String>
     <System:String x:Key="RTFStr">RTF (Texto enriquecido)</System:String>
     <System:String x:Key="TXTStr">TXT (Texto sin formato)</System:String>
+    <System:String x:Key="DOCXStr">DOCX (Documento Word)</System:String>
     <System:String x:Key="DefClrSchemeStr">Establecer el esquema de colores por defecto</System:String>
     <System:String x:Key="DefSpellStr">Establecer el idioma por defecto del corrector</System:String>
     <System:String x:Key="GeneralStr">General</System:String>
@@ -454,7 +455,7 @@ CTRL+S</System:String>
     <System:String x:Key="FromFileStr">Texto de archivo</System:String>
     <System:String x:Key="PropertyStr">Propiedad</System:String>
     <System:String x:Key="PropertyInfoStr">Insertar el número de palabras, el nombre del archivo, etc.</System:String>
-    <System:String x:Key="FromFileInfoStr">Insertar texto desde un archivo TXT o RTF</System:String>
+    <System:String x:Key="FromFileInfoStr">Insertar texto desde un archivo TXT, RTF o DOCX</System:String>
     <System:String x:Key="TextBlockInfoStr">Insertar la fecha y la hora, el texto de un archivo y mucho más</System:String>
     <System:String x:Key="ItalianStr">Italiano</System:String>
     <System:String x:Key="PropertySideStr">Elije una propiedad.</System:String>
@@ -966,7 +967,7 @@ La importación de datos borrará todos los puntos de datos existentes. ¿Deseas
     <System:String x:Key="CloseMenuStr">Cerrar menú</System:String>
     <System:String x:Key="OnExitStr">Antes de que te vayas...</System:String>
     <System:String x:Key="OnExitDescPStr">¿Quieres guardar algún cambio en tu presentación?</System:String>
-    <System:String x:Key="TemplateErrorStr">Parece que no podemos obtener plantillas en este momento. Por favor, comprueba que estás conectado a Internet y vuelve a intentarlo.</System:String>
+    <System:String x:Key="TemplateErrorStr">Parece que no podemos obtener plantillas en este momento. Por favor, comprueba que estás conectado/a a Internet y vuelve a intentarlo.</System:String>
     <System:String x:Key="OpenFileErrorStr">Error al abrir el archivo</System:String>
     <System:String x:Key="OpenFileErrorDescStr">Nos encontramos con un problema al abrir este archivo:</System:String>
     <System:String x:Key="TryAgainStr">Por favor, inténtalo de nuevo.</System:String>
@@ -1141,7 +1142,7 @@ Comprueba que tienes permiso para acceder a él.</System:String>
     <System:String x:Key="HelpTitleQ8Str">Atajos de teclado</System:String>
     <System:String x:Key="AboutDescTStr" xml:space="preserve">Gracias por instalar Type Express.
 
-Edita documentos TXT y RTF con facilidad y estilo, expresando tu personalidad con muchas funciones diferentes, permitiéndote personalizar tu documento como quieras.
+Edita documentos con facilidad y estilo, expresando tu personalidad con muchas funciones diferentes, permitiéndote personalizar tu documento como quieras.
 
 Para saber cómo utilizar las funciones disponibles, visita la sección de Ayuda. También puedes dejar tus comentarios allí - ¡se agradece mucho!
 
@@ -1173,8 +1174,8 @@ Ten en cuenta que sólo se admiten consultas de búsqueda en inglés.
 
 Si este problema persiste, es posible que tengamos problemas. Por favor, inténtalo de nuevo más tarde y comprueba si hay actualizaciones de la aplicación.</System:String>
     <System:String x:Key="IconRetrievalErrorStr">Tenemos problemas para conseguir este icono. Por favor, inténtalo más tarde.</System:String>
-    <System:String x:Key="TypeFilesFilterStr">Archivos compatibles (.rtf, .txt)|*.txt;*.rtf|Archivos de texto (.txt)|*.txt|Archivos RTF (.rtf)|*.rtf</System:String>
-    <System:String x:Key="TypeFilesShortFilterStr">Archivos RTF (.rtf)|*.rtf|Archivos de texto (.txt)|*.txt</System:String>
+    <System:String x:Key="TypeFilesFilterStr">Archivos compatibles (.rtf, .txt, .docx)|*.txt;*.rtf;*.docx|Archivos de texto (.txt)|*.txt|Archivos RTF (.rtf)|*.rtf|Documentos Word (.docx)|*.docx</System:String>
+    <System:String x:Key="TypeFilesShortFilterStr">Archivos RTF (.rtf)|*.rtf|Archivos de texto (.txt)|*.txt|Documentos Word (.docx)|*.docx</System:String>
     <System:String x:Key="ChoosePictureStr">Elegir una imagen</System:String>
     <System:String x:Key="TypeFilesShortInvFilterStr">Archivos de texto (.txt)|*.txt|Archivos RTF (.rtf)|*.rtf</System:String>
     <System:String x:Key="OnExitDescTStr">¿Quieres guardar algún cambio en tu documento?</System:String>
@@ -1433,7 +1434,7 @@ Los detalles técnicos de la aplicación están abajo:
     <System:String x:Key="SaveDropboxStr">Guardar en Dropbox</System:String>
     <System:String x:Key="ConnectDropboxStr">Conectar cuenta de Dropbox</System:String>
     <System:String x:Key="ConnectDropboxInfoStr">Conecta tu cuenta de Dropbox para abrir y guardar archivos directamente en la aplicación.</System:String>
-    <System:String x:Key="DropboxOpenStr">Selecciona un archivo TXT o RTF para abrirlo en Type Express...</System:String>
+    <System:String x:Key="DropboxOpenStr">Selecciona un archivo para abrirlo en Type Express...</System:String>
     <System:String x:Key="DisconnectDropboxStr">Desconectar Dropbox</System:String>
     <System:String x:Key="TryAgainActionStr">Inténtalo de nuevo</System:String>
     <System:String x:Key="DropboxUsernameStr">Estás conectado/a a Dropbox como {0}.</System:String>
@@ -1832,5 +1833,33 @@ Si este problema persiste, es posible que estemos experimentando dificultades. I
     <System:String x:Key="SpeedStr">Velocidad</System:String>
     <System:String x:Key="HelpImproveStr">Ayuda a mejorar la aplicación para todos</System:String>
     <System:String x:Key="SendLogsStr">Enviar automáticamente historiales de la aplicación</System:String>
+    <System:String x:Key="WelcomeStr">Bienvenido a {0}</System:String>
+    <System:String x:Key="FontsFilterStr">Fuentes (.ttf, .otf)|*.ttf;*.otf|Archivos TTF|*.ttf|Archivos OTF|*.otf</System:String>
+    <System:String x:Key="FileInArchiveStr">No se puede abrir este archivo</System:String>
+    <System:String x:Key="FileInArchiveDescStr">No podemos abrir este archivo porque está comprimido. Por favor, descomprima primero el archivo.</System:String>
+    <System:String x:Key="CompressedSizesStr">Tamaño de archivos en ficheros archivados</System:String>
+    <System:String x:Key="CompressedStr">Mostrar tamaño comprimido</System:String>
+    <System:String x:Key="UncompressedStr">Mostrar tamaño descomprimido</System:String>
+    <System:String x:Key="OpenFileStr">¿Quieres abrir este archivo?</System:String>
+    <System:String x:Key="OpenFileDescStr">¿Estás seguro/a de que quieres abrir este archivo en su aplicación por defecto?</System:String>
+    <System:String x:Key="SoundtrackStr">Banda sonora</System:String>
+    <System:String x:Key="SoundtrackToolStr">Elige una banda sonora para tu presentación</System:String>
+    <System:String x:Key="SoundtrackTitleStr">Banda Sonora - Present Express</System:String>
+    <System:String x:Key="SoundtrackCountStr">{0}/{1} archivos de audio seleccionados.</System:String>
+    <System:String x:Key="PresetSoundtrackStr">Fonoteca</System:String>
+    <System:String x:Key="SoundtrackHeaderStr">Elige y reorganiza los archivos de audio para crear una banda sonora.</System:String>
+    <System:String x:Key="SoundtrackLibraryErrorStr" xml:space="preserve">Parece que no podemos obtener nuestra fonoteca de bandas sonoras en este momento. Por favor, comprueba que estás conectado/a a Internet y vuelve a intentarlo.</System:String>
+    <System:String x:Key="SoundtrackLibraryLoadingStr">Cargando fonoteca</System:String>
+    <System:String x:Key="FilterCategoryStr">Filtrar por categoría</System:String>
+    <System:String x:Key="AudioFilterStr">Archivos de audio (.mp3, .wav)|*.mp3;*.wav|Archivos MP3|*.mp3|Archivos WAV|*.wav</System:String>
+    <System:String x:Key="SoundtrackLimitReachedStr">Límite de archivos de audio alcanzado</System:String>
+    <System:String x:Key="SoundtrackLimitReachedDescStr">No se han podido añadir uno o más archivos de audio porque se ha alcanzado el límite de {0} archivos.</System:String>
+    <System:String x:Key="SoundtrackErrorStr">Error de banda sonora</System:String>
+    <System:String x:Key="SoundtrackErrorDescStr">No se han podido añadir uno o varios archivos de audio. Comprueba que no superan 15 MB y que pueden reproducirse fuera de la app.</System:String>
+    <System:String x:Key="SoundtrackDownloadErrorStr">No hemos podido descargar {0} de nuestra fonoteca. Por favor, comprueba que estás conectado/a a Internet y vuelve a intentarlo.</System:String>
+    <System:String x:Key="MuteStr">Silenciar</System:String>
+    <System:String x:Key="MuteToolStr">Silenciar la banda sonora durante la presentación</System:String>
+    <System:String x:Key="GeneratingAudioStr">Generación de la banda sonora</System:String>
+    <System:String x:Key="IncludeSoundtrackStr">Incluir banda sonora</System:String>
     
 </ResourceDictionary>

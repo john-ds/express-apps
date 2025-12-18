@@ -291,8 +291,8 @@
         <KeyBinding Key="T" Modifiers="Ctrl+Alt" Command="{StaticResource TMCommand}" />
         <KeyBinding Key="OemPeriod" Modifiers="Ctrl+Alt" Command="{StaticResource EllipsisCommand}" />
     </ex:ExpressWindow.InputBindings>
-    
-    <Grid x:Name="WindowGrid">
+
+    <Grid x:Name="WindowGrid" AllowDrop="True" DragOver="WindowGrid_DragOver" Drop="WindowGrid_Drop">
         <Grid x:Name="grid1" Background="{DynamicResource TertiaryColor}">
             <DockPanel Margin="0">
                 <TabControl x:Name="DocTabs" Margin="0,4,0,0" DockPanel.Dock="Top" Height="68" Padding="0" BorderThickness="0" SelectedIndex="1" Panel.ZIndex="1">
@@ -569,7 +569,7 @@
                         </Grid>
                     </TabItem>
                 </TabControl>
-                <DockPanel Margin="0" DockPanel.Dock="Bottom" Height="28" Background="{DynamicResource SecondaryColor}">
+                <DockPanel x:Name="StatusBar" Margin="0" DockPanel.Dock="Bottom" Height="28" Background="{DynamicResource SecondaryColor}">
                     <TextBlock x:Name="ZoomLbl" Text="100 %" Margin="0" VerticalAlignment="Center" HorizontalAlignment="Left" DockPanel.Dock="Right" MinWidth="55" TextAlignment="Center"/>
                     <ex:AppButton x:Name="ZoomInBtn" Click="ZoomInBtn_Click" Background="Transparent" TextVisibility="Collapsed" GapMargin="0" IconSize="14" Icon="{DynamicResource PlusIcon}" CornerRadius="0" NoShadow="True" Margin="0" VerticalAlignment="Top" HorizontalContentAlignment="Stretch" Height="28" Padding="9,0" ToolTip="{DynamicResource ZoomInStr}" DockPanel.Dock="Right"/>
                     <Slider x:Name="ZoomSlider" ValueChanged="ZoomSlider_ValueChanged" AutomationProperties.Name="{DynamicResource ZoomLevelStr}" VerticalAlignment="Center" Width="130" DockPanel.Dock="Right" HorizontalAlignment="Right" Minimum="0.4" Value="1" Maximum="3" TickFrequency="0.1" IsSnapToTickEnabled="True" Style="{StaticResource SimpleSlider}"/>
@@ -581,7 +581,7 @@
                 </DockPanel>
                 <Rectangle Fill="{DynamicResource AppColor}" Height="2" VerticalAlignment="Top" DockPanel.Dock="Bottom"/>
                 <Grid>
-                    <DockPanel Panel.ZIndex="-2">
+                    <DockPanel x:Name="MainGrid" Panel.ZIndex="-2">
                         <Border x:Name="SideBarGrid" BorderBrush="{DynamicResource AppColor}" BorderThickness="0" HorizontalAlignment="Left" DockPanel.Dock="Right" Width="250" Margin="0">
                             <Grid x:Name="grid4" Background="{DynamicResource TertiaryColor}" Margin="10,10,0,0">
                                 <TabControl x:Name="SideTabs" Margin="2,19,0,0" Padding="0" BorderThickness="0" Background="Transparent">
@@ -1141,7 +1141,7 @@
                                                 <StackPanel Width="{Binding ActualWidth, ElementName=OverlayGrid, Mode=OneWay, Converter={StaticResource FileButtonWidthConverter}}">
                                                     <StackPanel x:Name="ConnectDropboxGrid" VerticalAlignment="Center" Margin="5">
                                                         <TextBlock x:Name="DropboxInfoLbl" Text="{DynamicResource ConnectDropboxInfoStr}" FontSize="14" TextWrapping="Wrap" Margin="0,0,0,15"/>
-                                                        <TextBlock x:Name="DropboxDisconnectBtn" FontSize="14" Margin="0,-10,0,20"><Hyperlink Foreground="{DynamicResource AppLinkColor}" Click="DropboxDisconnectBtn_Click"><Run Text="{DynamicResource DisconnectDropboxStr}"/></Hyperlink></TextBlock>
+                                                        <TextBlock x:Name="DropboxDisconnectBtn" FontSize="14" Margin="0,-10,0,20"><Hyperlink Foreground="{DynamicResource TextColor}" Click="DropboxDisconnectBtn_Click"><Run Text="{DynamicResource DisconnectDropboxStr}"/></Hyperlink></TextBlock>
                                                         <WrapPanel Margin="-10,-10,0,0">
                                                             <ex:AppButton x:Name="ConnectDropboxBtn" Click="ConnectDropboxBtn_Click" Icon="{DynamicResource GlobeIcon}" Text="{DynamicResource ConnectDropboxStr}" Margin="10,10,0,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch"/>
                                                             <ex:AppButton x:Name="DropboxTryAgainBtn" Click="DropboxTryAgainBtn_Click" Icon="{DynamicResource RotateRightIcon}" Text="{DynamicResource TryAgainActionStr}" Margin="10,10,0,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch"/>
@@ -1149,6 +1149,7 @@
                                                             <ex:AppDropdown x:Name="DropboxFileTypeCombo" AutomationProperties.Name="{DynamicResource FileExtensionStr}" DropdownBackground="{DynamicResource BackColor}" MinWidth="75" VerticalAlignment="Top" Margin="10,14,0,0" SelectedIndex="0" Height="30">
                                                                 <ex:AppDropdownItem Content=".rtf"/>
                                                                 <ex:AppDropdownItem Content=".txt"/>
+                                                                <ex:AppDropdownItem Content=".docx"/>
                                                             </ex:AppDropdown>
                                                             <ex:AppButton x:Name="DropboxSaveBtn" Click="DropboxSaveBtn_Click" Icon="{DynamicResource SaveIcon}" IconSize="18" Height="30" Text="{DynamicResource SaveCmStr}" FontWeight="SemiBold" Margin="10,12,0,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch"/>
                                                         </WrapPanel>

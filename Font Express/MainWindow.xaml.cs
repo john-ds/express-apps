@@ -13,6 +13,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using ExpressControls;
 using Font_Express.Properties;
@@ -43,6 +44,8 @@ namespace Font_Express
         private string CurrentAlpha = "A";
         private PreviewTextOption CurrentPreviewText = PreviewTextOption.Sentence;
 
+        private readonly string[] SupportedExtensions = [".ttf", ".otf"];
+
         public MainWindow()
         {
             InitializeComponent();
@@ -65,16 +68,15 @@ namespace Font_Express
             // Language setup
             if (Settings.Default.Language == "")
             {
-                LangSelector lang = new(ExpressApp.Font);
-                lang.ShowDialog();
-
-                Settings.Default.Language = lang.ChosenLang;
+                Settings.Default.Language = Funcs.GetSystemLanguage();
                 Settings.Default.Save();
+                FirstLoad = true;
             }
 
             Funcs.SetLang(Settings.Default.Language);
             Funcs.SetupDialogs();
             Funcs.RegisterPopups(WindowGrid);
+            ManualClose = true;
 
             // Setup for scrollable ribbon menu
             Funcs.Tabs = ["Menu", "Home", "View", "Category"];
@@ -198,6 +200,11 @@ namespace Font_Express
                 FilterSelector.Width = FavouritesBtn.ActualWidth;
             }
 
+            if (FirstLoad)
+                CreateTempLabel(
+                    string.Format(Funcs.ChooseLang("WelcomeStr"), Funcs.GetCurrentAppName())
+                );
+
             if (Settings.Default.CheckNotifications)
                 await GetNotifications();
         }
@@ -266,6 +273,92 @@ namespace Font_Express
             catch { }
         }
 
+        #region Drag & Drop
+
+        private void WindowGrid_DragOver(object sender, DragEventArgs e)
+        {
+            e.Effects = DragDropEffects.None;
+
+            if (IsDragDropEnabled() && e.Data.GetDataPresent(DataFormats.FileDrop))
+                e.Effects = DragDropEffects.Copy;
+
+            e.Handled = true;
+        }
+
+        private void WindowGrid_Drop(object sender, DragEventArgs e)
+        {
+            try
+            {
+                if (IsDragDropEnabled() && e.Data.GetDataPresent(DataFormats.FileDrop))
+                {
+                    string[]? paths = e.Data.GetData(DataFormats.FileDrop) as string[];
+                    if (paths?.Length >= 1 && Path.Exists(paths[0]))
+                    {
+                        Activate();
+                        LoadFile(paths[0]);
+                    }
+                }
+            }
+            catch { }
+        }
+
+        #endregion
+        #region Menu > Open
+
+        private void LoadFile(string filename)
+        {
+            if (
+                !Path.Exists(filename)
+                || !SupportedExtensions.Contains(Path.GetExtension(filename).ToLower())
+            )
+                return;
+
+            string tempFolder = Path.Combine(TempFilePath, Guid.NewGuid().ToString());
+            string fontname =
+                Funcs.GetFontName(filename) ?? Path.GetFileNameWithoutExtension(filename);
+
+            try
+            {
+                Directory.CreateDirectory(tempFolder);
+
+                string tempFilename = Path.Combine(tempFolder, Path.GetFileName(filename));
+                File.Copy(filename, tempFilename);
+
+                new FontViewer(
+                    fontname,
+                    new FontFamily($"file:///{tempFolder.Replace("\\", "/")}/#{fontname}"),
+                    tempFilename
+                ).ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                Funcs.ShowMessage(
+                    $"{Funcs.ChooseLang("OpenFileErrorDescStr")}{Environment.NewLine}**{filename}**{Environment.NewLine}{Environment.NewLine}{Funcs.ChooseLang("TryAgainStr")}",
+                    Funcs.ChooseLang("OpenFileErrorStr"),
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    Funcs.GenerateErrorReport(
+                        ex,
+                        PageID,
+                        "OpenFileErrorDescStr",
+                        "ReportEmailAttachStr"
+                    )
+                );
+            }
+            finally
+            {
+                if (Directory.Exists(tempFolder))
+                    Directory.Delete(tempFolder, true);
+            }
+        }
+
+        private void OpenBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (Funcs.FontOpenDialog.ShowDialog() == true)
+                LoadFile(Funcs.FontOpenDialog.FileName);
+        }
+
+        #endregion
         #region Menu > Options
 
         private void OptionsBtn_Click(object sender, RoutedEventArgs e)
@@ -1347,7 +1440,7 @@ namespace Font_Express
             _ = Process.Start(
                 new ProcessStartInfo()
                 {
-                    FileName = Funcs.GetAppUpdateLink(ExpressApp.Font),
+                    FileName = Funcs.GetAppUpdateLink(),
                     UseShellExecute = true,
                 }
             );

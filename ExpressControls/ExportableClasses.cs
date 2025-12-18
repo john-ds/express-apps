@@ -765,6 +765,29 @@ namespace ExpressControls
             get { return Funcs.CheckBoolean(UseTimingsString) ?? true; }
             set { UseTimingsString = value.ToString(); }
         }
+
+        [XmlElement("soundtrack")]
+        public SlideshowSoundtrack Soundtrack { get; set; } = new();
+    }
+
+    public class SlideshowSoundtrack
+    {
+        [XmlArray("files")]
+        [XmlArrayItem("file")]
+        public List<string> Filenames { get; set; } = [];
+
+        [XmlIgnore]
+        public Dictionary<string, byte[]> Audio { get; set; } = [];
+
+        [XmlElement("loop")]
+        public string LoopString { get; set; } = "true";
+
+        [XmlIgnore]
+        public bool Loop
+        {
+            get { return Funcs.CheckBoolean(LoopString) ?? true; }
+            set { LoopString = value.ToString(); }
+        }
     }
 
     public abstract class Slide

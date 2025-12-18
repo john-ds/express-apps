@@ -112,6 +112,7 @@ namespace Type_Express
             // Default save file type
             RTFRadio.IsChecked = Settings.Default.SaveFilterIndex == 0;
             TXTRadio.IsChecked = Settings.Default.SaveFilterIndex == 1;
+            DOCRadio.IsChecked = Settings.Default.SaveFilterIndex == 2;
 
             // Default colour scheme
             LoadColourSchemes();
@@ -471,8 +472,10 @@ namespace Type_Express
         {
             if (RTFRadio.IsChecked == true)
                 Settings.Default.SaveFilterIndex = 0;
-            else
+            else if (TXTRadio.IsChecked == true)
                 Settings.Default.SaveFilterIndex = 1;
+            else if (DOCRadio.IsChecked == true)
+                Settings.Default.SaveFilterIndex = 2;
 
             SaveSettings();
         }
@@ -1336,7 +1339,7 @@ namespace Type_Express
             get { return _fileType; }
             set
             {
-                if (value == 0 || value == 1)
+                if (value == 0 || value == 1 || value == 2)
                     _fileType = value;
             }
         }

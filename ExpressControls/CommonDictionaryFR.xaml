@@ -376,6 +376,7 @@ F1</System:String>
     <System:String x:Key="DefFileTypeStr">Type de fichier d'enregistrement par défaut</System:String>
     <System:String x:Key="RTFStr">RTF (Texte enrichi)</System:String>
     <System:String x:Key="TXTStr">TXT (Texte brut)</System:String>
+    <System:String x:Key="DOCXStr">DOCX (Document Word)</System:String>
     <System:String x:Key="DefClrSchemeStr">Palette de couleurs par défaut</System:String>
     <System:String x:Key="DefSpellStr">Langue orthographique par défaut</System:String>
     <System:String x:Key="GeneralStr">Général</System:String>
@@ -457,7 +458,7 @@ F1</System:String>
     <System:String x:Key="FromFileStr">Texte de fichier</System:String>
     <System:String x:Key="PropertyStr">Propriété</System:String>
     <System:String x:Key="PropertyInfoStr">Insérez le nombre actuel de mots, le nom du fichier, etc.</System:String>
-    <System:String x:Key="FromFileInfoStr">Insérer du texte à partir d'un fichier TXT ou RTF</System:String>
+    <System:String x:Key="FromFileInfoStr">Insérer du texte à partir d'un fichier TXT, RTF ou DOCX</System:String>
     <System:String x:Key="TextBlockInfoStr">Insérez la date et l'heure, le texte d'un fichier, etc.</System:String>
     <System:String x:Key="ItalianStr">italien</System:String>
     <System:String x:Key="PropertySideStr">Choisissez une option.</System:String>
@@ -1142,7 +1143,7 @@ Vérifiez que vous avez la permission d'y accéder.</System:String>
     <System:String x:Key="HelpTitleQ8Str">Raccourcis clavier</System:String>
     <System:String x:Key="AboutDescTStr" xml:space="preserve">Merci d'avoir installé Type Express.
 
-Éditez des documents TXT et RTF avec style et simplicité, exprimant votre personnalité avec de nombreuses fonctionnalités différentes, vous permettant de personnaliser votre document à votre guise.
+Éditez des documents avec style et simplicité, exprimant votre personnalité avec de nombreuses fonctionnalités différentes, vous permettant de personnaliser votre document à votre guise.
 
 Pour savoir comment utiliser les fonctionnalités disponibles, consultez la section Aide. Vous pouvez également laisser vos commentaires là-bas - c'est grandement apprécié&#160;!
 
@@ -1174,8 +1175,8 @@ Veuillez noter que seules les requêtes de recherche en anglais sont supportées
 
 Si ce problème persiste, il est possible que nous rencontrons des problèmes de réseau. Veuillez réessayer plus tard et vérifier les mises à jour de l'application.</System:String>
     <System:String x:Key="IconRetrievalErrorStr">Nous avons du mal à obtenir cette icône. Veuillez réessayer plus tard.</System:String>
-    <System:String x:Key="TypeFilesFilterStr">Fichiers supportés (.rtf, .txt)|*.txt;*.rtf|Fichiers texte (.txt)|*.txt|Fichiers RTF (.rtf)|*.rtf</System:String>
-    <System:String x:Key="TypeFilesShortFilterStr">Fichiers RTF (.rtf)|*.rtf|Fichiers texte (.txt)|*.txt</System:String>
+    <System:String x:Key="TypeFilesFilterStr">Fichiers supportés (.rtf, .txt, .docx)|*.txt;*.rtf;*.docx|Fichiers texte (.txt)|*.txt|Fichiers RTF (.rtf)|*.rtf|Documents Word (.docx)|*.docx</System:String>
+    <System:String x:Key="TypeFilesShortFilterStr">Fichiers RTF (.rtf)|*.rtf|Fichiers texte (.txt)|*.txt|Documents Word (.docx)|*.docx</System:String>
     <System:String x:Key="ChoosePictureStr">Choisir une image</System:String>
     <System:String x:Key="TypeFilesShortInvFilterStr">Fichiers texte (.txt)|*.txt|Fichiers RTF (.rtf)|*.rtf</System:String>
     <System:String x:Key="OnExitDescTStr">Vous voulez enregistrer toutes les modifications à votre document&#160;?</System:String>
@@ -1435,7 +1436,7 @@ Les détails techniques de l'application sont ci-dessous :
     <System:String x:Key="SaveDropboxStr">Enregistrer dans Dropbox</System:String>
     <System:String x:Key="ConnectDropboxStr">Connecter un compte Dropbox</System:String>
     <System:String x:Key="ConnectDropboxInfoStr">Connectez votre compte Dropbox pour ouvrir et enregistrer des fichiers directement dans l'application.</System:String>
-    <System:String x:Key="DropboxOpenStr">Sélectionnez un fichier TXT ou RTF à ouvrir dans Type Express...</System:String>
+    <System:String x:Key="DropboxOpenStr">Sélectionnez un fichier à ouvrir dans Type Express...</System:String>
     <System:String x:Key="DisconnectDropboxStr">Déconnecter Dropbox</System:String>
     <System:String x:Key="TryAgainActionStr">Réessayer</System:String>
     <System:String x:Key="DropboxUsernameStr">Vous êtes connecté(e) à Dropbox en tant que {0}.</System:String>
@@ -1834,5 +1835,33 @@ Si ce problème persiste, il se peut que nous rencontrions des difficultés. Veu
     <System:String x:Key="SpeedStr">Vitesse</System:String>
     <System:String x:Key="HelpImproveStr">Aidez-nous à améliorer l'appli pour tous</System:String>
     <System:String x:Key="SendLogsStr">Envoyer automatiquement les journaux d'application</System:String>
+    <System:String x:Key="WelcomeStr">Bienvenue à {0}</System:String>
+    <System:String x:Key="FontsFilterStr">Polices (.ttf, .otf)|*.ttf;*.otf|Fichiers TTF|*.ttf|Fichiers OTF|*.otf</System:String>
+    <System:String x:Key="FileInArchiveStr">Impossible d'ouvrir ce fichier</System:String>
+    <System:String x:Key="FileInArchiveDescStr">Il est impossible d'ouvrir ce fichier parce qu'il se trouve dans une archive compressée. Veuillez d'abord décompresser l'archive.</System:String>
+    <System:String x:Key="CompressedSizesStr">Taille des fichiers dans une archive</System:String>
+    <System:String x:Key="CompressedStr">Afficher la taille compressée</System:String>
+    <System:String x:Key="UncompressedStr">Afficher la taille non comprimée</System:String>
+    <System:String x:Key="OpenFileStr">Voulez-vous ouvrir ce fichier ?</System:String>
+    <System:String x:Key="OpenFileDescStr">Voulez-vous vraiment ouvrir ce fichier dans son application par défaut ?</System:String>
+    <System:String x:Key="SoundtrackStr">Bande sonore</System:String>
+    <System:String x:Key="SoundtrackToolStr">Choisissez une bande sonore pour votre diaporama</System:String>
+    <System:String x:Key="SoundtrackTitleStr">Bande Sonore - Present Express</System:String>
+    <System:String x:Key="SoundtrackCountStr">{0}/{1} fichiers audio sélectionnés.</System:String>
+    <System:String x:Key="PresetSoundtrackStr">Médiathèque</System:String>
+    <System:String x:Key="SoundtrackHeaderStr">Choisissez et réorganisez les fichiers audio pour créer une bande sonore.</System:String>
+    <System:String x:Key="SoundtrackLibraryErrorStr">On dirait que nous ne pouvons pas recevoir notre médiathèque de bandes sonores pour le moment. Vérifiez votre connexion Internet et réessayez.</System:String>
+    <System:String x:Key="SoundtrackLibraryLoadingStr">Chargement de la médiathèque</System:String>
+    <System:String x:Key="FilterCategoryStr">Filtrer par catégorie</System:String>
+    <System:String x:Key="AudioFilterStr">Fichiers audio (.mp3, .wav)|*.mp3;*.wav|Fichiers MP3|*.mp3|Fichiers WAV|*.wav</System:String>
+    <System:String x:Key="SoundtrackLimitReachedStr">Limite des fichiers audio atteinte</System:String>
+    <System:String x:Key="SoundtrackLimitReachedDescStr">Un ou plusieurs fichiers audio n'ont pas pu être ajoutés parce que vous avez atteint la limite de {0} fichiers.</System:String>
+    <System:String x:Key="SoundtrackErrorStr">Erreur de bande sonore</System:String>
+    <System:String x:Key="SoundtrackErrorDescStr">Un ou plusieurs fichiers audio n'ont pas pu être ajoutés. Vérifiez qu'ils ne dépassent pas 15 Mo et qu'ils peuvent être lus en dehors de l'appli.</System:String>
+    <System:String x:Key="SoundtrackDownloadErrorStr">Nous n'avons pas pu télécharger {0} depuis notre médiathèque. Vérifiez votre connexion Internet et réessayez.</System:String>
+    <System:String x:Key="MuteStr">Couper le son</System:String>
+    <System:String x:Key="MuteToolStr">Couper le son de la bande sonore pendant la durée du diaporama</System:String>
+    <System:String x:Key="GeneratingAudioStr">Génération de la bande sonore</System:String>
+    <System:String x:Key="IncludeSoundtrackStr">Inclure la bande sonore</System:String>
 
 </ResourceDictionary>

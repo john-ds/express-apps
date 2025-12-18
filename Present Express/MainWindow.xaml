@@ -311,7 +311,7 @@
         <KeyBinding Key="T" Modifiers="Ctrl" Command="{StaticResource TextCommand}" />
     </ex:ExpressWindow.InputBindings>
 
-    <Grid x:Name="WindowGrid">
+    <Grid x:Name="WindowGrid" AllowDrop="True" DragOver="WindowGrid_DragOver" Drop="WindowGrid_Drop">
         <Grid x:Name="grid1" Background="{DynamicResource TertiaryColor}">
             <DockPanel Margin="0">
                 <TabControl x:Name="DocTabs" Margin="0,4,0,0" DockPanel.Dock="Top" Height="68" Padding="0" BorderThickness="0" SelectedIndex="1" Panel.ZIndex="1">
@@ -420,6 +420,7 @@
                                 <StackPanel x:Name="DesignPnl" Margin="12,4,2,0" Background="{DynamicResource SecondaryColor}" Orientation="Horizontal" CanHorizontallyScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" HorizontalAlignment="Left">
                                     <ex:MenuButton x:Name="BackColourBtn" Click="BackColourBtn_Click" MoreVisibility="Visible" Text="{DynamicResource BackColorStr}" Icon="{DynamicResource ColoursIcon}" ToolTip="{DynamicResource BackColorToolStr}"/>
                                     <ex:MenuButton x:Name="TransitionBtn" Click="TransitionBtn_Click" MoreVisibility="Visible" Text="{DynamicResource TransitionStr}" Icon="{DynamicResource PaneIcon}" ToolTip="{DynamicResource TransitionToolStr}"/>
+                                    <ex:MenuButton x:Name="SoundtrackBtn" Click="SoundtrackBtn_Click" Text="{DynamicResource SoundtrackStr}" Icon="{DynamicResource MusicFileIcon}" ToolTip="{DynamicResource SoundtrackToolStr}"/>
                                     <Separator Style="{StaticResource VerticalSeparator}"/>
                                     <ex:MenuButton x:Name="SlideSizeBtn" Click="SlideSizeBtn_Click" MoreVisibility="Visible" Text="{DynamicResource SlideSizeStr}" Icon="{DynamicResource ExpandIcon}"/>
                                     <ex:AppCheckBox x:Name="FitBtn" Click="FitBtn_Click" Content="{DynamicResource FitSlideStr}" ToolTip="{DynamicResource FitSlideToolStr}" IsChecked="True"/>
@@ -465,6 +466,7 @@
                                     <ex:MenuButton x:Name="RunOptionsBtn" Click="RunOptionsBtn_Click" IsLSquared="True" TextVisibility="Collapsed" Icon="{DynamicResource DownIcon}" IsMini="True" ToolTip="{DynamicResource RunOptionsStr}" Padding="2,0,6,0" Height="32"/>
                                     <ex:AppCheckBox x:Name="LoopBtn" Click="LoopBtn_Click" Content="{DynamicResource LoopStr}" ToolTip="{DynamicResource LoopToolStr}" IsChecked="True"/>
                                     <ex:AppCheckBox x:Name="UseTimingsBtn" Click="UseTimingsBtn_Click" Content="{DynamicResource SlideTimingsStr}" ToolTip="{DynamicResource SlideTimingsToolStr}" IsChecked="True"/>
+                                    <ex:AppCheckBox x:Name="MuteBtn" Content="{DynamicResource MuteStr}" ToolTip="{DynamicResource MuteToolStr}" IsChecked="False"/>
                                     <Separator Style="{StaticResource VerticalSeparator}"/>
                                     <ex:MenuButton x:Name="MonitorBtn" Click="MonitorBtn_Click" Text="{DynamicResource ChooseMonitorStr}" Icon="{DynamicResource MonitorIcon}" ToolTip="{DynamicResource ChooseMonitorToolStr}" MoreVisibility="Visible"/>
                                 </StackPanel>
@@ -498,7 +500,7 @@
                 </DockPanel>
                 <Rectangle Fill="{DynamicResource AppColor}" Height="2" VerticalAlignment="Bottom" DockPanel.Dock="Bottom" Margin="0"/>
                 <Grid>
-                    <DockPanel Panel.ZIndex="-2">
+                    <DockPanel x:Name="MainGrid" Panel.ZIndex="-2">
                         <Border x:Name="SideBarGrid" BorderBrush="{DynamicResource AppColor}" BorderThickness="0" HorizontalAlignment="Left" DockPanel.Dock="Right" Width="250" Margin="0">
                             <Grid x:Name="grid4" Background="{DynamicResource TertiaryColor}" Margin="10,10,0,0">
                                 <ScrollViewer x:Name="SlideScroller" Margin="2,46,0,0">
@@ -668,7 +670,7 @@
                                                 <StackPanel Width="{Binding ActualWidth, ElementName=OverlayGrid, Mode=OneWay, Converter={StaticResource FileButtonWidthConverter}}">
                                                     <StackPanel x:Name="ConnectDropboxGrid" VerticalAlignment="Center" Margin="5">
                                                         <TextBlock x:Name="DropboxInfoLbl" Text="{DynamicResource ConnectDropboxInfoStr}" FontSize="14" TextWrapping="Wrap" Margin="0,0,0,15"/>
-                                                        <TextBlock x:Name="DropboxDisconnectBtn" FontSize="14" Margin="0,-10,0,20"><Hyperlink Foreground="{DynamicResource AppLinkColor}" Click="DropboxDisconnectBtn_Click"><Run Text="{DynamicResource DisconnectDropboxStr}"/></Hyperlink></TextBlock>
+                                                        <TextBlock x:Name="DropboxDisconnectBtn" FontSize="14" Margin="0,-10,0,20"><Hyperlink Foreground="{DynamicResource TextColor}" Click="DropboxDisconnectBtn_Click"><Run Text="{DynamicResource DisconnectDropboxStr}"/></Hyperlink></TextBlock>
                                                         <WrapPanel Margin="-10,-10,0,0">
                                                             <ex:AppButton x:Name="ConnectDropboxBtn" Click="ConnectDropboxBtn_Click" Icon="{DynamicResource GlobeIcon}" Text="{DynamicResource ConnectDropboxStr}" Margin="10,10,0,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch"/>
                                                             <ex:AppButton x:Name="DropboxTryAgainBtn" Click="DropboxTryAgainBtn_Click" Icon="{DynamicResource RotateRightIcon}" Text="{DynamicResource TryAgainActionStr}" Margin="10,10,0,0" HorizontalAlignment="Left" HorizontalContentAlignment="Stretch"/>
@@ -793,7 +795,8 @@
                                                             </StackPanel>
                                                         </GroupBox>
                                                     </StackPanel>
-                                                    <ex:AppCheckBox x:Name="ExportWithTimingsBtn" Click="ExportWithTimingsBtn_Click" Content="{DynamicResource SlideTimingsStr}" Margin="0,20,0,5" HorizontalContentAlignment="Stretch" HorizontalAlignment="Left" IsChecked="True" MinWidth="300"/>
+                                                    <ex:AppCheckBox x:Name="SoundtrackIncludeBtn" Content="{DynamicResource IncludeSoundtrackStr}" Margin="0,20,0,5" HorizontalContentAlignment="Stretch" HorizontalAlignment="Left" IsChecked="True" MinWidth="300"/>
+                                                    <ex:AppCheckBox x:Name="ExportWithTimingsBtn" Click="ExportWithTimingsBtn_Click" Content="{DynamicResource SlideTimingsStr}" Margin="0,0,0,5" HorizontalContentAlignment="Stretch" HorizontalAlignment="Left" IsChecked="True" MinWidth="300"/>
                                                     <StackPanel x:Name="ExportTimingsPnl" Orientation="Horizontal" Margin="45,0,0,0">
                                                         <TextBlock x:Name="SecondsPerSlideUpDownLbl" Text="{DynamicResource SecondsPerSlideStr}" FontSize="14" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,10,0"/>
                                                         <xctk:DoubleUpDown x:Name="SecondsPerSlideUpDown" AutomationProperties.LabeledBy="{Binding ElementName=SecondsPerSlideUpDownLbl}" Style="{DynamicResource ExpressDoubleUpDown}" HorizontalAlignment="Left" VerticalAlignment="Center" Width="75" Minimum="0.5" Maximum="10" Value="2" Height="30" MaxLength="4"/>

@@ -72,9 +72,10 @@
                                 <DockPanel>
                                     <TextBlock Text="{DynamicResource DefFileTypeStr}" FontSize="14" Margin="0,0,0,10" TextWrapping="Wrap" DockPanel.Dock="Top"/>
                                     <GroupBox Header="{DynamicResource DefFileTypeStr}" Style="{DynamicResource ExpressHiddenGroupBox}">
-                                        <WrapPanel>
-                                            <ex:AppRadioButton x:Name="RTFRadio" Click="FileTypeRadios_Click" Content="{DynamicResource RTFStr}" HorizontalContentAlignment="Stretch" IsChecked="True" GroupName="SaveFileTypeOptions" IconSize="20" FontSize="12" HorizontalAlignment="Left" Margin="0"/>
+                                        <WrapPanel Margin="-5,0,0,0">
+                                            <ex:AppRadioButton x:Name="RTFRadio" Click="FileTypeRadios_Click" Content="{DynamicResource RTFStr}" HorizontalContentAlignment="Stretch" IsChecked="True" GroupName="SaveFileTypeOptions" IconSize="20" FontSize="12" HorizontalAlignment="Left" Margin="5,0,0,0"/>
                                             <ex:AppRadioButton x:Name="TXTRadio" Click="FileTypeRadios_Click" Content="{DynamicResource TXTStr}" HorizontalContentAlignment="Stretch" GroupName="SaveFileTypeOptions" IconSize="20" FontSize="12" HorizontalAlignment="Left" Margin="5,0,0,0"/>
+                                            <ex:AppRadioButton x:Name="DOCRadio" Click="FileTypeRadios_Click" Content="DOCX (Word)" HorizontalContentAlignment="Stretch" GroupName="SaveFileTypeOptions" IconSize="20" FontSize="12" HorizontalAlignment="Left" Margin="5,0,0,0"/>
                                         </WrapPanel>
                                     </GroupBox>
                                 </DockPanel>

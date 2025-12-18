@@ -92,6 +92,9 @@ namespace Quota_Express
             // Interface language
             InterfaceCombo.SelectedIndex = (int)Funcs.GetCurrentLangEnum();
 
+            // Compressed sizes
+            CompressedRadio.IsChecked = Settings.Default.CompressedSizes;
+
             // Messagebox sounds
             SoundBtn.IsChecked = Settings.Default.EnableInfoBoxAudio;
 
@@ -247,6 +250,12 @@ namespace Quota_Express
             }
         }
 
+        private void CompressedRadios_Click(object sender, RoutedEventArgs e)
+        {
+            Settings.Default.CompressedSizes = CompressedRadio.IsChecked == true;
+            SaveSettings();
+        }
+
         private void SoundBtn_Click(object sender, RoutedEventArgs e)
         {
             Settings.Default.EnableInfoBoxAudio = SoundBtn.IsChecked == true;
@@ -343,6 +352,9 @@ namespace Quota_Express
             Settings.Default.DefaultSort = (int)settings.Defaults.DefaultSort;
             Settings.Default.DefaultColourScheme = (int)settings.Defaults.ColourScheme;
 
+            // Compressed sizes
+            Settings.Default.CompressedSizes = settings.General.CompressedSizes;
+
             // Messagebox sounds
             Settings.Default.EnableInfoBoxAudio = settings.General.Sounds;
 
@@ -421,6 +433,7 @@ namespace Quota_Express
                 General =
                 {
                     Sounds = Settings.Default.EnableInfoBoxAudio,
+                    CompressedSizes = Settings.Default.CompressedSizes,
                     DarkMode = Settings.Default.InterfaceTheme == (int)ThemeOptions.DarkMode,
                     AutoDarkMode = Settings.Default.InterfaceTheme == (int)ThemeOptions.Auto,
                     DarkModeFrom = Settings.Default.AutoDarkOn,
@@ -536,6 +549,16 @@ namespace Quota_Express
 
     public class GeneralOptions
     {
+        [XmlElement("compressed")]
+        public string CompressedSizesString { get; set; } = "false";
+
+        [XmlIgnore]
+        public bool CompressedSizes
+        {
+            get { return Funcs.CheckBoolean(CompressedSizesString) ?? true; }
+            set { CompressedSizesString = value.ToString(); }
+        }
+
         [XmlElement("sounds")]
         public string SoundsString { get; set; } = "true";
 

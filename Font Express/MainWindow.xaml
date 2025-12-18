@@ -74,7 +74,7 @@
         <KeyBinding Key="I" Modifiers="Ctrl" Command="{StaticResource ItalicCommand}" />
     </ex:ExpressWindow.InputBindings>
 
-    <Grid x:Name="WindowGrid">
+    <Grid x:Name="WindowGrid" AllowDrop="True" DragOver="WindowGrid_DragOver" Drop="WindowGrid_Drop">
         <Grid x:Name="grid1" Background="{DynamicResource TertiaryColor}">
             <Grid Margin="0,72,0,30">
                 <ScrollViewer x:Name="Scroller" Margin="0" HorizontalScrollBarVisibility="Disabled" ScrollChanged="Scroller_ScrollChanged">
@@ -260,6 +260,8 @@
                                     </Style>
                                 </ScrollViewer.Resources>
                                 <StackPanel x:Name="MenuPnl" Margin="12,4,2,0" Background="{DynamicResource SecondaryColor}" Orientation="Horizontal" CanHorizontallyScroll="True" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True" HorizontalAlignment="Left">
+                                    <ex:MenuButton x:Name="OpenBtn" Click="OpenBtn_Click" Text="{DynamicResource OpenStr}" Icon="{DynamicResource OpenIcon}"/>
+                                    <Separator Style="{StaticResource VerticalSeparator}"/>
                                     <ex:MenuButton x:Name="OptionsBtn" Click="OptionsBtn_Click" Text="{DynamicResource OptionStr}" Icon="{DynamicResource GearsIcon}"/>
                                     <ex:MenuButton x:Name="AboutBtn" Click="AboutBtn_Click" Text="{DynamicResource AboutFontStr}" Icon="{DynamicResource InfoIcon}"/>
                                 </StackPanel>

@@ -21,6 +21,7 @@ using ExpressControls;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using Newtonsoft.Json;
 using Quota_Express.Properties;
+using SharpCompress.Archives;
 
 namespace Quota_Express
 {
@@ -46,6 +47,7 @@ namespace Quota_Express
         private long TotalFolderSize = -1;
 
         private string CurrentRoot = "";
+        private string CurrentArchiveRoot = "";
         private readonly Stack<string> BackStack = new();
         private readonly Stack<string> ForwardStack = new();
 
@@ -59,29 +61,44 @@ namespace Quota_Express
                 new string[]
                 {
                     ".ai",
+                    ".apng",
+                    ".avif",
                     ".bmp",
+                    ".cur",
+                    ".emf",
+                    ".eps",
                     ".gif",
                     ".ico",
+                    ".jfif",
                     ".jpeg",
                     ".jpg",
+                    ".pjp",
+                    ".pjpeg",
                     ".png",
                     ".psd",
                     ".svg",
                     ".tif",
                     ".tiff",
+                    ".webp",
                 }
             },
             {
                 FileTypeCategory.Audio,
                 new string[]
                 {
+                    ".aac",
                     ".aif",
+                    ".aiff",
                     ".cda",
+                    ".flac",
+                    ".m4a",
                     ".mid",
                     ".midi",
                     ".mp3",
                     ".mpa",
+                    ".oga",
                     ".ogg",
+                    ".opus",
                     ".wav",
                     ".wma",
                     ".wpl",
@@ -91,10 +108,11 @@ namespace Quota_Express
                 FileTypeCategory.Video,
                 new string[]
                 {
-                    ".avi",
                     ".3gp",
+                    ".avi",
                     ".flv",
                     ".h264",
+                    ".h265",
                     ".m4v",
                     ".mkv",
                     ".mov",
@@ -102,62 +120,98 @@ namespace Quota_Express
                     ".mpg",
                     ".mpeg",
                     ".swf",
+                    ".vob",
                     ".wmv",
+                    ".webm",
                 }
             },
             {
                 FileTypeCategory.Documents,
                 new string[]
                 {
-                    ".txt",
-                    ".rtf",
+                    ".csv",
                     ".doc",
                     ".docx",
+                    ".dot",
+                    ".dotx",
+                    ".epub",
+                    ".log",
+                    ".md",
+                    ".odp",
+                    ".ods",
                     ".odt",
+                    ".pdf",
                     ".ppt",
                     ".pptx",
-                    ".odp",
-                    ".xls",
-                    ".xlsx",
-                    ".ods",
+                    ".present",
+                    ".rtf",
                     ".tex",
+                    ".txt",
                     ".pdf",
                     ".pub",
+                    ".xls",
+                    ".xlsx",
                 }
             },
             {
                 FileTypeCategory.Code,
                 new string[]
                 {
+                    ".asp",
+                    ".aspx",
+                    ".bat",
                     ".c",
+                    ".cgi",
                     ".class",
                     ".cpp",
                     ".cs",
-                    ".h",
-                    ".java",
-                    ".pl",
-                    ".sh",
-                    ".swift",
-                    ".vb",
-                    ".xml",
-                    ".xaml",
-                    ".html",
+                    ".cshtml",
                     ".css",
-                    ".js",
-                    ".asp",
-                    ".pl",
-                    ".cgi",
+                    ".csproj",
+                    ".dart",
+                    ".fs",
+                    ".go",
+                    ".h",
                     ".htm",
+                    ".html",
+                    ".ipynb",
+                    ".java",
+                    ".js",
+                    ".json",
+                    ".jsx",
+                    ".kt",
                     ".php",
+                    ".pl",
                     ".py",
+                    ".pyc",
+                    ".r",
+                    ".rb",
+                    ".rs",
+                    ".sh",
+                    ".sql",
+                    ".svelte",
+                    ".swift",
+                    ".ts",
+                    ".tsx",
+                    ".vb",
+                    ".vba",
+                    ".vbhtml",
+                    ".vbproj",
+                    ".vue",
+                    ".wasm",
+                    ".xaml",
                     ".xhtml",
+                    ".xml",
+                    ".yaml",
+                    ".yml",
+                    ".zsh",
                 }
             },
-            { FileTypeCategory.Fonts, new string[] { ".fon", ".fnt", ".otf", ".ttf", ".woff" } },
             {
-                FileTypeCategory.Archives,
-                new string[] { ".zip", ".7z", ".rar", ".tar", ".pkg", ".arj" }
+                FileTypeCategory.Fonts,
+                new string[] { ".fon", ".fnt", ".otf", ".ttc", ".ttf", ".woff", ".woff2" }
             },
+            { FileTypeCategory.Archives, Funcs.ArchiveExtensions },
         };
 
         public MainWindow()
@@ -182,16 +236,15 @@ namespace Quota_Express
             // Language setup
             if (Settings.Default.Language == "")
             {
-                LangSelector lang = new(ExpressApp.Quota);
-                lang.ShowDialog();
-
-                Settings.Default.Language = lang.ChosenLang;
+                Settings.Default.Language = Funcs.GetSystemLanguage();
                 Settings.Default.Save();
+                FirstLoad = true;
             }
 
             Funcs.SetLang(Settings.Default.Language);
             Funcs.SetupDialogs();
             Funcs.RegisterPopups(WindowGrid);
+            ManualClose = true;
 
             // Setup for scrollable ribbon menu
             Funcs.Tabs = ["Menu", "Home", "View", "Export"];
@@ -275,7 +328,7 @@ namespace Quota_Express
 
             // Load files
             ItemsStack.ItemsSource = FileItemsView;
-            GetFiles(
+            LoadPath(
                 Directory.Exists(Settings.Default.StartupFolder)
                     ? Settings.Default.StartupFolder
                     : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
@@ -287,6 +340,11 @@ namespace Quota_Express
 
         private async void Main_Loaded(object sender, RoutedEventArgs e)
         {
+            if (FirstLoad)
+                CreateTempLabel(
+                    string.Format(Funcs.ChooseLang("WelcomeStr"), Funcs.GetCurrentAppName())
+                );
+
             if (Settings.Default.CheckNotifications)
                 await GetNotifications();
         }
@@ -320,7 +378,7 @@ namespace Quota_Express
                         new Options().ShowDialog();
                         break;
                     case "Refresh":
-                        GetFiles(CurrentRoot, false);
+                        LoadPath(CurrentRoot, false);
                         break;
                     case "All":
                         SelectAllBtn_Click(new AppButton(), new RoutedEventArgs());
@@ -360,6 +418,36 @@ namespace Quota_Express
             catch { }
         }
 
+        #region Drag & Drop
+
+        private void WindowGrid_DragOver(object sender, DragEventArgs e)
+        {
+            e.Effects = DragDropEffects.None;
+
+            if (IsDragDropEnabled() && e.Data.GetDataPresent(DataFormats.FileDrop))
+                e.Effects = DragDropEffects.Copy;
+
+            e.Handled = true;
+        }
+
+        private void WindowGrid_Drop(object sender, DragEventArgs e)
+        {
+            try
+            {
+                if (IsDragDropEnabled() && e.Data.GetDataPresent(DataFormats.FileDrop))
+                {
+                    string[]? paths = e.Data.GetData(DataFormats.FileDrop) as string[];
+                    if (paths?.Length >= 1 && Path.Exists(paths[0]))
+                    {
+                        Activate();
+                        LoadPath(paths[0], true, true);
+                    }
+                }
+            }
+            catch { }
+        }
+
+        #endregion
         #region Menu > Options
 
         private void OptionsBtn_Click(object sender, RoutedEventArgs e)
@@ -379,9 +467,126 @@ namespace Quota_Express
         #region Helper Functions
 
         /// <summary>
+        /// Loads a given path into the UI, either as a folder or an archive.
+        /// If the path is a file, it will attempt to open it.
+        /// </summary>
+        private async void LoadPath(
+            string path,
+            bool updateStacks = true,
+            bool confirmFileOpen = false
+        )
+        {
+            try
+            {
+                path = NormalisePath(path);
+
+                if (Directory.Exists(path))
+                {
+                    // If the path is a directory, load its contents
+                    if (!await GetFiles(path, updateStacks))
+                        throw new FileFormatException();
+                }
+                else if (File.Exists(path))
+                {
+                    if (Funcs.ArchiveExtensions.Contains(Path.GetExtension(path).ToLower()))
+                    {
+                        // If the file is an archive, load its contents
+                        if (!await GetFilesFromArchive(path, "", updateStacks))
+                            throw new FileNotFoundException();
+                    }
+                    else
+                    {
+                        // If it's a regular file, open it
+                        try
+                        {
+                            if (
+                                !confirmFileOpen
+                                || Funcs.ShowPrompt(
+                                    $"{Funcs.ChooseLang("OpenFileDescStr")}{Environment.NewLine}{Environment.NewLine}{path}",
+                                    Funcs.ChooseLang("OpenFileStr"),
+                                    MessageBoxButton.YesNoCancel,
+                                    MessageBoxImage.Information
+                                ) == MessageBoxResult.Yes
+                            )
+                            {
+                                _ = Process.Start(
+                                    new ProcessStartInfo()
+                                    {
+                                        FileName = path,
+                                        UseShellExecute = true,
+                                    }
+                                );
+                            }
+                        }
+                        catch
+                        {
+                            Funcs.ShowMessage(
+                                string.Format(Funcs.ChooseLang("OpenFileErrorQStr"), path),
+                                Funcs.ChooseLang("AccessDeniedStr"),
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error
+                            );
+                        }
+                    }
+                }
+                else
+                {
+                    // If the path doesn't exist, check if it's a subfolder of an archive
+                    string[] pathSegments = path.Split('\\');
+                    string archiveFilename = "";
+                    string archiveSubfolder = "";
+
+                    for (int i = 0; i < pathSegments.Length; i++)
+                    {
+                        string? ext = Path.GetExtension(pathSegments[i])?.ToLower();
+                        if (string.IsNullOrEmpty(ext))
+                            continue;
+
+                        string current = Path.Combine(pathSegments[..(i + 1)]);
+                        if (Funcs.ArchiveExtensions.Contains(ext) && File.Exists(current))
+                        {
+                            archiveFilename = current;
+                            archiveSubfolder = Path.Combine(pathSegments[(i + 1)..]);
+                            break;
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(archiveFilename))
+                    {
+                        // If we found an archive subfolder, load its contents
+                        if (
+                            !await GetFilesFromArchive(
+                                archiveFilename,
+                                archiveSubfolder,
+                                updateStacks
+                            )
+                        )
+                            throw new FileNotFoundException();
+                    }
+                    else
+                    {
+                        // If no valid path was found, show an error message
+                        throw new FileNotFoundException();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Funcs.ShowMessage(
+                    string.Format(Funcs.ChooseLang("OpenFileErrorQStr"), path),
+                    Funcs.ChooseLang("AccessDeniedStr"),
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error,
+                    Funcs.GenerateErrorReport(ex, PageID, "AccessDeniedStr")
+                );
+            }
+        }
+
+        /// <summary>
         /// Get a list of files and folders and display them as the root in the UI.
         /// </summary>
-        private async void GetFiles(string path, bool updateStacks = true)
+        /// <returns>Returns false if an exception should be thrown.</returns>
+        private async Task<bool> GetFiles(string path, bool updateStacks = true)
         {
             try
             {
@@ -404,9 +609,7 @@ namespace Quota_Express
                             {
                                 Icon = GetFolderIcon(item),
                                 IsFolder = true,
-                                FileName = Path.GetFileName(item),
                                 FilePath = item,
-                                FilePathFormatted = item.Replace("\\", " » "),
                                 DateCreated = GetFileCreationDate(item, true),
                                 DateModified = GetFileModifiedDate(item, true),
                             }
@@ -421,9 +624,7 @@ namespace Quota_Express
                             {
                                 Icon = GetFileIcon(item),
                                 IsFolder = false,
-                                FileName = Path.GetFileName(item),
                                 FilePath = item,
-                                FilePathFormatted = item.Replace("\\", " » "),
                                 DateCreated = GetFileCreationDate(item, false),
                                 DateModified = GetFileModifiedDate(item, false),
                             }
@@ -447,6 +648,7 @@ namespace Quota_Express
                     ForwardStack.Count != 0 ? "RedoIcon" : "NoRedoIcon"
                 );
 
+                CurrentArchiveRoot = "";
                 CurrentFolderTxt.Text = CurrentRoot = path;
                 TopBtnTxt.Text =
                     Path.GetFileName(CurrentRoot) == ""
@@ -460,39 +662,228 @@ namespace Quota_Express
 
                 Scroller.ScrollToTop();
                 FileSizeWorker.RunWorkerAsync();
+                return true;
             }
-            catch (Exception ex)
+            catch
             {
-                Funcs.ShowMessage(
-                    string.Format(Funcs.ChooseLang("OpenFileErrorQStr"), path),
-                    Funcs.ChooseLang("AccessDeniedStr"),
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error,
-                    Funcs.GenerateErrorReport(ex, PageID, "AccessDeniedStr")
-                );
+                return false;
             }
+        }
+
+        /// <summary>
+        /// Get a list of files and folders from a specific archive file directory.
+        /// </summary>
+        /// <returns>Returns false if an exception should be thrown.</returns>
+        private async Task<bool> GetFilesFromArchive(
+            string archiveFilename,
+            string path = "",
+            bool updateStacks = true
+        )
+        {
+            try
+            {
+                using IArchive arc = ArchiveFactory.Open(archiveFilename);
+                path = NormalisePath(path);
+
+                // check if path is a valid subdirectory
+                if (!string.IsNullOrEmpty(path))
+                {
+                    IEnumerable<IArchiveEntry> matches = arc.Entries.Where(x =>
+                        !string.IsNullOrEmpty(x.Key) && NormalisePath(x.Key) == path
+                    );
+
+                    if (!matches.Any())
+                    {
+                        return false;
+                    }
+                    else if (!matches.Any(x => x.IsDirectory))
+                    {
+                        // can't open file in archive
+                        Funcs.ShowMessage(
+                            Funcs.ChooseLang("FileInArchiveDescStr"),
+                            Funcs.ChooseLang("FileInArchiveStr"),
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error
+                        );
+                        return true;
+                    }
+                }
+
+                if (FileSizeWorker.IsBusy)
+                {
+                    FileSizeWorker.CancelAsync();
+                    while (FileSizeWorker.IsBusy)
+                        await Task.Delay(100);
+                }
+                FileDisplayList.Clear();
+
+                foreach (IArchiveEntry entry in arc.Entries)
+                {
+                    if (
+                        string.IsNullOrEmpty(entry.Key)
+                        || (entry.IsDirectory && !IncludeFolders)
+                        || (!entry.IsDirectory && !IncludeFiles)
+                    )
+                        continue;
+
+                    string entryPath = NormalisePath(entry.Key);
+                    if (!IsDirectChildInArchive(path, entryPath))
+                        continue;
+
+                    FileDisplayList.Add(
+                        new FileItem()
+                        {
+                            Icon = entry.IsDirectory
+                                ? GetFolderIcon(FolderTypeCategory.None)
+                                : GetFileIcon(entryPath),
+                            IsFolder = entry.IsDirectory,
+                            FilePath = Path.Combine(archiveFilename, entryPath),
+                            DateCreated = entry.CreatedTime ?? entry.ArchivedTime,
+                            DateModified = entry.LastModifiedTime,
+                        }
+                    );
+                }
+
+                if (updateStacks)
+                {
+                    if (CurrentRoot != "")
+                        BackStack.Push(CurrentRoot);
+
+                    ForwardStack.Clear();
+                }
+
+                BackBtn.IsEnabled = BackStack.Count != 0;
+                BackBtn.Icon = (Viewbox)TryFindResource(
+                    BackStack.Count != 0 ? "UndoIcon" : "NoUndoIcon"
+                );
+                ForwardBtn.IsEnabled = ForwardStack.Count != 0;
+                ForwardBtn.Icon = (Viewbox)TryFindResource(
+                    ForwardStack.Count != 0 ? "RedoIcon" : "NoRedoIcon"
+                );
+
+                CurrentArchiveRoot = archiveFilename;
+                CurrentFolderTxt.Text = CurrentRoot = Path.Combine(archiveFilename, path);
+                TopBtnTxt.Text =
+                    Path.GetFileName(CurrentRoot) == ""
+                        ? CurrentRoot
+                        : Path.GetFileName(CurrentRoot);
+                TotalFolderSize = -1;
+                UpdateFilter(FileTypeCategory.None);
+
+                if (FolderStack.IsVisible)
+                    GetFolderInfo();
+
+                Scroller.ScrollToTop();
+                FileSizeWorker.RunWorkerAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static string NormalisePath(string path)
+        {
+            return path.Replace('/', '\\').Trim('\\');
+        }
+
+        private static bool IsDirectChildInArchive(string folderPath, string entryPath)
+        {
+            if (string.IsNullOrEmpty(folderPath))
+                return !entryPath.Contains('\\');
+
+            if (!entryPath.StartsWith(folderPath + "\\"))
+                return false;
+
+            string remainingPath = entryPath[(folderPath.Length + 1)..];
+            return !remainingPath.Contains('\\');
+        }
+
+        private static bool IsChildInArchive(string folderPath, string entryPath)
+        {
+            if (string.IsNullOrEmpty(folderPath))
+                return true;
+
+            return entryPath.StartsWith(folderPath + "\\");
         }
 
         private void FileSizeWorker_DoWork(object? sender, DoWorkEventArgs e)
         {
-            foreach (FileItem item in FileDisplayList)
+            if (string.IsNullOrEmpty(CurrentArchiveRoot))
             {
-                if (FileSizeWorker.CancellationPending)
+                // calcualte sizes for folder
+                foreach (FileItem item in FileDisplayList)
                 {
-                    e.Cancel = true;
-                    return;
-                }
+                    if (FileSizeWorker.CancellationPending)
+                    {
+                        e.Cancel = true;
+                        return;
+                    }
 
+                    try
+                    {
+                        if (item.IsFolder)
+                            item.FileSize = GetDirSize(new DirectoryInfo(item.FilePath));
+                        else
+                            item.FileSize = new FileInfo(item.FilePath).Length;
+                    }
+                    catch
+                    {
+                        item.FileSize = 0L;
+                    }
+                }
+            }
+            else
+            {
                 try
                 {
-                    if (item.IsFolder)
-                        item.FileSize = GetDirSize(new DirectoryInfo(item.FilePath));
-                    else
-                        item.FileSize = new FileInfo(item.FilePath).Length;
+                    // calculate sizes for archive directory
+                    using IArchive arc = ArchiveFactory.Open(CurrentArchiveRoot);
+                    bool compressedSize = Settings.Default.CompressedSizes;
+
+                    foreach (FileItem item in FileDisplayList)
+                    {
+                        if (FileSizeWorker.CancellationPending)
+                        {
+                            e.Cancel = true;
+                            return;
+                        }
+
+                        try
+                        {
+                            string current = item.FilePath[(CurrentArchiveRoot.Length + 1)..];
+                            if (item.IsFolder)
+                            {
+                                IEnumerable<IArchiveEntry> entries = arc.Entries.Where(x =>
+                                    !string.IsNullOrEmpty(x.Key)
+                                    && !x.IsDirectory
+                                    && IsChildInArchive(current, NormalisePath(x.Key))
+                                );
+                                item.FileSize = entries.Sum(x =>
+                                    compressedSize ? x.CompressedSize : x.Size
+                                );
+                            }
+                            else
+                            {
+                                IArchiveEntry entry = arc.Entries.First(x =>
+                                    !string.IsNullOrEmpty(x.Key)
+                                    && !x.IsDirectory
+                                    && NormalisePath(x.Key) == current
+                                );
+                                item.FileSize = compressedSize ? entry.CompressedSize : entry.Size;
+                            }
+                        }
+                        catch
+                        {
+                            item.FileSize = 0L;
+                        }
+                    }
                 }
                 catch
                 {
-                    item.FileSize = 0L;
+                    foreach (FileItem item in FileDisplayList)
+                        item.FileSize = 0L;
                 }
             }
 
@@ -666,32 +1057,6 @@ namespace Quota_Express
             );
         }
 
-        private void OpenFileOrFolder(string path, bool isFolder)
-        {
-            if (isFolder)
-            {
-                GetFiles(path);
-            }
-            else
-            {
-                try
-                {
-                    _ = Process.Start(
-                        new ProcessStartInfo() { FileName = path, UseShellExecute = true }
-                    );
-                }
-                catch
-                {
-                    Funcs.ShowMessage(
-                        string.Format(Funcs.ChooseLang("OpenFileErrorQStr"), path),
-                        Funcs.ChooseLang("AccessDeniedStr"),
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error
-                    );
-                }
-            }
-        }
-
         private void CopyFileSize(string path, bool inBytes = false)
         {
             long fileSize = 0;
@@ -800,10 +1165,7 @@ namespace Quota_Express
 
         private void ItemBtn_PreviewMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            FileItem item = FileDisplayList
-                .Where(x => x.FilePath == (string)((Button)sender).Tag)
-                .First();
-            OpenFileOrFolder(item.FilePath, item.IsFolder);
+            LoadPath((string)((Button)sender).Tag, true, true);
         }
 
         private void OpenBtn_Click(object sender, RoutedEventArgs e)
@@ -811,8 +1173,7 @@ namespace Quota_Express
             string path = (string)
                 ((Button)((ContextMenu)((MenuItem)sender).Parent).PlacementTarget).Tag;
 
-            FileItem item = FileDisplayList.Where(x => x.FilePath == path).First();
-            OpenFileOrFolder(item.FilePath, item.IsFolder);
+            LoadPath(path);
         }
 
         private void CopyPathBtn_Click(object sender, RoutedEventArgs e)
@@ -847,7 +1208,7 @@ namespace Quota_Express
                 return;
 
             ForwardStack.Push(CurrentRoot);
-            GetFiles(item, false);
+            LoadPath(item, false);
         }
 
         private void ForwardBtn_Click(object sender, RoutedEventArgs e)
@@ -856,13 +1217,13 @@ namespace Quota_Express
                 return;
 
             BackStack.Push(CurrentRoot);
-            GetFiles(item, false);
+            LoadPath(item, false);
         }
 
         private void ChooseFolderBtn_Click(object sender, RoutedEventArgs e)
         {
             if (Funcs.FolderBrowserDialog.ShowDialog() == CommonFileDialogResult.Ok)
-                GetFiles(Funcs.FolderBrowserDialog.FileName ?? "");
+                LoadPath(Funcs.FolderBrowserDialog.FileName ?? "");
 
             Activate();
         }
@@ -875,7 +1236,7 @@ namespace Quota_Express
         private void FolderBtns_Click(object sender, RoutedEventArgs e)
         {
             int id = (int)((Button)sender).Tag;
-            GetFiles(
+            LoadPath(
                 Environment.GetFolderPath(
                     (FolderTypeCategory)id switch
                     {
@@ -894,7 +1255,7 @@ namespace Quota_Express
         private void CurrentFolderTxt_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(CurrentFolderTxt.Text) && e.Key == Key.Enter)
-                GetFiles(CurrentFolderTxt.Text);
+                LoadPath(CurrentFolderTxt.Text, true, true);
         }
 
         #endregion
@@ -1177,7 +1538,7 @@ namespace Quota_Express
 
             IncludeFiles = FilesBtn.IsChecked == true;
             if (CurrentRoot != "")
-                GetFiles(CurrentRoot, false);
+                LoadPath(CurrentRoot, false);
         }
 
         private void FoldersBtn_Click(object sender, RoutedEventArgs e)
@@ -1187,7 +1548,7 @@ namespace Quota_Express
 
             IncludeFolders = FoldersBtn.IsChecked == true;
             if (CurrentRoot != "")
-                GetFiles(CurrentRoot, false);
+                LoadPath(CurrentRoot, false);
         }
 
         #endregion
@@ -1816,7 +2177,7 @@ namespace Quota_Express
             _ = Process.Start(
                 new ProcessStartInfo()
                 {
-                    FileName = Funcs.GetAppUpdateLink(ExpressApp.Quota),
+                    FileName = Funcs.GetAppUpdateLink(),
                     UseShellExecute = true,
                 }
             );
@@ -1842,12 +2203,12 @@ namespace Quota_Express
 
         private void RefreshBtn_Click(object sender, RoutedEventArgs e)
         {
-            GetFiles(CurrentRoot, false);
+            LoadPath(CurrentRoot, false);
         }
 
         private void SelectAllBtn_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var item in FileDisplayList)
+            foreach (FileItem item in FileDisplayList)
                 item.Selected = true;
 
             if (GetSelectedItems().Any())
@@ -1859,7 +2220,7 @@ namespace Quota_Express
 
         private void ClearBtn_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var item in FileDisplayList)
+            foreach (FileItem item in FileDisplayList)
                 item.Selected = false;
 
             ClearBtn.Visibility = Visibility.Collapsed;

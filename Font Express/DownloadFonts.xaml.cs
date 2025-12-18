@@ -224,13 +224,13 @@ namespace Font_Express
                     font.Name + Path.GetExtension(fontFile)
                 );
                 if (Path.Exists(filename))
-                    return GetFontName(filename) ?? font.Name;
+                    return Funcs.GetFontName(filename) ?? font.Name;
 
                 using Stream s = await Funcs.httpClient.GetStreamAsync(new Uri(fontFile));
                 using FileStream fs = new(filename, FileMode.Create);
                 await s.CopyToAsync(fs);
 
-                return GetFontName(filename) ?? font.Name;
+                return Funcs.GetFontName(filename) ?? font.Name;
             }
             catch
             {
@@ -289,20 +289,6 @@ namespace Font_Express
             catch
             {
                 return false;
-            }
-        }
-
-        private static string? GetFontName(string fontFile)
-        {
-            try
-            {
-                using PrivateFontCollection fontCol = new();
-                fontCol.AddFontFile(fontFile);
-                return fontCol.Families[0].Name;
-            }
-            catch
-            {
-                return null;
             }
         }
 

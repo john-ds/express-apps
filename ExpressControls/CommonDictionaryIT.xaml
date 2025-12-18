@@ -376,6 +376,7 @@ CTRL+S</System:String>
     <System:String x:Key="DefFileTypeStr">Imposta il tipo di file di salvataggio predefinito</System:String>
     <System:String x:Key="RTFStr">RTF (Rich text)</System:String>
     <System:String x:Key="TXTStr">TXT (Testo non formattato)</System:String>
+    <System:String x:Key="DOCXStr">DOCX (Documento Word)</System:String>
     <System:String x:Key="DefClrSchemeStr">Imposta la gamma di colori predefinita</System:String>
     <System:String x:Key="DefSpellStr">Imposta la lingua predefinita del controllo ortografico</System:String>
     <System:String x:Key="GeneralStr">Generale</System:String>
@@ -457,7 +458,7 @@ CTRL+S</System:String>
     <System:String x:Key="FromFileStr">Testo dal file</System:String>
     <System:String x:Key="PropertyStr">Proprietà</System:String>
     <System:String x:Key="PropertyInfoStr">Inserisci il conteggio attuale delle parole, il nome del file, ecc.</System:String>
-    <System:String x:Key="FromFileInfoStr">Inserisci il testo da un file TXT o RTF</System:String>
+    <System:String x:Key="FromFileInfoStr">Inserisci il testo da un file TXT, RTF o DOCX</System:String>
     <System:String x:Key="TextBlockInfoStr">Inserisci la data e l'ora, il testo da un file e molto altro</System:String>
     <System:String x:Key="ItalianStr">Italiano</System:String>
     <System:String x:Key="PropertySideStr">Scegli una proprietà sotto.</System:String>
@@ -1144,7 +1145,7 @@ Verifica di avere i permessi per aprirlo.</System:String>
     <System:String x:Key="HelpTitleQ8Str">Scorciatoie da tastiera</System:String>
     <System:String x:Key="AboutDescTStr" xml:space="preserve">Grazie per aver installato Type Express.
 
-Modifica documenti TXT e RTF con facilità e stile, esprimendo la tua personalità con molte funzioni diverse, che ti permettono di personalizzare il tuo documento come desideri.
+Modifica documenti con facilità e stile, esprimendo la tua personalità con molte funzioni diverse, che ti permettono di personalizzare il tuo documento come desideri.
 
 Per sapere come utilizzare le funzioni disponibili, visita la sezione Guida. Puoi anche lasciare il tuo feedback: è molto apprezzato!
 
@@ -1176,8 +1177,8 @@ Si prega di notare che sono supportate solo le query di ricerca in inglese.
 
 Se il problema persiste, è possibile che si siano verificati dei problemi. Riprova più tardi e controlla gli aggiornamenti dell'app.</System:String>
     <System:String x:Key="IconRetrievalErrorStr">Abbiamo problemi a ricevere questa icona. Si prega di riprovare più tardi.</System:String>
-    <System:String x:Key="TypeFilesFilterStr">File supportati (.rtf, .txt)|*.txt;*.rtf|File di testo (.txt)|*.txt|File RTF (.rtf)|*.rtf</System:String>
-    <System:String x:Key="TypeFilesShortFilterStr">File RTF (.rtf)|*.rtf|File di testo (.txt)|*.txt</System:String>
+    <System:String x:Key="TypeFilesFilterStr">File supportati (.rtf, .txt, .docx)|*.txt;*.rtf;*.docx|File di testo (.txt)|*.txt|File RTF (.rtf)|*.rtf|Documenti Word (.docx)|*.docx</System:String>
+    <System:String x:Key="TypeFilesShortFilterStr">File RTF (.rtf)|*.rtf|File di testo (.txt)|*.txt|Documenti Word (.docx)|*.docx</System:String>
     <System:String x:Key="ChoosePictureStr">Scegli un'immagine</System:String>
     <System:String x:Key="TypeFilesShortInvFilterStr">File di testo (.txt)|*.txt|File RTF (.rtf)|*.rtf</System:String>
     <System:String x:Key="OnExitDescTStr">Vuoi salvare tutte le modifiche apportate al tuo documento?</System:String>
@@ -1437,7 +1438,7 @@ I dettagli tecnici dell'applicazione sono riportati di seguito:
     <System:String x:Key="SaveDropboxStr">Salva su Dropbox</System:String>
     <System:String x:Key="ConnectDropboxStr">Connetti l'account Dropbox</System:String>
     <System:String x:Key="ConnectDropboxInfoStr">Connetti il tuo account Dropbox per aprire e salvare i file direttamente nell'app.</System:String>
-    <System:String x:Key="DropboxOpenStr">Seleziona un file TXT o RTF da aprire in Type Express...</System:String>
+    <System:String x:Key="DropboxOpenStr">Seleziona un file da aprire in Type Express...</System:String>
     <System:String x:Key="DisconnectDropboxStr">Disconnetti Dropbox</System:String>
     <System:String x:Key="TryAgainActionStr">Riprova</System:String>
     <System:String x:Key="DropboxUsernameStr">Sei connesso/a a Dropbox come {0}.</System:String>
@@ -1836,5 +1837,33 @@ Se il problema persiste, è possibile che si siano verificati dei malfunzionamen
     <System:String x:Key="SpeedStr">Velocità</System:String>
     <System:String x:Key="HelpImproveStr">Aiutaci a migliorare l'app per tutti</System:String>
     <System:String x:Key="SendLogsStr">Invia automaticamente i registri dell'applicazione</System:String>
+    <System:String x:Key="WelcomeStr">Benvenuto su {0}</System:String>
+    <System:String x:Key="FontsFilterStr">Font (.ttf, .otf)|*.ttf;*.otf|File TTF|*.ttf|File OTF|*.otf</System:String>
+    <System:String x:Key="FileInArchiveStr">Impossibile aprire questo file</System:String>
+    <System:String x:Key="FileInArchiveDescStr">Non è possibile aprire questo file perché si trova in un archivio compresso. Si prega di decomprimere prima l'archivio.</System:String>
+    <System:String x:Key="CompressedSizesStr">Dimensioni dei file negli archivi</System:String>
+    <System:String x:Key="CompressedStr">Mostra dimensione compressa</System:String>
+    <System:String x:Key="UncompressedStr">Mostra dimensione non compressa</System:String>
+    <System:String x:Key="OpenFileStr">Vuoi aprire questo file?</System:String>
+    <System:String x:Key="OpenFileDescStr">Sei sicuro/a di voler aprire questo file nell'applicazione predefinita?</System:String>
+    <System:String x:Key="SoundtrackStr">Traccia audio</System:String>
+    <System:String x:Key="SoundtrackToolStr">Scegli una traccia audio per la tua presentazione</System:String>
+    <System:String x:Key="SoundtrackTitleStr">Traccia Audio - Present Express</System:String>
+    <System:String x:Key="SoundtrackCountStr">{0}/{1} file audio selezionati.</System:String>
+    <System:String x:Key="PresetSoundtrackStr">Fonoteca</System:String>
+    <System:String x:Key="SoundtrackHeaderStr">Scegli e riorganizza i file audio per creare una traccia.</System:String>
+    <System:String x:Key="SoundtrackLibraryErrorStr">Sembra che al momento non sia possibile accedere alla nostra fonoteca. Verifica di essere connesso a Internet e riprova.</System:String>
+    <System:String x:Key="SoundtrackLibraryLoadingStr">Caricamento della fonoteca</System:String>
+    <System:String x:Key="FilterCategoryStr">Filtra per categoria</System:String>
+    <System:String x:Key="AudioFilterStr">File audio (.mp3, .wav)|*.mp3;*.wav|File MP3|*.mp3|File WAV|*.wav</System:String>
+    <System:String x:Key="SoundtrackLimitReachedStr">Limite file audio raggiunto</System:String>
+    <System:String x:Key="SoundtrackLimitReachedDescStr">Non è stato possibile aggiungere uno o più file audio perché è stato raggiunto il limite di {0} file.</System:String>
+    <System:String x:Key="SoundtrackErrorStr">Errore della traccia audio</System:String>
+    <System:String x:Key="SoundtrackErrorDescStr">Uno o più file audio non possono essere aggiunti. Verifica che non superino 15 MB e che possano essere riprodotti al di fuori dell'app.</System:String>
+    <System:String x:Key="SoundtrackDownloadErrorStr">Non è stato possibile scaricare {0} dalla nostra fonoteca. Verifica di essere connesso a Internet e riprova.</System:String>
+    <System:String x:Key="MuteStr">Disattiva audio</System:String>
+    <System:String x:Key="MuteToolStr">Disattiva l'audio della traccia sonora per tutta la durata della presentazione</System:String>
+    <System:String x:Key="GeneratingAudioStr">Generazione della traccia audio</System:String>
+    <System:String x:Key="IncludeSoundtrackStr">Includi traccia audio</System:String>
     
 </ResourceDictionary>

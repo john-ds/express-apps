@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -20,9 +21,40 @@ namespace ExpressControls
             get { return IsFolder ? 1 : 0; }
         }
 
-        public string FileName { get; set; } = "";
         public string FilePath { get; set; } = "";
-        public string FilePathFormatted { get; set; } = "";
+
+        public bool IncludeFileNameExtension { get; set; } = true;
+        public string? FileNameOverride { get; set; } = null;
+        public string FileName
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(FileNameOverride))
+                    return FileNameOverride;
+
+                return (
+                        IncludeFileNameExtension
+                            ? Path.GetFileName(FilePath)
+                            : Path.GetFileNameWithoutExtension(FilePath)
+                    ) ?? FilePath;
+            }
+        }
+
+        public string FilePathFormatted
+        {
+            get { return FilePath.Replace("\\", " » "); }
+        }
+
+        public string FileExtension
+        {
+            get
+            {
+                if (IsFolder)
+                    return "";
+
+                return Path.GetExtension(FilePath) ?? "";
+            }
+        }
 
         public DateTime? DateCreated { get; set; } = null;
         public string DateCreatedString
@@ -240,6 +272,9 @@ namespace ExpressControls
         public ExportVideoRes Resolution { get; set; } = ExportVideoRes.FullHD;
         public bool Widescreen { get; set; } = true;
         public bool FitToSlide { get; set; } = true;
+
+        public KeyValuePair<string, byte[]>[] Soundtrack { get; set; } = [];
+        public bool SoundtrackLoop { get; set; } = false;
 
         public SlideshowSequenceItem[] Sequence { get; set; } = [];
     }

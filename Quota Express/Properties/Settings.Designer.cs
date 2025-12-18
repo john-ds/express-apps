@@ -190,5 +190,17 @@ namespace Quota_Express.Properties {
                 this["LoggingEnabled"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool CompressedSizes {
+            get {
+                return ((bool)(this["CompressedSizes"]));
+            }
+            set {
+                this["CompressedSizes"] = value;
+            }
+        }
     }
 }

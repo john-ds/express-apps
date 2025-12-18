@@ -25,6 +25,8 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using DocSharp.Docx;
+using DocSharp.Imaging;
 using Dropbox.Api;
 using Dropbox.Api.Files;
 using ExpressControls;
@@ -56,6 +58,8 @@ namespace Type_Express
         private bool FormatPainterAlwaysOn = false;
         private FontStyleItem FormatStyle = new();
 
+        private readonly string[] SupportedExtensions = [".txt", ".rtf", ".docx"];
+
         public MainWindow()
         {
             InitializeComponent();
@@ -78,16 +82,15 @@ namespace Type_Express
             // Language setup
             if (Settings.Default.Language == "")
             {
-                LangSelector lang = new(ExpressApp.Type);
-                lang.ShowDialog();
-
-                Settings.Default.Language = lang.ChosenLang;
+                Settings.Default.Language = Funcs.GetSystemLanguage();
                 Settings.Default.Save();
+                FirstLoad = true;
             }
 
             Funcs.SetLang(Settings.Default.Language);
             Funcs.SetupDialogs();
             Funcs.RegisterPopups(WindowGrid);
+            ManualClose = true;
 
             DateLangCombo.SelectedIndex = (int)Funcs.GetCurrentLangEnum();
             DefineLang = Funcs.GetCurrentLangEnum();
@@ -171,15 +174,13 @@ namespace Type_Express
             );
 
             if (Settings.Default.DefaultSaveLocation == "")
-                Funcs.RTFTXTSaveDialog.InitialDirectory = Environment.GetFolderPath(
+                Funcs.DocumentSaveDialog.InitialDirectory = Environment.GetFolderPath(
                     Environment.SpecialFolder.MyDocuments
                 );
             else
-                Funcs.RTFTXTSaveDialog.InitialDirectory = Settings.Default.DefaultSaveLocation;
+                Funcs.DocumentSaveDialog.InitialDirectory = Settings.Default.DefaultSaveLocation;
 
-            if (Settings.Default.SaveFilterIndex == 1)
-                Funcs.RTFTXTSaveDialog.Filter = Funcs.ChooseLang("TypeFilesShortInvFilterStr");
-
+            Funcs.DocumentSaveDialog.FilterIndex = Settings.Default.SaveFilterIndex + 1;
             Funcs.EnableInfoBoxAudio = Settings.Default.EnableInfoBoxAudio;
             SetColourScheme((ColourScheme)Settings.Default.DefaultColourScheme);
 
@@ -236,6 +237,11 @@ namespace Type_Express
                     OpenRecentFavourite(Settings.Default.Recents[0] ?? "");
             }
 
+            if (FirstLoad)
+                CreateTempLabel(
+                    string.Format(Funcs.ChooseLang("WelcomeStr"), Funcs.GetCurrentAppName())
+                );
+
             if (Settings.Default.CheckNotifications)
                 await GetNotifications();
         }
@@ -286,9 +292,9 @@ namespace Type_Express
                 {
                     if (ThisFile == "")
                     {
-                        if (Funcs.RTFTXTSaveDialog.ShowDialog() == true)
+                        if (Funcs.DocumentSaveDialog.ShowDialog() == true)
                         {
-                            if (SaveFile(Funcs.RTFTXTSaveDialog.FileName) == false)
+                            if (SaveFile(Funcs.DocumentSaveDialog.FileName) == false)
                                 e.Cancel = true;
                         }
                         else
@@ -333,7 +339,11 @@ namespace Type_Express
         private void OverlayStoryboard_Completed(object? sender, EventArgs e)
         {
             if (IsLoaded)
+            {
                 OverlayGrid.Visibility = Visibility.Collapsed;
+                MainGrid.IsEnabled = true;
+                StatusBar.IsEnabled = true;
+            }
         }
 
         private void ShowLanguagePopup(
@@ -403,8 +413,8 @@ namespace Type_Express
                         OpenSpellchecker();
                         break;
                     case "SaveAs":
-                        if (Funcs.RTFTXTSaveDialog.ShowDialog() == true)
-                            SaveFile(Funcs.RTFTXTSaveDialog.FileName);
+                        if (Funcs.DocumentSaveDialog.ShowDialog() == true)
+                            SaveFile(Funcs.DocumentSaveDialog.FileName);
                         break;
                     case "Styles":
                         Funcs.OpenSidePane(this, StylesTab);
@@ -478,6 +488,34 @@ namespace Type_Express
             catch { }
         }
 
+        #region Drag & Drop
+
+        private void WindowGrid_DragOver(object sender, DragEventArgs e)
+        {
+            e.Effects = DragDropEffects.None;
+
+            if (IsDragDropEnabled() && e.Data.GetDataPresent(DataFormats.FileDrop))
+                e.Effects = DragDropEffects.Copy;
+
+            e.Handled = true;
+        }
+
+        private void WindowGrid_Drop(object sender, DragEventArgs e)
+        {
+            try
+            {
+                if (IsDragDropEnabled() && e.Data.GetDataPresent(DataFormats.FileDrop))
+                {
+                    string[] paths = e.Data.GetData(DataFormats.FileDrop) as string[] ?? [];
+
+                    foreach (string filename in paths)
+                        LoadFile(filename);
+                }
+            }
+            catch { }
+        }
+
+        #endregion
         #region Menu > New
 
         private void NewBtn_Click(object sender, RoutedEventArgs e)
@@ -495,7 +533,7 @@ namespace Type_Express
         {
             if (ThisFile == "" && IsDocTxtEmpty())
             {
-                Funcs.StartStoryboard(this, "OverlayOutStoryboard");
+                Funcs.CloseOverlayStoryboard(this);
                 TextFocus();
             }
             else
@@ -658,7 +696,50 @@ namespace Type_Express
             else
                 NewWin.TextFocus(true);
 
-            Funcs.StartStoryboard(this, "OverlayOutStoryboard");
+            Funcs.CloseOverlayStoryboard(this);
+        }
+
+        /// <summary>
+        /// Loads a DOCX file from the given stream.
+        /// </summary>
+        /// <param name="stream">Stream containing the file data</param>
+        private void LoadDOCXFromStream(Stream stream)
+        {
+            RichTextBox TextTarget = DocTxt;
+            MainWindow? NewWin = null;
+
+            if (!(ThisFile == "" && IsDocTxtEmpty()))
+            {
+                NewWin = new MainWindow();
+                TextTarget = NewWin.DocTxt;
+                NewWin.Show();
+            }
+
+            TextRange documentTextRange = new(
+                TextTarget.Document.ContentStart,
+                TextTarget.Document.ContentEnd
+            );
+            DocxToRtfConverter docx = new()
+            {
+                ImageConverter = new SystemDrawingConverter(),
+                DefaultSettings =
+                {
+                    FontName = Settings.Default.DefaultFont.Name,
+                    FontSize = (int)Settings.Default.DefaultFont.Size,
+                },
+            };
+
+            using MemoryStream streamDocx = new();
+            docx.Convert(stream, streamDocx);
+            streamDocx.Position = 0;
+            documentTextRange.Load(streamDocx, DataFormats.Rtf);
+
+            if (NewWin == null)
+                TextFocus(true);
+            else
+                NewWin.TextFocus(true);
+
+            Funcs.CloseOverlayStoryboard(this);
         }
 
         /// <summary>
@@ -667,12 +748,18 @@ namespace Type_Express
         /// <param name="filename">The name of the file to open</param>
         private bool LoadFile(string filename)
         {
+            if (
+                !System.IO.Path.Exists(filename)
+                || !SupportedExtensions.Contains(System.IO.Path.GetExtension(filename).ToLower())
+            )
+                return false;
+
             foreach (MainWindow win in Application.Current.Windows.OfType<MainWindow>())
             {
                 if (win.ThisFile == filename)
                 {
                     win.Focus();
-                    Funcs.StartStoryboard(win, "OverlayOutStoryboard");
+                    Funcs.CloseOverlayStoryboard(win);
                     return true;
                 }
             }
@@ -701,14 +788,22 @@ namespace Type_Express
                     TextTarget.Document.ContentStart,
                     TextTarget.Document.ContentEnd
                 );
-                string dataFormat = DataFormats.Rtf;
-                string ext = System.IO.Path.GetExtension(filename);
 
-                if (!ext.Equals(".rtf", StringComparison.CurrentCultureIgnoreCase))
-                    dataFormat = DataFormats.Text;
-
-                using (FileStream stream = new(filename, FileMode.Open))
-                    documentTextRange.Load(stream, dataFormat);
+                string ext = System.IO.Path.GetExtension(filename).ToLower();
+                switch (ext)
+                {
+                    case ".txt":
+                    case ".rtf":
+                        string dataFormat = ext == ".txt" ? DataFormats.Text : DataFormats.Rtf;
+                        using (FileStream stream = new(filename, FileMode.Open))
+                            documentTextRange.Load(stream, dataFormat);
+                        break;
+                    case ".docx":
+                        InsertDOCX(filename, documentTextRange);
+                        break;
+                    default:
+                        return false;
+                }
 
                 SetRecentFile(filename);
 
@@ -717,8 +812,9 @@ namespace Type_Express
 
                 (NewWin ?? this).SetUpInfo();
                 (NewWin ?? this).TextFocus(true);
+                (NewWin ?? this).Activate();
 
-                Funcs.StartStoryboard(this, "OverlayOutStoryboard");
+                Funcs.CloseOverlayStoryboard(this);
                 System.Windows.Shell.JumpList.AddToRecentCategory(filename);
                 System.Windows.Shell.JumpList.GetJumpList(Application.Current).Apply();
                 return true;
@@ -744,8 +840,8 @@ namespace Type_Express
 
         private void BrowseOpenBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (Funcs.RTFTXTOpenDialog.ShowDialog() == true)
-                foreach (string filename in Funcs.RTFTXTOpenDialog.FileNames)
+            if (Funcs.DocumentOpenDialog.ShowDialog() == true)
+                foreach (string filename in Funcs.DocumentOpenDialog.FileNames)
                     LoadFile(filename);
         }
 
@@ -781,12 +877,6 @@ namespace Type_Express
         private FileItem GenerateFileItem(string path)
         {
             string icon = "BlankIcon";
-            string filename = System.IO.Path.GetFileNameWithoutExtension(path);
-            string formatted = path.Replace("\\", " » ");
-
-            if (filename == "")
-                filename = path;
-
             switch (System.IO.Path.GetExtension(path).ToLower())
             {
                 case ".rtf":
@@ -795,15 +885,17 @@ namespace Type_Express
                 case ".txt":
                     icon = "TxtIcon";
                     break;
+                case ".docx":
+                    icon = "DocxIcon";
+                    break;
                 default:
                     break;
             }
 
             return new FileItem()
             {
-                FileName = filename,
                 FilePath = path,
-                FilePathFormatted = formatted,
+                IncludeFileNameExtension = false,
                 Icon = (Viewbox)TryFindResource(icon),
             };
         }
@@ -1007,9 +1099,9 @@ namespace Type_Express
 
         private void AddFavouritesBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (Funcs.RTFTXTOpenDialog.ShowDialog() == true)
+            if (Funcs.DocumentOpenDialog.ShowDialog() == true)
             {
-                foreach (string filename in Funcs.RTFTXTOpenDialog.FileNames)
+                foreach (string filename in Funcs.DocumentOpenDialog.FileNames)
                 {
                     if (!Settings.Default.Favourites.Contains(filename))
                         Settings.Default.Favourites.Insert(0, filename);
@@ -1401,7 +1493,7 @@ namespace Type_Express
                     res.Add(
                         new FileItem()
                         {
-                            FileName = Funcs.ChooseLang("BackStr"),
+                            FileNameOverride = Funcs.ChooseLang("BackStr"),
                             Icon = (Viewbox)TryFindResource("UndoIcon"),
                             FilePath = parent,
                             IsFolder = true,
@@ -1421,6 +1513,8 @@ namespace Type_Express
                             icn = "TxtIcon";
                         else if (item.Name.ToLower().EndsWith(".rtf"))
                             icn = "RtfIcon";
+                        else if (item.Name.ToLower().EndsWith(".docx"))
+                            icn = "DocxIcon";
                         else
                             continue;
                     }
@@ -1428,7 +1522,7 @@ namespace Type_Express
                     res.Add(
                         new FileItem()
                         {
-                            FileName = item.Name,
+                            FileNameOverride = item.Name,
                             Icon = (Viewbox)TryFindResource(icn),
                             FilePath = item.PathDisplay,
                             IsFolder = item.IsFolder,
@@ -1505,13 +1599,23 @@ namespace Type_Express
                 CloudFilesPnl.IsEnabled = false;
                 CloudFilesPnl.Opacity = 0.7;
 
-                string dataFormat = DataFormats.Text;
-                if (filename.ToLower().EndsWith(".rtf"))
-                    dataFormat = DataFormats.Rtf;
-
                 DropboxClient dbx = dpxClient ?? GetDropboxClient();
                 using var response = await dbx.Files.DownloadAsync(filename);
-                LoadString(await response.GetContentAsStringAsync(), dataFormat);
+
+                string ext = System.IO.Path.GetExtension(filename).ToLower();
+                switch (ext)
+                {
+                    case ".txt":
+                    case ".rtf":
+                        string dataFormat = ext == ".txt" ? DataFormats.Text : DataFormats.Rtf;
+                        LoadString(await response.GetContentAsStringAsync(), dataFormat);
+                        break;
+                    case ".docx":
+                        LoadDOCXFromStream(await response.GetContentAsStreamAsync());
+                        break;
+                    default:
+                        break;
+                }
             }
             catch (Exception ex)
             {
@@ -1579,18 +1683,26 @@ namespace Type_Express
         {
             try
             {
-                TextRange documentTextRange = new(
-                    DocTxt.Document.ContentStart,
-                    DocTxt.Document.ContentEnd
-                );
-                string dataFormat = DataFormats.Rtf;
                 string ext = System.IO.Path.GetExtension(filename);
 
-                if (!ext.Equals(".rtf", StringComparison.CurrentCultureIgnoreCase))
-                    dataFormat = DataFormats.Text;
+                if (ext.Equals(".docx", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    RichTextBoxToDocxConverter.ConvertToDocx(DocTxt, filename);
+                }
+                else
+                {
+                    TextRange documentTextRange = new(
+                        DocTxt.Document.ContentStart,
+                        DocTxt.Document.ContentEnd
+                    );
 
-                using (FileStream stream = File.OpenWrite(filename))
+                    string dataFormat = DataFormats.Rtf;
+                    if (!ext.Equals(".rtf", StringComparison.CurrentCultureIgnoreCase))
+                        dataFormat = DataFormats.Text;
+
+                    using FileStream stream = File.OpenWrite(filename);
                     documentTextRange.Save(stream, dataFormat);
+                }
 
                 if (ThisFile != filename)
                 {
@@ -1606,7 +1718,7 @@ namespace Type_Express
                 Title = System.IO.Path.GetFileName(filename) + " - Type Express";
                 HasChanges = false;
 
-                Funcs.StartStoryboard(this, "OverlayOutStoryboard");
+                Funcs.CloseOverlayStoryboard(this);
                 CreateTempLabel(Funcs.ChooseLang("SavingCompleteStr"));
                 Funcs.LogConversion(PageID, LoggingProperties.Conversion.FileSaved, "PC");
 
@@ -1628,8 +1740,8 @@ namespace Type_Express
 
         private void BrowseSaveBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (Funcs.RTFTXTSaveDialog.ShowDialog() == true)
-                SaveFile(Funcs.RTFTXTSaveDialog.FileName);
+            if (Funcs.DocumentSaveDialog.ShowDialog() == true)
+                SaveFile(Funcs.DocumentSaveDialog.FileName);
         }
 
         #endregion
@@ -1645,19 +1757,10 @@ namespace Type_Express
 
         private FileItem GenerateFolderItem(string path)
         {
-            string icon = "FolderIcon";
-            string filename = System.IO.Path.GetFileName(path);
-            string formatted = path.Replace("\\", " » ");
-
-            if (filename == "")
-                filename = path;
-
             return new FileItem()
             {
-                FileName = filename,
                 FilePath = path,
-                FilePathFormatted = formatted,
-                Icon = (Viewbox)TryFindResource(icon),
+                Icon = (Viewbox)TryFindResource("FolderIcon"),
             };
         }
 
@@ -1729,10 +1832,10 @@ namespace Type_Express
 
         private void SavePinned(string folder)
         {
-            Funcs.RTFTXTSaveDialog.InitialDirectory = folder;
+            Funcs.DocumentSaveDialog.InitialDirectory = folder;
 
-            if (Funcs.RTFTXTSaveDialog.ShowDialog() == true)
-                SaveFile(Funcs.RTFTXTSaveDialog.FileName);
+            if (Funcs.DocumentSaveDialog.ShowDialog() == true)
+                SaveFile(Funcs.DocumentSaveDialog.FileName);
         }
 
         private void OpenFileExplorerBtn_Click(object sender, RoutedEventArgs e)
@@ -1853,13 +1956,21 @@ namespace Type_Express
                         throw;
                 }
 
-                TextRange documentTextRange = new(
-                    DocTxt.Document.ContentStart,
-                    DocTxt.Document.ContentEnd
-                );
                 using (MemoryStream stream = new())
                 {
-                    documentTextRange.Save(stream, dataFormat);
+                    if (filetype == ".docx")
+                    {
+                        RichTextBoxToDocxConverter.ConvertToDocxStream(DocTxt, stream);
+                    }
+                    else
+                    {
+                        TextRange documentTextRange = new(
+                            DocTxt.Document.ContentStart,
+                            DocTxt.Document.ContentEnd
+                        );
+                        documentTextRange.Save(stream, dataFormat);
+                    }
+
                     stream.Position = 0;
                     _ = await dbx.Files.UploadAsync(
                         filepath,
@@ -1875,7 +1986,7 @@ namespace Type_Express
                     MessageBoxButton.OK,
                     MessageBoxImage.Information
                 );
-                Funcs.StartStoryboard(this, "OverlayOutStoryboard");
+                Funcs.CloseOverlayStoryboard(this);
             }
             catch (Exception ex)
             {
@@ -1917,7 +2028,7 @@ namespace Type_Express
                 PrintDoc.Print();
                 Activate();
 
-                Funcs.StartStoryboard(this, "OverlayOutStoryboard");
+                Funcs.CloseOverlayStoryboard(this);
                 CreateTempLabel(Funcs.ChooseLang("SentToPrinterStr"));
             }
         }
@@ -2041,7 +2152,7 @@ namespace Type_Express
                             Encoding.UTF8
                         );
 
-                        Funcs.StartStoryboard(this, "OverlayOutStoryboard");
+                        Funcs.CloseOverlayStoryboard(this);
                         CreateTempLabel(Funcs.ChooseLang("HTMLExportedStr"));
                     }
                     catch
@@ -2092,7 +2203,7 @@ namespace Type_Express
                     files.Add(
                         new FileItem()
                         {
-                            FileName = paths[i],
+                            FileNameOverride = paths[i],
                             FilePath = string.Join(@"\", dir),
                             Indent = new Thickness(
                                 10 + (34 * (Math.Min(4, paths.Length) - i)),
@@ -2188,6 +2299,7 @@ namespace Type_Express
                             return (
                                     file.ToLower().EndsWith(".txt")
                                     || file.ToLower().EndsWith(".rtf")
+                                    || file.ToLower().EndsWith(".docx")
                                 )
                                 && file != ThisFile;
                         }),
@@ -2202,11 +2314,7 @@ namespace Type_Express
             {
                 InfoStack.ItemsSource = files.Select(f =>
                 {
-                    return new FileItem()
-                    {
-                        FilePath = f,
-                        FileName = System.IO.Path.GetFileName(f),
-                    };
+                    return new FileItem() { FilePath = f };
                 });
 
                 NoInfoFilesTxt.Visibility = Visibility.Collapsed;
@@ -2529,10 +2637,31 @@ namespace Type_Express
 
         private void InsertImage(string filename)
         {
-            InsertImage(new BitmapImage(new Uri(filename)));
+            byte[] buffer = File.ReadAllBytes(filename);
+            InsertImage(buffer);
         }
 
-        private void InsertImage(ImageSource bitmap)
+        private async Task InsertOnlineImage(string url)
+        {
+            byte[] buffer = await Funcs.GetBytesAsync(url);
+            InsertImage(buffer);
+        }
+
+        private void InsertImage(byte[] buffer)
+        {
+            BitmapImage bitmap = new();
+            using (MemoryStream stream = new(buffer))
+            {
+                bitmap.BeginInit();
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.StreamSource = stream;
+                bitmap.EndInit();
+            }
+
+            InsertImage(bitmap);
+        }
+
+        private void InsertImage(BitmapImage bitmap)
         {
             Image image = new()
             {
@@ -2543,30 +2672,6 @@ namespace Type_Express
 
             ClearSelection();
             InlineUIContainer _ = new(image, DocTxt.CaretPosition);
-        }
-
-        private async Task InsertOnlineImage(string url)
-        {
-            var buffer = await Funcs.GetBytesAsync(url);
-
-            BitmapImage image = new();
-            using (MemoryStream stream = new(buffer))
-            {
-                image.BeginInit();
-                image.CacheOption = BitmapCacheOption.OnLoad;
-                image.StreamSource = stream;
-                image.EndInit();
-            }
-
-            Image img = new()
-            {
-                Source = image,
-                Width = image.Width,
-                Height = image.Height,
-            };
-
-            ClearSelection();
-            InlineUIContainer _ = new(img, DocTxt.CaretPosition);
         }
 
         private void ClearSelection()
@@ -2585,6 +2690,25 @@ namespace Type_Express
             using Stream stream = Funcs.GenerateStreamFromString(rtf);
             DocTxt.Selection.Load(stream, DataFormats.Rtf);
             DocTxt.Selection.Select(DocTxt.Selection.End, DocTxt.Selection.End);
+        }
+
+        private static void InsertDOCX(string filename, TextRange range)
+        {
+            DocxToRtfConverter docx = new()
+            {
+                OriginalFolderPath = System.IO.Path.GetDirectoryName(filename) ?? "",
+                ImageConverter = new SystemDrawingConverter(),
+                DefaultSettings =
+                {
+                    FontName = Settings.Default.DefaultFont.Name,
+                    FontSize = (int)Settings.Default.DefaultFont.Size,
+                },
+            };
+
+            using MemoryStream streamDocx = new();
+            docx.Convert(filename, streamDocx);
+            streamDocx.Position = 0;
+            range.Load(streamDocx, DataFormats.Rtf);
         }
 
         private void InsertTextNewLine(string text)
@@ -3966,22 +4090,24 @@ namespace Type_Express
         {
             TextBlockPopup.IsOpen = false;
 
-            if (Funcs.RTFTXTOpenDialog.ShowDialog() == true)
+            if (Funcs.DocumentOpenDialog.ShowDialog() == true)
             {
                 try
                 {
-                    foreach (string filename in Funcs.RTFTXTOpenDialog.FileNames)
+                    foreach (string filename in Funcs.DocumentOpenDialog.FileNames)
                     {
-                        string text = File.ReadAllText(filename);
+                        string ext = System.IO.Path.GetExtension(filename).ToLower();
 
-                        if (
-                            System
-                                .IO.Path.GetExtension(filename)
-                                .EndsWith(".rtf", StringComparison.InvariantCultureIgnoreCase)
-                        )
-                            InsertRTF(text);
+                        if (ext == ".docx")
+                            InsertDOCX(filename, DocTxt.Selection);
                         else
-                            InsertText(text);
+                        {
+                            string text = File.ReadAllText(filename);
+                            if (ext == ".rtf")
+                                InsertRTF(text);
+                            else
+                                InsertText(text);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -5843,7 +5969,7 @@ namespace Type_Express
             _ = Process.Start(
                 new ProcessStartInfo()
                 {
-                    FileName = Funcs.GetAppUpdateLink(ExpressApp.Type),
+                    FileName = Funcs.GetAppUpdateLink(),
                     UseShellExecute = true,
                 }
             );
